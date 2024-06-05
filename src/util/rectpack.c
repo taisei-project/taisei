@@ -35,28 +35,20 @@ static inline void section_make_used(RectPack *rp, RectPackSection *s) {
 	s->next = s->prev = s;
 }
 
-static RectPackSection *acquire_section(RectPack *rp) {
-	RectPackSection *s = list_pop(&rp->sections_freelist);
-
-	if(!s) {
-		s = ALLOC_VIA(rp->allocator, typeof(*s));
-	}
-
-	*s = (RectPackSection) { };
-	return s;
+static RectPackSection *acquire_section(RectPackSectionSource secsrc) {
+	return mempool_acquire(secsrc.pool, secsrc.arena);
 }
 
-static void release_section(RectPack *rp, RectPackSection *s) {
-	list_push(&rp->sections_freelist, s);
+static void release_section(RectPackSectionSource secsrc, RectPackSection *s) {
+	mempool_release(secsrc.pool, s);
 }
 
-void rectpack_init(RectPack *rp, Allocator *alloc, double width, double height) {
+void rectpack_init(RectPack *rp, double width, double height) {
 	*rp = (RectPack) {
 		.root.rect = {
 			.top_left = CMPLX(0, 0),
 			.bottom_right = CMPLX(width, height),
 		},
-		.allocator = alloc,
 	};
 	list_push(&rp->unused_sections, &rp->root);
 	assert(rectpack_is_empty(rp));
@@ -71,35 +63,6 @@ bool rectpack_is_empty(RectPack *rp) {
 	return false;
 }
 
-static void delete_subsections(RectPack *rp, RectPackSection *restrict s) {
-	if(s->children[0] != NULL) {
-		assume(s->children[1] != NULL);
-		assume(s->children[0]->parent == s);
-		assume(s->children[1]->parent == s);
-
-		delete_subsections(rp, s->children[0]);
-		release_section(rp, s->children[0]);
-		s->children[0] = NULL;
-
-		delete_subsections(rp, s->children[1]);
-		release_section(rp, s->children[1]);
-		s->children[1] = NULL;
-	}
-}
-
-void rectpack_reset(RectPack *rp) {
-	delete_subsections(rp, &rp->root);
-}
-
-void rectpack_deinit(RectPack *rp) {
-	delete_subsections(rp, &rp->root);
-	Allocator *alloc = rp->allocator;
-
-	for(RectPackSection *s; (s = list_pop(&rp->sections_freelist));) {
-		allocator_free(alloc, s);
-	}
-}
-
 static double section_fitness(RectPackSection *s, double w, double h) {
 	double sw = rect_width(s->rect);
 	double sh = rect_height(s->rect);
@@ -111,7 +74,7 @@ static double section_fitness(RectPackSection *s, double w, double h) {
 	return sw * sh - w * h;  // best area fit
 }
 
-void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
+void rectpack_reclaim(RectPack *rp, RectPackSectionSource secsrc, RectPackSection *s) {
 	assume(s->children[0] == NULL);
 	assume(s->children[1] == NULL);
 
@@ -133,14 +96,14 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
 
 		// NOTE: the following frees s->sibling and s, in unspecified order
 
-		release_section(rp, parent->children[0]);
+		release_section(secsrc, parent->children[0]);
 		parent->children[0] = NULL;
 
-		release_section(rp, parent->children[1]);
+		release_section(secsrc, parent->children[1]);
 		parent->children[1] = NULL;
 
 		if(parent != NULL) {
-			rectpack_reclaim(rp, parent);
+			rectpack_reclaim(rp, secsrc, parent);
 		}
 
 		RP_DEBUG("done reclaiming parent of %p", (void*)s);
@@ -154,7 +117,7 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
 }
 
 static RectPackSection *select_fittest_section(
-	RectPack *rp, double *width, double *height, bool allow_rotation
+	RectPack *rp, RectPackSectionSource secsrc, double *width, double *height, bool allow_rotation
 ) {
 	RectPackSection *best = NULL;
 	double fitness = DBL_MAX;
@@ -201,10 +164,14 @@ static RectPackSection *select_fittest_section(
 	return best;
 }
 
-static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, double width, double height);
-static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double width, double height);
+static RectPackSection *split_horizontal(
+	RectPack *rp, RectPackSectionSource secsrc, RectPackSection *s, double width, double height);
+static RectPackSection *split_vertical(
+	RectPack *rp, RectPackSectionSource secsrc, RectPackSection *s, double width, double height);
 
-static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, double width, double height) {
+static RectPackSection *split_horizontal(
+	RectPack *rp, RectPackSectionSource secsrc,  RectPackSection *s, double width, double height
+) {
 	RP_DEBUG("spliting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
 
 	assert(rect_width(s->rect) >= width);
@@ -213,10 +180,10 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 	if(rect_height(s->rect) == height) {
 		assert(rect_width(s->rect) > width);
 		RP_DEBUG("delegated to vertical split");
-		return split_vertical(rp, s, width, height);
+		return split_vertical(rp, secsrc, s, width, height);
 	}
 
-	auto sub = acquire_section(rp);
+	auto sub = acquire_section(secsrc);
 	rect_set_xywh(&sub->rect,
 		rect_x(s->rect),
 		rect_y(s->rect),
@@ -228,7 +195,7 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 
 	sub->parent = s;
 	s->children[0] = sub;
-	s->children[1] = acquire_section(rp);
+	s->children[1] = acquire_section(secsrc);
 	rect_set_xywh(&s->children[1]->rect,
 		rect_x(s->rect),
 		rect_y(s->rect) + height,
@@ -247,13 +214,15 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 	);
 
 	if(rect_width(sub->rect) != width) {
-		sub = split_vertical(rp, sub, width, height);
+		sub = split_vertical(rp, secsrc, sub, width, height);
 	}
 
 	return sub;
 }
 
-static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double width, double height) {
+static RectPackSection *split_vertical(
+	RectPack *rp, RectPackSectionSource secsrc, RectPackSection *s, double width, double height
+) {
 	assert(rect_width(s->rect) >= width);
 	assert(rect_height(s->rect) >= height);
 
@@ -262,10 +231,10 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 	if(rect_width(s->rect) == width) {
 		assert(rect_height(s->rect) > height);
 		RP_DEBUG("delegated to horizontal split");
-		return split_horizontal(rp, s, width, height);
+		return split_horizontal(rp, secsrc, s, width, height);
 	}
 
-	auto sub = acquire_section(rp);
+	auto sub = acquire_section(secsrc);
 	rect_set_xywh(&sub->rect,
 		rect_x(s->rect),
 		rect_y(s->rect),
@@ -277,7 +246,7 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 
 	sub->parent = s;
 	s->children[0] = sub;
-	s->children[1] = acquire_section(rp);
+	s->children[1] = acquire_section(secsrc);
 	rect_set_xywh(&s->children[1]->rect,
 		rect_x(s->rect) + width,
 		rect_y(s->rect),
@@ -296,26 +265,32 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 	);
 
 	if(rect_height(sub->rect) != height) {
-		sub = split_horizontal(rp, sub, width, height);
+		sub = split_horizontal(rp, secsrc, sub, width, height);
 	}
 
 	return sub;
 }
 
-static RectPackSection *split(RectPack *rp, RectPackSection *s, double width, double height) {
+static RectPackSection *split(
+	RectPack *rp, RectPackSectionSource secsrc, RectPackSection *s, double width, double height
+) {
 	// short leftover axis split
 
 	if(rect_width(s->rect) - width < rect_height(s->rect) - height) {
-		return split_horizontal(rp, s, width, height);
+		return split_horizontal(rp, secsrc, s, width, height);
 	} else {
-		return split_vertical(rp, s, width, height);
+		return split_vertical(rp, secsrc, s, width, height);
 	}
 }
 
-RectPackSection *(rectpack_add)(
-	RectPack *rp, double width, double height, bool allow_rotation
+RectPackSection *rectpack_add(
+	RectPack *rp,
+	RectPackSectionSource secsrc,
+	double width,
+	double height,
+	bool allow_rotation
 ) {
-	RectPackSection *s = select_fittest_section(rp, &width, &height, allow_rotation);
+	RectPackSection *s = select_fittest_section(rp, secsrc, &width, &height, allow_rotation);
 
 	if(s == NULL) {
 		return NULL;
@@ -327,7 +302,7 @@ RectPackSection *(rectpack_add)(
 		return s;
 	}
 
-	return split(rp, s, width, height);
+	return split(rp, secsrc, s, width, height);
 }
 
 Rect rectpack_section_rect(RectPackSection *s) {

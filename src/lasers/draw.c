@@ -122,9 +122,9 @@ static struct {
 	} fb;
 
 	struct {
-		MemArena arena;
-		Allocator alloc;
 		RectPack rectpack;
+		MemArena arena;
+		RectPackSectionPool rpspool;
 	} packer;
 
 	struct {
@@ -257,18 +257,17 @@ void laserdraw_preload(ResourceGroup *rg) {
 }
 
 static void laserdraw_init_packer(void) {
-	rectpack_init(&ldraw.packer.rectpack, &ldraw.packer.alloc,
-		PACKING_SPACE_SIZE_W, PACKING_SPACE_SIZE_H);
+	rectpack_init(&ldraw.packer.rectpack, PACKING_SPACE_SIZE_W, PACKING_SPACE_SIZE_H);
 }
 
 static void laserdraw_reset_packer(void) {
 	marena_reset(&ldraw.packer.arena);
+	ldraw.packer.rpspool = (RectPackSectionPool) {};
 	laserdraw_init_packer();
 }
 
 void laserdraw_init(void) {
 	marena_init(&ldraw.packer.arena, 0);
-	allocator_init_from_arena(&ldraw.packer.alloc, &ldraw.packer.arena);
 	laserdraw_init_packer();
 	dynarray_ensure_capacity(&ldraw.queue, 64);
 
@@ -300,7 +299,6 @@ void laserdraw_init(void) {
 
 void laserdraw_shutdown(void) {
 	dynarray_free_data(&ldraw.queue);
-	allocator_deinit(&ldraw.packer.alloc);
 	marena_deinit(&ldraw.packer.arena);
 	fbmgr_group_destroy(ldraw.fb.group);
 	r_vertex_array_destroy(ldraw.pass1.va);
@@ -333,7 +331,12 @@ static bool laserdraw_pack_laser(Laser *l, cmplxf *out_ofs, bool *rotated) {
 	FloatExtent bbox_size = { .as_cmplx = laser_packed_dimensions(l) };
 
 	RectPackSection *section = rectpack_add(
-		&ldraw.packer.rectpack, bbox_size.w, bbox_size.h, true);
+		&ldraw.packer.rectpack,
+		(RectPackSectionSource) {
+			.arena = &ldraw.packer.arena,
+			.pool = &ldraw.packer.rpspool,
+		},
+		bbox_size.w, bbox_size.h, true);
 
 	if(!section) {
 		return false;

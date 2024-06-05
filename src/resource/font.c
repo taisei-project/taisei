@@ -11,6 +11,7 @@
 #include "config.h"
 #include "dynarray.h"
 #include "events.h"
+#include "memory/arena.h"
 #include "renderer/api.h"
 #include "util.h"
 #include "util/glm.h"
@@ -128,6 +129,8 @@ static struct {
 	Texture *render_tex;
 	Framebuffer *render_buf;
 	SpriteSheetAnchor spritesheets;
+	MemArena arena;
+	RectPackSectionPool rpspool;
 
 	struct {
 		SDL_mutex *new_face;
@@ -191,6 +194,8 @@ static void *ft_realloc(FT_Memory mem, long cur_size, long new_size, void *block
 static void init_fonts(void) {
 	FT_Error err;
 
+	marena_init(&globals.arena, sizeof(RectPackSection) * 128);
+
 	static typeof(*(FT_Memory)0) ft_mem = {
 		.alloc = ft_alloc,
 		.free = ft_free,
@@ -252,6 +257,7 @@ static void shutdown_fonts(void) {
 	FT_Done_Library(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
 	SDL_DestroyMutex(globals.mutex.done_face);
+	marena_deinit(&globals.arena);
 }
 
 static char *font_path(const char *name) {
@@ -393,6 +399,13 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 #define SS_TEXTURE_TYPE TEX_TYPE_RGB_8
 #define SS_TEXTURE_FLAGS 0
 
+INLINE RectPackSectionSource rps_source(void) {
+	return (RectPackSectionSource) {
+		.arena = &globals.arena,
+		.pool = &globals.rpspool,
+	};
+}
+
 static SpriteSheet *add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	auto ss = ALLOC(SpriteSheet, {
 		.tex = r_texture_create(&(TextureParams) {
@@ -409,7 +422,7 @@ static SpriteSheet *add_spritesheet(SpriteSheetAnchor *spritesheets) {
 		})
 	});
 
-	rectpack_init(&ss->rectpack, &default_allocator, SS_WIDTH, SS_HEIGHT);
+	rectpack_init(&ss->rectpack, SS_WIDTH, SS_HEIGHT);
 
 #ifdef DEBUG
 	char buf[128];
@@ -429,7 +442,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 	uint padded_w = pixmap->width + 2 * GLYPH_SPRITE_PADDING;
 	uint padded_h = pixmap->height + 2 * GLYPH_SPRITE_PADDING;
 
-	glyph->spritesheet_section = rectpack_add(&ss->rectpack, padded_w, padded_h);
+	glyph->spritesheet_section = rectpack_add(&ss->rectpack, rps_source(), padded_w, padded_h, false);
 
 	if(glyph->spritesheet_section == NULL) {
 		return false;
@@ -496,7 +509,7 @@ static const char *pixmode_name(FT_Pixel_Mode mode) {
 
 static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss) {
 	r_texture_destroy(ss->tex);
-	rectpack_deinit(&ss->rectpack);
+	assert(rectpack_is_empty(&ss->rectpack));
 	alist_unlink(spritesheets, ss);
 	mem_free(ss);
 }
@@ -738,7 +751,7 @@ static void wipe_glyph_cache(Font *font) {
 		RectPackSection *section = g->spritesheet_section;
 		assume(section != NULL);
 
-		rectpack_reclaim(rp, section);
+		rectpack_reclaim(rp, rps_source(), section);
 
 		if(rectpack_is_empty(rp)) {
 			delete_spritesheet(&globals.spritesheets, ss);
