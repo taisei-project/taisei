@@ -9,13 +9,12 @@
 #include "stagetext.h"
 
 #include "global.h"
-#include "objectpool.h"
 #include "stageobjects.h"
 
 static StageText *textlist = NULL;
 
 StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = objpool_acquire(&stage_object_pools.stagetext);
+	StageText *t = mempool_acquire(&stage_object_pools.stagetext);
 	list_append(&textlist, t);
 
 	if(text != NULL) {
@@ -48,7 +47,7 @@ StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, 
 }
 
 static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	objpool_release(&stage_object_pools.stagetext, list_unlink(dest, txt));
+	mempool_release(&stage_object_pools.stagetext, list_unlink(dest, txt));
 	return NULL;
 }
 

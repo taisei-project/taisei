@@ -54,7 +54,7 @@ TASK(boss_damage_to_power, { BoxedBoss boss; }) {
 }
 
 Boss *create_boss(const char *name, char *ani, cmplx pos) {
-	Boss *boss = objpool_acquire(&stage_object_pools.bosses);
+	Boss *boss = mempool_acquire(&stage_object_pools.bosses);
 
 	boss->name = name;
 	boss->pos = pos;
@@ -1364,7 +1364,7 @@ void free_boss(Boss *boss) {
 	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
-	objpool_release(&stage_object_pools.bosses, boss);
+	mempool_release(&stage_object_pools.bosses, boss);
 }
 
 static void boss_schedule_next_attack(Boss *b, Attack *a) {
