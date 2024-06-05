@@ -28,7 +28,7 @@
 
 typedef struct StageObjectPools {
 	#define OBJECT_POOL(type, field) \
-		MemPool field;
+		MEMPOOL(type) field;
 
 	OBJECT_POOLS
 	#undef OBJECT_POOL

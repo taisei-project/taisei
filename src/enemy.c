@@ -165,7 +165,7 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 
 	COEVENT_CANCEL_ARRAY(e->events);
 	ent_unregister(&e->ent);
-	mempool_release(&stage_object_pools.enemies, alist_unlink(enemies, enemy));
+	mempool_release(&stage_object_pools.enemies, alist_unlink(enemies, e));
 
 	return NULL;
 }

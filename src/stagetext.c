@@ -46,8 +46,8 @@ StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, 
 	return t;
 }
 
-static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	mempool_release(&stage_object_pools.stagetext, list_unlink(dest, txt));
+static void *stagetext_delete(List **dest, List *txt, void *arg) {
+	mempool_release(&stage_object_pools.stagetext, list_unlink(dest, (StageText*)txt));
 	return NULL;
 }
 

@@ -113,7 +113,7 @@ void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
 static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 	ent_unregister(&l->ent);
-	mempool_release(&stage_object_pools.lasers, alist_unlink(lasers, laser));
+	mempool_release(&stage_object_pools.lasers, alist_unlink(lasers, l));
 	return NULL;
 }
 
