@@ -38,9 +38,7 @@ Laser *create_laser(
 	LaserPosRule prule,
 	cmplx a0, cmplx a1, cmplx a2, cmplx a3
 ) {
-	Laser *l = mempool_acquire(&stage_object_pools.lasers);
-	alist_push(&global.lasers, l);
-
+	auto l = alist_push(&global.lasers, STAGE_ACQUIRE_OBJ(Laser));
 	l->birthtime = global.frames;
 	l->timespan = time;
 	l->deathtime = deathtime;
@@ -93,7 +91,7 @@ void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
 static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 	ent_unregister(&l->ent);
-	mempool_release(&stage_object_pools.lasers, alist_unlink(lasers, l));
+	STAGE_RELEASE_OBJ(alist_unlink(lasers, l));
 	return NULL;
 }
 

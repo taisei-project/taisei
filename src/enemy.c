@@ -87,7 +87,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visua
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
-	Enemy *e = alist_append(enemies, (Enemy*)mempool_acquire(&stage_object_pools.enemies));
+	auto e = alist_append(enemies, STAGE_ACQUIRE_OBJ(Enemy));
 	e->moving = false;
 	e->dir = 0;
 	e->birthtime = global.frames;
@@ -165,7 +165,7 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 
 	COEVENT_CANCEL_ARRAY(e->events);
 	ent_unregister(&e->ent);
-	mempool_release(&stage_object_pools.enemies, alist_unlink(enemies, e));
+	STAGE_RELEASE_OBJ(alist_unlink(enemies, e));
 
 	return NULL;
 }

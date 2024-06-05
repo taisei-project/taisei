@@ -130,9 +130,7 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 		type = ITEM_SURGE;
 	}
 
-	Item *i = mempool_acquire(&stage_object_pools.items);
-	alist_append(&global.items, i);
-
+	auto i = alist_append(&global.items, STAGE_ACQUIRE_OBJ(Item));
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -150,7 +148,7 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 
 void delete_item(Item *item) {
 	ent_unregister(&item->ent);
-	mempool_release(&stage_object_pools.items, alist_unlink(&global.items, item));
+	STAGE_RELEASE_OBJ(alist_unlink(&global.items, item));
 }
 
 Item *create_clear_item(cmplx pos, uint clear_flags) {
