@@ -19,11 +19,7 @@ void stage_objpools_init(void) {
 		marena_reset(&stage_objects.arena);
 	}
 
-	#define INIT_POOL(type, field) \
-		mempool_init(&stage_objects.pools.field, &stage_objects.arena);
-
-	OBJECT_POOLS(INIT_POOL)
-	#undef INIT_POOL
+	stage_objects.pools = (typeof(stage_objects.pools)) {};
 }
 
 void stage_objpools_shutdown(void) {

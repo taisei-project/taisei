@@ -66,7 +66,7 @@ void stage_objpools_init(void);
 void stage_objpools_shutdown(void);
 
 #define STAGE_ACQUIRE_OBJ(_type) \
-	mempool_acquire(STAGE_OBJPOOL_BY_TYPE(_type))
+	mempool_acquire(STAGE_OBJPOOL_BY_TYPE(_type), &stage_objects.arena)
 
 #define STAGE_RELEASE_OBJ(_p_obj) \
 	mempool_release(STAGE_OBJPOOL_BY_VARTYPE(_p_obj), (_p_obj))
