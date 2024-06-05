@@ -13,9 +13,8 @@
 
 static StageText *textlist = NULL;
 
-StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = mempool_acquire(&stage_object_pools.stagetext);
-	list_append(&textlist, t);
+StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+	auto t = list_append(&textlist, STAGE_ACQUIRE_OBJ(StageText));
 
 	if(text != NULL) {
 		assert(strlen(text) < sizeof(t->text));
@@ -39,15 +38,15 @@ static void stagetext_numeric_update(StageText *txt, int t, float a) {
 	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(txt->text), txt->text);
 }
 
-StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
+StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+	auto t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.update = stagetext_numeric_update;
 	return t;
 }
 
 static void *stagetext_delete(List **dest, List *txt, void *arg) {
-	mempool_release(&stage_object_pools.stagetext, list_unlink(dest, (StageText*)txt));
+	STAGE_RELEASE_OBJ(list_unlink(dest, (StageText*)txt));
 	return NULL;
 }
 

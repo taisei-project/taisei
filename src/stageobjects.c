@@ -10,26 +10,22 @@
 
 #define INIT_ARENA_SIZE (8 << 20)
 
-StageObjectPools stage_object_pools;
-
-static struct {
-	MemArena arena;
-} stgobjs;
+StageObjects stage_objects;
 
 void stage_objpools_init(void) {
-	if(!stgobjs.arena.pages.first) {
-		marena_init(&stgobjs.arena, INIT_ARENA_SIZE - sizeof(MemArenaPage));
+	if(!stage_objects.arena.pages.first) {
+		marena_init(&stage_objects.arena, INIT_ARENA_SIZE - sizeof(MemArenaPage));
 	} else {
-		marena_reset(&stgobjs.arena);
+		marena_reset(&stage_objects.arena);
 	}
 
-	#define OBJECT_POOL(type, field) \
-		mempool_init(&stage_object_pools.field, &stgobjs.arena);
+	#define INIT_POOL(type, field) \
+		mempool_init(&stage_objects.pools.field, &stage_objects.arena);
 
-	OBJECT_POOLS
-	#undef OBJECT_POOL
+	OBJECT_POOLS(INIT_POOL)
+	#undef INIT_POOL
 }
 
 void stage_objpools_shutdown(void) {
-	marena_deinit(&stgobjs.arena);
+	marena_deinit(&stage_objects.arena);
 }

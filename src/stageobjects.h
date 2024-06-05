@@ -18,29 +18,55 @@
 #include "stagetext.h"  // IWYU pragma: export
 #include "boss.h"  // IWYU pragma: export
 
-#define OBJECT_POOLS \
-	OBJECT_POOL(Projectile, projectiles) \
-	OBJECT_POOL(Item,       items) \
-	OBJECT_POOL(Enemy,      enemies) \
-	OBJECT_POOL(Laser,      lasers) \
-	OBJECT_POOL(StageText,  stagetext) \
-	OBJECT_POOL(Boss,       bosses) \
+#define OBJECT_POOLS(X) \
+	X(Projectile, projectiles) \
+	X(Item,       items) \
+	X(Enemy,      enemies) \
+	X(Laser,      lasers) \
+	X(StageText,  stagetext) \
+	X(Boss,       bosses) \
 
-typedef struct StageObjectPools {
-	#define OBJECT_POOL(type, field) \
-		MEMPOOL(type) field;
+enum {
+	#define COUNT_POOL(...) 1 +
+	NUM_STAGE_OBJECT_POOLS = OBJECT_POOLS(COUNT_POOL) 0,
+	#undef COUNT_POOL
+};
 
-	OBJECT_POOLS
-	#undef OBJECT_POOL
-} StageObjectPools;
+typedef struct StageObjects {
+	MemArena arena;
+	union {
+		struct {
+			#define DECLARE_POOL(type, field) \
+				MEMPOOL(type) field;
 
-extern StageObjectPools stage_object_pools;
+			OBJECT_POOLS(DECLARE_POOL)
+			#undef DECLARE_POOL
+		};
+		MemPool as_array[NUM_STAGE_OBJECT_POOLS];
+	} pools;
+} StageObjects;
 
-#define STAGE_OBJPOOLS_AS_ARRAYPTR \
-	(MemPool (*)[sizeof(stage_object_pools) / sizeof(MemPool)])&stage_object_pools
+extern StageObjects stage_objects;
+
+#define STAGE_OBJPOOL_GENERIC_DISPATCH(_type, _field) \
+	_type*: &stage_objects.pools._field,
+
+#define STAGE_OBJPOOL_BY_VARTYPE(_p_obj) \
+	_Generic((_p_obj),  \
+		OBJECT_POOLS(STAGE_OBJPOOL_GENERIC_DISPATCH) \
+		struct {}: abort())
+
+#define STAGE_OBJPOOL_BY_TYPE(type) \
+	STAGE_OBJPOOL_BY_VARTYPE(&(type) {})
 
 // Can be called many times to reinitialize the pools while reusing allocated arena memory.
 void stage_objpools_init(void);
 
 // Frees the arena
 void stage_objpools_shutdown(void);
+
+#define STAGE_ACQUIRE_OBJ(_type) \
+	mempool_acquire(STAGE_OBJPOOL_BY_TYPE(_type))
+
+#define STAGE_RELEASE_OBJ(_p_obj) \
+	mempool_release(STAGE_OBJPOOL_BY_VARTYPE(_p_obj), (_p_obj))

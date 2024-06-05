@@ -1167,8 +1167,8 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 	char buf[128];
-	auto objpools = STAGE_OBJPOOLS_AS_ARRAYPTR;
-	MemArena *arena = (*objpools)[0].arena;
+	auto objpools = &stage_objects.pools.as_array;
+	MemArena *arena = &stage_objects.arena;
 
 	Font *font = res_font("monotiny");
 
@@ -1198,9 +1198,9 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 	y += lineskip * 1.5;
 
 	const char *const names[] = {
-		#define OBJECT_POOL(t, n) #t,
-		OBJECT_POOLS
-		#undef OBJECT_POOL
+		#define GET_POOL_NAME(t, n) #t,
+		OBJECT_POOLS(GET_POOL_NAME)
+		#undef GET_POOL_NAME
 	};
 
 	static_assert(ARRAY_SIZE(*objpools) == ARRAY_SIZE(names));
