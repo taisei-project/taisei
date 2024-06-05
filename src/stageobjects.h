@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "objectpool.h"
+#include "memory/mempool.h"
 #include "aniplayer.h"  // IWYU pragma: export
 #include "projectile.h"  // IWYU pragma: export
 #include "item.h"  // IWYU pragma: export
@@ -28,7 +28,7 @@
 
 typedef struct StageObjectPools {
 	#define OBJECT_POOL(type, field) \
-		ObjectPool field;
+		MemPool field;
 
 	OBJECT_POOLS
 	#undef OBJECT_POOL
@@ -37,7 +37,7 @@ typedef struct StageObjectPools {
 extern StageObjectPools stage_object_pools;
 
 #define STAGE_OBJPOOLS_AS_ARRAYPTR \
-	(ObjectPool (*)[sizeof(stage_object_pools) / sizeof(ObjectPool)])&stage_object_pools
+	(MemPool (*)[sizeof(stage_object_pools) / sizeof(MemPool)])&stage_object_pools
 
 // Can be called many times to reinitialize the pools while reusing allocated arena memory.
 void stage_objpools_init(void);

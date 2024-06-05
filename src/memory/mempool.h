@@ -9,18 +9,17 @@
 #pragma once
 #include "taisei.h"
 
-#include "memory/arena.h"
+#include "arena.h"
 
-typedef struct ObjectPool ObjectPool;
-typedef struct ObjectPoolStats ObjectPoolStats;
+typedef struct MemPool MemPool;
 
-typedef struct ObjHeader {
-	alignas(alignof(max_align_t)) struct ObjHeader *next;
-} ObjHeader;
+typedef struct MemPoolObjectHeader {
+	alignas(alignof(max_align_t)) struct MemPoolObjectHeader *next;
+} MemPoolObjectHeader;
 
-struct ObjectPool {
+struct MemPool {
 	MemArena *arena;
-	ObjHeader *free_objects;
+	MemPoolObjectHeader *free_objects;
 	const char *tag;
 	size_t obj_size;
 	size_t obj_align;
@@ -28,16 +27,16 @@ struct ObjectPool {
 	int num_used;
 };
 
-void objpool_init(
-	ObjectPool *pool,
+void mempool_init(
+	MemPool *pool,
 	const char *tag,
 	MemArena *arena,
 	size_t obj_size,
 	size_t obj_align
 ) attr_nonnull(1, 2, 3);
 
-void *objpool_acquire(ObjectPool *pool)
+void *mempool_acquire(MemPool *pool)
 	attr_returns_allocated attr_hot attr_nonnull(1);
 
-void objpool_release(ObjectPool *pool, void *object)
+void mempool_release(MemPool *pool, void *object)
 	attr_hot attr_nonnull(1, 2);

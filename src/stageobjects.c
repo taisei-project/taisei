@@ -24,7 +24,7 @@ void stage_objpools_init(void) {
 	}
 
 	#define OBJECT_POOL(type, field) \
-		objpool_init( \
+		mempool_init( \
 			&stage_object_pools.field, \
 			#type, \
 			&stgobjs.arena, \

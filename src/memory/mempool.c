@@ -6,18 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "objectpool.h"
+#include "mempool.h"
 
-#include "memory/arena.h"
-
-void objpool_init(
-	ObjectPool *pool,
+void mempool_init(
+	MemPool *pool,
 	const char *tag,
 	MemArena *arena,
 	size_t obj_size,
 	size_t obj_align
 ) {
-	*pool = (ObjectPool) {
+	*pool = (MemPool) {
 		.arena = arena,
 		.obj_size = obj_size,
 		.obj_align = obj_align,
@@ -25,8 +23,8 @@ void objpool_init(
 	};
 }
 
-void *objpool_acquire(ObjectPool *pool) {
-	ObjHeader *obj = pool->free_objects;
+void *mempool_acquire(MemPool *pool) {
+	MemPoolObjectHeader *obj = pool->free_objects;
 
 	if(obj) {
 		assert(pool->num_used < pool->num_allocated);
@@ -44,8 +42,8 @@ void *objpool_acquire(ObjectPool *pool) {
 	return obj;
 }
 
-void objpool_release(ObjectPool *pool, void *object) {
-	ObjHeader *obj = object;
+void mempool_release(MemPool *pool, void *object) {
+	MemPoolObjectHeader *obj = object;
 	obj->next = pool->free_objects;
 	pool->free_objects = obj;
 
