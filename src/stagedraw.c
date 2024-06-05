@@ -1197,12 +1197,20 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 
 	y += lineskip * 1.5;
 
+	const char *const names[] = {
+		#define OBJECT_POOL(t, n) #t,
+		OBJECT_POOLS
+		#undef OBJECT_POOL
+	};
+
+	static_assert(ARRAY_SIZE(*objpools) == ARRAY_SIZE(names));
+
 	for(int i = 0; i < ARRAY_SIZE(*objpools); ++i) {
 		MemPool *p = &(*objpools)[i];
 
 		snprintf(buf, sizeof(buf), "%u | %7u", p->num_used, p->num_allocated);
 
-		text_draw(p->tag, &(TextParams) {
+		text_draw(names[i], &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
