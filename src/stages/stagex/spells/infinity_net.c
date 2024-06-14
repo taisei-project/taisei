@@ -231,6 +231,8 @@ TASK(infnet_lasers, { Infnet *infnet; int start_idx; }) {
 	const int laser_charge_time = 120;
 	const int laser_duration = 240;
 
+	INVOKE_SUBTASK_DELAYED(laser_charge_time, common_play_sfx, "boon");
+
 	while(!lasers_spawned || lasers_alive) {
 		lasers_alive = 0;
 
