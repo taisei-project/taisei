@@ -34,7 +34,7 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 	for(int i = 0; i < n; ++i) {
 		StageInfo *stg = stageinfo_get_by_index(i);
 
-		if(stg->type != STAGE_STORY) {
+		if(stg->type != STAGE_STORY || stg->hidden) {
 			break;
 		}
 

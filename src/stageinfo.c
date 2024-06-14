@@ -8,6 +8,7 @@
 
 #include "stageinfo.h"
 #include "stages/stages.h"
+#include "stages/stagex/stagex.h"
 
 #include "dynstage.h"
 
@@ -153,6 +154,12 @@ static void stageinfo_fill(StagesExports *e) {
 #endif
 
 	dynarray_compact(&stageinfo.stages);
+
+	stageinfo_get_by_id(7)->hidden = true;
+	struct stagex_spells_s *stagex_spells = (struct stagex_spells_s*)e->stagex.spells;
+	stageinfo_get_by_spellcard(&stagex_spells->midboss.trap_representation, D_Lunatic)->hidden = true;
+	stageinfo_get_by_spellcard(&stagex_spells->midboss.fork_bomb, D_Lunatic)->hidden = true;
+	stageinfo_get_by_spellcard(&stagex_spells->boss.pipe_dream, D_Lunatic)->hidden = true;
 
 #ifdef DEBUG
 	dynarray_foreach(&stageinfo.stages, int i, StageInfo *stg, {

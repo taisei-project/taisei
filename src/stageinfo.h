@@ -48,6 +48,7 @@ typedef struct StageInfo {
 	char *subtitle;
 	AttackInfo *spell;
 	Difficulty difficulty;
+	bool hidden;
 } StageInfo;
 
 size_t stageinfo_get_num_stages(void);

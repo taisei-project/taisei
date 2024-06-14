@@ -37,7 +37,7 @@ MenuData* create_spell_menu(void) {
 	for(int i = 0; i < n; ++i) {
 		StageInfo *stg = stageinfo_get_by_index(i);
 
-		if(stg->type != STAGE_SPELL) {
+		if(stg->type != STAGE_SPELL || stg->hidden) {
 			continue;
 		}
 
