@@ -13,6 +13,8 @@
 
 static Laser *make_grid_laser(cmplx a, cmplx b) {
 	auto l = create_laserline_ab(a, b, 10, 140, 200, RGBA(1, 0.0, 0, 0));
+	play_sfx("boon");
+	INVOKE_TASK_DELAYED(120, common_play_sfx, "laser1");
 	l->width_exponent = 0;
 	return l;
 }
@@ -123,6 +125,7 @@ TASK(spam, { BoxedBoss boss; }) {
 		p += 0.14315;
 
 		WAIT(4);
+		play_sfx_loop("shot1_loop");
 	}
 
 	for(;;) {
