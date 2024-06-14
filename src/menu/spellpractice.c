@@ -23,6 +23,7 @@ static void draw_spell_menu(MenuData *m) {
 MenuData* create_spell_menu(void) {
 	char title[128];
 	Difficulty lastdiff = D_Any;
+	uint16_t lastgroup = 0;
 
 	MenuData *m = alloc_menu();
 
@@ -32,6 +33,7 @@ MenuData* create_spell_menu(void) {
 	m->transition = TransFadeBlack;
 
 	int n = stageinfo_get_num_stages();
+
 	for(int i = 0; i < n; ++i) {
 		StageInfo *stg = stageinfo_get_by_index(i);
 
@@ -39,7 +41,9 @@ MenuData* create_spell_menu(void) {
 			continue;
 		}
 
-		if(stg->difficulty < lastdiff || (stg->difficulty == D_Extra && lastdiff != D_Extra)) {
+		uint16_t group = stg->id & ~0xff;
+
+		if(i && (lastgroup != group || stg->difficulty < lastdiff)) {
 			add_menu_separator(m);
 		}
 
@@ -54,6 +58,7 @@ MenuData* create_spell_menu(void) {
 		}
 
 		lastdiff = stg->difficulty;
+		lastgroup = group;
 	}
 
 	add_menu_separator(m);

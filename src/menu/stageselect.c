@@ -24,6 +24,7 @@ static void draw_stage_menu(MenuData *m) {
 MenuData* create_stage_menu(void) {
 	char title[STGMENU_MAX_TITLE_LENGTH];
 	Difficulty lastdiff = D_Any;
+	uint16_t lastgroup = 0;
 
 	MenuData *m = alloc_menu();
 
@@ -36,8 +37,9 @@ MenuData* create_stage_menu(void) {
 	for(int i = 0; i < n; ++i) {
 		StageInfo *stg = stageinfo_get_by_index(i);
 		Difficulty diff = stg->difficulty;
+		uint16_t group = stg->id & ~0xff;
 
-		if(diff < lastdiff || (diff == D_Extra && lastdiff != D_Extra) || (diff && !lastdiff)) {
+		if(i && (lastgroup != group || diff < lastdiff)) {
 			add_menu_separator(m);
 		}
 
@@ -45,6 +47,7 @@ MenuData* create_stage_menu(void) {
 		add_menu_entry(m, title, start_game, stg);
 
 		lastdiff = diff;
+		lastgroup = group;
 	}
 
 	add_menu_separator(m);
