@@ -32,6 +32,6 @@ void mempool_generic_release(MemPool *pool, void *object) {
 	pool->free_objects.as_generic = obj;
 
 	--pool->num_used;
-	assert(pool->num_used >= 0);
+	assert(pool->num_used + 1 > pool->num_used);
 	assert(pool->num_used <= pool->num_allocated);
 }
