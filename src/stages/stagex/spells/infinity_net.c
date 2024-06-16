@@ -8,6 +8,8 @@
 
 #include "spells.h"
 
+#include "util/sort_r.h"
+
 typedef struct LatticeNode LatticeNode;
 struct LatticeNode {
 	cmplx ofs;
@@ -100,7 +102,7 @@ static void init_idxmap(int num_nodes, int idxmap[num_nodes], LatticeNode nodes[
 		idxmap[i] = i;
 	}
 
-	qsort_r(idxmap, num_nodes, sizeof(*idxmap), idxmap_cmp, nodes);
+	sort_r(idxmap, num_nodes, sizeof(*idxmap), idxmap_cmp, nodes);
 }
 
 #define MAX_RANK 0xffffffff
