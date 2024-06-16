@@ -7,11 +7,12 @@ renderer_opts = {
         error_message : 'OpenGL 3.3 is not supported on this platform'),
     'gles30' : get_option('r_gles30').disable_auto_if(
         not (shader_transpiler_enabled or transpile_glsl)),
+    'sdlgpu' : get_option('r_sdlgpu').disable_auto_if(not shader_transpiler_enabled),
     'null' : get_option('r_null'),
 }
 
 default_renderer = get_option('r_default')
-renderers_prio = ['gl33', 'gles30']
+renderers_prio = ['gl33', 'gles30', 'sdlgpu']
 
 if default_renderer == 'auto'
     foreach renderer : renderers_prio
@@ -55,6 +56,7 @@ subdir('glcommon')
 subdir('gl33')
 subdir('glescommon')
 subdir('gles30')
+subdir('sdlgpu')
 
 included_deps = []
 needed_deps = ['common']

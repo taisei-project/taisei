@@ -155,6 +155,14 @@ option(
 )
 
 option(
+    'r_sdlgpu',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Build the SDL3 GPU renderer'
+)
+
+option(
     'r_null',
     type : 'feature',
     value : 'auto',
