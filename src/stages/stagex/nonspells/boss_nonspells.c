@@ -406,9 +406,7 @@ TASK(yumemi_non6_slave, {
 			cmplx pos = slave->pos + 32 * cdir(s * (a + i*M_TAU/cnt));
 			cmplx aim = 2.5 * -d;
 
-			Projectile *p;
-
-			p = PROJECTILE(
+			PROJECTILE(
 				.proto = pp_crystal,
 				.color = RGBA(0.5, 0, 1, 1),
 				.pos = pos,
@@ -416,7 +414,7 @@ TASK(yumemi_non6_slave, {
 				.layer = LAYER_BULLET | 0x10,
 			);
 
-			p = PROJECTILE(
+			PROJECTILE(
 				.proto = pp_crystal,
 				.color = RGBA(0.5, 0, 1, 1),
 				.pos = pos,

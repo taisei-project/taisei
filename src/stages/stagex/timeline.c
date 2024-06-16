@@ -66,6 +66,7 @@ TASK(glider_bullet, {
 	}
 }
 
+attr_unused
 TASK(glider_fairy, {
 	cmplx pos; cmplx dir;
 }) {
@@ -95,6 +96,7 @@ TASK(glider_fairy, {
 	}
 }
 
+attr_unused
 TASK(aimgrind_fairy, {
 	cmplx pos;
 }) {
@@ -151,7 +153,7 @@ TASK(rocket_proj, { cmplx pos; cmplx dir; }) {
 	}
 }
 
-
+attr_unused
 TASK(rocket_fairy, { cmplx pos; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, NULL));
 
@@ -524,6 +526,7 @@ TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; }) {
 	}
 }
 
+attr_unused
 TASK(fairy_laser45, { cmplx origin; }) {
 	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
 	ecls_anyfairy_summon(e, 60);

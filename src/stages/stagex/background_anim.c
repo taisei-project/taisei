@@ -217,7 +217,7 @@ void stagex_bg_trigger_tower_dissolve(void) {
 void stagex_bg_init_fullstage(void) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
-	Camera3D *cam = &stage_3d_context.cam;
+//	Camera3D *cam = &stage_3d_context.cam;
 // 	cam->aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
 // 	cam->pos[0] = 0;
 // 	cam->pos[1] = 0;

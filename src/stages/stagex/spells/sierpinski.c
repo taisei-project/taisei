@@ -72,7 +72,7 @@ TASK(slave, { cmplx origin; int type; }) {
 
 	INVOKE_SUBTASK(common_move,
 		.pos = &slave->pos,
-		.move_params = move_towards(ARGS.origin - 64i, 0.025),
+		.move_params = move_towards(0, ARGS.origin - 64i, 0.025),
 		.ent = ENT_BOX(slave).as_generic
 	);
 
