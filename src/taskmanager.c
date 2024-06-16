@@ -12,9 +12,9 @@
 #include "log.h"
 #include "util/env.h"
 
-#include <SDL_atomic.h>
-#include <SDL_mutex.h>
-#include <SDL_thread.h>
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_thread.h>
 
 typedef enum TaskManagerState {
 	TMGR_STATE_SHUTDOWN,

@@ -11,7 +11,7 @@
 
 #include "util/strbuf.h"
 
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 #ifdef TAISEI_BUILDCONF_DEBUG
 	#define TAISEI_VERSION_BUILD_TYPE_0 "debug"

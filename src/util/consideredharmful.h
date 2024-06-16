@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 // XXX: this header trips some of these deprecation warnings; include it early as a workaround
-#include <SDL_cpuinfo.h>
+#include <SDL3/SDL_cpuinfo.h>
 
 //
 // safeguards against some dangerous or otherwise undesirable practices

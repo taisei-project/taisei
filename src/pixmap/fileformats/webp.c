@@ -8,7 +8,6 @@
 
 #include "fileformats.h"
 #include "log.h"
-#include "util/io.h"
 
 #include <webp/decode.h>
 

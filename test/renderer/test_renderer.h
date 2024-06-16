@@ -1,12 +1,13 @@
 
 #include "taisei.h"
 
-#include "renderer/api.h"
+#include "config.h"
 #include "events.h"
 #include "log.h"
+#include "renderer/api.h"
+#include "rwops/rwops_stdiofp.h"
 #include "util/compat.h"
 #include "video.h"
-#include "config.h"
 
 #include <locale.h>
 

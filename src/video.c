@@ -12,13 +12,11 @@
 #include "events.h"
 #include "global.h"
 #include "renderer/api.h"
-#include "rwops/rwops_autobuf.h"
 #include "stagedraw.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/fbmgr.h"
 #include "util/graphics.h"
-#include "util/io.h"
 #include "version.h"
 #include "video_postprocess.h"
 
@@ -671,7 +669,7 @@ static void *video_screenshot_task(void *arg) {
 		char buf[video.framedump.name_prefix_len + FRAMEDUMP_FILENAME_EXTRA_BUFSIZE];
 		snprintf(buf, sizeof(buf), "%s" FRAMEDUMP_FILENAME_FORMAT, video.framedump.name_prefix, tdata->frame_num);
 
-		SDL_RWops *stream = SDL_RWFromFile(buf, "wb");
+		SDL_IOStream *stream = SDL_IOFromFile(buf, "wb");
 
 		if(UNLIKELY(!stream)) {
 			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
@@ -680,7 +678,7 @@ static void *video_screenshot_task(void *arg) {
 
 		opts.zlib_compression_level = video.framedump.compression;
 		bool ok = pixmap_save_stream(stream, &tdata->image, &opts.base);
-		SDL_RWclose(stream);
+		SDL_CloseIO(stream);
 
 		if(LIKELY(ok)) {
 			log_debug("Frame dump: %s", buf);
