@@ -1,0 +1,32 @@
+
+#ifndef SDLGPU_H
+#define SDLGPU_H
+
+#ifdef VERT_STAGE
+
+#if 0
+void __vertexMain();
+
+void main() {
+	__vertexMain();
+	gl_Position.z = 0.5 + 0.5 * gl_Position.z;
+}
+
+#define main __vertexMain
+#endif
+
+#endif
+
+#ifdef FRAG_STAGE
+
+#define gl_FragCoord vec4(gl_FragCoord.x, gl_FragCoord.y, 0.5 + 0.5 * gl_FragCoord.z, gl_FragCoord.w)
+
+#endif
+
+// HACK: These are identifiers used in some of our shaders that conflict with MSL post-translation.
+//       This really should be fixed in SPIRV-Cross.
+#define xor _reserved_id_fixup_xor
+#define dfdx _reserved_id_fixup_dfdx
+#define dfdy _reserved_id_fixup_dfdy
+
+#endif

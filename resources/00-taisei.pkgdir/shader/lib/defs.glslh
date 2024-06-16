@@ -12,7 +12,7 @@
 
 #define LOC(l) layout(location = l)
 
-#if defined(GL_ARB_explicit_uniform_location) || __VERSION__ >= 430
+#if (defined(GL_ARB_explicit_uniform_location) || __VERSION__ >= 430) && !defined(BACKEND_SDLGPU)
     #define UNIFORM(l) LOC(l) uniform
 #else
     #define UNIFORM(l) uniform
@@ -43,6 +43,10 @@
             #include "legacy_compat.glslh"
         #endif
     #endif
+#endif
+
+#ifdef BACKEND_SDLGPU
+	#include "sdlgpu.glslh"
 #endif
 
 #endif

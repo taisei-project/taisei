@@ -402,7 +402,9 @@ bool _spirv_decompile(
 			},
 		};
 
-		SPVCCALL(spvc_compiler_create_shader_resources(rctx.spvc.compiler, &rctx.spvc.res));
+		spvc_set active_vars;
+		SPVCCALL(spvc_compiler_get_active_interface_variables(rctx.spvc.compiler, &active_vars));
+		SPVCCALL(spvc_compiler_create_shader_resources_for_active_variables(rctx.spvc.compiler, &rctx.spvc.res,  active_vars));
 		SPVCCALL(_spirv_reflect_all(&rctx));
 
 		out->reflection = rctx.reflection;
@@ -641,11 +643,17 @@ ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
 	SPVCCALL(spvc_context_parse_spirv(rctx.spvc.ctx, spirv, spirv_size, &ir));
 	SPVCCALL(spvc_context_create_compiler(
 		rctx.spvc.ctx, SPVC_BACKEND_NONE, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &rctx.spvc.compiler));
-	SPVCCALL(spvc_compiler_create_shader_resources(rctx.spvc.compiler, &rctx.spvc.res));
+
+	spvc_set active_vars;
+	SPVCCALL(spvc_compiler_get_active_interface_variables(rctx.spvc.compiler, &active_vars));
+	SPVCCALL(spvc_compiler_create_shader_resources_for_active_variables(rctx.spvc.compiler, &rctx.spvc.res,  active_vars));
 
 	SPVCCALL(_spirv_reflect_all(&rctx));
 
 	spvc_context_destroy(rctx.spvc.ctx);
+
+	shader_reflection_logdump(rctx.reflection);
+
 	return rctx.reflection;
 
 spvc_error:
