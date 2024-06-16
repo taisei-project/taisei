@@ -2,18 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "stagepractice.h"
+
 #include "common.h"
 #include "options.h"
-#include "global.h"
-#include "video.h"
+
 #include "stageinfo.h"
+#include "video.h"
 
 static void draw_stgpract_menu(MenuData *m) {
 	draw_options_menu_bg(m);

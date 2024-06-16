@@ -2,21 +2,19 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "stagetext.h"
-#include "list.h"
+
 #include "global.h"
+#include "stageobjects.h"
 
 static StageText *textlist = NULL;
 
-StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = (StageText*)objpool_acquire(stage_object_pools.stagetext);
-	list_append(&textlist, t);
+StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+	auto t = list_append(&textlist, STAGE_ACQUIRE_OBJ(StageText));
 
 	if(text != NULL) {
 		assert(strlen(text) < sizeof(t->text));
@@ -40,15 +38,15 @@ static void stagetext_numeric_update(StageText *txt, int t, float a) {
 	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(txt->text), txt->text);
 }
 
-StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
+StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+	auto t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.update = stagetext_numeric_update;
 	return t;
 }
 
-static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	objpool_release(stage_object_pools.stagetext, list_unlink(dest, txt));
+static void *stagetext_delete(List **dest, List *txt, void *arg) {
+	STAGE_RELEASE_OBJ(list_unlink(dest, (StageText*)txt));
 	return NULL;
 }
 
@@ -105,8 +103,8 @@ static void stagetext_draw_single(StageText *txt) {
 	params.shader_ptr = res_shader("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
 	params.aux_textures[0] = res_texture("titletransition");
-	params.pos.x = creal(txt->pos) + ofs_x;
-	params.pos.y = cimag(txt->pos) + ofs_y;
+	params.pos.x = re(txt->pos) + ofs_x;
+	params.pos.y = im(txt->pos) + ofs_y;
 	params.color = &txt->color;
 
 	text_draw(txt->text, &params);
@@ -151,7 +149,7 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *
 }
 
 void stagetext_end_table(StageTextTable *tbl) {
-	cmplx ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
+	cmplx ofs = -0.5 * I * (im(tbl->pos) - VIEWPORT_H/2);
 
 	for(ListContainer *c = tbl->elems; c; c = c->next) {
 		((StageText*)c->data)->pos += ofs;

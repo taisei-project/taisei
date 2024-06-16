@@ -2,23 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 TASK(wander, { BoxedBoss boss; }) {
 	Rect wander_bounds = viewport_bounds(80);
 	wander_bounds.bottom = 130;
 
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(boss->pos, 0.03);
+	boss->move = move_from_towards(boss->pos, boss->pos, 0.03);
 
 	for(;;WAIT(300)) {
 		boss->move.attraction_point = common_wander(boss->pos, 60, wander_bounds);

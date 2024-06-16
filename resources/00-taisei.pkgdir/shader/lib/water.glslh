@@ -1,37 +1,15 @@
 
-// smooth noise that is tweaked to look like water
-// Based on https://www.shadertoy.com/view/Xl2XWz
+#ifndef I_WATER_H
+#define I_WATER_H
 
-float smoothNoise(vec2 p) {
-	vec2 f = fract(p);
-	p -= f;
-	f *= f * (3 - f - f);
-
-	// Intel's sin() function breaks down with values over 1e4 (yes, really)
-	// get rid of some bits here w/o sacrificing the nice effect
-	vec4 a = vec4(0, 1, 27, 28) + p.x + p.y * 27;
-	vec4 b = mod(a, tau);
-
-	// WARNING: Some versions of the Windows AMD driver choke on temp_mat = mat2(temp_vec)
-	vec4 temp_vec = fract(sin(b) * 1e5);
-	mat2 temp_mat = mat2(temp_vec.x, temp_vec.y, temp_vec.z, temp_vec.w);
-
-	return dot(temp_mat * vec2(1 - f.y, f.y), vec2(1 - f.x, f.x));
+float water_sampleRawNoise(vec2 p) {
+	return texture(water_noisetex, p * (1.0 / 16.0)).x;
 }
 
-float fractalNoise(vec2 p) {
-	return
-		smoothNoise(p)     * 0.5333 +
-		smoothNoise(p * 2) * 0.2667 +
-		smoothNoise(p * 4) * 0.1333 +
-		smoothNoise(p * 8) * 0.0667;
+float water_sampleWarpedNoise(vec2 p, mat2 s, vec2 m) {
+	float x = water_sampleRawNoise(p + 2.0 * m);
+	float y = water_sampleRawNoise(p - 0.5 * m - x);
+	return water_sampleRawNoise(p - s * vec2(x, y));
 }
 
-float warpedNoise(vec2 p, float time) {
-	vec2 m = vec2(0.0, -time);
-	float x = fractalNoise(p + m);
-	float y = fractalNoise(p + m.yx + x);
-	float z = fractalNoise(p - m - x);
-	return fractalNoise(p + vec2(x, y) + vec2(y, z) + vec2(z, x) + length(vec3(x, y, z)) * 0.1);
-}
-
+#endif

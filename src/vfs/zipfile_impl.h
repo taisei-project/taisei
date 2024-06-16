@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -12,27 +12,28 @@
 // libzip on clang creates useless noise
 DIAGNOSTIC_CLANG(push)
 DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
+DIAGNOSTIC_CLANG(ignored "-Wnullability-completeness")
 #include <zip.h>
 DIAGNOSTIC_CLANG(pop)
 
-#include "util/libzip_compat.h"
+#include "util/libzip_compat.h"   // IWYU pragma: export
 
 #include "private.h"
 #include "hashtable.h"
 
 /* zipfile */
 
+VFS_NODE_TYPE(VFSZipNode, {
+	VFSNode *source;
+	ht_str2int_t pathmap;
+	SDL_TLSID tls_id;
+});
+
 typedef struct VFSZipFileTLS {
 	zip_t *zip;
 	SDL_RWops *stream;
 	zip_error_t error;
 } VFSZipFileTLS;
-
-typedef struct VFSZipFileData {
-	VFSNode *source;
-	ht_str2int_t pathmap;
-	SDL_TLSID tls_id;
-} VFSZipFileData;
 
 typedef struct VFSZipFileIterData {
 	zip_int64_t idx;
@@ -42,19 +43,20 @@ typedef struct VFSZipFileIterData {
 	char *allocated;
 } VFSZipFileIterData;
 
-const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZipFileIterData *idata, VFSZipFileTLS *tls);
+const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tls);
 void vfs_zipfile_iter_stop(VFSNode *node, void **opaque);
+VFSZipFileTLS *vfs_zipfile_get_tls(VFSZipNode *znode, bool create);
 
 /* zippath */
 
-typedef struct VFSZipPathData {
-	VFSNode *zipnode;
+VFS_NODE_TYPE(VFSZipPathNode, {
+	VFSZipNode *zipnode;
 	uint64_t index;
 	ssize_t size;
 	ssize_t compressed_size;
 	VFSInfo info;
 	uint16_t compression;
-} VFSZipPathData;
+});
 
-void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx);
-VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
+VFSNode *vfs_zippath_create(VFSZipNode *zipnode, zip_int64_t idx);
+SDL_RWops *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) attr_nonnull_all;

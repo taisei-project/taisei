@@ -200,37 +200,46 @@ Auto collection is also triggered by other events such as bombs, and
 the items collected in this way will always count as collected at the top,
 so it is beneficial for your score.
 
-The point items themselves also get more valuable as you cancel or graze
-bullets at full power among other things.
+The base (full) value of a point item is referred to as Point Item Value, or PIV.
+It's displayed on the HUD next to the blue point icon. It can be increased by
+collecting small Value items that usually spawn when bullets are canceled, but the
+best way to increase it is through the Voltage system. PIV also affects some other
+values, such as spell card bonuses.
 
 .. _Voltage:
 
 The most visible part of the scoring system is the Power Surge mechanic.
 While Power 4.00 is the maximum your shots will put out, you can overcharge
 your Power meter up to 6.00. The surplus Power (and also the rest, if
-you are in a bind) can be used to start a Power Surge (see `Controls`_).
+you are in a bind) can be used to start a Power Surge (see `Controls`_). By default
+a Power Surge is also activated automatically once your Power meter reaches 6.00;
+this can be disabled in the settings.
 
-The Power Surge will charge up the air around you with Danmaku electricity.
-This boosts your damage by 20%, but you have to maintain the two kinds of charges
-in the charge meter around your character. When the positive (yellow) charge
-goes down and hits the negative, the surge ends. The special lightning items
-that appear during the surge replenish both kinds of charges. By timing these
-items you can control the relative amounts of charge and the higher your
-negative charge, the more difficult the surge becomes to keep up.
+While a Surge is active, all point items are collected at their full value regardless
+of where they are on the screen, your damage is boosted by 20%, and your effective
+Power level is locked to the value it was before activating the Power Surge.
 
-The longer you continue this game and the more damage and negative charge you
-stack up, the more powerful your surge will become. This will visibly increase
-the radius of your sparkly aura.
-Once the surge ends, all of it is released in a blast that damages enemies and
-bullets. Be in the right spot when that happens, because all that havoc will be
-transformed into collectible Voltage items.
+To keep the Surge going, you have to maintain two charge meters, represented by a
+ring around your character: the Positive (orange) charge and the Negative (blue)
+charge. The positive charge starts at 100%, and the negative at 0%. Both gradually
+deplete at different rates. The Surge will abruptly end when both charges are at
+equal level. Both charges can be replenished by collecting lightning items, which
+appear instead of mini-power items when you graze bullets; regular power items also
+replenish charge levels.
 
-These will increase your Point Item Value, give you 1 Bomb Fragment and also add
-to your Volts meter.
+Your Surge becomes more powerful the longer it's maintained, represented by a growing
+sparkling aura around your character. The more negative charge you currently have, the
+faster your Surge grows.
 
-If your Voltage reaches the Breakdown level shown in the HUD, you unlock a
-special spell at the end of the stage.
+Once the Surge ends, all of it is released in a blast that damages enemies and
+clears bullets. The damage and area of effect of the blast depends on how much power
+your Surge has accumulated. You can manually cancel the Surge to trigger the blast at
+the right time.
 
+All enemies and bullets hit by the blast will spawn special Voltage items, which
+greatly increase your Point Item Value, give you 1 Bomb Fragment each, and add to your
+Volts meter. If your Volts meter reaches the Breakdown level shown in the HUD, you
+unlock a special Voltage Overdrive spellcard at the end of the stage.
 
 More info
 ---------

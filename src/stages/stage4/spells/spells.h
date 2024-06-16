@@ -2,18 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../kurumi.h"  // IWYU pragma: export
 
-void kurumi_slaveburst(Boss*, int);
-void kurumi_redspike(Boss*, int);
-void kurumi_aniwall(Boss*, int);
-void kurumi_blowwall(Boss*, int);
-void kurumi_danmaku(Boss*, int);
-void kurumi_extra(Boss*, int);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_walachia, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_dryfountain, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_redspike, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_aniwall, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_blowwall, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_vampvape, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(kurumi_vladsarmy, BossAttack);

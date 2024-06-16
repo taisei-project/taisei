@@ -2,24 +2,41 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "assert.h"
+
 #include "util.h"
 #include "log.h"
+#include "util/io.h"
 
-void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log) {
+void _ts_assert_fail(
+	const char *cond, const char *msg, const char *func, const char *file, int line, bool use_log
+) {
 	use_log = use_log && log_initialized();
 
 	if(use_log) {
-		_taisei_log(LOG_FAKEFATAL, func, file, line, "%s:%i: assertion `%s` failed", file, line, cond);
-		log_sync();
+		if(msg) {
+			_taisei_log(LOG_FAKEFATAL, func, file, line,
+				"%s:%i: assertion `%s` failed: %s", file, line, cond, msg);
+		} else {
+			_taisei_log(LOG_FAKEFATAL, func, file, line,
+				"%s:%i: assertion `%s` failed", file, line, cond);
+		}
+
+		log_sync(true);
 	} else {
-		tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed\n", file, line, func, cond);
+		if(msg) {
+			tsfprintf(stderr,
+				"%s:%i: %s(): assertion `%s` failed: %s\n", file, line, func, cond, msg);
+		} else {
+			tsfprintf(stderr,
+				"%s:%i: %s(): assertion `%s` failed\n", file, line, func, cond);
+		}
+
+		fflush(stderr);
 	}
 }
 

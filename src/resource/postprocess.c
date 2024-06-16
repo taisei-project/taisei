@@ -2,18 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include <SDL.h>
-
-#include "util.h"
 #include "postprocess.h"
+
 #include "resource.h"
 #include "renderer/api.h"
+#include "util/kvparser.h"
+
+#include <SDL.h>
 
 #define PP_PATH_PREFIX SHPROG_PATH_PREFIX
 #define PP_EXTENSION ".pp"
@@ -31,11 +30,11 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	PostprocessShader *current = *slist;
 
 	if(!strcmp(key, "@shader")) {
-		current = malloc(sizeof(PostprocessShader));
+		current = ALLOC(PostprocessShader);
 		current->uniforms = NULL;
 
 		// if loading this fails, get_resource will print a warning
-		current->shader = get_resource_data(RES_SHADER_PROGRAM, value, ldata->resflags);
+		current->shader = res_get_data(RES_SHADER_PROGRAM, value, ldata->resflags);
 
 		list_append(slist, current);
 		return true;
@@ -68,14 +67,14 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	const UniformTypeInfo *type_info = r_uniform_type_info(type);
 
 	if(UNIFORM_TYPE_IS_SAMPLER(type)) {
-		Texture *tex = get_resource_data(RES_TEXTURE, value, ldata->resflags);
+		Texture *tex = res_get_data(RES_TEXTURE, value, ldata->resflags);
 
 		if(tex) {
-			PostprocessShaderUniform *psu = calloc(1, sizeof(PostprocessShaderUniform));
-			psu->uniform = uni;
-			psu->texture = tex;
-			psu->elements = SAMPLER_TAG;
-			list_append(&current->uniforms, psu);
+			list_append(&current->uniforms, ALLOC(PostprocessShaderUniform, {
+				.uniform = uni,
+				.texture = tex,
+				.elements = SAMPLER_TAG,
+			}));
 		}
 
 		return true;
@@ -117,7 +116,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 		}
 
 		value = next;
-		values = realloc(values, (++array_size) * type_info->elements * type_info->element_size);
+		values = mem_realloc(values, (++array_size) * type_info->elements * type_info->element_size);
 		values[val_idx] = v;
 		val_idx++;
 
@@ -139,12 +138,11 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 
 	assert(val_idx % type_info->elements == 0);
 
-	PostprocessShaderUniform *psu = calloc(1, sizeof(PostprocessShaderUniform));
-	psu->uniform = uni;
-	psu->values = values;
-	psu->elements = val_idx / type_info->elements;
-
-	list_append(&current->uniforms, psu);
+	attr_unused auto psu = list_append(&current->uniforms, ALLOC(PostprocessShaderUniform, {
+		.uniform = uni,
+		.values = values,
+		.elements = val_idx / type_info->elements,
+	}));
 
 	for(int i = 0; i < val_idx; ++i) {
 		log_debug("u[%i] = (f: %f; i: %i)", i, psu->values[i].f, psu->values[i].i);
@@ -156,25 +154,23 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 static void* delete_uniform(List **dest, List *data, void *arg) {
 	PostprocessShaderUniform *uni = (PostprocessShaderUniform*)data;
 	if(uni->elements != SAMPLER_TAG) {
-		free(uni->values);
+		mem_free(uni->values);
 	}
-	free(list_unlink(dest, data));
+	mem_free(list_unlink(dest, data));
 	return NULL;
 }
 
 static void* delete_shader(List **dest, List *data, void *arg) {
 	PostprocessShader *ps = (PostprocessShader*)data;
 	list_foreach(&ps->uniforms, delete_uniform, NULL);
-	free(list_unlink(dest, data));
+	mem_free(list_unlink(dest, data));
 	return NULL;
 }
 
 PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
-	PostprocessLoadData *ldata = calloc(1, sizeof(PostprocessLoadData));
-	ldata->resflags = flags;
-	parse_keyvalue_file_cb(path, postprocess_load_callback, ldata);
-	PostprocessShader *list = ldata->list;
-	free(ldata);
+	PostprocessLoadData ldata = { .resflags = flags };
+	parse_keyvalue_file_cb(path, postprocess_load_callback, &ldata);
+	PostprocessShader *list = ldata.list;
 
 	for(PostprocessShader *s = list, *next; s; s = next) {
 		next = s->next;

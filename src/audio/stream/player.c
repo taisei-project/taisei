@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "player.h"
 #include "util.h"
@@ -42,7 +40,7 @@ bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *ds
 	assert(dst_spec->frame_size == sizeof(struct stereo_frame));
 
 	plr->num_channels = num_channels,
-	plr->channels = calloc(sizeof(*plr->channels), num_channels);
+	plr->channels = ALLOC_ARRAY(num_channels, typeof(*plr->channels));
 	plr->dst_spec = *dst_spec;
 
 	for(int i = 0; i < num_channels; ++i) {
@@ -80,7 +78,7 @@ void splayer_shutdown(StreamPlayer *plr) {
 		free_channel(plr->channels + i);
 	}
 
-	free(plr->channels);
+	mem_free(plr->channels);
 }
 
 static inline void splayer_stream_ended(StreamPlayer *plr, int chan) {

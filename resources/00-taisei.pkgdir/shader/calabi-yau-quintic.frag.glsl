@@ -6,5 +6,5 @@
 
 VARYING(4) vec3 pos;
 void main(void) {
-	fragColor = vec4(0.5*normalize(pos)+vec3(0.5), 1);
+	fragColor = 0.3*vec4(0.4*normalize(pos)+vec3(0.6), 0.0);
 }

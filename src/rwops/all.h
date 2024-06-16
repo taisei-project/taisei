@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -16,10 +16,6 @@
 #include "rwops_sha256.h"
 #include "rwops_zlib.h"
 #include "rwops_zstd.h"
-
-#ifdef TAISEI_BUILDCONF_USE_ZIP
-#include "rwops_zipfile.h"
-#endif
 
 #ifdef DEBUG
 #include "rwops_trace.h"

@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -16,7 +16,7 @@
 		uint line;
 	} DebugInfo;
 
-	#define _DEBUG_INFO_INITIALIZER_ { __FILE__, __func__, __LINE__ }
+	#define _DEBUG_INFO_INITIALIZER_ { _TAISEI_SRC_FILE, __func__, __LINE__ }
 	#define _DEBUG_INFO_ ((DebugInfo) _DEBUG_INFO_INITIALIZER_)
 	#define _DEBUG_INFO_PTR_ (&_DEBUG_INFO_)
 	#define set_debug_info(debug) _set_debug_info(debug, _DEBUG_INFO_PTR_)

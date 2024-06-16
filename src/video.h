@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -24,6 +24,11 @@ enum {
 };
 
 #define SCREEN_SIZE { SCREEN_W, SCREEN_H }
+
+typedef struct VideoInitParams {
+	int width;
+	int height;
+} VideoInitParams;
 
 typedef union VideoMode {
 	// NOTE: These really should be floats, since this represents abstract screen coordinates, not pixels.
@@ -62,7 +67,7 @@ typedef enum VideoCapabilityState {
 	VIDEO_CURRENTLY_UNAVAILABLE,
 } VideoCapabilityState;
 
-void video_init(void);
+void video_init(const VideoInitParams *params);
 void video_post_init(void);
 void video_shutdown(void);
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable);
@@ -72,7 +77,7 @@ void video_get_viewport_size(float *width, float *height);
 bool video_is_fullscreen(void);
 bool video_is_resizable(void);
 extern VideoCapabilityState (*video_query_capability)(VideoCapability cap);
-void video_take_screenshot(void);
+void video_take_screenshot(bool viewport_only);
 void video_swap_buffers(void);
 uint video_num_displays(void);
 uint video_current_display(void);
@@ -80,7 +85,7 @@ void video_set_display(uint idx);
 const char *video_display_name(uint id) attr_returns_nonnull;
 Framebuffer *video_get_screen_framebuffer(void);
 VideoBackend video_get_backend(void);
-VideoMode video_get_mode(uint idx, bool fullscreen);
+bool video_get_mode(uint idx, bool fullscreen, VideoMode *out_mode);
 uint video_get_num_modes(bool fullscreen);
 VideoMode video_get_current_mode(void);
 double video_get_scaling_factor(void);

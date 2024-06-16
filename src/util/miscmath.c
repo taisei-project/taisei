@@ -2,14 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "miscmath.h"
-#include "assert.h"
 
 double lerp(double v0, double v1, double f) {
 	return f * (v1 - v0) + v0;
@@ -64,7 +61,7 @@ float fapproach_p(float *v, float t, float d) {
 }
 
 double approach_asymptotic(double val, double target, double rate, double epsilon) {
-	if(fabs(val - target) < epsilon || rate >= 1) {
+	if(fabs(val - target) < epsilon || UNLIKELY(rate >= 1.0)) {
 		return target;
 	}
 
@@ -72,7 +69,7 @@ double approach_asymptotic(double val, double target, double rate, double epsilo
 }
 
 float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
-	if(fabsf(val - target) < epsilon || rate >= 1) {
+	if(fabsf(val - target) < epsilon || UNLIKELY(rate >= 1.0f)) {
 		return target;
 	}
 
@@ -80,7 +77,7 @@ float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
 }
 
 cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon) {
-	if(cabs(val - target) < epsilon || rate >= 1) {
+	if(cabs(val - target) < epsilon || UNLIKELY(rate >= 1.0)) {
 		return target;
 	}
 
@@ -99,16 +96,8 @@ cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsil
 	return *val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
-double cabs2(cmplx c) {
-	return creal(c)*creal(c) + cimag(c)*cimag(c);
-}
-
-float cabs2f(cmplxf c) {
-	return crealf(c)*crealf(c) + cimagf(c)*cimagf(c);
-}
-
 cmplx cnormalize(cmplx c) {
-	cmplx r = c / sqrt(creal(c)*creal(c) + cimag(c)*cimag(c));
+	cmplx r = c / sqrt(re(c) * re(c) + im(c) * im(c));
 	// NOTE: clang generates a function call for isnan()...
 	return LIKELY(r == r) ? r : 0;
 }
@@ -125,8 +114,8 @@ cmplx cclampabs(cmplx c, double maxabs) {
 
 cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) {
 	return CMPLX(
-		clamp(creal(c), creal(cmin), creal(cmax)),
-		clamp(cimag(c), cimag(cmin), cimag(cmax))
+		clamp(re(c), re(cmin), re(cmax)),
+		clamp(im(c), im(cmin), im(cmax))
 	);
 }
 
@@ -143,31 +132,47 @@ cmplx cdir(double angle) {
 }
 
 cmplx cwmul(cmplx c0, cmplx c1) {
-	return CMPLX(creal(c0)*creal(c1), cimag(c0)*cimag(c1));
+	return CMPLX(re(c0) * re(c1), im(c0) * im(c1));
 }
 
 cmplxf cwmulf(cmplxf c0, cmplxf c1) {
-	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
+	return CMPLXF(re(c0) * re(c1), im(c0) * im(c1));
 }
 
-double cdot(cmplx c0, cmplx c1) {
-	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+cmplx cwdiv(cmplx c0, cmplx c1) {
+	return CMPLX(re(c0) / re(c1), im(c0) / im(c1));
 }
 
-float cdotf(cmplxf c0, cmplxf c1) {
-	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+cmplxf cwdivf(cmplxf c0, cmplxf c1) {
+	return CMPLXF(re(c0) / re(c1), im(c0) / im(c1));
 }
 
 cmplx cswap(cmplx c) {
-	return CMPLX(cimag(c), creal(c));
+	return CMPLX(im(c), re(c));
+}
+
+cmplxf cswapf(cmplxf c) {
+	return CMPLXF(im(c), re(c));
 }
 
 double ccross(cmplx a, cmplx b) {
-	return creal(a)*cimag(b) - cimag(a)*creal(b);
+	return re(a) * im(b) - im(a) * re(b);
 }
 
 float ccrossf(cmplxf a, cmplxf b) {
-	return crealf(a)*cimagf(b) - cimagf(a)*crealf(b);
+	return re(a) * im(b) - im(a) * re(b);
+}
+
+cmplx csort(cmplx z) {
+	double a = re(z);
+	double b = im(z);
+	return b > a ? CMPLX(a, b) : CMPLX(b, a);
+}
+
+cmplxf csortf(cmplxf z) {
+	float a = re(z);
+	float b = im(z);
+	return b > a ? CMPLXF(a, b) : CMPLXF(b, a);
 }
 
 double psin(double x) {
@@ -200,20 +205,6 @@ uintmax_t umin(uintmax_t a, uintmax_t b) {
 
 uintmax_t umax(uintmax_t a, uintmax_t b) {
 	return (a > b) ? a : b;
-}
-
-double clamp(double f, double lower, double upper) {
-	assert(lower <= upper);
-
-	if(f < lower) {
-		return lower;
-	}
-
-	if(f > upper) {
-		return upper;
-	}
-
-	return f;
 }
 
 float clampf(float f, float lower, float upper) {
@@ -278,14 +269,6 @@ double triangle(double x) {
 	return 2 * fabs(sawtooth(x)) - 1;
 }
 
-double logistic(double x) {
-	return 1.0 / (1.0 + exp(-x));
-}
-
-float flogistic(float x) {
-	return 1.0f / (1.0f + expf(-x));
-}
-
 uint32_t topow2_u32(uint32_t x) {
 	x -= 1;
 	x |= (x >> 1);
@@ -307,20 +290,8 @@ uint64_t topow2_u64(uint64_t x) {
 	return x + 1;
 }
 
-float ftopow2(float x) {
-	// NOTE: obviously this isn't the smallest possible power of two, but for our purposes, it could as well be.
-	float y = 0.0625;
-	while(y < x) y *= 2;
-	return y;
-}
-
 float smooth(float x) {
 	return 1.0 - (0.5 * cos(M_PI * x) + 0.5);
-}
-
-float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) {
-	x = (x - old_min) / (old_max - old_min);
-	return new_min + (new_max - new_min) * smooth(x);
 }
 
 double circle_angle(double index, double max_elements) {
@@ -333,31 +304,6 @@ cmplx circle_dir(double index, double max_elements) {
 
 cmplx circle_dir_ofs(double index, double max_elements, double ofs) {
 	return cdir(circle_angle(index, max_elements) + ofs);
-}
-
-float normpdf(float x, float sigma) {
-    return 0.39894 * exp(-0.5 * pow(x, 2) / pow(sigma, 2)) / sigma;
-}
-
-void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
-	assert(size & 1);
-
-	double sum = 0.0;
-	size_t halfsize = size / 2;
-
-	kernel[halfsize] = normpdf(0, sigma);
-	sum += kernel[halfsize];
-
-	for(size_t i = 1; i <= halfsize; ++i) {
-		float k = normpdf(i, sigma);
-		kernel[halfsize + i] = kernel[halfsize - i] = k;
-		sum += k * 2;
-
-	}
-
-	for(size_t i = 0; i < size; ++i) {
-		kernel[i] /= sum;
-	}
 }
 
 static const uint64_t upow10_table[] = {
@@ -464,7 +410,7 @@ void udiv_128_64(int128_bits_t divident, uint64_t divisor, uint64_t *out_quotien
 
 INLINE attr_unused
 void umul_128_64(uint64_t multiplicant, uint64_t multiplier, int128_bits_t *result) {
-#if defined(__GNUC__) && (defined(__x86_64) || defined(__x86_64__))
+#if defined(__x86_64) || defined(__x86_64__)
     __asm__ (
         "mulq %3"
         : "=a,a" (result->lo),   "=d,d" (result->hi)

@@ -2,17 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-#include "../hina.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 // Pattern contributed by raz, originally written for danmakufu
 // The port is almost direct, and a bit rough
@@ -164,7 +158,7 @@ static void random_move(Boss *boss) {
 
 DEFINE_EXTERN_TASK(stage2_boss_nonspell_3) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + 100.0*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	real dir_sign = rng_sign();

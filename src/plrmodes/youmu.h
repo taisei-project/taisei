@@ -2,19 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
+#include "move.h"
 #include "plrmodes.h"
-#include "youmu_a.h"
-#include "youmu_b.h"
-#include "dialog/youmu.h"
+#include "renderer/api.h"
 
 extern PlayerCharacter character_youmu;
+extern PlayerMode plrmode_youmu_a;
+extern PlayerMode plrmode_youmu_b;
 
 typedef struct YoumuBombBGData {
 	Framebuffer *buffer;

@@ -2,16 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 TASK(spawn_bugs, { BoxedBoss boss; BoxedProjectileArray *bugs; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
@@ -91,7 +86,7 @@ DEFINE_EXTERN_TASK(stage2_midboss_nonspell_1) {
 	STAGE_BOOKMARK(non1);
 
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100.0*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	DECLARE_ENT_ARRAY(Projectile, bugs, 512);

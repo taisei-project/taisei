@@ -1,34 +1,41 @@
 
-if install_docs
-    rst2html_variants = []
-
-    # This is *completely* ridiculous, but apparently this thing has THAT many faces.
-    basenames = ['rst2html5', 'rst2html', 'rst2html4']
-    suffixes = ['', '-3', '3', '-docutils']
-
-    foreach basename : basenames
-        foreach suffix : suffixes
-            variant = '@0@@1@'.format(basename, suffix)
-            rst2html_variants += [variant, '@0@.py'.format(variant)]
-        endforeach
-    endforeach
-
-    rst2html5 = find_program(
-        rst2html_variants,
-        required : false
+if angle_enabled
+    bindist_deps += custom_target('LICENSE.ANGLE',
+        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
+        input : 'LICENSE.ANGLE',
+        output : 'LICENSE.txt',
+        install : true,
+        install_dir : angle_install_path,
+        install_tag : 'license',
     )
+endif
 
-    if not rst2html5.found()
-        error('rst2html5 from docutils is required to build documentation. Please install it, or disable the `docs` option if you don\'t want it.')
-    endif
+rst2html_variants = []
 
+# This is *completely* ridiculous, but apparently this thing has THAT many faces.
+basenames = ['rst2html5', 'rst2html', 'rst2html4']
+suffixes = ['', '-3', '3', '-docutils']
+
+foreach basename : basenames
+    foreach suffix : suffixes
+        variant = '@0@@1@'.format(basename, suffix)
+        rst2html_variants += [variant, '@0@.py'.format(variant)]
+    endforeach
+endforeach
+
+rst2html5 = find_program(
+    rst2html_variants,
+    required : get_option('docs')
+)
+
+if rst2html5.found()
     rst_to_html = generator(rst2html5,
         arguments : [
             '--no-datestamp',
             '--no-source-link',
             '--smart-quotes=yes',
             '--no-compact-lists',
-            '--stylesheet-path=minimal.css,plain.css,@0@/doc/taisei.css'.format(meson.source_root()),
+            '--stylesheet-path=minimal.css,plain.css,@0@/doc/taisei.css'.format(meson.project_source_root()),
             '@INPUT@',
             '@OUTPUT@',
         ],
@@ -52,7 +59,8 @@ if install_docs
             input : f,
             output : f,
             install : true,
-            install_dir : doc_path
+            install_dir : doc_path,
+            install_tag : 'doc',
         )
     endforeach
 
@@ -64,17 +72,8 @@ if install_docs
             output : name,
             install : true,
             install_dir : doc_path,
+            install_tag : 'doc',
             depend_files : files('taisei.css')
         )
     endforeach
-
-    if angle_enabled
-        bindist_deps += custom_target('LICENSE.ANGLE',
-            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-            input : 'LICENSE.ANGLE',
-            output : 'LICENSE.txt',
-            install : true,
-            install_dir : angle_install_path
-        )
-    endif
 endif

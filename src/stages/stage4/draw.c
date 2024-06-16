@@ -2,16 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "draw.h"
-#include "stageutils.h"
+
 #include "global.h"
+#include "stageutils.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 
 #define LIGHT_OFS    { 2.7f,  4.86f, 0.3f }
 #define CORRIDOR_POS { 0.0f, 25.0f, 3.0f }
@@ -27,37 +27,25 @@ static bool stage4_fog(Framebuffer *fb) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 
-	// NOTE: this is applied in linear HDR space, before tonemapping
-
 	Color c = *RGBA(0.05, 0.0, 0.01, 1.0);
 
-	r_shader("zbuf_fog");
+	r_shader("zbuf_fog_tonemap");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4_rgba("fog_color", &c);
 	r_uniform_float("start", 0.4);
 	r_uniform_float("end", 1);
 	r_uniform_float("exponent", 20.0);
 	r_uniform_float("curvature", 0);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-
-	r_state_pop();
-
-	return true;
-}
-
-static bool stage4_tonemap(Framebuffer *fb) {
-	r_state_push();
-	r_blend(BLEND_NONE);
-	r_shader("tonemap");
 	r_uniform_vec3("exposure", 1, 1, 1);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+
 	r_state_pop();
 
 	return true;
 }
 
 static bool should_draw_water(void) {
-	return stage_3d_context.cam.pos[1] < 0 && config_get_int(CONFIG_POSTPROCESS) > 1;
+	return stage_3d_context.cam.pos[1] < 0;
 }
 
 static bool stage4_water(Framebuffer *fb) {
@@ -65,7 +53,9 @@ static bool stage4_water(Framebuffer *fb) {
 		return false;
 	}
 
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	// TODO: SSR-less version for postprocess < 2
+
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_mat_proj_push_perspective(stage_3d_context.cam.fovy, stage_3d_context.cam.aspect, stage_3d_context.cam.near, stage_3d_context.cam.far);
 	r_state_push();
 	r_mat_mv_push();
@@ -80,6 +70,7 @@ static bool stage4_water(Framebuffer *fb) {
 	r_uniform_float("time", global.frames * 0.002);
 	r_uniform_vec2("wave_offset", -global.frames * 0.0005, 0);
 	r_uniform_float("wave_height", 0.005);
+	r_uniform_sampler("water_noisetex", "fractal_noise");
 	r_color4(0.8, 0.9, 1.0, 1);
 	r_mat_tex_push();
 	r_mat_tex_scale(3, 3, 3);
@@ -109,7 +100,7 @@ static bool stage4_water_composite(Framebuffer *reflections) {
 	// exempt from the fog effect, which is not 100% correct, but the error is not
 	// noticeable with our camera and fog settings.
 
-	// Perhaps a more delcarative post-processing system would be nice, so that we
+	// Perhaps a more declarative post-processing system would be nice, so that we
 	// could specify which passes consume and/or update depth, and have the depth
 	// buffer copied automatically when needed.
 
@@ -163,9 +154,9 @@ static void torchlight(float t, PointLight3D *light) {
 	float r = powf(psinf(2*t+o0), 2)    + powf(pcosf(4.43*t+o1), 4) + powf(psinf(5*t+o2),  21);
 	float g = powf(psinf(1.65*t+o3), 2) + powf(pcosf(5.21*t+o4), 3) + powf(psinf(-3*t+o5), 12);
 
-	r = fmaxf(r, g);
-	r = powf(tanh(r), 5);
-	g = powf(tanh(g), 5);
+	r = max(r, g);
+	r = powf(tanhf(r), 5);
+	g = powf(tanhf(g), 5);
 
 	vec3 c;
 	vec3 rg = {
@@ -269,7 +260,7 @@ static void stage4_flames_draw(vec3 pos) {
 	uint imax = 256;
 	uint instances = lerpf(imin, imax, lod * lod * lod * lod);
 
-	float al = fminf(1.0f, 64.0f / instances);
+	float al = min(1.0f, 64.0f / instances);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_disable(RCAP_DEPTH_WRITE);
@@ -329,7 +320,7 @@ void stage4_draw(void) {
 }
 
 void stage4_drawsys_init(void) {
-	stage4_draw_data = calloc(1, sizeof(*stage4_draw_data));
+	stage4_draw_data = ALLOC(typeof(*stage4_draw_data));
 	stage3d_init(&stage_3d_context, 16);
 
 	pbr_load_model(&stage4_draw_data->models.corridor, "stage4/corridor", "stage4/corridor");
@@ -345,7 +336,7 @@ void stage4_drawsys_init(void) {
 
 void stage4_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage4_draw_data);
+	mem_free(stage4_draw_data);
 	stage4_draw_data = NULL;
 }
 
@@ -353,6 +344,5 @@ ShaderRule stage4_bg_effects[] = {
 	stage4_water,
 	stage4_water_composite,
 	stage4_fog,
-	stage4_tonemap,
 	NULL,
 };

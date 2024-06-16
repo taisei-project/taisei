@@ -2,18 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(snowburst, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
@@ -96,6 +89,7 @@ TASK(spiralshot, {
 			.pos = pos + dist * cdir(angle),
 			.color = RGB(0.3, 0.3, 0.8),
 			.angle = angle + M_PI,
+			.flags = PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 		));
 
 		WAIT(interval);
@@ -106,6 +100,7 @@ TASK(spiralshot, {
 	play_sfx("redirect");
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		spawn_projectile_highlight_effect(p);
+		p->flags &= ~PFLAG_NOMOVE;
 		p->move = move_linear(cdir(p->angle) * ARGS.bullet_speed);
 	});
 	ENT_ARRAY_CLEAR(&projs);
@@ -113,7 +108,7 @@ TASK(spiralshot, {
 
 DEFINE_EXTERN_TASK(stage1_boss_nonspell_2) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + 100.0*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	for(;;) {

@@ -2,17 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-
 #include "events.h"
 #include "config.h"
+
+#include <SDL.h>
 
 typedef enum GamepadAxisDigitalValue {
 	AXISVAL_LEFT  = -1,
@@ -103,6 +103,7 @@ enum {
 
 void gamepad_init(void);
 void gamepad_shutdown(void);
+bool gamepad_initialized(void);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 int gamepad_device_count(void);
@@ -130,10 +131,13 @@ SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
 
 int gamepad_axis_value(GamepadAxis paxis);
 int gamepad_player_axis_value(GamepadPlrAxis paxis);
+void gamepad_get_player_analog_input(int *xaxis, int *yaxis);
 
 double gamepad_normalize_axis_value(int val);
 int gamepad_denormalize_axis_value(double val);
 
+double gamepad_get_normalized_deadzone(void);
+double gamepad_get_normalized_maxzone(void);
+
 #define GAMEPAD_AXIS_MAX_VALUE 32767
 #define GAMEPAD_AXIS_MIN_VALUE -32768
-#define AXISVAL sign

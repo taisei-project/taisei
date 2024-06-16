@@ -2,15 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "pixmap.h"
+
 #include "fileformats/fileformats.h"
+#include "log.h"
 #include "util.h"
+#include "util/io.h"
+#include "vfs/public.h"
 
 static PixmapFileFormatHandler *fileformat_handlers[] = {
 	[PIXMAP_FILEFORMAT_INTERNAL] = &pixmap_fileformat_internal,
@@ -35,7 +37,7 @@ void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, 
 		*out_bufsize = s;
 	}
 
-	return calloc(1, s);
+	return mem_alloc(s);
 }
 
 void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) {

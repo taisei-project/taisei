@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "debug.h"
-#include "util.h"
+
 #include "../api.h"
+#include "util/env.h"
 
 #ifndef STATIC_GLES3
 
@@ -113,7 +112,7 @@ void glcommon_debug_enable(void) {
 #endif
 
 bool glcommon_debug_requested(void) {
-	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
+	return env_get("TAISEI_GL_DEBUG", false);
 }
 
 void glcommon_set_debug_label_local(char *label_storage, const char *kind_name, GLuint gl_handle, const char *label) {

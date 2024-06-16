@@ -2,14 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "texture.h"
-#include "vtable.h"
+
 #include "../api.h"
 
 #include "util.h"
@@ -37,7 +35,7 @@
 
 #define XFER_COMPRESSED(comp) { GL_NONE, GL_NONE, PIXMAP_FORMAT_##comp }
 
-static DYNAMIC_ARRAY(GLTextureFormatInfo) g_formats;
+static GLTextureFormatInfoArray g_formats;
 
 attr_unused
 static void dump_tex_flags(StringBuffer *buf, GLTextureFormatFlags flags) {
@@ -107,9 +105,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 #ifndef STATIC_GLES3
 	if(!glext.internalformat_query2) {
 #endif
-		GLTextureFormatInfo *entry = dynarray_append(&g_formats);
-		*entry = *fmt;
-		return entry;
+		return dynarray_append(&g_formats, *fmt);
 #ifndef STATIC_GLES3
 	}
 
@@ -134,8 +130,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 	GLint64 blendable = query_gl_format(ifmt, GL_FRAMEBUFFER_BLEND);
 	GLint64 encoding = query_gl_format(ifmt, GL_COLOR_ENCODING);
 
-	GLTextureFormatInfo *entry = dynarray_append(&g_formats);
-	*entry = *fmt;
+	GLTextureFormatInfo *entry = dynarray_append(&g_formats, *fmt);
 
 	entry->flags &= ~(
 		GLTEX_COLOR_RENDERABLE |
@@ -659,4 +654,8 @@ GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg
 	)
 
 	return best;
+}
+
+const GLTextureFormatInfoArray *glcommon_get_texture_formats(void) {
+	return &g_formats;
 }

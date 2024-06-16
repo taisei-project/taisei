@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -49,7 +49,10 @@ typedef struct GLTextureFormatMatchConfig {
 	} flags;
 } GLTextureFormatMatchConfig;
 
+typedef DYNAMIC_ARRAY(GLTextureFormatInfo) GLTextureFormatInfoArray;
+
 void glcommon_init_texture_formats(void);
 void glcommon_free_texture_formats(void);
+const GLTextureFormatInfoArray *glcommon_get_texture_formats(void);
 
 GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg);

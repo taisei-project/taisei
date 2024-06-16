@@ -2,15 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "dialog.h"
+
 #include "global.h"
 #include "portrait.h"
+#include "resource/font.h"
 
 void dialog_init(Dialog *d) {
 	memset(d, 0, sizeof(*d));
@@ -274,9 +274,6 @@ void dialog_draw(Dialog *dialog) {
 		Sprite *portrait = &a->composite;
 		assume(portrait->tex != NULL);
 
-		float portrait_w = sprite_padded_width(portrait);
-		float portrait_h = sprite_padded_height(portrait);
-
 		r_mat_mv_push();
 
 		if(a->side == DIALOG_SIDE_LEFT) {
@@ -298,14 +295,20 @@ void dialog_draw(Dialog *dialog) {
 
 		color_mul_scalar(&clr, a->opacity);
 
-		r_flush_sprites();
-		r_draw_sprite(&(SpriteParams) {
+		SpriteParams sp = {
 			.blend = BLEND_PREMUL_ALPHA,
 			.color = &clr,
-			.pos.x = (dialog_width - portrait_w) / 2 + 32 + a->offset.x,
-			.pos.y = VIEWPORT_H - portrait_h / 2 + a->offset.y,
+			.pos.x = (dialog_width - portrait->w) / 2 + 32 + a->offset.x,
+			.pos.y = VIEWPORT_H - portrait->h / 2 + a->offset.y,
 			.sprite_ptr = portrait,
-		});
+		};
+
+		// r_flush_sprites();
+		r_draw_sprite(&sp);
+
+		if(a->draw_dynamic_overlay) {
+			a->draw_dynamic_overlay(&sp);
+		}
 
 		r_mat_mv_pop();
 	}
@@ -389,6 +392,6 @@ bool dialog_is_active(Dialog *d) {
 	return d && d->state != DIALOG_STATE_FADEOUT;
 }
 
-void dialog_preload(void) {
-	preload_resource(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
+void dialog_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_dialog", NULL);
 }

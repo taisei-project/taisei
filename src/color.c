@@ -2,13 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "color.h"
+#include "util/stringops.h"
 
 #define COLOR_OP(c1, op, c2) do { \
 	(c1)->r = (c1)->r op (c2)->r; \
@@ -145,8 +144,8 @@ void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l) {
 	float g = clamp(c->g, 0, 1);
 	float b = clamp(c->b, 0, 1);
 
-	float maxv = fmax(fmax(r, g), b);
-	float minv = fmin(fmin(r, g), b);
+	float maxv = max(max(r, g), b);
+	float minv = min(min(r, g), b);
 	float h = 0, s = 0, d = maxv - minv, l = (maxv + minv) / 2;
 
 	if(maxv != minv) {
@@ -186,7 +185,7 @@ bool color_equals(const Color *clr, const Color *clr2) {
 	);
 }
 
-char* color_str(const Color *clr) {
+char *color_str(const Color *clr) {
 	return strfmt(
 		"RGBA(%f, %f, %f, %f) at %p",
 		clr->r,

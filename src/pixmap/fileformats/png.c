@@ -2,14 +2,13 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "fileformats.h"
-#include "util.h"
+
+#include "log.h"
 #include "util/pngcruft.h"
 
 static const uint8_t png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
@@ -135,7 +134,7 @@ done:
 
 	if(error) {
 		log_error("Failed to load image: %s", error);
-		free(pixmap->data.untyped);
+		mem_free(pixmap->data.untyped);
 		pixmap->data.untyped = NULL;
 		return false;
 	}
@@ -272,7 +271,7 @@ done:
 	}
 
 	if(px.data.untyped != src_pixmap->data.untyped) {
-		free(px.data.untyped);
+		mem_free(px.data.untyped);
 	}
 
 	if(png != NULL) {

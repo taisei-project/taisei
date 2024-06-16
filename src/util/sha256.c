@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "sha256.h"
 #include "util/stringops.h"
@@ -120,13 +118,13 @@ static void sha256_init(SHA256State *ctx)
 }
 
 SHA256State *sha256_new(void) {
-	SHA256State *ctx = calloc(1, sizeof(*ctx));
+	auto ctx = ALLOC(SHA256State);
 	sha256_init(ctx);
 	return ctx;
 }
 
 void sha256_free(SHA256State *ctx) {
-	free(ctx);
+	mem_free(ctx);
 }
 
 void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len) {

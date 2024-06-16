@@ -2,17 +2,19 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
+#include "lang_glsl.h"
 #include "shaderlib.h"
+
+#include "log.h"
 #include "rwops/rwops_autobuf.h"
+#include "util/io.h"
+#include "util/stringops.h"
 #include "vfs/pathutil.h"
 #include "vfs/public.h"
-#include "util.h"
 
 enum {
 	GLSL_INCLUDE_DEPTH = 42,
@@ -285,19 +287,19 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 	pstate.src = out;
 	pstate.options = options;
 	pstate.linebuf_size = 128;
-	pstate.linebuf = calloc(1, pstate.linebuf_size);
+	pstate.linebuf = mem_alloc(pstate.linebuf_size);
 
 	GLSLFileParseState fstate = { 0 };
 	fstate.global = &pstate;
 	fstate.path = path;
 
 	bool result = glsl_process_file(&fstate);
-	free(pstate.linebuf);
+	mem_free(pstate.linebuf);
 
 	if(result) {
 		SDL_WriteU8(out_buf, 0);
 		out->content_size = strlen(bufdata_ptr) + 1;
-		out->content = malloc(out->content_size);
+		out->content = mem_alloc(out->content_size);
 		memcpy(out->content, bufdata_ptr, out->content_size);
 	}
 
@@ -373,10 +375,10 @@ void glsl_free_source(ShaderSource *src) {
 	ShaderSourceMetaGLSL *m = &src->meta.glsl;
 
 	for(uint i = 0; i < m->num_attributes; ++i) {
-		free(m->attributes[i].name);
+		mem_free(m->attributes[i].name);
 	}
 
-	free(m->attributes);
+	mem_free(m->attributes);
 	m->attributes = NULL;
 }
 

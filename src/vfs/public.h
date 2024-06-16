@@ -2,20 +2,21 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include "syspath_public.h"  // IWYU pragma: export
+#include "union_public.h"  // IWYU pragma: export
+#include "zipfile_public.h"  // IWYU pragma: export
+#include "readonly_wrapper_public.h"  // IWYU pragma: export
 
-#include "syspath_public.h"
-#include "union_public.h"
-#include "zipfile_public.h"
-#include "readonly_wrapper_public.h"
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
+
+#include <SDL.h>
 
 typedef struct VFSInfo {
 	uchar error       : 1;
@@ -69,6 +70,7 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);
 void vfs_shutdown(void);
+bool vfs_initialized(void);
 const char* vfs_get_error(void) attr_returns_nonnull;
 
 void vfs_sync(VFSSyncMode mode, CallChain next);

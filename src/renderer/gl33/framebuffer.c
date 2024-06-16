@@ -2,17 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "framebuffer.h"
-#include "gl33.h"
-#include "../glcommon/debug.h"
 
-static GLuint r_attachment_to_gl_attachment[] = {
+#include "../glcommon/debug.h"
+#include "gl33.h"
+#include "texture.h"
+
+GLuint r_attachment_to_gl_attachment[] = {
 	[FRAMEBUFFER_ATTACH_DEPTH] = GL_DEPTH_ATTACHMENT,
 	[FRAMEBUFFER_ATTACH_COLOR0] = GL_COLOR_ATTACHMENT0,
 	[FRAMEBUFFER_ATTACH_COLOR1] = GL_COLOR_ATTACHMENT1,
@@ -23,7 +23,7 @@ static GLuint r_attachment_to_gl_attachment[] = {
 static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == FRAMEBUFFER_MAX_ATTACHMENTS, "");
 
 Framebuffer *gl33_framebuffer_create(void) {
-	Framebuffer *fb = calloc(1, sizeof(Framebuffer));
+	auto fb = ALLOC(Framebuffer);
 	glGenFramebuffers(1, &fb->gl_fbo);
 	snprintf(fb->debug_label, sizeof(fb->debug_label), "FBO #%i", fb->gl_fbo);
 
@@ -74,7 +74,7 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 	framebuffer->attachment_mipmaps[attachment] = mipmap;
 
 	// need to update draw buffers
-	framebuffer->draw_buffers_dirty = false;
+	framebuffer->draw_buffers_dirty = true;
 
 	IF_DEBUG(if(tex) {
 		log_debug("%s %s = %s (%ux%u mip %u)", framebuffer->debug_label, attachment_str(attachment), tex->debug_label, tex->params.width, tex->params.height, mipmap);
@@ -117,7 +117,7 @@ void gl33_framebuffer_outputs(
 void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
 	gl33_framebuffer_deleted(framebuffer);
 	glDeleteFramebuffers(1, &framebuffer->gl_fbo);
-	free(framebuffer);
+	mem_free(framebuffer);
 }
 
 void gl33_framebuffer_taint(Framebuffer *framebuffer) {
@@ -162,17 +162,29 @@ const char *gl33_framebuffer_get_debug_label(Framebuffer* fb) {
 	return fb->debug_label;
 }
 
-void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) {
+static GLuint buffer_flags_to_gl(BufferKindFlags flags) {
 	GLuint glflags = 0;
 
-	if(flags & CLEAR_COLOR) {
+	if(flags & BUFFER_COLOR) {
 		glflags |= GL_COLOR_BUFFER_BIT;
+	}
+
+	if(flags & BUFFER_DEPTH) {
+		glflags |= GL_DEPTH_BUFFER_BIT;
+	}
+
+	return glflags;
+}
+
+void gl33_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval) {
+	GLuint glflags = buffer_flags_to_gl(flags);
+
+	if(flags & BUFFER_COLOR) {
 		assert(colorval != NULL);
 		gl33_set_clear_color(colorval);
 	}
 
-	if(flags & CLEAR_DEPTH) {
-		glflags |= GL_DEPTH_BUFFER_BIT;
+	if(flags & BUFFER_DEPTH) {
 		gl33_set_clear_depth(depthval);
 	}
 
@@ -183,6 +195,27 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, co
 	gl33_sync_framebuffer();
 	gl33_sync_scissor();
 	glClear(glflags);
+	r_framebuffer(fb_saved);
+}
+
+void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
+	GLuint glflags = buffer_flags_to_gl(flags);
+
+	r_flush_sprites();
+
+	IntExtent size = r_framebuffer_get_size(dst);
+	GLint X0 = 0;
+	GLint X1 = size.w;
+	GLint Y0 = 0;
+	GLint Y1 = size.h;
+
+	Framebuffer *fb_saved = r_framebuffer_current();
+	r_framebuffer(dst);
+	gl33_sync_framebuffer();
+	gl33_sync_scissor();
+	// TODO track this?
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->gl_fbo);
+	glBlitFramebuffer(X0, Y0, X1, Y1, X0, Y0, X1, Y1, glflags, GL_NEAREST);
 	r_framebuffer(fb_saved);
 }
 
@@ -214,4 +247,43 @@ IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
 	}
 
 	return fb_size;
+}
+
+GLTextureFormatInfo *gl33_framebuffer_get_format(
+	Framebuffer *framebuffer, FramebufferAttachment attachment
+) {
+	GLTextureFormatInfo *fmtinfo = NULL;
+
+	if(framebuffer) {
+		FramebufferAttachmentQueryResult aq = gl33_framebuffer_query_attachment(framebuffer, attachment);
+		fmtinfo = NOT_NULL(aq.texture)->fmt_info;
+	} else {
+		assert(attachment == FRAMEBUFFER_ATTACH_NONE);
+
+		GLenum ifmt = GL_RGBA8;  // FIXME how to query this?
+
+		auto formats = glcommon_get_texture_formats();
+		dynarray_foreach_elem(formats, auto fmt, {
+			if(fmt->internal_format == ifmt) {
+				fmtinfo = fmt;
+				break;
+			}
+		});
+	}
+
+	return NOT_NULL(fmtinfo);
+}
+
+void gl33_framebuffer_bind_for_read(
+	Framebuffer *framebuffer, FramebufferAttachment attachment
+) {
+	if(framebuffer) {
+		assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer->gl_fbo);
+		glReadBuffer(r_attachment_to_gl_attachment[attachment]);
+	} else {
+		assert(attachment == FRAMEBUFFER_ATTACH_NONE);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glReadBuffer(GL_BACK);
+	}
 }

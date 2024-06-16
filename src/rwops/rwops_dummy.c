@@ -2,14 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "rwops_dummy.h"
-#include "util.h"
 
 #define DUMMY_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
 #define DUMMY_AUTOCLOSE(rw) ((bool)((rw)->hidden.unknown.data2))

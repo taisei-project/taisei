@@ -19,10 +19,10 @@ void main(void) {
 	float t = s.y;
 
 	float bFactor = smoothstep( 0, 6, d      );
-	float hFactor = smoothstep( 2, 7, d + 0.8);
-	float gFactor = smoothstep(-min(4, laser_width), 8, d + 2);
+	float hFactor = smoothstep( 2, 7, d + 4 * clamp(1 - laser_width * 0.06, 0, 1));
+	float gFactor = smoothstep(-min(4, laser_width), 8, d + 3);
 
-	hFactor = hFactor * hFactor;
+	hFactor = hFactor * clamp(sqrt(d * 3), 0, 1);
 	gFactor = gFactor * gFactor;
 
 	vec3 color = (bFactor + gFactor) * laser_color + hFactor;

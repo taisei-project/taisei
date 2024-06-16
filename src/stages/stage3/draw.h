@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "util/fbpair.h"
-#include "stagedraw.h"
+#include "stageinfo.h"
 #include "stageutils.h"
 
 typedef struct Stage3DrawData {
@@ -20,6 +19,18 @@ typedef struct Stage3DrawData {
 		PBRModel rocks;
 		PBRModel trees;
 	} models;
+
+	Texture *envmap;
+
+	vec3 environment_color;
+	vec3 ambient_color;
+	vec4 fog_color;
+
+	float boss_light_alpha;
+	PointLight3D boss_light;
+
+	float swing_strength;
+	float target_swing_strength;
 } Stage3DrawData;
 
 Stage3DrawData *stage3_get_draw_data(void)

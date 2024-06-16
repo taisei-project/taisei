@@ -2,17 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
 #include "transition.h"
-#include "events.h"
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 #include "dynarray.h"
+
+#include <SDL_events.h>
 
 #define IMENU_BLUR 0.05
 
@@ -37,7 +38,8 @@ typedef struct MenuEntry {
 enum MenuFlag {
 	MF_Transient = 1,           // the menu will be automatically closed on selection
 	MF_Abortable = 2,           // the menu can be closed with the escape key
-	MF_AlwaysProcessInput = 4   // the menu will process input when it's fading out
+	MF_AlwaysProcessInput = 4,  // the menu will process input when it's fading out
+	MF_NoDemo = 8,              // demo playback is disabled while in this menu
 };
 
 enum MenuState {

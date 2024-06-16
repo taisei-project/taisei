@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "zipfile.h"
 
@@ -20,10 +18,9 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
 		return false;
 	}
 
-	VFSNode *znode = vfs_alloc();
+	VFSNode *znode;
 
-	if(!vfs_zipfile_init(znode, node)) {
-		vfs_decref(znode);
+	if(!(znode = vfs_zipfile_create(node))) {
 		vfs_decref(node);
 		return false;
 	}

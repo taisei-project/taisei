@@ -2,15 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
+#include "resource/resource.h"
 #include "stage.h"
-#include "util/graphics.h"
+#include "util/fbpair.h"
+#include "util/fbutil.h"
 
 typedef enum StageFBPair {
 	FBPAIR_BG,
@@ -26,9 +28,10 @@ typedef COEVENTS_ARRAY(
 	postprocess_after_overlay
 ) StageDrawEvents;
 
-void stage_draw_pre_init(void);
+void stage_draw_preload(ResourceGroup *rg);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
+bool stage_draw_is_initialized(void);
 
 StageDrawEvents *stage_get_draw_events(void);
 

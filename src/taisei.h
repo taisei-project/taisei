@@ -2,15 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "build_config.h"
-#include "util/compat.h"
+// IWYU pragma: always_keep
+
+#include "build_config.h"             // IWYU pragma: export
+#include "util/compat.h"              // IWYU pragma: export
+#include "util/assert.h"              // IWYU pragma: export
+#include "util/consideredharmful.h"   // IWYU pragma: export
+#include "memory/memory.h"            // IWYU pragma: export
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this

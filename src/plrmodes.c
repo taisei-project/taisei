@@ -2,21 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "player.h"
-#include "global.h"
-#include "stage.h"
-#include "portrait.h"
-
 #include "plrmodes.h"
+
+#include "plrmodes/reimu.h"
 #include "plrmodes/marisa.h"
 #include "plrmodes/youmu.h"
-#include "plrmodes/reimu.h"
+
+#include "portrait.h"
 
 static PlayerCharacter *player_characters[] = {
 	&character_reimu,
@@ -40,14 +36,14 @@ PlayerCharacter *plrchar_get(CharacterID id) {
 	return pc;
 }
 
-void plrchar_preload(PlayerCharacter *pc) {
+void plrchar_preload(PlayerCharacter *pc, ResourceGroup *rg) {
 	const char *name = pc->lower_name;
-	portrait_preload_base_sprite(name, NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite(name, "normal", RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, name, NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, name, "normal", RESF_DEFAULT);
 
 	char buf[64];
 	plrchar_player_anim_name(pc, sizeof(buf), buf);
-	preload_resource(RES_ANIM, buf, RESF_DEFAULT);
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT, buf, NULL);
 }
 
 void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
@@ -132,11 +128,11 @@ PlayerMode *plrmode_parse(const char *name) {
 	return plrmode_find(char_id, shot_id);
 }
 
-void plrmode_preload(PlayerMode *mode) {
+void plrmode_preload(PlayerMode *mode, ResourceGroup *rg) {
 	assert(mode != NULL);
-	plrchar_preload(mode->character);
+	plrchar_preload(mode->character, rg);
 
 	if(mode->procs.preload) {
-		mode->procs.preload();
+		mode->procs.preload(rg);
 	}
 }

@@ -2,15 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "fbpair.h"
-#include "global.h"
-#include "util.h"
 
 static void fbpair_destroy_fb(Framebuffer *fb) {
 	fbutil_destroy_attachments(fb);
@@ -50,8 +46,8 @@ void fbpair_swap(FBPair *pair) {
 }
 
 static void fbpair_clear(FBPair *pair) {
-	r_framebuffer_clear(pair->front, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-	r_framebuffer_clear(pair->back, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(pair->front, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(pair->back, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 }
 
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) {

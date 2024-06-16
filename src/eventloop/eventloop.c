@@ -2,21 +2,23 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
+#include "eventloop.h"
 #include "eventloop_private.h"
-#include "util.h"
+
 #include "global.h"
+#include "thread.h"
+#include "util.h"
+#include "vfs/public.h"
 #include "video.h"
 
 struct evloop_s evloop;
 
 void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr < evloop.stack + EVLOOP_STACK_SIZE - 1);
 
 	LoopFrame *frame;
@@ -33,10 +35,12 @@ void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc 
 	frame->on_leave = on_leave;
 	frame->frametime = HRTIME_RESOLUTION / target_fps;
 	frame->prev_logic_action = LFRAME_WAIT;
+
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 }
 
 void eventloop_leave(void) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr != NULL);
 
 	LoopFrame *frame = evloop.stack_ptr;
@@ -113,7 +117,7 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 
 RenderFrameAction run_render_frame(LoopFrame *frame) {
 	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	RenderFrameAction a = frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
 

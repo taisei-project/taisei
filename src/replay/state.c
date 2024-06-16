@@ -2,17 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "state.h"
+#include "log.h"
 #include "struct.h"
 #include "eventcodes.h"
-
-#include "util.h"
 
 void replay_state_init_play(ReplayState *rst, Replay *rpy, ReplayStage *rstage) {
 	memset(rst, 0, sizeof(*rst));
@@ -21,6 +18,7 @@ void replay_state_init_play(ReplayState *rst, Replay *rpy, ReplayStage *rstage) 
 	rst->mode = REPLAY_PLAY;
 	rst->play.desync_frame = -1;
 	rst->play.desync_check_frame = -1;
+	rst->play.skip_frames = rstage->skip_frames;
 }
 
 void replay_state_init_record(ReplayState *rst, Replay *rpy) {
@@ -90,4 +88,8 @@ void replay_state_play_advance(ReplayState *rst, int frame, ReplayEventFunc even
 	}
 
 	rst->play.pos = i;
+
+	if(rst->play.skip_frames > 0) {
+		--rst->play.skip_frames;
+	}
 }

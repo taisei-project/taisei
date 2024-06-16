@@ -3,10 +3,13 @@ on:
   push:
     branches:
       - master
+      - staging
+      - staging/*
       - v[0-9].[0-9]**
     paths:
       - "**.c"
       - "**.h"
+      - "**.m"
       - "**.yml"
       - "**.yaml"
       - "**.build"
@@ -16,6 +19,7 @@ on:
     paths:
       - "**.c"
       - "**.h"
+      - "**.m"
       - "**.yml"
       - "**.yaml"
       - "**.build"
@@ -23,8 +27,8 @@ on:
       - "**.wrap"
 
 env:
-  MESON_VERSION: '0.56.2'
-  EM_VERSION: '3.1.5'
+  MESON_VERSION: '0.63.3'
+  EM_VERSION: '3.1.51'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -36,14 +40,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -62,6 +66,7 @@ jobs:
         libwebp-dev
         libfreetype6-dev
         libzstd-dev
+        libssl-dev
 
         pip install
         meson==${{ env.MESON_VERSION }}
@@ -71,6 +76,8 @@ jobs:
     - name: Configure
       run: >
         meson setup build/
+        --native-file misc/ci/common-options.ini
+        --native-file misc/ci/nofallback.ini
         --native-file misc/ci/linux-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -87,7 +94,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_linux_fail_log
         path: build/meson-logs/meson-log.txt
@@ -96,17 +103,17 @@ jobs:
   macos-test-build:
     name: macOS (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -126,11 +133,14 @@ jobs:
         pip install
         meson==${{ env.MESON_VERSION }}
         ninja
+        setuptools
         zstandard
 
     - name: Configure
       run: >
         meson setup build/
+        --native-file misc/ci/common-options.ini
+        --native-file misc/ci/nofallback.ini
         --native-file misc/ci/macos-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -147,7 +157,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_macos_fail_log
         path: build/meson-logs/meson-log.txt
@@ -156,36 +166,19 @@ jobs:
   windows-test-build:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
+    runs-on: ubuntu-latest
+    container: taiseiproject/windows-toolkit:20240304 # cross-compiler with mingw
     steps:
-    - name: Install Tools
-      run: >
-        apt update || true
-
-        apt install -y -qq software-properties-common
-
-        add-apt-repository ppa:git-core/ppa -y
-
-        apt install -y -qq
-        python3-docutils
-        python3-pip
-        git
-        nsis
-
-        pip3 install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
     - name: Configure Taisei (Meson)
       run: >
         meson setup build/
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -196,7 +189,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_windows_fail_log
         path: build/meson-logs/meson-log.txt
@@ -208,14 +201,20 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+        fetch-depth: 0
+
+    - name: Fetch Git Tags
+      run: |
+        git config --add safe.directory $(pwd)
+        git fetch --force --tags
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -230,10 +229,11 @@ jobs:
         meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
+        python-gnupg # required as we call into gen-dist.py for Emscripten
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -255,27 +255,78 @@ jobs:
         toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
         EOF
 
-    - name: Configure
+    - name: Configure Standard Version
       run: >
+        scripts/version.py > .VERSION.tmp
+
+        mv .VERSION.tmp .VERSION
+
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
-        --prefix=$(pwd)/build-test
-
-        meson configure
+        --prefix=$(pwd)/taisei-web-test
         -Dbuild.cpp_std=gnu++14
-        build/
 
-    - name: Build
+    - name: Build Standard Version
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         meson compile tar -C build/ --verbose
 
+    - name: Checkout taisei-web-test
+      uses: actions/checkout@v4
+      if: github.ref == 'refs/heads/master'
+      with:
+        repository: taisei-project/taisei-web-test
+        ssh-key: ${{ secrets.WEB_SSH_DEPLOY_KEY }}
+        path: taisei-web-test
+        clean: false
+
+    - name: Prepare taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        rm -v taisei-web-test/data/*
+
+    - name: Install Standard Version to taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        meson install -C build --no-rebuild
+
+    - name: Configure Developer Version
+      if: github.ref == 'refs/heads/master'
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        sed -i "s/^\(taisei_basename = \).*/\1'taisei-dev'/" src/meson.build   # I'm sorry
+        meson setup --reconfigure $(pwd) build/ -Ddeveloper=true
+
+    - name: Build Developer Version
+      if: github.ref == 'refs/heads/master'
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        meson compile -C build/ --verbose
+
+    - name: Install Developer Version to taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        meson install -C build --no-rebuild
+
+    - name: Deploy to taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        TAISEI_VERSION=$(scripts/version.py)
+        cd taisei-web-test
+        git config user.name 'Nitori Kawashiro [bot]'
+        git config user.email 'release@taisei-project.org'
+        git add .
+        git commit -m "Taisei $TAISEI_VERSION"
+        git push
+
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_emscripten_stable_build_log
         path: build/meson-logs/meson-log.txt
@@ -284,11 +335,11 @@ jobs:
   switch-test-build:
     name: Switch (ARM64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20210520
+    runs-on: ubuntu-latest
+    container: taiseiproject/switch-toolkit:20240305
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -297,7 +348,9 @@ jobs:
         switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
 
         meson setup build/
-        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/switch-options.ini
+        --cross-file misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-test
 
     - name: Build
@@ -305,7 +358,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_switch_build_log
         path: build/meson-logs/meson-log.txt

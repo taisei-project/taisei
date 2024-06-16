@@ -3,3 +3,6 @@ ambient_map = stage3/leaves_ambient
 diffuse_map = stage3/leaves_diffuse
 normal_map = stage3/leaves_normal
 roughness_map = stage3/leaves_roughness
+roughness = 1.7
+ao_map = stage3/leaves_ao
+

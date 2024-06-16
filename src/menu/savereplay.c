@@ -2,18 +2,22 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "savereplay.h"
-#include "mainmenu.h"
-#include "global.h"
-#include "replay/struct.h"
-#include "plrmodes.h"
+
 #include "common.h"
+#include "mainmenu.h"
+
+#include "config.h"
+#include "difficulty.h"
+#include "events.h"
+#include "plrmodes.h"
+#include "progress.h"
+#include "replay/struct.h"
+#include "util/graphics.h"
 #include "video.h"
 
 attr_nonnull_all
@@ -43,7 +47,7 @@ static void do_save_replay(Replay *rpy) {
 		rpy->playername = NULL;
 	}
 
-	free(name);
+	mem_free(name);
 }
 
 static void save_rpy(MenuData *menu, void *a) {
@@ -118,13 +122,13 @@ static void update_saverpy_menu(MenuData *m) {
 	});
 }
 
-static MenuData* create_saverpy_menu(Replay *rpy) {
+static MenuData *create_saverpy_menu(Replay *rpy) {
 	MenuData *m = alloc_menu();
 
 	m->input = saverpy_menu_input;
 	m->draw = draw_saverpy_menu;
 	m->logic = update_saverpy_menu;
-	m->flags = MF_Transient;
+	m->flags = MF_Transient | MF_NoDemo;
 
 	add_menu_entry(m, "Yes", save_rpy, rpy);
 	add_menu_entry(m, "No", menu_action_close, NULL);

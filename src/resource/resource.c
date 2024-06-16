@@ -2,21 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "resource.h"
-
-#include "config.h"
-#include "events.h"
-#include "filewatch/filewatch.h"
-#include "menu/mainmenu.h"
-#include "renderer/common/backend.h"
-#include "taskmanager.h"
-#include "video.h"
 
 #include "animation.h"
 #include "bgm.h"
@@ -30,7 +20,21 @@
 #include "sprite.h"
 #include "texture.h"
 
+#include "eventloop/eventloop.h"
+#include "events.h"
+#include "filewatch/filewatch.h"
+#include "taskmanager.h"
+#include "util.h"
+#include "util/env.h"
+
+#define DEBUG_LOAD 0
 #define DEBUG_LOCKS 0
+
+#if DEBUG_LOAD
+	#define LOAD_DBG(fmt, ...) log_debug(fmt, ##__VA_ARGS__)
+#else
+	#define LOAD_DBG(fmt, ...) ((void)0)
+#endif
 
 ResourceHandler *_handlers[] = {
 	[RES_ANIM]              = &animation_res_handler,
@@ -99,13 +103,20 @@ typedef struct WatchedPath {
 	FileWatch *watch;
 } WatchedPath;
 
+typedef struct PurgatoryNode {
+	LIST_INTERFACE(struct PurgatoryNode);
+} PurgatoryNode;
+
 struct InternalResource {
 	Resource res;
 	SDL_mutex *mutex;
 	SDL_cond *cond;
 	InternalResLoadState *load;
 	char *name;
+	PurgatoryNode purgatory_node;
 	ResourceStatus status;
+	SDL_atomic_t refcount;
+	uint32_t generation_id;
 
 	// Reloading works by allocating a temporary InternalResource, attempting to load the resource
 	// into it, and, if succeeded, replacing the original resource with the new one.
@@ -153,8 +164,8 @@ static struct {
 		uchar no_unload : 1;
 		uchar preload_required : 1;
 	} env;
-	SDL_SpinLock ires_freelist_lock;
 	InternalResource *ires_freelist;
+	SDL_SpinLock ires_freelist_lock;
 
 	// Maps FileWatch pointers to sets of resources that are monitoring them.
 	// This needs to be tracked to avoid a brute force search when handling TE_FILEWATCH events.
@@ -166,6 +177,15 @@ static struct {
 
 	// Static data for filewatch event handler
 	FileWatchHandlerData fw_handler_data;
+
+	// Resources with no active refs (refcount == 0) remain in the purgatory until purged.
+	struct {
+		LIST_ANCHOR(PurgatoryNode) souls;
+		int num_souls;
+		SDL_SpinLock lock;
+	} purgatory;
+
+	ResourceGroup default_group;
 } res_gstate;
 
 INLINE ResourceHandler *get_handler(ResourceType type) {
@@ -228,8 +248,87 @@ INLINE void ires_cond_wait(InternalResource *ires) {
 
 #endif  // DEBUG_LOCKS
 
-static void ires_cond_broadcast(InternalResource *ires) {
+INLINE void ires_cond_broadcast(InternalResource *ires) {
 	SDL_CondBroadcast(ires->cond);
+}
+
+INLINE void purgatory_lock(void) {
+	SDL_AtomicLock(&res_gstate.purgatory.lock);
+}
+
+INLINE void purgatory_unlock(void) {
+	SDL_AtomicUnlock(&res_gstate.purgatory.lock);
+}
+
+INLINE InternalResource *ires_from_purgatory_node(PurgatoryNode *n) {
+	return CASTPTR_ASSUME_ALIGNED(
+		(char*)n - offsetof(InternalResource, purgatory_node), InternalResource);
+}
+
+attr_unused
+static bool ires_in_purgatory(InternalResource *ires) {
+	for(PurgatoryNode *n = res_gstate.purgatory.souls.first; n; n = n->next) {
+		if(n == &ires->purgatory_node) {
+			assert(ires_from_purgatory_node(n) == ires);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+INLINE void _unlocked_ires_put_in_purgatory(InternalResource *ires) {
+	assert(!ires_in_purgatory(ires));
+	++res_gstate.purgatory.num_souls;
+	alist_append(&res_gstate.purgatory.souls, &ires->purgatory_node);
+}
+
+INLINE void _unlocked_ires_remove_from_purgatory(InternalResource *ires) {
+	assert(ires_in_purgatory(ires));
+	--res_gstate.purgatory.num_souls;
+	alist_unlink(&res_gstate.purgatory.souls, &ires->purgatory_node);
+}
+
+static bool ires_put_in_purgatory(InternalResource *ires) {
+	bool result;
+	purgatory_lock();
+
+	// Someone incremented refcount before we acquired the lock?
+	if((result = (SDL_AtomicGet(&ires->refcount) == 0))) {
+		_unlocked_ires_put_in_purgatory(ires);
+	}
+
+	purgatory_unlock();
+	return result;
+}
+
+static bool ires_remove_from_purgatory(InternalResource *ires, bool force) {
+	bool result;
+	purgatory_lock();
+
+	// Someone decremented refcount before we acquired the lock?
+	if((result = (force || SDL_AtomicGet(&ires->refcount) > 0))) {
+		_unlocked_ires_remove_from_purgatory(ires);
+	}
+
+	purgatory_unlock();
+	return result;
+}
+
+static int ires_incref(InternalResource *ires) {
+	int prev = SDL_AtomicIncRef(&ires->refcount);
+	if(prev == 0) {
+		ires_remove_from_purgatory(ires, false);
+	}
+	return prev;
+}
+
+static bool ires_decref(InternalResource *ires) {
+	if(SDL_AtomicDecRef(&ires->refcount)) {
+		return ires_put_in_purgatory(ires);
+	}
+
+	return false;
 }
 
 attr_returns_nonnull
@@ -242,12 +341,13 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
 
 	if(ires) {
+		assert(!ires_in_purgatory(ires));
 		ires_lock(ires);
 		ires->reload_buddy = NULL;
 		ires->res.type = rtype;
 		ires_unlock(ires);
 	} else {
-		ires = calloc(1, sizeof(*ires));
+		ires = ALLOC(typeof(*ires));
 		ires->mutex = SDL_CreateMutex();
 		ires->cond = SDL_CreateCond();
 		ires->res.type = rtype;
@@ -272,11 +372,20 @@ static void ires_release(InternalResource *ires) {
 	ires_lock(ires);
 	ires_free_meta(ires);
 
+	assert(SDL_AtomicGet(&ires->refcount) == 0);
+
+	if(!ires->is_transient_reloader) {
+		ires_remove_from_purgatory(ires, true);
+	}
+
+	assert(!ires_in_purgatory(ires));
+
 	ires->res = (Resource) { };
 	ires->name = NULL;
 	ires->status = RES_STATUS_LOADING;
 	ires->is_transient_reloader = false;
 	ires->dependents = (ht_ires_counted_set_t) { };
+	ires->generation_id++;
 
 	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
 	ires->reload_buddy = res_gstate.ires_freelist;
@@ -290,7 +399,7 @@ static void ires_free(InternalResource *ires) {
 	ires_free_meta(ires);
 	SDL_DestroyMutex(ires->mutex);
 	SDL_DestroyCond(ires->cond);
-	free(ires);
+	mem_free(ires);
 }
 
 attr_nonnull_all attr_returns_nonnull
@@ -302,27 +411,56 @@ static InternalResource *ires_get_persistent(InternalResource *ires) {
 	return ires;
 }
 
+attr_unused
+static inline const char *loadstatus_name(LoadStatus status) {
+	switch(status) {
+		#define S(x) case x: return #x;
+		S(LOAD_NONE)
+		S(LOAD_OK)
+		S(LOAD_FAILED)
+		S(LOAD_CONT)
+		S(LOAD_CONT_ON_MAIN)
+		#undef S
+	}
+
+	return "UNKNOWN";
+}
+
+#define lstate_set_status(_st, _status) ({ \
+	auto _a_st = _st; \
+	attr_unused LoadStatus old = _a_st->status; \
+	_a_st->status = _status; \
+	LOAD_DBG("%p load status changed from %s to %s", _a_st->ires, loadstatus_name(old), loadstatus_name(_status)); \
+})
+
+#define lstate_set_ready_to_finalize(_st) ({ \
+	auto _a_st = _st; \
+	assert(!_a_st->ready_to_finalize); \
+	_a_st->ready_to_finalize = true; \
+	LOAD_DBG("%p now ready to finalize", _a_st->ires); \
+})
+
 void res_load_failed(ResourceLoadState *st) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_FAILED;
+	lstate_set_status(ist, LOAD_FAILED);
 }
 
 void res_load_finished(ResourceLoadState *st, void *res) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_OK;
+	lstate_set_status(ist, LOAD_OK);
 	ist->st.opaque = res;
 }
 
 void res_load_continue_on_main(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_CONT_ON_MAIN;
+	lstate_set_status(ist, LOAD_CONT_ON_MAIN);
 	ist->st.opaque = opaque;
 	ist->continuation = callback;
 }
 
 void res_load_continue_after_dependencies(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_CONT;
+	lstate_set_status(ist, LOAD_CONT);
 	ist->st.opaque = opaque;
 	ist->continuation = callback;
 }
@@ -334,7 +472,7 @@ void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *n
 	InternalResource *dep = preload_resource_internal(type, name, st->flags & ~RESF_RELOAD);
 	InternalResource *ires = ist->ires;
 	ires_lock(ires);
-	*dynarray_append(&ires->dependencies) = dep;
+	dynarray_append(&ires->dependencies, dep);
 	ires_make_dependent_one(ires_get_persistent(ires), dep);
 	ires_unlock(ires);
 }
@@ -432,7 +570,7 @@ static void register_watched_path(InternalResource *ires, const char *vfspath, F
 	});
 
 	if(!free_slot) {
-		free_slot = dynarray_append(&ires->watched_paths);
+		free_slot = dynarray_append(&ires->watched_paths, {});
 	}
 
 	free_slot->vfs_path = strdup(vfspath);
@@ -444,7 +582,7 @@ done:
 
 static void cleanup_watched_path(InternalResource *ires, WatchedPath *wp) {
 	if(wp->vfs_path) {
-		free(wp->vfs_path);
+		mem_free(wp->vfs_path);
 		wp->vfs_path = NULL;
 	}
 
@@ -464,7 +602,7 @@ static void refresh_watched_path(InternalResource *ires, WatchedPath *wp) {
 
 	if(syspath != NULL) {
 		wp->watch = filewatch_watch(syspath);
-		free(syspath);
+		mem_free(syspath);
 		associate_ires_watch(ires, wp->watch);
 	} else {
 		wp->watch = NULL;
@@ -490,7 +628,7 @@ static void get_ires_list_for_watch(FileWatch *watch, IResPtrArray *output) {
 
 		for(;iter.has_data; ht_ires_counted_set_iter_next(&iter)) {
 			assert(iter.value > 0);
-			*dynarray_append(output) = iter.key;
+			dynarray_append(output, iter.key);
 		}
 
 		ht_ires_counted_set_iter_end(&iter);
@@ -521,8 +659,7 @@ static void ires_migrate_watched_paths(InternalResource *dst, InternalResource *
 	dst->watched_paths.num_elements = 0;
 
 	dynarray_foreach_elem(&src->watched_paths, WatchedPath *src_wp, {
-		WatchedPath *dst_wp = dynarray_append(&dst->watched_paths);
-		*dst_wp = *src_wp;
+		WatchedPath *dst_wp = dynarray_append(&dst->watched_paths, *src_wp);
 		FileWatch *w = dst_wp->watch;
 
 		associate_ires_watch(dst, w);
@@ -544,6 +681,7 @@ static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource
 	assert(!ires->is_transient_reloader);
 
 	uint32_t refs = ires_counted_set_inc(&dep->dependents, ires);
+	// NOTE: no incref; presume we already own a reference
 
 	ires_unlock(dep);
 	return refs;
@@ -558,6 +696,7 @@ static uint32_t ires_unmake_dependent_one(InternalResource *ires, InternalResour
 	assert(!ires->is_transient_reloader);
 
 	uint32_t refs = ires_counted_set_dec(&dep->dependents, ires);
+	ires_decref(dep);
 
 	ires_unlock(dep);
 	return refs;
@@ -597,7 +736,7 @@ SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mo
 	}
 
 	FileWatch *w = filewatch_watch(syspath);
-	free(syspath);
+	mem_free(syspath);
 
 	if(w == NULL) {
 		return rw;
@@ -616,18 +755,75 @@ INLINE const char *type_name(ResourceType type) {
 	return get_handler(type)->typename;
 }
 
+void res_group_init(ResourceGroup *rg) {
+	*rg = (ResourceGroup) { };
+}
+
+void res_group_release(ResourceGroup *rg) {
+	dynarray_foreach_elem(&rg->refs, void **ref, {
+		InternalResource *ires = *ref;
+		ires_decref(ires);
+	});
+	dynarray_free_data(&rg->refs);
+}
+
+static void res_group_add_ires(ResourceGroup *rg, InternalResource *ires, bool incref) {
+	if(rg == NULL) {
+		rg = &res_gstate.default_group;
+	}
+
+	if(rg == &res_gstate.default_group) {
+		log_debug("Adding %s '%s' to the default group", type_name(ires->res.type), ires->name);
+	}
+
+	if(incref) {
+		ires_incref(ires);
+	}
+
+	dynarray_append(&rg->refs, ires);
+}
+
+static void res_group_preload_one(
+	ResourceGroup *rg,
+	ResourceType type,
+	ResourceFlags flags,
+	const char *name
+) {
+	if(res_gstate.env.no_preload) {
+		return;
+	}
+
+	InternalResource *ires = preload_resource_internal(type, name, flags | RESF_PRELOAD);
+	res_group_add_ires(rg, ires, false);
+}
+
+void res_group_preload(ResourceGroup *rg, ResourceType type, ResourceFlags flags, ...) {
+	va_list args;
+	va_start(args, flags);
+
+	for(const char *name; (name = va_arg(args, const char*));) {
+		res_group_preload_one(rg, type, flags, name);
+	}
+
+	va_end(args);
+}
+
 struct valfunc_arg {
 	ResourceType type;
+	const char *name;
 };
 
-static void *valfunc_begin_load_resource(void* arg) {
-	ResourceType type = ((struct valfunc_arg*)arg)->type;
-	return ires_alloc(type);
+static void *valfunc_begin_load_resource(void *varg) {
+	struct valfunc_arg *arg = varg;
+	auto ires = ires_alloc(arg->type);
+	ires->name = strdup(NOT_NULL(arg->name));
+	ires->refcount.value = 1;
+	return ires;
 }
 
 static bool try_begin_load_resource(ResourceType type, const char *name, hash_t hash, InternalResource **out_ires) {
 	ResourceHandler *handler = get_handler(type);
-	struct valfunc_arg arg = { type };
+	struct valfunc_arg arg = { type, name };
 	return ht_try_set_prehashed(&handler->private.mapping, name, hash, &arg, valfunc_begin_load_resource, (void**)out_ires);
 }
 
@@ -652,9 +848,10 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 	attr_unused bool was_transient = ires->is_transient_reloader;
 	InternalResLoadState *load_state = ires->load;
 
-// 	log_debug("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
+	LOAD_DBG("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
 
 	if(load_state) {
+		LOAD_DBG("Waiting for %s '%s' (pump_only = %i)", type_name(ires->res.type), ires->name, pump_only);
 		assert(ires->status == RES_STATUS_LOADING);
 
 		Task *task = load_state->async_task;
@@ -683,15 +880,15 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 				return RES_STATUS_LOADED;
 			}
 
-			// It's important to refresh load_state here, because the task may have finalized the load.
-			// This may happen if the resource doesn't need to be finalized on the main thread, or if we *are* the main thread.
+			// It's important to refresh load_state here, because the load may have been finalized
+			// while we were waiting for (or executing) the task.
 			load_state = ires->load;
 		}
 
 		if(load_state) {
 			ResourceStatus dep_status = pump_dependencies(load_state);
 
-			if(!pump_only && is_main_thread()) {
+			if(!pump_only && thread_current_is_main()) {
 				InternalResource *persistent = ires_get_persistent(ires);
 
 				if(dep_status == RES_STATUS_LOADING) {
@@ -727,41 +924,36 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 	while(ires->status == RES_STATUS_LOADING && !pump_only) {
 		// If we get to this point, then we're waiting for a resource that's awaiting finalization on the main thread.
 		// If we *are* the main thread, there's no excuse for us to wait; we should've finalized the resource ourselves.
-		assert(!is_main_thread());
+		assert(!thread_current_is_main());
 		ires_cond_wait(ires);
 	}
 
 	ResourceStatus status = ires->status;
 
-	if(status == RES_STATUS_LOADED) {
-		uint32_t missing_flags = (want_flags & ~ires->res.flags) & RESF_PROMOTABLE_FLAGS;
+	if(
+		status == RES_STATUS_LOADED &&
+		(want_flags & RESF_RELOAD) &&
+		ires->reload_buddy &&
+		!ires->is_transient_reloader
+	) {
+		// Wait for reload, if asked to.
 
-		if(missing_flags) {
-			uint32_t new_flags = ires->res.flags | want_flags;
-			log_debug("Flags for %s at %p promoted from 0x%08x to 0x%08x", type_name(ires->res.type), (void*)ires, ires->res.flags, new_flags);
-			ires->res.flags = new_flags;
+		InternalResource *r = ires->reload_buddy;
+		ires_unlock(ires);
+
+		ires_lock(r);
+
+		//
+		if(r->name == ires->name && r->reload_buddy == ires) {
+			assert(r->is_transient_reloader);
+			assert(r->load != NULL);
+			status = pump_or_wait_for_resource_load_nolock(r, want_flags & ~RESF_RELOAD, pump_only);
 		}
 
-		if((want_flags & RESF_RELOAD) && ires->reload_buddy && !ires->is_transient_reloader) {
-			// Wait for reload, if asked to.
+		ires_unlock(r);
 
-			InternalResource *r = ires->reload_buddy;
-			ires_unlock(ires);
-
-			ires_lock(r);
-
-			//
-			if(r->name == ires->name && r->reload_buddy == ires) {
-				assert(r->is_transient_reloader);
-				assert(r->load != NULL);
-				status = pump_or_wait_for_resource_load_nolock(r, want_flags & ~RESF_RELOAD, pump_only);
-			}
-
-			ires_unlock(r);
-
-			// FIXME BRAINDEATH
-			ires_lock(ires);
-		}
+		// FIXME BRAINDEATH
+		ires_lock(ires);
 	}
 
 	return status;
@@ -821,37 +1013,40 @@ static void *load_resource_async_task(void *vdata) {
 	InternalResource *ires = st->ires;
 	assume(st == ires->load);
 
+	LOAD_DBG("BEGIN:\t\tires = %p\t\tst = %p", ires, st);
+
 	ResourceHandler *h = get_ires_handler(ires);
 
-	st->status = LOAD_NONE;
+	lstate_set_status(st, LOAD_NONE);
 	PROTECT_FLAGS(st, h->procs.load(&st->st));
 
 retry:
+	LOAD_DBG("st->status == %s", loadstatus_name(st->status));
 	switch(st->status) {
 		case LOAD_CONT: {
 			ResourceStatus dep_status;
 
-			if(is_main_thread()) {
+			if(thread_current_is_main()) {
 				dep_status = pump_dependencies(st);
 
 				if(dep_status == RES_STATUS_LOADING) {
 					dep_status = wait_for_dependencies(st);
 				}
 
-				st->status = LOAD_NONE;
+				lstate_set_status(st, LOAD_NONE);
 				PROTECT_FLAGS(st, st->continuation(&st->st));
 				goto retry;
 			} else {
 				dep_status = pump_dependencies(st);
 
 				if(dep_status == RES_STATUS_LOADING) {
-					st->status = LOAD_CONT_ON_MAIN;
-					st->ready_to_finalize = true;
+					lstate_set_status(st, LOAD_CONT_ON_MAIN);
+					lstate_set_ready_to_finalize(st);
 					ires_cond_broadcast(ires);
-					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
+					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, (void*)(uintptr_t)ires->generation_id);
 					break;
 				} else {
-					st->status = LOAD_NONE;
+					lstate_set_status(st, LOAD_NONE);
 					PROTECT_FLAGS(st, st->continuation(&st->st));
 					goto retry;
 				}
@@ -861,40 +1056,38 @@ retry:
 		}
 
 		case LOAD_CONT_ON_MAIN:
-			if(pump_dependencies(st) == RES_STATUS_LOADING || !is_main_thread()) {
-				st->ready_to_finalize = true;
+			if(pump_dependencies(st) == RES_STATUS_LOADING || !thread_current_is_main()) {
+				lstate_set_ready_to_finalize(st);
 				ires_cond_broadcast(ires);
-				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
+				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, (void*)(uintptr_t)ires->generation_id);
+				// fun fact: in some rare cases, the main thread manages to finalize the load
+				// before this function even returns.
 				break;
 			}
 		// fallthrough
 		case LOAD_OK:
 		case LOAD_FAILED:
 			ires_lock(ires);
-			st->ready_to_finalize = true;
+			lstate_set_ready_to_finalize(st);
 			load_resource_finish(st);
 			ires_unlock(ires);
-			st = NULL;
 			break;
 
 		default:
 			UNREACHABLE;
 	}
 
-	assume(ires->load == st);
-	return st;
-}
-
-static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
-	return event->type == MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED) && event->user.data1 == vires;
+	LOAD_DBG("  END:\t\tires = %p\t\tst = %p", ires, st);
+	return NULL;
 }
 
 static bool unload_resource(InternalResource *ires) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *tname = handler->typename;
 
+	wait_for_resource_load(ires, RESF_RELOAD);
 	ires_lock(ires);
 
 	assert(!ires->is_transient_reloader);
@@ -903,41 +1096,35 @@ static bool unload_resource(InternalResource *ires) {
 		assert(ires->reload_buddy->reload_buddy == ires);
 	}
 
-	if(ires->dependents.num_elements_occupied > 0) {
-		log_warn(
-			"Not unloading %s '%s' because it still has %i dependents",
-			tname, ires->name, ires->dependents.num_elements_occupied
+	int nrefs = SDL_AtomicGet(&ires->refcount);
+	if(nrefs > 0) {
+		log_debug(
+			"Not unloading %s '%s' because it still has %i references",
+			tname, ires->name, nrefs
 		);
 		ires_unlock(ires);
 		return false;
 	}
 
+	assert(ires->dependents.num_elements_occupied == 0);
+
 	ht_unset(&handler->private.mapping, ires->name);
-	attr_unused ResourceFlags flags = ires->res.flags;
-
-	ires_unlock(ires);
-	if(wait_for_resource_load(ires, RESF_RELOAD) == RES_STATUS_LOADED) {
-		handler->procs.unload(ires->res.data);
-	}
-	ires_lock(ires);
-
-	SDL_PumpEvents();
-	SDL_FilterEvents(filter_asyncload_event, ires);
 
 	ires_unmake_dependent(ires, &ires->dependencies);
 	ires_remove_watched_paths(ires);
 
+	void *loaded_data = ires->res.data;
 	char *name = ires->name;
 	ires_release(ires);
 	ires_unlock(ires);
 
-	log_info(
-		"Unloaded %s '%s' (%s)",
-		tname, name,
-		(flags & RESF_PERMANENT) ? "permanent" : "transient"
-	);
+	if(loaded_data) {
+		handler->procs.unload(loaded_data);
+	}
 
-	free(name);
+	log_info("Unloaded %s '%s'", tname, name);
+
+	mem_free(name);
 
 	return true;
 }
@@ -947,7 +1134,7 @@ static char *get_name_from_path(ResourceHandler *handler, const char *path) {
 		return NULL;
 	}
 
-	return resource_util_basename(handler->subdir, path);
+	return res_util_basename(handler->subdir, path);
 }
 
 static bool should_defer_load(InternalResLoadState *st) {
@@ -956,6 +1143,8 @@ static bool should_defer_load(InternalResLoadState *st) {
 	}
 
 	FrameTimes ft = eventloop_get_frame_times();
+	shrtime_t tnext = ft.start + ft.target;
+	shrtime_t tmin = ft.target / 2;
 
 	if(ft.next != res_gstate.frame_threshold) {
 		res_gstate.frame_threshold = ft.next;
@@ -966,9 +1155,9 @@ static bool should_defer_load(InternalResLoadState *st) {
 		return false;
 	}
 
-	hrtime_t t = time_get();
+	shrtime_t t = time_get();
 
-	if(ft.next < t || ft.next - t < ft.target / 2) {
+	if(tnext - t < tmin) {
 		return true;
 	}
 
@@ -976,12 +1165,14 @@ static bool should_defer_load(InternalResLoadState *st) {
 }
 
 static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	InternalResource *ires = evt->user.data1;
 	InternalResLoadState *st = ires->load;
 
-	if(st == NULL) {
+	LOAD_DBG("%s '%s'  ires=%p  st=%p", type_name(ires->res.type), ires->name, ires, st);
+
+	if(st == NULL || ires->generation_id != (uintptr_t)evt->user.data2) {
 		return true;
 	}
 
@@ -995,7 +1186,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	ResourceStatus dep_status = pump_dependencies(st);
 
 	if(dep_status == RES_STATUS_LOADING) {
-		// log_debug("Deferring %s '%s' because some dependencies are not satisfied", type_name(ires->res.type), st->st.name);
+		LOAD_DBG("Deferring %s '%s' because some dependencies are not satisfied", type_name(ires->res.type), st->st.name);
 
 		// FIXME: Make this less braindead.
 		// This will retry every frame until dependencies are satisfied.
@@ -1039,6 +1230,7 @@ static InternalResLoadState *make_persistent_loadstate(InternalResLoadState *st_
 	assume(st->st.name != NULL);
 	assume(st->st.path != NULL);
 
+	LOAD_DBG("Setting load state for %p (was: %p)", st->ires, st->ires->load);
 	st->ires->load = st;
 	return st;
 }
@@ -1048,10 +1240,9 @@ static void load_resource_async(InternalResLoadState *st_transient) {
 	st->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, st });
 }
 
-attr_nonnull(1, 2)
+attr_nonnull(1)
 static void load_resource(
 	InternalResource *ires,
-	const char *name,
 	ResourceFlags flags,
 	bool async
 ) {
@@ -1066,13 +1257,7 @@ static void load_resource(
 		flags |= RESF_OPTIONAL;
 	}
 
-	if(ires->name == NULL) {
-		ires->name = strdup(name);
-	} else {
-		assume(flags & RESF_RELOAD);
-	}
-
-	name = ires->name;
+	const char *name = NOT_NULL(ires->name);
 	path = handler->procs.find(name);
 
 	if(path) {
@@ -1097,7 +1282,7 @@ static void load_resource(
 	};
 
 	if(ires->status == RES_STATUS_FAILED) {
-		st.ready_to_finalize = true;
+		lstate_set_ready_to_finalize(&st);
 		load_resource_finish(&st);
 	} else {
 		ires_unmake_dependent(ires, &ires->dependencies);
@@ -1106,19 +1291,19 @@ static void load_resource(
 		if(async) {
 			load_resource_async(&st);
 		} else {
-			st.status = LOAD_NONE;
+			lstate_set_status(&st, LOAD_NONE);
 			PROTECT_FLAGS(&st, handler->procs.load(&st.st));
 
 			retry: switch(st.status) {
 				case LOAD_OK:
 				case LOAD_FAILED:
-					st.ready_to_finalize = true;
+					lstate_set_ready_to_finalize(&st);
 					load_resource_finish(&st);
 					break;
 				case LOAD_CONT:
 				case LOAD_CONT_ON_MAIN:
 					wait_for_dependencies(&st);
-					st.status = LOAD_NONE;
+					lstate_set_status(&st, LOAD_NONE);
 					PROTECT_FLAGS(&st, st.continuation(&st.st));
 					goto retry;
 				default: UNREACHABLE;
@@ -1163,7 +1348,7 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 
 	ires_lock(transient);
 	ires->reload_buddy = transient;
-	load_resource(transient, ires->name, flags, async);
+	load_resource(transient, flags, async);
 	ires_unlock(transient);
 
 	InternalResource *dependents[ires->dependents.num_elements_occupied];
@@ -1196,7 +1381,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 		retry: switch(st->status) {
 			case LOAD_CONT:
 			case LOAD_CONT_ON_MAIN:
-				st->status = LOAD_NONE;
+				lstate_set_status(st, LOAD_NONE);
 				st->continuation(&st->st);
 				goto retry;
 
@@ -1223,14 +1408,14 @@ static void load_resource_finish(InternalResLoadState *st) {
 
 	if(ires->res.type == RES_MODEL || res_gstate.env.no_unload) {
 		// FIXME: models can't be safely unloaded at runtime yet
-		ires->res.flags |= RESF_PERMANENT;
+		res_group_add_ires(NULL, ires, true);
 	}
 
 	bool success = ires->res.data;
 
 	if(success) {
 		ires->status = RES_STATUS_LOADED;
-		log_info("Loaded %s '%s' from '%s' (%s)", typename, name, source, (ires->res.flags & RESF_PERMANENT) ? "permanent" : "transient");
+		log_info("Loaded %s '%s' from '%s'", typename, name, source);
 	} else {
 		ires->status = RES_STATUS_FAILED;
 
@@ -1241,18 +1426,20 @@ static void load_resource_finish(InternalResLoadState *st) {
 		}
 	}
 
-	free(allocated_source);
-	free((char*)st->st.path);
+	mem_free(allocated_source);
+	mem_free((char*)st->st.path);
 
 	assume(!ires->load || ires->load == st);
 
 	Task *async_task = st->async_task;
 	if(async_task) {
+		LOAD_DBG("%p still has async task %p; detaching", ires, st->async_task);
 		st->async_task = NULL;
 		task_detach(async_task);
 	}
 
-	free(ires->load);
+	LOAD_DBG("Clearing load state for %p (was: %p)", ires, ires->load);
+	mem_free(ires->load);
 	ires->load = NULL;
 
 	ires_cond_broadcast(ires);
@@ -1303,7 +1490,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 	ires_unlock(persistent);
 }
 
-Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
+Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
 	InternalResource *ires;
 	Resource *res;
 
@@ -1314,13 +1501,14 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", type_name(type), name);
+			res_group_add_ires(NULL, ires, false);
 
 			if(res_gstate.env.preload_required) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
 			}
 		}
 
-		load_resource(ires, name, flags, false);
+		load_resource(ires, flags, false);
 		ires_cond_broadcast(ires);
 
 		if(ires->status == RES_STATUS_FAILED) {
@@ -1354,16 +1542,6 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 	}
 }
 
-void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
-	Resource *res = _get_resource(type, name, hash, flags);
-
-	if(res) {
-		return res->data;
-	}
-
-	return NULL;
-}
-
 static InternalResource *preload_resource_internal(
 	ResourceType type, const char *name, ResourceFlags flags
 ) {
@@ -1371,30 +1549,18 @@ static InternalResource *preload_resource_internal(
 
 	if(try_begin_load_resource(type, name, ht_str2ptr_hash(name), &ires)) {
 		ires_lock(ires);
-		load_resource(ires, name, flags, !res_gstate.env.no_async_load);
+		load_resource(ires, flags, !res_gstate.env.no_async_load);
 		ires_unlock(ires);
-	} else if(flags & RESF_RELOAD) {
-		reload_resource(ires, flags, !res_gstate.env.no_async_load);
+	} else {
+		// NOTE: try_begin_load_resource() does an implicit incref on success
+		ires_incref(ires);
+
+		if(flags & RESF_RELOAD) {
+			reload_resource(ires, flags, !res_gstate.env.no_async_load);
+		}
 	}
 
 	return ires;
-}
-
-void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	if(!res_gstate.env.no_preload) {
-		preload_resource_internal(type, name, flags | RESF_PRELOAD);
-	}
-}
-
-void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
-	va_list args;
-	va_start(args, firstname);
-
-	for(const char *name = firstname; name; name = va_arg(args, const char*)) {
-		preload_resource(type, name, flags);
-	}
-
-	va_end(args);
 }
 
 static void reload_resources(ResourceHandler *h) {
@@ -1412,7 +1578,7 @@ static void reload_resources(ResourceHandler *h) {
 	ht_iter_end(&iter);
 }
 
-void reload_all_resources(void) {
+void res_reload_all(void) {
 	for(uint i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		assert(h != NULL);
@@ -1479,7 +1645,7 @@ static bool resource_filewatch_handler(SDL_Event *e, void *a) {
 				task_detach(taskmgr_global_submit((TaskParams) {
 					.callback = file_deleted_handler_task,
 					.userdata = memdup(&a, sizeof(a)),
-					.userdata_free_callback = free,
+					.userdata_free_callback = mem_free,
 				}));
 			}
 		} else {
@@ -1490,11 +1656,14 @@ static bool resource_filewatch_handler(SDL_Event *e, void *a) {
 	return false;
 }
 
-void init_resources(void) {
+void res_init(void) {
 	res_gstate.env.no_async_load = env_get("TAISEI_NOASYNC", false);
 	res_gstate.env.no_preload = env_get("TAISEI_NOPRELOAD", false);
 	res_gstate.env.no_unload = env_get("TAISEI_NOUNLOAD", false);
 	res_gstate.env.preload_required = env_get("TAISEI_PRELOAD_REQUIRED", false);
+
+	ht_watch2iresset_create(&res_gstate.watch_to_iresset);
+	res_group_init(&res_gstate.default_group);
 
 	for(int i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
@@ -1504,8 +1673,6 @@ void init_resources(void) {
 			h->procs.init();
 		}
 	}
-
-	ht_watch2iresset_create(&res_gstate.watch_to_iresset);
 
 	if(!res_gstate.env.no_async_load) {
 		events_register_handler(&(EventHandler) {
@@ -1523,7 +1690,7 @@ void init_resources(void) {
 	});
 }
 
-void resource_util_strip_ext(char *path) {
+void res_util_strip_ext(char *path) {
 	char *dot = strrchr(path, '.');
 	char *psep = strrchr(path, '/');
 
@@ -1532,49 +1699,39 @@ void resource_util_strip_ext(char *path) {
 	}
 }
 
-char *resource_util_basename(const char *prefix, const char *path) {
+char *res_util_basename(const char *prefix, const char *path) {
 	assert(strstartswith(path, prefix));
 
 	char *out = strdup(path + strlen(prefix));
-	resource_util_strip_ext(out);
+	res_util_strip_ext(out);
 
 	return out;
-}
-
-const char *resource_util_filename(const char *path) {
-	char *sep = strrchr(path, '/');
-
-	if(sep) {
-		return sep + 1;
-	}
-
-	return path;
 }
 
 static void preload_path(const char *path, ResourceType type, ResourceFlags flags) {
 	if(_handlers[type]->procs.check(path)) {
 		char *name = get_name_from_path(_handlers[type], path);
 		if(name) {
-			preload_resource(type, name, flags);
-			free(name);
+			res_group_preload_one(NULL, type, flags, name);
+			mem_free(name);
 		}
 	}
 }
 
 static void *preload_shaders(const char *path, void *arg) {
-	preload_path(path, RES_SHADER_PROGRAM, RESF_PERMANENT);
+	preload_path(path, RES_SHADER_PROGRAM, RESF_DEFAULT);
 	return NULL;
 }
 
 static void *preload_all(const char *path, void *arg) {
 	for(ResourceType t = 0; t < RES_NUMTYPES; ++t) {
-		preload_path(path, t, RESF_PERMANENT | RESF_OPTIONAL);
+		preload_path(path, t, RESF_OPTIONAL);
 	}
 
 	return NULL;
 }
 
-void *resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
+void *res_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
 	ht_str2ptr_ts_iter_t iter;
 	ht_iter_begin(&get_handler(type)->private.mapping, &iter);
 	void *result = NULL;
@@ -1598,7 +1755,7 @@ void *resource_for_each(ResourceType type, void* (*callback)(const char *name, R
 	return result;
 }
 
-void load_resources(void) {
+void res_post_init(void) {
 	for(uint i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		assert(h != NULL);
@@ -1607,8 +1764,6 @@ void load_resources(void) {
 			h->procs.post_init();
 		}
 	}
-
-	menu_preload();
 
 	if(env_get("TAISEI_PRELOAD_SHADERS", 0)) {
 		log_info("Loading all shaders now due to TAISEI_PRELOAD_SHADERS");
@@ -1621,67 +1776,37 @@ void load_resources(void) {
 	}
 }
 
-static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
-	ht_str2ptr_ts_iter_t iter;
+void res_purge(void) {
+	purgatory_lock();
 
-	bool retry = false;
-
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		ResourceHandler *handler = get_handler(type);
-		InternalResource *ires;
-
-		tmp_ires_array->num_elements = 0;
-		ht_iter_begin(&handler->private.mapping, &iter);
-
-		for(; iter.has_data; ht_iter_next(&iter)) {
-			ires = iter.value;
-
-			if(all || !(ires->res.flags & RESF_PERMANENT)) {
-				*dynarray_append(tmp_ires_array) = ires;
-			}
-		}
-
-		ht_iter_end(&iter);
-
-		dynarray_foreach_elem(tmp_ires_array, InternalResource **pires, {
-			if(!unload_resource(*pires)) {
-				// TODO: This is a little dumb; maybe recursively unload dependents first
-				retry = true;
-			}
-		});
+	if(res_gstate.purgatory.num_souls < 1) {
+		purgatory_unlock();
+		return;
 	}
 
-	if(retry) {
-		// Tail call; hope your compiler agrees.
-		_free_resources(tmp_ires_array, all);
+	InternalResource *resarray[res_gstate.purgatory.num_souls];
+	int i = 0;
+
+	for(PurgatoryNode *n = res_gstate.purgatory.souls.first; n; n = n->next) {
+		resarray[i++] = ires_from_purgatory_node(n);
+	}
+
+	purgatory_unlock();
+	assert(i == ARRAY_SIZE(resarray));
+
+	for(i = 0; i < ARRAY_SIZE(resarray); ++i) {
+		unload_resource(resarray[i]);
+	}
+
+	if(res_gstate.purgatory.num_souls > 0) {
+		// Unload dependencies that are no longer needed
+		res_purge();
 	}
 }
 
-void free_resources(bool all) {
-	// Wait for all resources to finish (re)loading first, and pray that nothing else starts loading
-	// while we are in this function (FIXME)
-
-	ht_str2ptr_ts_iter_t iter;
-
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		ResourceHandler *handler = get_handler(type);
-
-		ht_iter_begin(&handler->private.mapping, &iter);
-
-		for(; iter.has_data; ht_iter_next(&iter)) {
-			wait_for_resource_load(iter.value, RESF_RELOAD);
-		}
-
-		ht_iter_end(&iter);
-	}
-
-	IResPtrArray a = { };
-	_free_resources(&a, all);
-	dynarray_free_data(&a);
-}
-
-void shutdown_resources(void) {
-	free_resources(true);
+void res_shutdown(void) {
+	res_group_release(&res_gstate.default_group);
+	res_purge();
 
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
@@ -1689,7 +1814,29 @@ void shutdown_resources(void) {
 		if(handler->procs.shutdown != NULL) {
 			handler->procs.shutdown();
 		}
+	}
 
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = get_handler(type);
+
+		ht_str2ptr_ts_iter_t iter;
+		ht_iter_begin(&handler->private.mapping, &iter);
+
+		for(; iter.has_data; ht_iter_next(&iter)) {
+			InternalResource *ires = iter.value;
+			wait_for_resource_load(ires, RESF_RELOAD);
+
+			int nrefs = SDL_AtomicGet(&ires->refcount);
+			assert(nrefs >= 0);
+
+			if(nrefs > 0) {
+				log_warn("%s '%s' still has %i reference%c",
+					handler->typename, ires->name, nrefs,
+					nrefs == 1 ? '\0' : 's');
+			}
+		}
+
+		ht_iter_end(&iter);
 		ht_destroy(&handler->private.mapping);
 	}
 

@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -29,11 +29,27 @@
 #define strdup _ts_strdup
 INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
 	size_t sz = strlen(str) + 1;
-	return memcpy(malloc(sz), str, sz);
+	return memcpy(mem_alloc(sz), str, sz);
 }
 
+#ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 #undef strtok_r
 #define strtok_r _ts_strtok_r
+char *strtok_r(char *str, const char *delim, char **nextp);
+#endif
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMRCHR
+#undef memrchr
+#define memrchr _ts_memrchr
+void *memrchr(const void *s, int c, size_t n);
+#endif
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMMEM
+#undef memmem
+#define memmem _ts_memmem
+void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen)
+	attr_nonnull_all;
+#endif
 
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
@@ -46,12 +62,11 @@ void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
 char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated;
 char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
-char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);
 
-uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
+uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) attr_dealloc(SDL_free, 1);
 size_t ucs4len(const uint32_t *ucs4);
 
 void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
@@ -67,3 +82,14 @@ void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_si
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
+
+/*
+ * Test if string matches a simple 'glob'-like pattern.
+ *
+ * Only '*' is supported as a metacharacter in the glob.
+ * '*' matches zero or more characters lazily.
+ * If the glob is not empty and does not end with a *, the last segment is matched greedily.
+ * An empty glob matches everything.
+ */
+bool strnmatch(size_t globsize, const char glob[globsize], size_t insize, const char input[insize]);
+bool strmatch(const char *glob, const char *input);

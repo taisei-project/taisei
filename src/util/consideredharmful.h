@@ -2,14 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
 #include <stdio.h>
+
+// XXX: this header trips some of these deprecation warnings; include it early as a workaround
+#include <SDL_cpuinfo.h>
 
 //
 // safeguards against some dangerous or otherwise undesirable practices
@@ -72,5 +75,25 @@ int rand(void);
 #undef srand
 attr_deprecated("Use tsrand_seed instead")
 void srand(uint);
+
+INLINE void *libc_malloc(size_t size) { return malloc(size); }
+#undef malloc
+attr_deprecated("Use the memory.h API instead")
+void *malloc(size_t size);
+
+INLINE void libc_free(void *ptr) { free(ptr); }
+#undef free
+attr_deprecated("Use the memory.h API instead, or libc_free if this is a foreign allocation")
+void free(void *ptr);
+
+INLINE void *libc_calloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
+#undef calloc
+attr_deprecated("Use the memory.h API instead")
+void *calloc(size_t nmemb, size_t size);
+
+INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
+#undef realloc
+attr_deprecated("Use the memory.h API instead")
+void *realloc(void *ptr, size_t size);
 
 PRAGMA(GCC diagnostic pop)

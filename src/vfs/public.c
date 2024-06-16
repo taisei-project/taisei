@@ -2,13 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "private.h"
+
+#include "dynarray.h"
+#include "log.h"
 
 typedef struct VFSDir {
 	VFSNode *node;
@@ -16,6 +17,10 @@ typedef struct VFSDir {
 } VFSDir;
 
 bool vfs_mount_alias(const char *dst, const char *src) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char dstbuf[strlen(dst)+1];
 	char srcbuf[strlen(src)+1];
 
@@ -33,6 +38,10 @@ bool vfs_mount_alias(const char *dst, const char *src) {
 }
 
 bool vfs_unmount(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1], *parent, *subdir;
 	path = vfs_path_normalize(path, p);
 	vfs_path_split_right(p, &parent, &subdir);
@@ -49,6 +58,10 @@ bool vfs_unmount(const char *path) {
 }
 
 SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return NULL;
+	}
+
 	SDL_RWops *rwops = NULL;
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
@@ -70,6 +83,10 @@ SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
 }
 
 VFSInfo vfs_query(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return VFSINFO_ERROR;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -90,6 +107,10 @@ VFSInfo vfs_query(const char *path) {
 }
 
 bool vfs_mkdir(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -160,6 +181,10 @@ bool vfs_mkparents(const char *path) {
 }
 
 char* vfs_repr(const char *path, bool try_syspath) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char buf[strlen(path)+1];
 	path = vfs_path_normalize(path, buf);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -175,6 +200,10 @@ char* vfs_repr(const char *path, bool try_syspath) {
 }
 
 bool vfs_print_tree(SDL_RWops *dest, const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+3], *trail;
 	vfs_path_normalize(path, p);
 
@@ -199,15 +228,17 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) {
 }
 
 VFSDir* vfs_dir_open(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
 
 	if(node) {
 		if(node->funcs->iter && vfs_node_query(node).is_dir) {
-			VFSDir *d = calloc(1, sizeof(VFSDir));
-			d->node = node;
-			return d;
+			return ALLOC(VFSDir, { .node = node });
 		}
 
 		vfs_set_error("Node '%s' is not a directory", path);
@@ -223,11 +254,15 @@ void vfs_dir_close(VFSDir *dir) {
 	if(dir) {
 		vfs_node_iter_stop(dir->node, &dir->opaque);
 		vfs_decref(dir->node);
-		free(dir);
+		mem_free(dir);
 	}
 }
 
 const char* vfs_dir_read(VFSDir *dir) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return NULL;
+	}
+
 	return vfs_node_iter(dir->node, &dir->opaque);
 }
 
@@ -246,7 +281,7 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
 			continue;
 		}
 
-		*dynarray_append(&results) = strdup(e);
+		dynarray_append(&results, strdup(e));
 	}
 
 	vfs_dir_close(dir);
@@ -265,10 +300,10 @@ void vfs_dir_list_free(char **list, size_t size) {
 	}
 
 	for(size_t i = 0; i < size; ++i) {
-		free(list[i]);
+		mem_free(list[i]);
 	}
 
-	free(list);
+	mem_free(list);
 }
 
 int vfs_dir_list_order_ascending(const void *a, const void *b) {
@@ -309,4 +344,8 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 
 	vfs_dir_close(dir);
 	return result;
+}
+
+bool vfs_initialized(void) {
+	return vfs_root != NULL;
 }

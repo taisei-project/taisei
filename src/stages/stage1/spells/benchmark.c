@@ -2,32 +2,22 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-#include "../cirno.h"
 
-#include "global.h"
+#ifdef SPELL_BENCHMARK
 
-void stage1_spell_benchmark_proc(Boss *b, int t) {
-	if(t < 0) {
-		return;
-	}
-
+static void stage1_spell_benchmark_proc(Boss *b, int t) {
 	int N = 5000; // number of particles on the screen
 
-	if(t == 0) {
-		aniplayer_queue(&b->ani, "(9)", 0);
-	}
 	double speed = 10;
 	int c = N*speed/VIEWPORT_H;
 	for(int i = 0; i < c; i++) {
 		double x = rng_range(0, VIEWPORT_W);
-		double plrx = creal(global.plr.pos);
+		double plrx = re(global.plr.pos);
 		x = plrx + sqrt((x-plrx)*(x-plrx)+100)*(1-2*(x<plrx));
 
 		Projectile *p = PROJECTILE(
@@ -52,3 +42,15 @@ void stage1_spell_benchmark_proc(Boss *b, int t) {
 			p->color.a = 0;
 	}
 }
+
+DEFINE_EXTERN_TASK(stage1_spell_benchmark) {
+	auto b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+	aniplayer_queue(&b->ani, "(9)", 0);
+
+	for(int t = 0;; ++t, YIELD) {
+		stage1_spell_benchmark_proc(b, t);
+	}
+}
+
+#endif

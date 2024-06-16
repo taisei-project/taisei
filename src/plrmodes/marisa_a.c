@@ -2,22 +2,24 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
+#include "marisa.h"
 
+#include "audio/audio.h"
+#include "common_tasks.h"
+#include "dialog/marisa.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "marisa.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
-#include "common_tasks.h"
+#include "util/graphics.h"
 
-#define SHOT_FORWARD_DAMAGE 100
+#define SHOT_FORWARD_DAMAGE 60
 #define SHOT_FORWARD_DELAY 6
-#define SHOT_LASER_DAMAGE 10
+#define SHOT_LASER_DAMAGE 13
 
 #define HAKKERO_RETRACT_TIME 4
 
@@ -87,11 +89,6 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 		timeofs = trace_projectile(lproj.first, &col, col_types | PCOL_VOID, timeofs);
 		struct enemy_col *c = NULL;
 
-		if(!first_found) {
-			laser->trace_hit.first = col.location;
-			first_found = true;
-		}
-
 		if(col.type & col_types) {
 			RNG_ARRAY(R, 3);
 			PARTICLE(
@@ -126,6 +123,15 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 		if(c) {
 			c->original_flags = (ENT_CAST(col.entity, Enemy))->flags;
 			(ENT_CAST(col.entity, Enemy))->flags |= EFLAG_NO_HIT;
+		}
+
+		if(!first_found) {
+			if(lproj.first) {
+				lproj.first->damage *= 0.5;
+			}
+
+			laser->trace_hit.first = col.location;
+			first_found = true;
 		}
 	}
 
@@ -173,12 +179,12 @@ static void draw_laser_beam(cmplx src, cmplx dst, real size, real step, real t, 
 
 	r_mat_mv_push();
 
-	r_mat_mv_translate(creal(center), cimag(center), 0);
+	r_mat_mv_translate(re(center), im(center), 0);
 	r_mat_mv_rotate(carg(dir), 0, 0, 1);
 	r_mat_mv_scale(cabs(dir), size, 1);
 
 	r_mat_tex_push_identity();
-	r_mat_tex_translate(-cimag(src) / step + t, 0, 0);
+	r_mat_tex_translate(-im(src) / step + t, 0, 0);
 	r_mat_tex_scale(cabs(dir) / step, 1, 1);
 
 	r_uniform_sampler("tex", tex);
@@ -211,7 +217,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	r_uniform_float(u_clr_phase, -1.5 * t/M_PI);
 	r_uniform_float(u_clr_freq,  10.0);
 	r_framebuffer(fbp_aux->back);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_color4(1, 1, 1, 1);
 
 	r_blend(r_blend_compose(
@@ -231,7 +237,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	stage_draw_begin_noshake();
 
 	r_framebuffer(fbp_aux->back);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_shader("max_to_alpha");
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(fbp_aux);
@@ -438,7 +444,7 @@ TASK(marisa_laser_slave, {
 		capproach_asymptotic_p(&offset, offsets[focused], formation_switch_rate, epsilon);
 
 		capproach_asymptotic_p(&slave->pos, plr->pos + offset, follow_rate, epsilon);
-		approach_asymptotic_p(&slave->lean, -lean_strength * creal(slave->pos - prev_pos), lean_rate, epsilon);
+		approach_asymptotic_p(&slave->lean, -lean_strength * re(slave->pos - prev_pos), lean_rate, epsilon);
 		prev_pos = slave->pos;
 
 		if(player_should_shoot(plr)) {
@@ -562,7 +568,7 @@ TASK(marisa_laser_bomb_masterspark, { MarisaAController *ctrl; }) {
 	do {
 		real bomb_progress = player_get_bomb_progress(plr);
 		ms->alpha = marisa_laser_masterspark_width(bomb_progress);
-		ms->dir *= cdir(0.005 * (creal(plr->velocity) + 2 * rng_sreal()));
+		ms->dir *= cdir(0.005 * (re(plr->velocity) + 2 * rng_sreal()));
 		ms->pos = plr->pos - 30 * I;
 
 		marisa_laser_masterspark_damage(ms);
@@ -664,13 +670,13 @@ static void marisa_laser_respawn_slaves(MarisaAController *ctrl, int power_rank)
 TASK(marisa_laser_power_handler, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	marisa_laser_respawn_slaves(ctrl, old_power);
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			marisa_laser_respawn_slaves(ctrl, new_power);
 			old_power = new_power;
@@ -684,7 +690,7 @@ TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 	TASK_HOST_EVENTS(ctrl->events);
 
 	ctrl->ent.draw_func = marisa_laser_draw_lasers;
-	ctrl->ent.draw_layer = LAYER_PLAYER_FOCUS;
+	ctrl->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
 
 	INVOKE_SUBTASK(marisa_laser_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_laser_bomb_handler, ctrl);
@@ -714,23 +720,23 @@ static double marisa_laser_property(Player *plr, PlrProperty prop) {
 	}
 }
 
-static void marisa_laser_preload(void) {
+static void marisa_laser_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"proj/marisa",
 		"part/maristar_orbit",
 		"hakkero",
 		"masterspark_ring",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"marisa_bombbg",
 		"part/marisa_laser0",
 		"part/marisa_laser1",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"blur25",
 		"blur5",
 		"marisa_laser",
@@ -739,11 +745,11 @@ static void marisa_laser_preload(void) {
 		"sprite_hakkero",
 	NULL);
 
-	preload_resources(RES_ANIM, flags,
+	res_group_preload(rg, RES_ANIM, flags,
 		"fire",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_a",
 	NULL);
 }

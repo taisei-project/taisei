@@ -2,14 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "rwops_crc32.h"
-#include "util.h"
 
 #include <zlib.h>
 
@@ -36,7 +33,7 @@ static int rwcrc32_close(SDL_RWops *rw) {
 		SDL_RWclose(DATA(rw)->src);
 	}
 
-	free(DATA(rw));
+	mem_free(DATA(rw));
 	SDL_FreeRW(rw);
 	return 0;
 }
@@ -84,7 +81,7 @@ SDL_RWops *SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose) 
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->hidden.unknown.data1 = calloc(1, sizeof(struct crc32_data));
+	rw->hidden.unknown.data1 = ALLOC(struct crc32_data);
 	DATA(rw)->src = src;
 	DATA(rw)->crc32_ptr = crc32_ptr;
 	DATA(rw)->autoclose = autoclose;

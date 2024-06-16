@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "dynarray.h"
 #include "util.h"
@@ -21,7 +19,7 @@
 #endif
 
 void _dynarray_free_data(dynarray_size_t sizeof_element, DynamicArray *darr) {
-	free(darr->data);
+	mem_free(darr->data);
 	if(darr->capacity) {
 		DYNARRAY_DEBUG(darr, "%u/%u", darr->num_elements, darr->capacity);
 	}
@@ -33,7 +31,7 @@ INLINE void _dynarray_resize(dynarray_size_t sizeof_element, DynamicArray *darr,
 	assert(capacity > 0);
 	DYNARRAY_DEBUG(darr, "capacity change: %u --> %u", darr->capacity, capacity);
 	darr->capacity = capacity;
-	darr->data = realloc(darr->data, sizeof_element * capacity);
+	darr->data = mem_realloc(darr->data, sizeof_element * capacity);
 }
 
 void _dynarray_ensure_capacity(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t capacity) {
@@ -50,15 +48,14 @@ dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeo
 	assume(num_elements <= capacity);
 	assume(min_capacity >= 2);
 
-	if(capacity < min_capacity) {
+	if(UNLIKELY(capacity < min_capacity)) {
 		_dynarray_resize(sizeof_element, darr, min_capacity);
-	} else if(num_elements == capacity) {
+	} else if(UNLIKELY(num_elements == capacity)) {
 		capacity += capacity >> 1;
 		_dynarray_resize(sizeof_element, darr, capacity);
 	}
 
 	++darr->num_elements;
-	memset((char*)darr->data + num_elements * sizeof_element, 0, sizeof_element);
 
 	DYNARRAY_DEBUG(darr, "elements: %u/%u", darr->num_elements, darr->capacity);
 	return num_elements;  // insertion index

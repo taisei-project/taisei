@@ -2,18 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-#include "../cirno.h"
-
-#include "stage.h"
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(crystal_rain_drops) {
 	const int nshots = difficulty_value(1, 2, 4, 5);
@@ -80,7 +73,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(crystal_rain_drops);
-	boss->move = move_towards_power(boss->pos, 0.1, 0.5);
+	boss->move = move_towards_exp(boss->move.velocity, boss->pos, 0.1, 0.5);
 
 	for(;;) {
 		WAIT(20);

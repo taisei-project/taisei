@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "stages.h"
 #include "stages/stage1/stage1.h"
@@ -15,11 +13,10 @@
 #include "stages/stage4/stage4.h"
 #include "stages/stage5/stage5.h"
 #include "stages/stage6/stage6.h"
-#include "stages/extra.h"
+#include "stages/stagex/stagex.h"
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 #include "stages/dpstest.h"
-#include "stages/corotest.h"
 #endif
 
 StagesExports stages_exports = {
@@ -29,14 +26,15 @@ StagesExports stages_exports = {
 	.stage4 = { &stage4_procs, (AttackInfo*)&stage4_spells },
 	.stage5 = { &stage5_procs, (AttackInfo*)&stage5_spells },
 	.stage6 = { &stage6_procs, (AttackInfo*)&stage6_spells },
-	.stagex = { &extra_procs, NULL },
+	.stagex = { &stagex_procs, (AttackInfo*)&stagex_spells },
+
+	.stagex_draw_boss_portrait_overlay = stagex_draw_yumemi_portrait_overlay,
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 	.testing = {
 		.dps_single = &stage_dpstest_single_procs,
 		.dps_multi = &stage_dpstest_multi_procs,
 		.dps_boss = &stage_dpstest_boss_procs,
-		.coro = &corotest_procs,
 		.benchmark_spell = &stage1_spell_benchmark,
 	}
 #endif

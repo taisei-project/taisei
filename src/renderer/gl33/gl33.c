@@ -2,31 +2,29 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "gl33.h"
+
 #include "../api.h"
-#include "../common/matstack.h"
 #include "../common/backend.h"
+#include "../common/matstack.h"
 #include "../common/sprite_batch.h"
-#include "texture.h"
-#include "shader_object.h"
-#include "shader_program.h"
-#include "framebuffer.h"
-#include "common_buffer.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
-#include "vertex_array.h"
 #include "../glcommon/debug.h"
 #include "../glcommon/vtable.h"
-#include "resource/resource.h"
-#include "resource/model.h"
-#include "util/glm.h"
+#include "common_buffer.h"
+#include "framebuffer_async_read.h"
+#include "framebuffer.h"
+#include "index_buffer.h"
+#include "shader_object.h"
+#include "shader_program.h"
+#include "texture.h"
 #include "util/env.h"
+#include "util/glm.h"
+#include "vertex_array.h"
+#include "vertex_buffer.h"
 
 // #define GL33_DEBUG_TEXUNITS
 // #define GL33_DRAW_STATS
@@ -236,19 +234,19 @@ static void gl33_init_texunits(void) {
 	if(texunits_max == 0) {
 		texunits_max = texunits_available;
 	} else {
-		texunits_max = iclamp(texunits_max, texunits_min, texunits_available);
+		texunits_max = clamp(texunits_max, texunits_min, texunits_available);
 	}
 
-	texunits_capped = imin(texunits_max, texunits_available);
+	texunits_capped = min(texunits_max, texunits_available);
 	R.texunits.limit = env_get_int("GL33_NUM_TEXUNITS", texunits_capped);
 
 	if(R.texunits.limit == 0) {
 		R.texunits.limit = texunits_available;
 	} else {
-		R.texunits.limit = iclamp(R.texunits.limit, texunits_min, texunits_available);
+		R.texunits.limit = clamp(R.texunits.limit, texunits_min, texunits_available);
 	}
 
-	R.texunits.array = calloc(R.texunits.limit, sizeof(TextureUnit));
+	R.texunits.array = ALLOC_ARRAY(R.texunits.limit, typeof(*R.texunits.array));
 	R.texunits.active = R.texunits.array;
 
 	for(int i = 0; i < R.texunits.limit; ++i) {
@@ -282,22 +280,28 @@ static void gl41_set_viewport(const FloatRect *vp) {
 }
 #endif
 
-static void gl33_init_context(SDL_Window *window) {
-	R.gl_context = SDL_GL_CreateContext(window);
+static SDL_GLContext gl33_create_context(SDL_Window *window) {
+	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 
 	int gl_profile;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &gl_profile);
 
-	if(!R.gl_context && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
+	if(!ctx && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
 		log_error("Failed to create OpenGL context: %s", SDL_GetError());
 		log_warn("Attempting to create a fallback context");
 		SDL_GL_ResetAttributes();
-		R.gl_context = SDL_GL_CreateContext(window);
+		ctx = SDL_GL_CreateContext(window);
 	}
 
-	if(!R.gl_context) {
+	if(!ctx) {
 		log_fatal("Failed to create OpenGL context: %s", SDL_GetError());
 	}
+
+	return ctx;
+}
+
+static void gl33_init_context(SDL_Window *window) {
+	R.gl_context = GLVT.create_context(window);
 
 	glcommon_load_functions();
 	glcommon_check_capabilities();
@@ -429,8 +433,6 @@ static void gl33_sync_viewport(void) {
 
 void gl33_sync_scissor(void) {
 	bool pending_enabled =
-		R.scissor.pending.x &&
-		R.scissor.pending.y &&
 		R.scissor.pending.w &&
 		R.scissor.pending.h;
 
@@ -500,7 +502,7 @@ static void gl33_sync_magic_uniforms(void) {
 	int num_color_out;
 
 	if(u[UMAGIC_COLOR_OUT_SIZES]) {
-		num_color_out = iclamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
+		num_color_out = clamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
 	} else {
 		num_color_out = 0;
 	}
@@ -832,6 +834,7 @@ GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx) {
 		[GL33_BUFFER_BINDING_ARRAY] = GL_ARRAY_BUFFER,
 		[GL33_BUFFER_BINDING_COPY_WRITE] = GL_COPY_WRITE_BUFFER,
 		[GL33_BUFFER_BINDING_PIXEL_UNPACK] = GL_PIXEL_UNPACK_BUFFER,
+		[GL33_BUFFER_BINDING_PIXEL_PACK] = GL_PIXEL_PACK_BUFFER,
 	};
 
 	static_assert(sizeof(map) == sizeof(GLenum) * GL33_NUM_BUFFER_BINDINGS, "Fix the lookup table");
@@ -1183,6 +1186,7 @@ static void gl33_post_init(void) {
 }
 
 static void gl33_shutdown(void) {
+	gl33_framebuffer_finalize_read_requests();
 	glcommon_unload_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
@@ -1385,6 +1389,7 @@ static void gl33_swap(SDL_Window *window) {
 #endif
 	r_framebuffer(prev_fb);
 
+	gl33_framebuffer_process_read_requests();
 	gl33_stats_post_frame();
 
 	// We can't rely on viewport being preserved across frames,
@@ -1416,17 +1421,6 @@ static void gl33_depth_func(DepthTestFunc func) {
 
 static DepthTestFunc gl33_depth_func_current(void) {
 	return R.depth_test.func.pending;
-}
-
-static bool gl33_screenshot(Pixmap *out) {
-	FloatRect *vp = &R.viewport.default_framebuffer;
-	out->width = vp->w;
-	out->height = vp->h;
-	out->format = PIXMAP_FORMAT_RGB8;
-	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
-	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
-	return true;
 }
 
 static void gl33_scissor(IntRect scissor) {
@@ -1500,7 +1494,9 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.framebuffer_clear = gl33_framebuffer_clear,
+		.framebuffer_copy = gl33_framebuffer_copy,
 		.framebuffer_get_size = gl33_framebuffer_get_size,
+		.framebuffer_read_async = gl33_framebuffer_read_async,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,
@@ -1531,10 +1527,10 @@ RendererBackend _r_backend_gl33 = {
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,
-		.screenshot = gl33_screenshot,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
+			.create_context = gl33_create_context,
 			.init_context = gl33_init_context,
 		}
 	},

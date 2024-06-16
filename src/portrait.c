@@ -2,15 +2,13 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "portrait.h"
+
 #include "renderer/api.h"
-#include "config.h"
 
 #define RETURN_RESOURCE_NAME(name1, suffix, name2) \
 	assert(bufsize >= strlen(PORTRAIT_PREFIX) + strlen(name1) + strlen(suffix) + strlen(name2) + 1); \
@@ -32,10 +30,10 @@ Sprite *portrait_get_base_sprite(const char *charname, const char *variant) {
 	return res_sprite(buf);
 }
 
-void portrait_preload_base_sprite(const char *charname, const char *variant, ResourceFlags rflags) {
+void portrait_preload_base_sprite(ResourceGroup *rg, const char *charname, const char *variant, ResourceFlags rflags) {
 	char buf[BUFFER_SIZE];
 	portrait_get_base_sprite_name(charname, variant, sizeof(buf), buf);
-	preload_resource(RES_SPRITE, buf, rflags);
+	res_group_preload(rg, RES_SPRITE, rflags, buf, NULL);
 }
 
 int portrait_get_face_sprite_name(const char *charname, const char *face, size_t bufsize, char buf[bufsize]) {
@@ -48,10 +46,10 @@ Sprite *portrait_get_face_sprite(const char *charname, const char *face) {
 	return res_sprite(buf);
 }
 
-void portrait_preload_face_sprite(const char *charname, const char *face, ResourceFlags rflags) {
+void portrait_preload_face_sprite(ResourceGroup *rg, const char *charname, const char *face, ResourceFlags rflags) {
 	char buf[BUFFER_SIZE];
 	portrait_get_face_sprite_name(charname, face, sizeof(buf), buf);
-	preload_resource(RES_SPRITE, buf, rflags);
+	res_group_preload(rg, RES_SPRITE, rflags, buf, NULL);
 }
 
 void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
@@ -59,10 +57,10 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 
 	IntRect itc = sprite_denormalized_int_tex_coords(s_base);
 
-	uint tex_w = imax(itc.w, 1);
-	uint tex_h = imax(itc.h, 1);
-	uint spr_w = s_base->extent.w;
-	uint spr_h = s_base->extent.h;
+	uint tex_w = max(itc.w, 1);
+	uint tex_h = max(itc.h, 1);
+	float spr_w = s_base->extent.w;
+	float spr_h = s_base->extent.h;
 
 	Texture *ptex = r_texture_create(&(TextureParams) {
 		.type = TEX_TYPE_RGBA_8,
@@ -80,16 +78,16 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
 	r_framebuffer(fb);
-	r_framebuffer_clear(fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(fb, BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
-	r_mat_proj_push_ortho(spr_w, spr_h);
+	r_mat_proj_push_ortho(spr_w - s_base->padding.w, spr_h - s_base->padding.h);
 	r_mat_mv_push_identity();
 
 	SpriteParams sp = { 0 };
 	sp.sprite_ptr = s_base;
 	sp.blend = BLEND_NONE;
-	sp.pos.x = spr_w * 0.5f - sprite_padded_offset_x(s_base);
-	sp.pos.y = spr_h * 0.5f - sprite_padded_offset_y(s_base);
+	sp.pos.x = spr_w * 0.5f - s_base->padding.offset.x;
+	sp.pos.y = spr_h * 0.5f - s_base->padding.offset.y;
 	sp.color = RGBA(1, 1, 1, 1);
 	sp.shader_ptr = res_shader("sprite_default"),
 	r_draw_sprite(&sp);

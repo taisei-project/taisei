@@ -2,16 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
+#include "marisa.h"
 
+#include "audio/audio.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "marisa.h"
 #include "stagedraw.h"
+#include "util/graphics.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
@@ -93,20 +94,20 @@ static void draw_masterspark_ring(int t, float width) {
 
 static void draw_masterspark_beam(cmplx origin, cmplx size, float angle, int t, float alpha) {
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(origin), cimag(origin), 0);
+	r_mat_mv_translate(re(origin), im(origin), 0);
 	r_mat_mv_rotate(angle, 0, 0, 1);
 
 	r_shader("masterspark");
 	r_uniform_float("t", t);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(0, cimag(size) * -0.5, 0);
-	r_mat_mv_scale(alpha * creal(size), cimag(size), 1);
+	r_mat_mv_translate(0, im(size) * -0.5, 0);
+	r_mat_mv_scale(alpha * re(size), im(size), 1);
 	r_draw_quad();
 	r_mat_mv_pop();
 
 	for(int i = 0; i < 4; i++) {
-		draw_masterspark_ring(t % 20 + 10 * i, alpha * creal(size));
+		draw_masterspark_ring(t % 20 + 10 * i, alpha * re(size));
 	}
 
 	r_mat_mv_pop();
@@ -123,7 +124,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
 
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		for(int i = 0; i < numBeams; i++) {
 			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
 		}
@@ -142,7 +143,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
 
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 		for(int i = 0; i < numBeams; i++) {
 			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
@@ -159,7 +160,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 
 		fbpair_swap(aux);
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_uniform_vec2("blur_direction", 0, blur);

@@ -2,112 +2,95 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "spells.h"
 
-#include "global.h"
+TASK(kurumi_blowwall_exploder, { cmplx pos; cmplx acceleration; }) {
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+	cmplx pos = ARGS.pos;
+	for(int t = 0; pos == cwclamp(pos, 0, VIEWPORT_W + I * VIEWPORT_H); t++, YIELD)  {
+		pos += ARGS.acceleration * t;
+	}
 
-static int blowwall_slave(Enemy *e, int t) {
-	float re, im;
+	float f;
+	ProjPrototype *type;
 
-	if(t < 0)
-		return 1;
+	int count = difficulty_value(60, 100, 140, 180);
 
-	e->pos += e->args[0]*t;
+	for(int i = 0; i < count; i++) {
+		f = rng_real();
 
-	if(creal(e->pos) <= 0)
-		e->pos = I*cimag(e->pos);
-	if(creal(e->pos) >= VIEWPORT_W)
-		e->pos = VIEWPORT_W + I*cimag(e->pos);
-	if(cimag(e->pos) <= 0)
-		e->pos = creal(e->pos);
-	if(cimag(e->pos) >= VIEWPORT_H)
-		e->pos = creal(e->pos) + I*VIEWPORT_H;
-
-	re = creal(e->pos);
-	im = cimag(e->pos);
-
-	if(re <= 0 || im <= 0 || re >= VIEWPORT_W || im >= VIEWPORT_H) {
-		int i, c;
-		float f;
-		ProjPrototype *type;
-
-		c = 20 + global.diff*40;
-
-		for(i = 0; i < c; i++) {
-			f = frand();
-
-			if(f < 0.3) {
-				type = pp_soul;
-			} else if(f < 0.6) {
-				type = pp_bigball;
-			} else {
-				type = pp_plainball;
-			}
-
-			PROJECTILE(
-				.proto = type,
-				.pos = e->pos,
-				.color = RGBA(1.0, 0.1, 0.1, 0.0),
-				.rule = asymptotic,
-				.args = { (1+3*f)*cexp(2.0*I*M_PI*frand()), 4 },
-			);
+		if(f < 0.3) {
+			type = pp_soul;
+		} else if(f < 0.6) {
+			type = pp_bigball;
+		} else {
+			type = pp_plainball;
 		}
 
-		play_sound("shot_special1");
-		return ACTION_DESTROY;
+		cmplx v = (1 + 3 * f) * rng_dir();
+		real baseangle = rng_angle();
+		real spin = rng_range(M_PI/49, M_PI/53);
+		spin *= rng_sign();
+
+		PROJECTILE(
+			.proto = type,
+			.pos = pos,
+			.color = RGBA(1.0, 0.1, 0.1, 0.0),
+			.move = move_asymptotic_simple(v, 4),
+			.flags = PFLAG_MANUALANGLE,
+			.angle = baseangle,
+			.angle_delta = spin,
+		);
 	}
 
-	return 1;
+	play_sfx("shot_special1");
 }
 
-static void bwlaser(Boss *b, float arg, int slave) {
-	create_lasercurve2c(b->pos, 50, 100, RGBA(1.0, 0.5+0.3*slave, 0.5+0.3*slave, 0.0), las_accel, 0, (0.1+0.1*slave)*cexp(I*arg));
+static void kurumi_blowwall_laser(Boss *b, cmplx direction, bool explode) {
+	cmplx acceleration = 0.1 * (1 + explode) * direction;
+	create_laser(b->pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0),
+		laser_rule_accelerated(0, acceleration));
 
-	if(slave) {
-		play_sound("laser1");
-		create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, blowwall_slave, 0.2*cexp(I*arg));
+	if(explode) {
+		play_sfx("laser1");
+
+		INVOKE_SUBTASK(kurumi_blowwall_exploder, b->pos, acceleration);
 	} else {
 		// FIXME: needs a better sound
-		play_sound("shot2");
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
+		play_sfx("redirect");
 	}
 }
 
-void kurumi_blowwall(Boss *b, int time) {
-	int t = time % 600;
-	TIMER(&t);
+DEFINE_EXTERN_TASK(kurumi_blowwall) {
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
-	if(time == EVENT_DEATH)
-		enemy_kill_all(&global.enemies);
+	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
-	if(time < 0) {
-		return;
-	}
-
-	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.04)
-
-	AT(0) {
+	INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
+	for(;;) {
 		aniplayer_queue(&b->ani,"muda",0);
+		WAIT(50);
+		kurumi_blowwall_laser(b, cdir(0.4), true);
+
+		WAIT(50);
+		kurumi_blowwall_laser(b, cdir(M_PI-0.4), true);
+		WAIT(100);
+		for(int i = 0; i < 2; i++) {
+			kurumi_blowwall_laser(b, cdir(-M_PI * rng_real()), true);
+			WAIT(50);
+		}
+		play_sfx("laser1");
+		for(int i = 0; i < 20; i++) {
+			kurumi_blowwall_laser(b, cdir(M_PI / 10 * i), false);
+			WAIT(10);
+		}
+		INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 100, .sound = COMMON_CHARGE_SOUNDS);
+		WAIT(50);
 	}
-
-	AT(50)
-		bwlaser(b, 0.4, 1);
-
-	AT(100)
-		bwlaser(b, M_PI-0.4, 1);
-
-	FROM_TO(200, 300, 50)
-		bwlaser(b, -M_PI*frand(), 1);
-
-	FROM_TO(300, 500, 10)
-		bwlaser(b, M_PI/10*_i, 0);
-
 }

@@ -2,14 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include <SDL_events.h>
 
 typedef enum {
 	TE_INVALID = -1,
@@ -40,6 +40,7 @@ typedef enum {
 	TE_GAMEPAD_BUTTON_DOWN,
 	TE_GAMEPAD_BUTTON_UP,
 	TE_GAMEPAD_AXIS,
+	TE_GAMEPAD_AXIS_DIGITAL,
 
 	TE_VIDEO_MODE_CHANGED,
 
@@ -48,6 +49,8 @@ typedef enum {
 	TE_AUDIO_BGM_STARTED,
 
 	TE_FILEWATCH,
+
+	TE_WATCHDOG,
 
 	NUM_TAISEI_EVENTS
 } TaiseiEvent;
@@ -68,7 +71,7 @@ typedef enum {
 	NUM_EPRIOS = EPRIO_LAST - EPRIO_FIRST + 1,
 } EventPriority;
 
-static_assert_nomsg(EPRIO_DEFAULT == 0);
+static_assert(EPRIO_DEFAULT == 0);
 
 typedef enum {
 	EFLAG_MENU = (1 << 0),

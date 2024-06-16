@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -14,6 +14,10 @@
 extern struct stage5_spells_s {
 	// this struct must contain only fields of type AttackInfo
 	// order of fields affects the visual spellstage number, but not its real internal ID
+
+	struct {
+		AttackInfo static_bomb;
+	} mid;
 
 	struct {
 		AttackInfo atmospheric_discharge;

@@ -2,23 +2,22 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "kvparser.h"
+
+#include "io.h"
 #include "log.h"
 #include "stringops.h"
-#include "io.h"
 #include "vfs/public.h"
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
 	static const char separator[] = "= ";
 
 	size_t bufsize = 256;
-	char *buffer = malloc(bufsize);
+	char *buffer = mem_alloc(bufsize);
 	int lineno = 0;
 	int errors = 0;
 
@@ -69,7 +68,7 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 		}
 	}
 
-	free(buffer);
+	mem_free(buffer);
 	return !errors;
 }
 

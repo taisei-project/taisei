@@ -2,15 +2,13 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "aniplayer.h"
+
 #include "list.h"
-#include "global.h"
 #include "stageobjects.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence) {
@@ -46,7 +44,7 @@ static void aniplayer_reset(AniPlayer *plr, bool hard) {
 }
 
 AniQueueEntry *aniplayer_queue(AniPlayer *plr, const char *seqname, int loops) {
-	AniQueueEntry *s = calloc(1, sizeof(AniQueueEntry));
+	auto s = ALLOC(AniQueueEntry);
 	alist_append(&plr->queue, s);
 	plr->queuesize++;
 
@@ -82,7 +80,7 @@ void aniplayer_update(AniPlayer *plr) {
 	s->clock++;
 	// The last condition assures that animations only switch at their end points
 	if(s->clock >= s->duration && plr->queuesize > 1 && s->clock%s->sequence->length == 0) {
-		free(alist_pop(&plr->queue));
+		mem_free(alist_pop(&plr->queue));
 		plr->queuesize--;
 	}
 }

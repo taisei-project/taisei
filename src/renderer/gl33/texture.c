@@ -2,17 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "texture.h"
+
 #include "../api.h"
-#include "opengl.h"
-#include "gl33.h"
 #include "../glcommon/debug.h"
+#include "gl33.h"
+#include "opengl.h"
+#include "util.h"
 
 static GLenum class_to_gltarget(TextureClass cls) {
 	switch(cls) {
@@ -162,11 +162,11 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 		}
 	} else {
 		if(width != NULL) {
-			*width = umax(1, tex->params.width / (1u << mipmap));
+			*width = max(1, tex->params.width / (1u << mipmap));
 		}
 
 		if(height != NULL) {
-			*height = umax(1, tex->params.height / (1u << mipmap));
+			*height = max(1, tex->params.height / (1u << mipmap));
 		}
 	}
 }
@@ -186,7 +186,7 @@ static GLenum target_from_class_and_layer(TextureClass cls, uint layer) {
 			[CUBEMAP_FACE_POS_Z] = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 			[CUBEMAP_FACE_NEG_Z] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 		};
-		static_assert_nomsg(ARRAY_SIZE(facemap) == 6);
+		static_assert(ARRAY_SIZE(facemap) == 6);
 		assert(layer < ARRAY_SIZE(facemap));
 		return facemap[layer];
 	} else if(target == GL_TEXTURE_2D) {
@@ -302,8 +302,7 @@ static void apply_swizzle_mask(GLenum gl_target, SwizzleMask *mask) {
 }
 
 Texture *gl33_texture_create(const TextureParams *params) {
-	Texture *tex = calloc(1, sizeof(Texture));
-	memcpy(&tex->params, params, sizeof(*params));
+	auto tex = ALLOC(Texture, { .params = *params });
 	TextureParams *p = &tex->params;
 
 	TextureClass cls = p->class;
@@ -538,7 +537,7 @@ void gl33_texture_clear(Texture *tex, const Color *clr) {
 	// TODO: maybe find a more efficient method
 	Framebuffer *temp_fb = r_framebuffer_create();
 	r_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_clear(temp_fb, CLEAR_COLOR, clr, 1);
+	r_framebuffer_clear(temp_fb, BUFFER_COLOR, clr, 1);
 	r_framebuffer_destroy(temp_fb);
 }
 
@@ -551,7 +550,7 @@ void gl33_texture_destroy(Texture *tex) {
 		glDeleteBuffers(1, &tex->pbo);
 	}
 
-	free(tex);
+	mem_free(tex);
 }
 
 void gl33_texture_taint(Texture *tex) {
@@ -628,6 +627,6 @@ bool gl33_texture_transfer(Texture *dst, Texture *src) {
 	glDeleteTextures(1, &dst->gl_handle);
 	*dst = *src;
 	gl33_texture_pointer_renamed(src, dst);
-	free(src);
+	mem_free(src);
 	return true;
 }

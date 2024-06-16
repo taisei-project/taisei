@@ -2,21 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "global.h"
 
 DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	for(;;) {

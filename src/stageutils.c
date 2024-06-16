@@ -2,18 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "stageutils.h"
+
 #include "global.h"
-#include "util/glm.h"
-#include "video.h"
-#include "resource/model.h"
 #include "resource/material.h"
+#include "resource/model.h"
+#include "util/glm.h"
 
 Stage3D stage_3d_context;
 
@@ -39,10 +37,14 @@ void stage3d_update(Stage3D *s) {
 	camera3d_update(&s->cam);
 }
 
-void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
+static void camera3d_apply_rotations(Camera3D *cam, mat4 mat) {
 	glm_rotate_x(mat, glm_rad(-cam->rot.pitch), mat);
 	glm_rotate_y(mat, glm_rad(-cam->rot.yaw), mat);
 	glm_rotate_z(mat, glm_rad(-cam->rot.roll), mat);
+}
+
+void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
+	camera3d_apply_rotations(cam, mat);
 
 	vec3 trans;
 	glm_vec3_negate_to(cam->pos, trans);
@@ -58,7 +60,7 @@ void camera3d_apply_inverse_transforms(Camera3D *cam, mat4 mat) {
 	mat4 temp;
 	glm_mat4_identity(temp);
 	camera3d_apply_transforms(cam, temp);
-	glm_mat4_inv_fast(temp, mat);
+	glm_mat4_inv_precise(temp, mat);
 }
 
 void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
@@ -85,17 +87,25 @@ void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
 //
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
-	vec3 p = {creal(pos), cimag(pos),1};
+	vec3 p = {re(pos), im(pos),1};
 
 	mat4 mpersp;
 	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
-	camera3d_apply_transforms(cam, mpersp);
-	glm_translate(mpersp, cam->pos);
+	camera3d_apply_rotations(cam, mpersp);
 
 	glm_unproject(p, mpersp, viewport, dest);
 	glm_vec3_normalize(dest);
 }
 
+void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) {
+	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
+
+	mat4 mpersp;
+	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
+	camera3d_apply_transforms(cam, mpersp);
+
+	glm_project(pos, mpersp, viewport, dest);
+}
 
 void camera3d_fill_point_light_uniform_vectors(
 	Camera3D *cam,
@@ -160,7 +170,6 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 
 	if(m->depth_map && m->depth_scale) {
 		r_uniform_sampler("depth_map", m->depth_map);
-		r_uniform_float("depth_scale", m->depth_scale);
 		flags |= PBR_FEATURE_DEPTH_MAP;
 	}
 
@@ -189,6 +198,11 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 	glm_vec3_mul((float*)env->ambient_color, (float*)m->ambient_color, ambientRGB_roughnessA);
 	ambientRGB_roughnessA[3] = m->roughness_value;
 	r_uniform_vec4_vec("ambientRGB_roughnessA", ambientRGB_roughnessA);
+
+	vec4 environmentRGB_depthScale;
+	glm_vec3_copy((float*)env->environment_color, (float*)environmentRGB_depthScale);
+	environmentRGB_depthScale[3] = m->depth_scale;
+	r_uniform_vec4_vec("environmentRGB_depthScale", environmentRGB_depthScale);
 
 	r_uniform_int("features_mask", flags);
 }
@@ -236,38 +250,6 @@ void stage3d_shutdown(Stage3D *s) {
 	dynarray_free_data(&s->positions);
 }
 
-// DEPRECATED
-uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 direction) {
-	vec3 support_to_camera;
-	glm_vec3_sub(camera, support, support_to_camera);
-
-	const float direction_length2 = glm_vec3_norm2(direction);
-	const float projected_cam = glm_vec3_dot(support_to_camera, direction) / direction_length2;
-	const int n_closest_to_cam = projected_cam;
-
-	uint prev_size = s3d->positions.num_elements;
-
-	// This is an approximation that does not take into account the distance
-	// of the camera to the line. Can be made exact though.
-	const int nrange = maxrange/sqrt(direction_length2);
-
-	// draw furthest to closest
-	for(int r = 0; r <= nrange; r++) {
-		for(int dir = -1; dir <= 1; dir += 2) {
-			if(r == 0 && dir > 0) {
-				continue;
-			}
-
-			int n = n_closest_to_cam + dir*r;
-			vec3 extended_direction;
-			glm_vec3_scale(direction, n, extended_direction);
-			glm_vec3_add(support, extended_direction, *dynarray_append(&s3d->positions));
-		}
-	}
-
-	return s3d->positions.num_elements - prev_size;
-}
-
 struct pos_ray_data {
 	int n_closest_to_cam;
 	int forward_nrange;
@@ -296,7 +278,7 @@ static struct pos_ray_data pos_ray_init(
 		.forward_nrange = forward_range / step_len,
 		.back_nrange = back_range / step_len,
 	};
-	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+	rd.max_nrange = max(rd.forward_nrange, rd.back_nrange);
 
 	return rd;
 }
@@ -318,7 +300,7 @@ static struct pos_ray_data pos_ray_init_nsteps(
 		.forward_nrange = forward_steps,
 		.back_nrange = back_steps,
 	};
-	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+	rd.max_nrange = max(rd.forward_nrange, rd.back_nrange);
 
 	return rd;
 }
@@ -406,19 +388,5 @@ uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange) 
 	} else {
 		glm_vec3_copy(origin, *dynarray_append(&s3d->positions));
 		return 1;
-	}
-}
-
-void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2) {
-	int targetframes = *timer + frames;
-
-	while(*timer < targetframes) {
-		++*timer;
-
-		if(timer2) {
-			++*timer2;
-		}
-
-		update_func();
 	}
 }

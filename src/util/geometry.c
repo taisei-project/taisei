@@ -2,42 +2,44 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "geometry.h"
 #include "miscmath.h"
 
 Rect ellipse_bbox(Ellipse e) {
-	float largest_radius = fmax(creal(e.axes), cimag(e.axes)) * 0.5;
+	double largest_radius = max(re(e.axes), im(e.axes)) * 0.5;
+	cmplx d = CMPLX(largest_radius, largest_radius);
 	return (Rect) {
-		.top_left     = e.origin - largest_radius - I * largest_radius,
-		.bottom_right = e.origin + largest_radius + I * largest_radius,
+		.top_left     = e.origin - d,
+		.bottom_right = e.origin + d,
 	};
 }
 
 bool point_in_ellipse(cmplx p, Ellipse e) {
-	double Xp = creal(p);
-	double Yp = cimag(p);
-	double Xe = creal(e.origin);
-	double Ye = cimag(e.origin);
-	double a = e.angle;
-
 	Rect e_bbox = ellipse_bbox(e);
 
-	return point_in_rect(p, e_bbox) && (
-		pow(cos(a) * (Xp - Xe) + sin(a) * (Yp - Ye), 2) / pow(creal(e.axes)/2, 2) +
-		pow(sin(a) * (Xp - Xe) - cos(a) * (Yp - Ye), 2) / pow(cimag(e.axes)/2, 2)
-	) <= 1;
+	if(!point_in_rect(p, e_bbox)) {
+		return false;
+	}
+
+	p -= e.origin;
+	cmplx dir = cdir(e.angle);
+	cmplx dotcross = CMPLX(cdot(p, dir), ccross(p, dir));
+	cmplx dotcross2 = cwmul(dotcross, dotcross);
+	cmplx terms = cwdiv(dotcross2, cwmul(e.axes, e.axes));
+	return re(terms) + im(terms) <= 0.25;
 }
 
 Rect lineseg_bbox(LineSegment seg) {
+	cmplx rmm = csort(CMPLX(re(seg.a), re(seg.b)));
+	cmplx imm = csort(CMPLX(im(seg.a), im(seg.b)));
+
 	return (Rect) {
-		.top_left     = fmin(creal(seg.a), creal(seg.b)) + I * fmin(cimag(seg.a), cimag(seg.b)),
-		.bottom_right = fmax(creal(seg.a), creal(seg.b)) + I * fmax(cimag(seg.a), cimag(seg.b))
+		.top_left     = CMPLX(re(rmm), re(imm)),
+		.bottom_right = CMPLX(im(rmm), im(imm))
 	};
 }
 
@@ -60,8 +62,8 @@ static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
 		return 0;
 	}
 
-	double f = -creal(v * conj(m)) / lm2; // project v onto the line
-	f = clamp(f, 0, 1);                   // restrict it to segment
+	double f = -re(cmul_finite(v, conj(m))) / lm2; // project v onto the line
+	f = clamp(f, 0, 1);                            // restrict it to segment
 
 	return f;
 }
@@ -104,14 +106,21 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	seg.a -= e.origin;
 	seg.b -= e.origin;
 
-	double ratio = creal(e.axes) / cimag(e.axes);
-	cmplx rotation = cexp(I * -e.angle);
-	seg.a *= rotation;
-	seg.b *= rotation;
-	seg.a = creal(seg.a) + I * ratio * cimag(seg.a);
-	seg.b = creal(seg.b) + I * ratio * cimag(seg.b);
+	double ratio = re(e.axes) / im(e.axes);
 
-	Circle c = { .radius = creal(e.axes) / 2 };
+	if(UNLIKELY(ratio != ratio || !ratio)) {
+		// either axis is nan or 0?
+		assert(0 && "Bad ellipse");
+		return false;
+	}
+
+	cmplx rotation = cdir(-e.angle);
+	seg.a = cmul_finite(seg.a, rotation);
+	seg.b = cmul_finite(seg.b, rotation);
+	im(seg.a) *= ratio;
+	im(seg.b) *= ratio;
+
+	Circle c = { .radius = re(e.axes) * 0.5 };
 	return lineseg_circle_intersect_fallback(seg, c) >= 0;
 }
 
@@ -125,10 +134,10 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 
 bool point_in_rect(cmplx p, Rect r) {
 	return
-		creal(p) >= rect_left(r)  &&
-		creal(p) <= rect_right(r) &&
-		cimag(p) >= rect_top(r)   &&
-		cimag(p) <= rect_bottom(r);
+		re(p) >= rect_left(r)  &&
+		re(p) <= rect_right(r) &&
+		im(p) >= rect_top(r)   &&
+		im(p) <= rect_bottom(r);
 }
 
 bool rect_in_rect(Rect inner, Rect outer) {
@@ -179,13 +188,13 @@ bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *ou
 	}
 
 	out->top_left = CMPLX(
-		fmax(rect_left(r1), rect_left(r2)),
-		fmax(rect_top(r1), rect_top(r2))
+		max(rect_left(r1), rect_left(r2)),
+		max(rect_top(r1), rect_top(r2))
 	);
 
 	out->bottom_right = CMPLX(
-		fmin(rect_right(r1), rect_right(r2)),
-		fmin(rect_bottom(r1), rect_bottom(r2))
+		min(rect_right(r1), rect_right(r2)),
+		min(rect_bottom(r1), rect_bottom(r2))
 	);
 
 	return true;
@@ -207,22 +216,22 @@ bool rect_join(Rect *r1, Rect r2) {
 
 	if(rect_left(*r1) == rect_left(r2) && rect_right(*r1) == rect_right(r2)) {
 		// r2 is directly above/below r1
-		double y_min = fmin(rect_top(*r1), rect_top(r2));
-		double y_max = fmax(rect_bottom(*r1), rect_bottom(r2));
+		double y_min = min(rect_top(*r1), rect_top(r2));
+		double y_max = max(rect_bottom(*r1), rect_bottom(r2));
 
-		r1->top_left = CMPLX(creal(r1->top_left), y_min);
-		r1->bottom_right = CMPLX(creal(r1->bottom_right), y_max);
+		r1->top_left = CMPLX(re(r1->top_left), y_min);
+		r1->bottom_right = CMPLX(re(r1->bottom_right), y_max);
 
 		return true;
 	}
 
 	if(rect_top(*r1) == rect_top(r2) && rect_bottom(*r1) == rect_bottom(r2)) {
 		// r2 is directly left/right to r1
-		double x_min = fmin(rect_left(*r1), rect_left(r2));
-		double x_max = fmax(rect_right(*r1), rect_right(r2));
+		double x_min = min(rect_left(*r1), rect_left(r2));
+		double x_max = max(rect_right(*r1), rect_right(r2));
 
-		r1->top_left = CMPLX(x_min, cimag(r1->top_left));
-		r1->bottom_right = CMPLX(x_max, cimag(r1->bottom_right));
+		r1->top_left = CMPLX(x_min, im(r1->top_left));
+		r1->bottom_right = CMPLX(x_max, im(r1->bottom_right));
 
 		return true;
 	}
@@ -243,7 +252,7 @@ double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) {
 	double h = cabs2(ucap.pos.b);
 	cmplx q = CMPLX(cdot(p, conj(cswap(ucap.pos.b))), cdot(p, ucap.pos.b)) / h;
 
-	q = CMPLX(fabs(creal(q)), cimag(q));
+	q = CMPLX(fabs(re(q)), im(q));
 
 	double b = ucap.radius.a - ucap.radius.b;
 	cmplx c = CMPLX(sqrt(h - b * b), b);
@@ -256,8 +265,8 @@ double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) {
 		return sqrt(h * n) - ucap.radius.a;
 	}
 
-	if(k > creal(c)) {
-		return sqrt(h * (n + 1 - 2 * cimag(q))) - ucap.radius.b;
+	if(k > re(c)) {
+		return sqrt(h * (n + 1 - 2 * im(q))) - ucap.radius.b;
 	}
 
 	return m - ucap.radius.a;
@@ -266,17 +275,17 @@ double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) {
 bool lineseg_lineseg_intersection(LineSegment seg0, LineSegment seg1, cmplx *out) {
 	// Based on an answer from https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 
-	double p0_x = creal(seg0.a);
-	double p0_y = cimag(seg0.a);
+	double p0_x = re(seg0.a);
+	double p0_y = im(seg0.a);
 
-	double p1_x = creal(seg0.b);
-	double p1_y = cimag(seg0.b);
+	double p1_x = re(seg0.b);
+	double p1_y = im(seg0.b);
 
-	double p2_x = creal(seg1.a);
-	double p2_y = cimag(seg1.a);
+	double p2_x = re(seg1.a);
+	double p2_y = im(seg1.a);
 
-	double p3_x = creal(seg1.b);
-	double p3_y = cimag(seg1.b);
+	double p3_x = re(seg1.b);
+	double p3_y = im(seg1.b);
 
 	double s1_x = p1_x - p0_x;
 	double s1_y = p1_y - p0_y;

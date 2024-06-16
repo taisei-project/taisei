@@ -2,14 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "rwops_segment.h"
-#include "util.h"
+#include "log.h"
 
 typedef struct Segment {
 	SDL_RWops *wrapped;
@@ -164,7 +162,7 @@ static int segment_close(SDL_RWops *rw) {
 			SDL_RWclose(s->wrapped);
 		}
 
-		free(s);
+		mem_free(s);
 		SDL_FreeRW(rw);
 	}
 
@@ -192,17 +190,15 @@ SDL_RWops *SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool auto
 	rw->read = segment_read;
 	rw->write = segment_write;
 	rw->close = segment_close;
+	rw->hidden.unknown.data1 = ALLOC(Segment, {
+		.wrapped = src,
+		.start = start,
+		.end = end,
+		.autoclose = autoclose,
 
-	Segment *s = malloc(sizeof(Segment));
-	s->wrapped = src;
-	s->start = start;
-	s->end = end;
-	s->autoclose = autoclose;
-
-	// fallback for non-seekable streams
-	s->pos = start;
-
-	rw->hidden.unknown.data1 = s;
+		// fallback for non-seekable streams
+		.pos = start,
+	});
 
 	return rw;
 }

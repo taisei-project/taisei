@@ -2,13 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
+#include "dynarray.h"
 #include "hashtable.h"
 #include "vfs/public.h"
 
@@ -29,12 +30,10 @@ typedef enum ResourceType {
 
 typedef enum ResourceFlags {
 	RESF_OPTIONAL = 1,
-	RESF_PERMANENT = 2,   // TODO get rid of this cancer
-	RESF_PRELOAD = 4,
-	RESF_RELOAD = 8,
+	RESF_PRELOAD = 2,
+	RESF_RELOAD = 4,
 
 	RESF_DEFAULT = 0,
-	RESF_PROMOTABLE_FLAGS = RESF_PERMANENT,   // TODO get rid of this cancer
 } ResourceFlags;
 
 typedef struct ResourceLoadState ResourceLoadState;
@@ -131,47 +130,51 @@ typedef struct Resource {
 	ResourceFlags flags;
 } Resource;
 
-void init_resources(void);
-void load_resources(void);
-void shutdown_resources(void);
-void free_resources(bool all);
-void reload_all_resources(void);
+typedef struct ResourceGroup {
+	DYNAMIC_ARRAY(void*) refs;
+} ResourceGroup;
 
-Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
-void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
+void res_init(void);
+void res_post_init(void);
+void res_shutdown(void);
+void res_reload_all(void);
+void res_purge(void);
 
-attr_nonnull_all
-INLINE Resource *get_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	return _get_resource(type, name, ht_str2ptr_hash(name), flags);
+Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
+
+INLINE void *_res_get_data_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
+	Resource *res = _res_get_prehashed(type, name, hash, flags);
+	return res ? res->data : NULL;
 }
 
 attr_nonnull_all
-INLINE void *get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
-	return _get_resource_data(type, name, ht_str2ptr_hash(name), flags);
+INLINE Resource *res_get(ResourceType type, const char *name, ResourceFlags flags) {
+	return _res_get_prehashed(type, name, ht_str2ptr_hash(name), flags);
 }
 
-void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
-void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
-void *resource_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
+attr_nonnull_all
+INLINE void *res_get_data(ResourceType type, const char *name, ResourceFlags flags) {
+	return _res_get_data_prehashed(type, name, ht_str2ptr_hash(name), flags);
+}
 
-void resource_util_strip_ext(char *path);
-char *resource_util_basename(const char *prefix, const char *path);
-const char *resource_util_filename(const char *path);
+void *res_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
+
+void res_group_init(ResourceGroup *rg) attr_nonnull_all;
+void res_group_release(ResourceGroup *rg) attr_nonnull_all;
+void res_group_preload(ResourceGroup *rg, ResourceType type, ResourceFlags flags, ...)
+	attr_sentinel;
+
+void res_util_strip_ext(char *path);
+char *res_util_basename(const char *prefix, const char *path);
 
 #define DEFINE_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all attr_returns_nonnull \
 	INLINE _type *_name(const char *resname) { \
-		return NOT_NULL(get_resource_data(_enum, resname, RESF_DEFAULT)); \
+		return NOT_NULL(res_get_data(_enum, resname, RESF_DEFAULT)); \
 	}
 
 #define DEFINE_OPTIONAL_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all \
 	INLINE _type *_name(const char *resname) { \
-		return get_resource_data(_enum, resname, RESF_OPTIONAL); \
-	}
-
-#define DEFINE_DEPRECATED_RESOURCE_GETTER(_type, _name, _successor) \
-	attr_deprecated("Use " #_successor "() instead") \
-	INLINE _type *_name(const char *resname) { \
-		return _successor(resname); \
+		return res_get_data(_enum, resname, RESF_OPTIONAL); \
 	}

@@ -2,14 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "rwops_sha256.h"
-#include "util.h"
 
 struct sha256_data {
 	SDL_RWops *src;
@@ -24,7 +21,7 @@ static int rwsha256_close(SDL_RWops *rw) {
 		SDL_RWclose(DATA(rw)->src);
 	}
 
-	free(DATA(rw));
+	mem_free(DATA(rw));
 	SDL_FreeRW(rw);
 	return 0;
 }
@@ -74,7 +71,7 @@ SDL_RWops *SDL_RWWrapSHA256(SDL_RWops *src, SHA256State *sha256, bool autoclose)
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->hidden.unknown.data1 = calloc(1, sizeof(struct sha256_data));
+	rw->hidden.unknown.data1 = ALLOC(struct sha256_data);
 	DATA(rw)->src = src;
 	DATA(rw)->sha256 = sha256;
 	DATA(rw)->autoclose = autoclose;

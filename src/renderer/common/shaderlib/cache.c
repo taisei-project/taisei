@@ -2,19 +2,19 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "shaderlib.h"
+#include "cache.h"
 
-#include "util.h"
+#include "log.h"
 #include "util/sha256.h"
 #include "rwops/rwops_crc32.h"
 #include "rwops/rwops_autobuf.h"
 #include "rwops/rwops_zstd.h"
+#include "vfs/public.h"
 
 #define CACHE_VERSION 5
 #define CRC_INIT 0
@@ -176,13 +176,13 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 
 			if(nattrs > 0) {
 				out_src->meta.glsl.num_attributes = nattrs;
-				out_src->meta.glsl.attributes = calloc(nattrs, sizeof(*out_src->meta.glsl.attributes));
+				out_src->meta.glsl.attributes = ALLOC_ARRAY(nattrs, typeof(*out_src->meta.glsl.attributes));
 
 				for(uint i = 0; i < nattrs; ++i) {
 					GLSLAttribute *attr = out_src->meta.glsl.attributes + i;
 					attr->location = SDL_ReadLE32(s);
 					uint len = SDL_ReadU8(s);
-					attr->name = calloc(1, len + 1);
+					attr->name = mem_alloc(len + 1);
 					SDL_RWread(s, attr->name, len, 1);
 				}
 			}
@@ -201,7 +201,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 	}
 
 	out_src->content_size = SDL_ReadLE32(s);
-	out_src->content = calloc(1, out_src->content_size);
+	out_src->content = mem_alloc(out_src->content_size);
 
 	if(SDL_RWread(s, out_src->content, out_src->content_size, 1) != 1) {
 		log_error("Read error");
@@ -270,7 +270,7 @@ bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src
 
 	if(entry != NULL) {
 		shader_cache_set_raw(hash, key, entry, entry_size);
-		free(entry);
+		mem_free(entry);
 		log_debug("Stored %s/%s in cache", hash, key);
 		return true;
 	}
@@ -295,6 +295,6 @@ bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_
 
 	// shader_cache_set_raw(out_buf, "orig", entry, entry_size);
 
-	free(entry);
+	mem_free(entry);
 	return true;
 }

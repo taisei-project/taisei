@@ -2,25 +2,27 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "common.h"
-#include "global.h"
-#include "menu.h"
-#include "savereplay.h"
-#include "difficultyselect.h"
-#include "cutscenes/cutscene.h"
+
+#include "audio/audio.h"
 #include "charselect.h"
 #include "credits.h"
+#include "cutscenes/cutscene.h"
+#include "difficultyselect.h"
+#include "global.h"
 #include "mainmenu.h"
+#include "menu.h"
 #include "progress.h"
-#include "video.h"
-#include "replay/struct.h"
 #include "replay/state.h"
+#include "replay/struct.h"
+#include "resource/font.h"
+#include "savereplay.h"
+#include "stage.h"
+#include "video.h"
 
 typedef struct StartGameContext {
 	StageInfo *restart_stage;
@@ -29,6 +31,7 @@ typedef struct StartGameContext {
 	MenuData *char_menu;
 	Replay replay;
 	Difficulty difficulty;
+	ResourceGroup rg;
 } StartGameContext;
 
 static void start_game_do_pick_character(CallChainResult ccr);
@@ -39,7 +42,8 @@ static void start_game_do_show_credits(CallChainResult ccr);
 static void start_game_do_cleanup(CallChainResult ccr);
 
 static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
-	StartGameContext *ctx = calloc(1, sizeof(*ctx));
+	auto ctx = ALLOC(StartGameContext);
+	res_group_init(&ctx->rg);
 
 	if(info == NULL) {
 		global.is_practice_mode = false;
@@ -110,6 +114,11 @@ static void kill_aux_menus(StartGameContext *ctx) {
 	ctx->char_menu = ctx->diff_menu = NULL;
 }
 
+static void enter_stage_now(StartGameContext *ctx) {
+	res_group_release(&ctx->rg);
+	stage_enter(ctx->current_stage, &ctx->rg, CALLCHAIN(start_game_do_leave_stage, ctx));
+}
+
 static void start_game_do_enter_stage(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 	MenuData *prev_menu = ccr.result;
@@ -127,7 +136,7 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 
 	kill_aux_menus(ctx);
 	reset_game(ctx);
-	stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+	enter_stage_now(ctx);
 }
 
 static void start_game_do_leave_stage(CallChainResult ccr) {
@@ -135,7 +144,7 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 
 	if(global.gameover == GAMEOVER_RESTART) {
 		reset_game(ctx);
-		stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+		enter_stage_now(ctx);
 		return;
 	}
 
@@ -143,12 +152,14 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 		++ctx->current_stage;
 
 		if(ctx->current_stage->type == STAGE_STORY) {
-			stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+			enter_stage_now(ctx);
 		} else {
 			CallChain cc;
 
 			if(global.gameover == GAMEOVER_WIN) {
-				credits_preload();
+				res_group_release(&ctx->rg);
+				res_purge();
+				credits_preload(&ctx->rg);
 				cc = CALLCHAIN(start_game_do_show_ending, ctx);
 			} else {
 				cc = CALLCHAIN(start_game_do_cleanup, ctx);
@@ -184,8 +195,8 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
-	free(ctx);
-	free_resources(false);
+	res_group_release(&ctx->rg);
+	mem_free(ctx);
 	global.gameover = GAMEOVER_NONE;
 	replay_state_deinit(&global.replay.output);
 	main_menu_update_practice_menus();

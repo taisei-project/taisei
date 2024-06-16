@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "scuttle.h"
 
@@ -39,5 +37,6 @@ Boss *stage3_spawn_scuttle(cmplx pos) {
 	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
+	scuttle->zoomcolor = *RGB(0.4, 0.1, 0.4);
 	return scuttle;
 }

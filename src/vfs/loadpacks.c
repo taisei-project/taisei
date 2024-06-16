@@ -2,17 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "loadpacks.h"
+
 #include "public.h"
-#include "setup.h"
 #include "error.h"
-#include "util.h"
+
+#include "log.h"
+#include "util/stringops.h"
 
 static bool vfs_mount_pkgdir(const char *dst, const char *src) {
 	VFSInfo stat = vfs_query(src);
@@ -83,7 +83,7 @@ void vfs_load_packages(const char *dir, const char *unionmp) {
 			log_error("VFS error: %s", vfs_get_error());
 		}
 
-		free(tmp);
+		mem_free(tmp);
 	}
 
 	vfs_dir_list_free(paklist, numpaks);

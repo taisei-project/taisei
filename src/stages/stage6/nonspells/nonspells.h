@@ -2,22 +2,22 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "global.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../elly.h"  // IWYU pragma: export
 
-#include "boss.h"
+DECLARE_EXTERN_TASK(stage6_boss_nonspell_scythe_common, { BoxedEllyScythe scythe; });
+DECLARE_EXTERN_TASK(stage6_boss_nonspell_baryons_common, { BoxedEllyBaryons baryons; });
 
-#include "stages/stage6/elly.h"
-
-void elly_frequency(Boss*, int);
-void elly_frequency2(Boss*, int);
-void elly_paradigm_shift(Boss*, int);
-void elly_baryonattack(Boss*, int);
-void elly_baryonattack2(Boss*, int);
-void elly_baryon_explode(Boss*, int);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_1, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_2, ScytheAttack);
+DECLARE_EXTERN_TASK(stage6_boss_paradigm_shift, { BossAttackTaskArgs base; BoxedEllyScythe scythe; BoxedEllyBaryons baryons; });
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_4, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_5, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_baryons_explode, BaryonsAttack);

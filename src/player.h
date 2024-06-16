@@ -2,12 +2,21 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
+
+#include "aniplayer.h"
+#include "color.h"
+#include "coroutine/coevent.h"
+#include "entity.h"
+#include "replay/eventcodes.h"
+#include "replay/state.h"
+#include "resource/resource.h"
+#include "stats.h"
 
 #ifdef DEBUG
 	#define PLR_DPS_STATS
@@ -19,19 +28,9 @@
 	#define IF_PLR_DPS_STATS(...)
 #endif
 
-#include "util.h"
-#include "enemy.h"
-#include "gamepad.h"
-#include "aniplayer.h"
-#include "stats.h"
-#include "resource/animation.h"
-#include "entity.h"
-#include "replay/state.h"
-#include "replay/eventcodes.h"
-
 enum {
-	PLR_MAX_POWER = 400,
-	PLR_MAX_POWER_OVERFLOW = 200,
+	PLR_MAX_POWER_EFFECTIVE = 400,
+	PLR_MAX_POWER_STORED = 600,
 	PLR_MAX_LIVES = 8,
 	PLR_MAX_BOMBS = 8,
 
@@ -70,16 +69,21 @@ static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MIN = (0.01 / 60.0);
 static const float PLR_POWERSURGE_POSITIVE_GAIN      = (1.50 / 60.0);
 static const float PLR_POWERSURGE_NEGATIVE_GAIN      = (0.40 / 60.0);
 
-typedef enum {
-	// do not reorder these or you'll break replays
+// do not reorder these or you'll break replays
+#define INFLAGS \
+	INFLAG(UP,    0) \
+	INFLAG(DOWN,  1) \
+	INFLAG(LEFT,  2) \
+	INFLAG(RIGHT, 3) \
+	INFLAG(FOCUS, 4) \
+	INFLAG(SHOT,  5) \
+	INFLAG(SKIP,  6) \
 
-	INFLAG_UP = 1,
-	INFLAG_DOWN = 2,
-	INFLAG_LEFT = 4,
-	INFLAG_RIGHT = 8,
-	INFLAG_FOCUS = 16,
-	INFLAG_SHOT = 32,
-	INFLAG_SKIP = 64,
+typedef enum {
+	#define INFLAG(name, bit) \
+		INFLAG_##name = (1 << bit),
+	INFLAGS
+	#undef INFLAG
 } PlrInputFlag;
 
 enum {
@@ -98,6 +102,7 @@ typedef struct PowerSurgeBonus {
 DEFINE_ENTITY_TYPE(Player, {
 	cmplx pos;
 	cmplx velocity;
+	cmplx uncapped_velocity;
 	cmplx deathpos;
 
 	struct PlayerMode *mode;
@@ -112,7 +117,8 @@ DEFINE_ENTITY_TYPE(Player, {
 		struct {
 			int activated, expired;
 		} time;
-		int power;
+		int total_charge;
+		int player_power;
 		double damage_done;
 		double damage_accum;
 		PowerSurgeBonus bonus;
@@ -121,7 +127,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	COEVENTS_ARRAY(
 		shoot,
 		inputflags_changed,
-		power_changed,
+		stored_power_changed,
+		effective_power_changed,
 		bomb_used
 	) events;
 
@@ -137,8 +144,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
-	int power;
-	int power_overflow;
+	int power_stored;
+	int _prev_effective_power;
 
 	int continuetime;
 	int deathtime;          /* time of hit + deathbomb window */
@@ -191,6 +198,7 @@ bool player_should_shoot(Player *plr);
 
 bool player_set_power(Player *plr, short npow);
 bool player_add_power(Player *plr, short pdelta);
+int player_get_effective_power(Player *plr);
 
 void player_move(Player*, cmplx delta);
 
@@ -238,7 +246,7 @@ double player_get_bomb_progress(Player *plr);
 
 void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 
-void player_preload(void);
+void player_preload(ResourceGroup *rg);
 
 // FIXME: where should this be?
 cmplx plrutil_homing_target(cmplx org, cmplx fallback);

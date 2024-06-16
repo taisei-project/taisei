@@ -2,20 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
+#include "progress.h"
+
+#include "stageinfo.h"
+#include "util.h"
+#include "version.h"
+#include "rwops/rwops_zstd.h"
 
 #include <zlib.h>
 
-#include "progress.h"
-#include "stageinfo.h"
-#include "version.h"
-
 /*
-
 	This module implements a persistent storage of a player's game progress, such as unlocked stages, high-scores etc.
 
 	Basic outline of the progress file structure (little-endian encoding):
@@ -31,37 +31,47 @@
 	If the checksum is incorrect, the whole progress file is deemed invalid and ignored.
 
 	All commands are optional and the array may be empty. In that case, the checksum may be omitted as well.
-
-	Currently implemented commands (see also the ProgfileCommand enum in progress.h):
-
-		- PCMD_UNLOCK_STAGES:
-			Unlocks one or more stages. Only works for stages with fixed difficulty.
-
-		- PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
-			Unlocks one or more stages, each on a specific difficulty
-
-		- PCMD_HISCORE
-			Sets the "Hi-Score" (highest score ever attained in one game session)
-
-		- PCMD_STAGE_PLAYINFO
-			Sets the times played and times cleared counters for a list of stage/difficulty combinations
-
-		- PCMD_ENDINGS
-			Sets the the number of times an ending was achieved for a list of endings
-
-		- PCMD_GAME_SETTINGS
-			Sets the last picked difficulty, character and shot mode
-
-		- PCMD_GAME_VERSION
-			Sets the game version this file was last written with
-
-		- PCMD_UNLOCK_BGMS
-			Unlocks BGMs in the music room
-
-		- PCMD_UNLOCK_CUTSCENES
-			Unlocks cutscenes in the cutscenes menu
-
 */
+
+/*
+ * Currently implemented commands:
+ */
+typedef enum ProgfileCommand {
+	// NOTE: These values must never change to preserve compatibility with old progress files!
+
+	// Unlocks one or more stages. Only works for stages with fixed difficulty.
+	PCMD_UNLOCK_STAGES                     = 0x00,
+
+	// Unlocks one or more stages, each on a specific difficulty
+	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
+
+	// Sets the high-score (legacy, 32-bit value)
+	PCMD_HISCORE                           = 0x02,
+
+	// Sets the times played and times cleared counters for a list of stage/difficulty combinations
+	PCMD_STAGE_PLAYINFO                    = 0x03,
+
+	// Sets the the number of times an ending was achieved for a list of endings
+	PCMD_ENDINGS                           = 0x04,
+
+	// Sets the last picked difficulty, character and shot mode
+	PCMD_GAME_SETTINGS                     = 0x05,
+
+	// Sets the game version this file was last written with
+	PCMD_GAME_VERSION                      = 0x06,
+
+	// Unlocks BGMs in the music room
+	PCMD_UNLOCK_BGMS                       = 0x07,
+
+	// Unlocks cutscenes in the cutscenes menu
+	PCMD_UNLOCK_CUTSCENES                  = 0x08,
+
+	// Sets the high-score (64-bit value)
+	PCMD_HISCORE_64BIT                     = 0x09,
+
+	// Sets the high scores and per-plrmode play/clear counters for stage/difficulty combinations
+	PCMD_STAGE_PLAYINFO2                   = 0x10,
+} ProgfileCommand;
 
 /*
 
@@ -78,6 +88,10 @@
 		  As long as this can stop a l33th4XxXxX0r1998 armed with notepad.exe or a hex editor, I'm happy.
 
 */
+
+#define PROGRESS_FILE_OLD "storage/progress.dat"
+#define PROGRESS_FILE "storage/progress.zst"
+#define PROGRESS_MAXFILESIZE (1 << 15)
 
 GlobalProgress progress;
 
@@ -97,6 +111,136 @@ typedef struct UnknownCmd {
 	uint8_t *data;
 } UnknownCmd;
 
+#define PLAYINFO_HEADER_FIELDS \
+	PLAYINFO_FIELD(uint16_t, stage) \
+	PLAYINFO_FIELD(uint8_t,  diff) \
+
+#define PLAYINFO_FIELDS \
+	PLAYINFO_FIELD(uint32_t, num_played) \
+	PLAYINFO_FIELD(uint32_t, num_cleared) \
+
+#define PLAYINFO2_FIELDS_GLOBAL \
+	PLAYINFO_FIELD(uint64_t, hiscore) \
+
+#define PLAYINFO2_FIELDS_PERMODE \
+	PLAYINFO_FIELD(uint32_t, num_played) \
+	PLAYINFO_FIELD(uint32_t, num_cleared) \
+	PLAYINFO_FIELD(uint64_t, hiscore) \
+
+#define WRITEFUNC_uint64_t SDL_WriteLE64
+#define WRITEFUNC_uint32_t SDL_WriteLE32
+#define WRITEFUNC_uint16_t SDL_WriteLE16
+#define WRITEFUNC_uint8_t  SDL_WriteU8
+#define WRITEFUNC(t) WRITEFUNC_##t
+
+#define READFUNC_uint64_t SDL_ReadLE64
+#define READFUNC_uint32_t SDL_ReadLE32
+#define READFUNC_uint16_t SDL_ReadLE16
+#define READFUNC_uint8_t  SDL_ReadU8
+#define READFUNC(t) READFUNC_##t
+
+#define PLAYINFO_FIELD(t,f) + sizeof(t)
+
+INLINE size_t playinfo_header_size(void) {
+	return PLAYINFO_HEADER_FIELDS;
+}
+
+INLINE size_t playinfo_size(uint num_entries) {
+	return num_entries * (PLAYINFO_HEADER_FIELDS PLAYINFO_FIELDS);
+}
+
+INLINE size_t playinfo2_size(uint num_entries) {
+	return num_entries * (
+			PLAYINFO_HEADER_FIELDS PLAYINFO2_FIELDS_GLOBAL
+			+ NUM_PLAYER_MODES * (PLAYINFO2_FIELDS_PERMODE)
+		);
+}
+
+#undef PLAYINFO_FIELD
+
+typedef struct PlayInfoHeader {
+	#define PLAYINFO_FIELD(t,f) \
+		t f;
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+} PlayInfoHeader;
+
+static size_t playinfo_header_read(SDL_RWops *vfile, PlayInfoHeader *h) {
+	#define PLAYINFO_FIELD(t,f) \
+		h->f = READFUNC(t)(vfile);
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_header_size();
+}
+
+static size_t playinfo_header_write(SDL_RWops *vfile, const PlayInfoHeader *h) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, h->f);
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_header_size();
+}
+
+static size_t playinfo_data_read(SDL_RWops *vfile, StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		p->global.f = READFUNC(t)(vfile);
+	PLAYINFO_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo_data_write(SDL_RWops *vfile, const StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, p->global.f);
+	PLAYINFO_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo2_data_read(SDL_RWops *vfile, StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		p->global.f = READFUNC(t)(vfile);
+	PLAYINFO2_FIELDS_GLOBAL
+	#undef PLAYINFO_FIELD
+
+	static_assert(ARRAY_SIZE(p->per_plrmode) == NUM_CHARACTERS);
+	static_assert(ARRAY_SIZE(p->per_plrmode[0]) == NUM_SHOT_MODES_PER_CHARACTER);
+
+	for(int chr = 0; chr < ARRAY_SIZE(p->per_plrmode); ++chr) {
+		for(int mod = 0; mod < ARRAY_SIZE(p->per_plrmode[chr]); ++mod) {
+			StageProgressContents *c = &p->per_plrmode[chr][mod];
+			#define PLAYINFO_FIELD(t,f) \
+				c->f = READFUNC(t)(vfile);
+			PLAYINFO2_FIELDS_PERMODE
+			#undef PLAYINFO_FIELD
+		}
+	}
+
+	return playinfo2_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo2_data_write(SDL_RWops *vfile, const StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, p->global.f);
+	PLAYINFO2_FIELDS_GLOBAL
+	#undef PLAYINFO_FIELD
+
+	static_assert(ARRAY_SIZE(p->per_plrmode) == NUM_CHARACTERS);
+	static_assert(ARRAY_SIZE(p->per_plrmode[0]) == NUM_SHOT_MODES_PER_CHARACTER);
+
+	for(int chr = 0; chr < ARRAY_SIZE(p->per_plrmode); ++chr) {
+		for(int mod = 0; mod < ARRAY_SIZE(p->per_plrmode[chr]); ++mod) {
+			const StageProgressContents *c = &p->per_plrmode[chr][mod];
+			#define PLAYINFO_FIELD(t,f) \
+				WRITEFUNC(t)(vfile, c->f);
+			PLAYINFO2_FIELDS_PERMODE
+			#undef PLAYINFO_FIELD
+		}
+	}
+
+	return playinfo2_size(1) - playinfo_header_size();
+}
+
 static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_t cmdsize, uint16_t expectsize) {
 	if(cmdsize == expectsize) {
 		return true;
@@ -112,18 +256,6 @@ static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_
 }
 
 static void progress_read(SDL_RWops *file) {
-	int64_t filesize = SDL_RWsize(file);
-
-	if(filesize < 0) {
-		log_sdl_error(LOG_ERROR, "SDL_RWseek");
-		return;
-	}
-
-	if(filesize > PROGRESS_MAXFILESIZE) {
-		log_error("Progress file is huge (%"PRIi64" bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
-		return;
-	}
-
 	for(int i = 0; i < sizeof(progress_magic_bytes); ++i) {
 		if(SDL_ReadU8(file) != progress_magic_bytes[i]) {
 			log_error("Invalid header");
@@ -131,39 +263,47 @@ static void progress_read(SDL_RWops *file) {
 		}
 	}
 
-	if(filesize - SDL_RWtell(file) < 4) {
-		return;
-	}
-
 	uint32_t checksum_fromfile;
 	// no byteswapping here
 	SDL_RWread(file, &checksum_fromfile, 4, 1);
 
-	size_t bufsize = filesize - sizeof(progress_magic_bytes) - 4;
-	uint8_t *buf = malloc(bufsize);
+	const size_t chunk_size = (1 << 12);
+	DYNAMIC_ARRAY(uint8_t) buf = {};
 
-	if(!SDL_RWread(file, buf, bufsize, 1)) {
-		log_sdl_error(LOG_ERROR, "SDL_RWread");
-		free(buf);
-		return;
+	for(;;) {
+		dynarray_ensure_capacity(&buf, buf.num_elements + chunk_size);
+		size_t read = SDL_RWread(file, buf.data + buf.num_elements, 1, chunk_size);
+		buf.num_elements += read;
+
+		if(buf.num_elements > PROGRESS_MAXFILESIZE) {
+			log_error("Progress file is too large (>= %i; max is %i)", buf.num_elements, PROGRESS_MAXFILESIZE);
+			dynarray_free_data(&buf);
+			return;
+		}
+
+		if(read == 0) {
+			break;
+		}
 	}
 
-	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
-	uint32_t checksum = progress_checksum(buf, bufsize);
+	SDL_RWops *vfile = SDL_RWFromMem(buf.data, buf.num_elements);
+	uint32_t checksum = progress_checksum(buf.data, buf.num_elements);
 
 	if(checksum != checksum_fromfile) {
 		log_error("Bad checksum: %x != %x", checksum, checksum_fromfile);
 		SDL_RWclose(vfile);
-		free(buf);
+		dynarray_free_data(&buf);
 		return;
 	}
 
 	TaiseiVersion version_info = { 0 };
 
-	while(SDL_RWtell(vfile) < bufsize) {
+	while(SDL_RWtell(vfile) < buf.num_elements) {
 		ProgfileCommand cmd = (int8_t)SDL_ReadU8(vfile);
 		uint16_t cur = 0;
 		uint16_t cmdsize = SDL_ReadLE16(vfile);
+
+		log_debug("at %i: %i (%i)", cur, cmd, cmdsize);
 
 		switch(cmd) {
 			case PCMD_UNLOCK_STAGES:
@@ -199,23 +339,39 @@ static void progress_read(SDL_RWops *file) {
 				progress.hiscore = SDL_ReadLE32(vfile);
 				break;
 
+			case PCMD_HISCORE_64BIT:
+				progress.hiscore = SDL_ReadLE64(vfile);
+				break;
+
 			case PCMD_STAGE_PLAYINFO:
 				while(cur < cmdsize) {
-					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
-					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
-					StageProgress *p = stageinfo_get_progress_by_id(stg, diff, true);
+					PlayInfoHeader h = {};
+					cur += playinfo_header_read(vfile, &h);
+					StageProgress *p = stageinfo_get_progress_by_id(h.stage, h.diff, true);
+					StageProgress discard;
 
-					// assert(p != NULL);
-
-					uint32_t np = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-					uint32_t nc = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-
-					if(p) {
-						p->num_played = np;
-						p->num_cleared = nc;
-					} else {
-						log_warn("Invalid stage %X ignored", stg);
+					if(!p) {
+						log_warn("Invalid stage %X ignored", h.stage);
+						p = &discard;
 					}
+
+					cur += playinfo_data_read(vfile, p);
+				}
+				break;
+
+			case PCMD_STAGE_PLAYINFO2:
+				while(cur < cmdsize) {
+					PlayInfoHeader h = {};
+					cur += playinfo_header_read(vfile, &h);
+					StageProgress *p = stageinfo_get_progress_by_id(h.stage, h.diff, true);
+					StageProgress discard;
+
+					if(!p) {
+						log_warn("Invalid stage %X ignored", h.stage);
+						p = &discard;
+					}
+
+					cur += playinfo2_data_read(vfile, p);
 				}
 				break;
 
@@ -250,7 +406,7 @@ static void progress_read(SDL_RWops *file) {
 					assert(read == TAISEI_VERSION_SIZE);
 					char *vstr = taisei_version_tostring(&version_info);
 					log_info("Progress file from Taisei v%s", vstr);
-					free(vstr);
+					mem_free(vstr);
 				}
 				break;
 
@@ -269,10 +425,11 @@ static void progress_read(SDL_RWops *file) {
 			default:
 				log_warn("Unknown command %x (%u bytes). Will preserve as-is and not interpret", cmd, cmdsize);
 
-				UnknownCmd *c = malloc(sizeof(UnknownCmd));
-				c->cmd = cmd;
-				c->size = cmdsize;
-				c->data = malloc(cmdsize);
+				auto c = ALLOC(UnknownCmd, {
+					.cmd = cmd,
+					.size = cmdsize,
+					.data = ALLOC_ARRAY(cmdsize, uint8_t)
+				});
 				SDL_RWread(vfile, c->data, c->size, 1);
 				list_append(&progress.unknown, c);
 
@@ -297,12 +454,12 @@ static void progress_read(SDL_RWops *file) {
 				log_warn("Progress file will be automatically downgraded from v%s to v%s upon saving", v_prog, v_game);
 			}
 
-			free(v_prog);
-			free(v_game);
+			mem_free(v_prog);
+			mem_free(v_game);
 		}
 	}
 
-	free(buf);
+	dynarray_free_data(&buf);
 	SDL_RWclose(vfile);
 }
 
@@ -436,39 +593,42 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 }
 
 //
-//  PCMD_HISCORE
+//  PCMD_HISCORE / PCMD_HISCORE_64BIT
 //
 
 static void progress_prepare_cmd_hiscore(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
 }
 
 static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
+	// Legacy 32-bit command for compatibility
+	// NOTE: must be written BEFORE the 64-bit command
+
 	SDL_WriteU8(vfile, PCMD_HISCORE);
 	SDL_WriteLE16(vfile, sizeof(uint32_t));
-	SDL_WriteLE32(vfile, progress.hiscore);
+	SDL_WriteLE32(vfile, progress.hiscore & 0xFFFFFFFFu);
+
+	SDL_WriteU8(vfile, PCMD_HISCORE_64BIT);
+	SDL_WriteLE16(vfile, sizeof(uint64_t));
+	SDL_WriteLE64(vfile, progress.hiscore);
 }
 
 //
-//  PCMD_STAGE_PLAYINFO
+//  PCMD_STAGE_PLAYINFO / PCMD_STAGE_PLAYINFO2
 //
 
 struct cmd_stage_playinfo_data_elem {
-	LIST_INTERFACE(struct cmd_stage_playinfo_data_elem);
-	uint16_t stage;
-	uint8_t diff;
-	uint32_t num_played;
-	uint32_t num_cleared;
+	PlayInfoHeader head;
+	StageProgress *prog;
 };
 
 struct cmd_stage_playinfo_data {
-	size_t size;
-	struct cmd_stage_playinfo_data_elem *elems;
+	DYNAMIC_ARRAY(struct cmd_stage_playinfo_data_elem) elems;
 };
 
 static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
-	struct cmd_stage_playinfo_data *data = malloc(sizeof(struct cmd_stage_playinfo_data));
-	memset(data, 0, sizeof(struct cmd_stage_playinfo_data));
+	auto data = ALLOC(struct cmd_stage_playinfo_data);
 
 	int n = stageinfo_get_num_stages();
 	for(int i = 0; i < n; ++i) {
@@ -485,46 +645,50 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 		for(Difficulty d = d_first; d <= d_last; ++d) {
 			StageProgress *p = stageinfo_get_progress(stg, d, false);
 
-			if(p && (p->num_played || p->num_cleared)) {
-				struct cmd_stage_playinfo_data_elem *e = malloc(sizeof(struct cmd_stage_playinfo_data_elem));
-
-				e->stage = stg->id;                 data->size += sizeof(uint16_t);
-				e->diff = d;                        data->size += sizeof(uint8_t);
-				e->num_played = p->num_played;      data->size += sizeof(uint32_t);
-				e->num_cleared = p->num_cleared;    data->size += sizeof(uint32_t);
-
-				(void)list_push(&data->elems, e);
+			if(p && (p->global.num_played || p->global.num_cleared)) {
+				dynarray_append(&data->elems, {
+					.head.stage = stg->id,
+					.head.diff = d,
+					.prog = p,
+				});
 			}
 		}
 	}
 
 	*arg = data;
 
-	if(data->size) {
-		*bufsize += CMD_HEADER_SIZE + data->size;
+	if(data->elems.num_elements) {
+		*bufsize += CMD_HEADER_SIZE + playinfo_size(data->elems.num_elements);
+		*bufsize += CMD_HEADER_SIZE + playinfo2_size(data->elems.num_elements);
 	}
 }
 
 static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	struct cmd_stage_playinfo_data *data = *arg;
 
-	if(!data->size) {
+	if(!data->elems.num_elements) {
 		goto cleanup;
 	}
 
 	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO);
-	SDL_WriteLE16(vfile, data->size);
+	SDL_WriteLE16(vfile, playinfo_size(data->elems.num_elements));
 
-	for(struct cmd_stage_playinfo_data_elem *e = data->elems; e; e = e->next) {
-		SDL_WriteLE16(vfile, e->stage);
-		SDL_WriteU8(vfile, e->diff);
-		SDL_WriteLE32(vfile, e->num_played);
-		SDL_WriteLE32(vfile, e->num_cleared);
-	}
+	dynarray_foreach_elem(&data->elems, auto e, {
+		playinfo_header_write(vfile, &e->head);
+		playinfo_data_write(vfile, e->prog);
+	});
+
+	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO2);
+	SDL_WriteLE16(vfile, playinfo2_size(data->elems.num_elements));
+
+	dynarray_foreach_elem(&data->elems, auto e, {
+		playinfo_header_write(vfile, &e->head);
+		playinfo2_data_write(vfile, e->prog);
+	});
 
 cleanup:
-	list_free_all(&data->elems);
-	free(data);
+	dynarray_free_data(&data->elems);
+	mem_free(data);
 }
 
 //
@@ -690,7 +854,7 @@ static void progress_write(SDL_RWops *file) {
 		return;
 	}
 
-	uint8_t *buf = malloc(bufsize);
+	auto buf = ALLOC_ARRAY(bufsize, uint8_t);
 	memset(buf, 0x7f, bufsize);
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
@@ -701,7 +865,7 @@ static void progress_write(SDL_RWops *file) {
 	}
 
 	if(SDL_RWtell(vfile) != bufsize) {
-		free(buf);
+		mem_free(buf);
 		log_fatal("Buffer is inconsistent");
 		return;
 	}
@@ -715,17 +879,18 @@ static void progress_write(SDL_RWops *file) {
 		return;
 	}
 
-	free(buf);
+	mem_free(buf);
 	SDL_RWclose(vfile);
 }
 
-#ifdef PROGRESS_UNLOCK_ALL
-static void progress_unlock_all(void) {
-	StageInfo *stg;
+void progress_unlock_all(void) {
+	size_t num_stages = stageinfo_get_num_stages();
 
-	for(stg = stages; stg->procs; ++stg) {
+	for(size_t i = 0; i < num_stages; ++i) {
+		StageInfo *stg = NOT_NULL(stageinfo_get_by_index(i));
+
 		for(Difficulty diff = D_Any; diff <= D_Lunatic; ++diff) {
-			StageProgress *p = stage_get_progress_from_info(stg, diff, true);
+			StageProgress *p = stageinfo_get_progress(stg, diff, true);
 			if(p) {
 				p->unlocked = true;
 			}
@@ -733,13 +898,47 @@ static void progress_unlock_all(void) {
 	}
 
 	progress.unlocked_bgms = UINT64_MAX;
+	progress.unlocked_cutscenes = UINT64_MAX;
+
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
+		progress.achieved_endings[i] = max(1, progress.achieved_endings[i]);
+	}
 }
-#endif
 
 static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
 	if(progress.achieved_endings[ending] > 0) {
 		progress_unlock_cutscene(cutscene);
 	}
+}
+
+static SDL_RWops *progress_open_file_read(void) {
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+
+	if(file) {
+		return SDL_RWWrapZstdReader(file, true);
+	}
+
+	log_error("VFS error: %s; trying legacy path", vfs_get_error());
+
+	file = vfs_open(PROGRESS_FILE_OLD, VFS_MODE_READ);
+
+	if(file) {
+		return file;
+	}
+
+	log_error("VFS error: %s", vfs_get_error());
+	return NULL;
+}
+
+static SDL_RWops *progress_open_file_write(void) {
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
+
+	if(file) {
+		return SDL_RWWrapZstdWriter(file, 20, true);
+	}
+
+	log_error("VFS error: %s", vfs_get_error());
+	return NULL;
 }
 
 void progress_load(void) {
@@ -750,17 +949,9 @@ void progress_load(void) {
 	progress_save();
 #endif
 
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+	SDL_RWops *file = progress_open_file_read();
 
 	if(!file) {
-		VFSInfo i = vfs_query(PROGRESS_FILE);
-
-		if(i.error) {
-			log_error("VFS error: %s", vfs_get_error());
-		} else if(i.exists) {
-			log_error("Progress file %s is not readable", PROGRESS_FILE);
-		}
-
 		return;
 	}
 
@@ -777,12 +968,7 @@ void progress_load(void) {
 }
 
 void progress_save(void) {
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
-
-	if(!file) {
-		log_error("Couldn't open the progress file for writing: %s", vfs_get_error());
-		return;
-	}
+	SDL_RWops *file = progress_open_file_write();
 
 	progress_write(file);
 	SDL_RWclose(file);
@@ -790,8 +976,8 @@ void progress_save(void) {
 
 static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
 	UnknownCmd *cmd = (UnknownCmd*)elem;
-	free(cmd->data);
-	free(list_unlink(dest, elem));
+	mem_free(cmd->data);
+	mem_free(list_unlink(dest, elem));
 	return NULL;
 }
 
@@ -827,7 +1013,7 @@ uint32_t progress_times_any_good_ending_achieved(void) {
 }
 
 static ProgressBGMID progress_bgm_id(const char *bgm) {
-	static const char* map[] = {
+	static const char *map[] = {
 		[PBGM_MENU]         = "menu",
 		[PBGM_STAGE1]       = "stage1",
 		[PBGM_STAGE1_BOSS]  = "stage1boss",
@@ -848,6 +1034,9 @@ static ProgressBGMID progress_bgm_id(const char *bgm) {
 		[PBGM_BONUS0]       = "bonus0",
 		[PBGM_BONUS1]       = "scuttle",
 		[PBGM_GAMEOVER]     = "gameover",
+		[PBGM_INTRO]        = "intro",
+		[PBGM_STAGEX]       = "stagex",
+		[PBGM_STAGEX_BOSS]  = "stagexboss",
 	};
 
 	for(int i = 0; i < ARRAY_SIZE(map); ++i) {
@@ -885,4 +1074,63 @@ bool progress_is_cutscene_unlocked(CutsceneID id) {
 
 void progress_unlock_cutscene(CutsceneID id) {
 	progress.unlocked_cutscenes |= progress_cutscene_bit(id);
+}
+
+attr_returns_nonnull attr_nonnull_all
+static StageProgressContents *stage_plrmode_data(StageProgress *p, PlayerMode *pm) {
+	uint ichar = pm->character->id;
+	uint imode = pm->shot_mode;
+
+	assert(ichar < ARRAY_SIZE(p->per_plrmode));
+	assert(imode < ARRAY_SIZE(p->per_plrmode[ichar]));
+
+	return &p->per_plrmode[ichar][imode];
+}
+
+void progress_register_stage_played(StageProgress *p, PlayerMode *pm) {
+	p->unlocked = true;
+	p->global.num_played += 1;
+	auto c = stage_plrmode_data(p, pm);
+	c->num_played += 1;
+
+	char tmp[64];
+	plrmode_repr(tmp, sizeof(tmp), pm, false);
+
+	log_debug("Stage played %i times total; %i as %s",
+		p->global.num_played,
+		c->num_played,
+		tmp
+	);
+}
+
+void progress_register_stage_cleared(StageProgress *p, PlayerMode *pm) {
+	p->unlocked = true;
+	p->global.num_cleared += 1;
+	auto c = stage_plrmode_data(p, pm);
+	c->num_cleared += 1;
+
+	char tmp[64];
+	plrmode_repr(tmp, sizeof(tmp), pm, false);
+
+	log_debug("Stage cleared %i times total; %i as %s",
+		p->global.num_cleared,
+		c->num_cleared,
+		tmp
+	);
+}
+
+void progress_register_hiscore(StageProgress *p, PlayerMode *pm, uint64_t score) {
+	if(score > progress.hiscore) {
+		progress.hiscore = score;
+	}
+
+	if(score > p->global.hiscore) {
+		p->global.hiscore = score;
+	}
+
+	auto c = stage_plrmode_data(p, pm);
+
+	if(score > c->hiscore) {
+		c->hiscore = score;
+	}
 }

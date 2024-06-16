@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "vertex_buffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
 
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 	VertexBuffer *vbuf = (VertexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ARRAY, sizeof(VertexBuffer));

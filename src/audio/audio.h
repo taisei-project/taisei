@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -58,7 +58,6 @@ bool audio_sfx_set_enabled(bool enabled);
 
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);
 SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
-void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
 void play_sfx_loop(const char *name) attr_nonnull(1);
 void play_sfx_ui(const char *name) attr_nonnull(1);
 void stop_sfx(SFXPlayID sid);
@@ -68,23 +67,5 @@ void pause_all_sfx(void);
 void resume_all_sfx(void);
 void stop_all_sfx(void);
 void update_all_sfx(void); // checks if loops need to be stopped
-
-DEFINE_DEPRECATED_RESOURCE_GETTER(SFX, get_sound, res_sfx)
-DEFINE_DEPRECATED_RESOURCE_GETTER(BGM, get_music, res_bgm)
-
-attr_deprecated("Use play_sfx() instead")
-INLINE SFXPlayID play_sound(const char *name) {
-	return play_sfx(name);
-}
-
-attr_deprecated("Use play_sfx_ex() instead") attr_nonnull(1)
-INLINE SFXPlayID play_sound_ex(const char *name, int cooldown, bool replace) {
-	return play_sfx_ex(name, cooldown, replace);
-}
-
-attr_deprecated("Use stop_sfx() instead")
-INLINE void stop_sound(SFXPlayID sid) {
-	stop_sfx(sid);
-}
 
 double audioutil_loopaware_position(double rt_pos, double duration, double loop_start);

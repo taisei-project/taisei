@@ -2,27 +2,26 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "api.h"
+
 #include "common/backend.h"
 #include "common/matstack.h"
-#include "common/sprite_batch.h"
 #include "common/models.h"
+#include "common/sprite_batch.h"
 #include "common/state.h"
-#include "util/glm.h"
-#include "util/graphics.h"
+#include "coroutine/coroutine.h"
+#include "resource/resource.h"
 #include "resource/texture.h"
-#include "resource/sprite.h"
-#include "coroutine.h"
+#include "util/glm.h"
 
 #define B _r_backend.funcs
 
 static struct {
+	ResourceGroup rg;
 	struct {
 		ShaderProgram *standard;
 		ShaderProgram *standardnotex;
@@ -31,6 +30,8 @@ static struct {
 
 void r_init(void) {
 	_r_backend_init();
+	_r_state_init();
+	_r_mat_init();
 }
 
 typedef struct BlurInfo {
@@ -40,13 +41,13 @@ typedef struct BlurInfo {
 } BlurInfo;
 
 void r_post_init(void) {
-	_r_state_init();
 	B.post_init();
-	_r_mat_init();
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_init(&R.rg);
+
+	res_group_preload(&R.rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"sprite_default",
 		"texture_post_load",
 		"standard",
@@ -54,7 +55,7 @@ void r_post_init(void) {
 	NULL);
 
 #if DEBUG
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_preload(&R.rg, RES_FONT, RESF_DEFAULT,
 		"monotiny",
 	NULL);
 #endif
@@ -70,9 +71,13 @@ void r_post_init(void) {
 	r_depth_func(DEPTH_LEQUAL);
 	r_cull(CULL_BACK);
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
+}
+
+void r_release_resources(void) {
+	res_group_release(&R.rg);
 }
 
 void r_shutdown(void) {
@@ -543,7 +548,7 @@ TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt) {
 }
 
 uint r_texture_util_max_num_miplevels(uint width, uint height) {
-	uint dim = umax(width, height);
+	uint dim = max(width, height);
 	return dim > 0 ? 1 + floor(log2(dim)) : 0;  // TODO replace with integer log2
 }
 
@@ -593,8 +598,12 @@ void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment
 	B.framebuffer_outputs(fb, config, 0x00);
 }
 
-void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval) {
 	B.framebuffer_clear(fb, flags, colorval, depthval);
+}
+
+void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
+	B.framebuffer_copy(dst, src, flags);
 }
 
 void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h) {
@@ -626,6 +635,38 @@ IntExtent r_framebuffer_get_size(Framebuffer *fb) {
 
 Framebuffer* r_framebuffer_current(void) {
 	return B.framebuffer_current();
+}
+
+void r_framebuffer_read_async(
+	Framebuffer *framebuffer,
+	FramebufferAttachment attachment,
+	IntRect region,
+	void *userdata,
+	FramebufferReadAsyncCallback callback
+) {
+	B.framebuffer_read_async(
+		framebuffer, attachment, region, userdata, callback
+	);
+}
+
+void r_framebuffer_read_viewport_async(
+	Framebuffer *framebuffer,
+	FramebufferAttachment attachment,
+	void *userdata,
+	FramebufferReadAsyncCallback callback
+) {
+	FloatRect vp;
+	r_framebuffer_viewport_current(framebuffer, &vp);
+
+	IntRect region = {
+		.x = vp.x,
+		.y = vp.y,
+		.w = ceilf(vp.w),
+		.h = ceilf(vp.h),
+	};
+
+	r_framebuffer_read_async(
+		framebuffer, attachment, region, userdata, callback);
 }
 
 VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data) {
@@ -797,10 +838,6 @@ void r_swap(SDL_Window *window) {
 	B.swap(window);
 }
 
-bool r_screenshot(Pixmap *out) {
-	return B.screenshot(out);
-}
-
 // uniforms garbage; hope your compiler is smart enough to inline most of this
 
 // TODO: verify sampler-to-texture type consistency?
@@ -859,7 +896,7 @@ void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
 
 void _r_uniform_ptr_vec2_complex(Uniform *uniform, cmplx value) {
 	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
-	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
+	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { re(value), im(value) });
 }
 
 void _r_uniform_vec2_complex(const char *uniform, cmplx value) {
@@ -883,8 +920,8 @@ void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count
 		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
 
 		do {
-			*aptr++ = creal(*eptr);
-			*aptr++ = cimag(*eptr++);
+			*aptr++ = re(*eptr);
+			*aptr++ = im(*eptr++);
 		} while(aptr < aend);
 
 		B.uniform(uniform, offset, count, arr);

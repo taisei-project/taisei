@@ -1,7 +1,6 @@
 project('glad', 'c')
 
-glad_profile = 'core'
-glad_api = ['gl=3.3', 'gles2=3.0']
+glad_api = ['gl:core=3.3', 'gles2=3.0', 'egl=1.5']
 glad_extensions = [
     'GL_3DFX_texture_compression_FXT1',
     'GL_AMD_compressed_ATC_texture',
@@ -64,11 +63,10 @@ glad_extensions = [
     'GL_SGIX_depth_texture',
 ]
 
-# NOTE: requires glad2 (beta) https://github.com/Dav1dde/glad/tree/glad2
 glad_program = find_program('glad', required : false)
 
 glad_args = [
-    '--api', 'gl:core=3.3,gles2=3.0',
+    '--api', ','.join(glad_api),
     '--extensions', ','.join(glad_extensions),
     '--merge',
     '--out-path', meson.current_source_dir(),
@@ -79,17 +77,26 @@ glad_args = [
 glad_sources = []
 glad_includes = include_directories('include')
 
-subdir('src')
-
-glad_lib = static_library('glad', glad_sources,
+glad_gl_lib = static_library('gladGL', files('src/gl.c'),
     install : not meson.is_subproject(),
     build_by_default : not meson.is_subproject(),
     include_directories : glad_includes,
 )
 
-glad_dep = declare_dependency(
+glad_egl_lib = static_library('gladEGL', files('src/egl.c'),
+    install : not meson.is_subproject(),
+    build_by_default : not meson.is_subproject(),
+    include_directories : glad_includes,
+)
+
+glad_gl_dep = declare_dependency(
   include_directories : glad_includes,
-  link_with : glad_lib
+  link_with : glad_gl_lib
+)
+
+glad_egl_dep = declare_dependency(
+  include_directories : glad_includes,
+  link_with : glad_egl_lib
 )
 
 if glad_program.found()

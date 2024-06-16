@@ -2,99 +2,146 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
 
-#include "common_tasks.h"
+#define LHC_PERIOD 400
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
-static void lhc_laser_logic(Laser *l, int t) {
-	Enemy *e;
-
-	static_laser(l, t);
-
-	TIMER(&t);
-	AT(EVENT_DEATH) {
-		free_ref(l->args[2]);
-		return;
-	}
-
-	e = REF(l->args[2]);
-
-	if(e)
-		l->pos = e->pos;
+static real lhc_target_height(int turn) {
+	return 100.0 + 400.0 * (turn&1);
 }
 
-static int baryon_lhc(Enemy *e, int t) {
-	int t1 = t % 400;
-	int g = (int)creal(e->args[2]);
-	if(g == 0 || g == 3)
-		return 1;
-	TIMER(&t1);
+TASK(lhc_laser, { BoxedEllyBaryons baryons; int baryon_idx; real direction; Color color;}) {
+	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 
-	AT(1) {
-		e->args[3] = 100.0*I+400.0*I*((t/400)&1);
+	Laser *l = TASK_BIND(create_laser(
+		baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color,
+		laser_rule_linear(ARGS.direction * VIEWPORT_W * 0.005)));
+	l->unclearable = true;
 
-		if(g == 2 || g == 5) {
-			play_sfx_delayed("laser1",10,true,200);
+	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), 200, 30);
 
-			Laser *l = create_laser(e->pos, 200, 300, RGBA(0.1+0.9*(g>3), 0, 1-0.9*(g>3), 0), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
-			l->unclearable = true;
+	for(;;) {
+		l->pos = NOT_NULL(ENT_UNBOX(ARGS.baryons))->poss[ARGS.baryon_idx];
+		YIELD;
+	}
+}
+
+TASK(lhc_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+
+	for(int t = 0;; t++) {
+		real target = lhc_target_height(t/LHC_PERIOD);
+
+		for(int i = 0; i < NUM_BARYONS; i++) {
+			real x = VIEWPORT_W * (i > 4 || i < 2);
+
+			if(i == 0 || i == 3) {
+				// TODO: define and replace by standard position
+				baryons->target_poss[i] = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos + 100 * cdir(M_TAU/NUM_BARYONS * i);
+			} else {
+				baryons->target_poss[i] = x + I * (target + (100 - 0.4 * (t % LHC_PERIOD)) * (1 - 2 * (i > 3)));
+			}
 		}
+
+		baryons->center_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
+		YIELD;
 	}
-
-	GO_TO(e, VIEWPORT_W*(creal(e->pos0) > VIEWPORT_W/2)+I*cimag(e->args[3]) + (100-0.4*t1)*I*(1-2*(g > 3)), 0.02);
-
-	return 1;
 }
 
-void elly_lhc(Boss *b, int t) {
-	TIMER(&t);
+TASK(lhc_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
+	TASK_BIND(ARGS.baryons);
 
-	AT(0)
-		set_baryon_rule(baryon_lhc);
-	AT(EVENT_DEATH) {
-		set_baryon_rule(baryon_reset);
+	INVOKE_SUBTASK(lhc_baryons_movement, ARGS.baryons, ARGS.boss);
+
+	for(;;) {
+		for(int baryon_idx = 2; baryon_idx < NUM_BARYONS; baryon_idx += 3) {
+			Color clr = *RGBA(0.1 + 0.9 * (baryon_idx > 3), 0, 1 - 0.9 * (baryon_idx > 3), 0);
+			INVOKE_SUBTASK(lhc_laser, ARGS.baryons, baryon_idx,
+				.direction = (1 - 2 * (baryon_idx > 3)),
+				.color = clr
+			);
+		}
+
+		WAIT(200);
+		play_sfx("laser1");
+		WAIT(LHC_PERIOD - 200);
 	}
+}
 
-	FROM_TO(260, 10000, 400) {
-		elly_clap(b,100);
+TASK(lhc_secondary_projs, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+
+	int interval = difficulty_value(6, 5, 4, 3);
+	for(int i = 0;; i++) {
+		play_sfx_ex("shot2", 10, false);
+
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = boss->pos,
+			.color = RGBA(0.0, 0.4, 1.0, 0.0),
+			.move = move_asymptotic_simple(2 * cdir(2 * i), 3)
+		);
+
+		WAIT(interval);
 	}
+}
 
-	FROM_TO(280, 10000, 400) {
-		int i;
-		int c = 30+10*global.diff;
-		cmplx pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
+DEFINE_EXTERN_TASK(stage6_spell_lhc) {
+	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+
+	INVOKE_SUBTASK(lhc_baryons, ARGS.baryons, ENT_BOX(boss));
+
+	INVOKE_SUBTASK(lhc_secondary_projs, ENT_BOX(boss));
+
+	WAIT(230);
+
+	int count = difficulty_value(40, 50, 60, 70);
+	int laser_lifetime = difficulty_value(90, 110, 130, 150);
+
+	for(int turn = 0;; turn++) {
+		elly_clap(boss, 100);
+		WAIT(20);
+
+		cmplx pos = VIEWPORT_W / 2.0 + I * lhc_target_height(turn);
 
 		stage_shake_view(160);
 		play_sfx("boom");
 
-		for(i = 0; i < c; i++) {
-			cmplx v = 3*cexp(2.0*I*M_PI*frand());
-			tsrand_fill(4);
-			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
+		for(int i = 0; i < count; i++) {
+			cmplx vel = 3 * rng_dir();
+
+			Laser *l = create_laser(
+				pos, laser_lifetime, 300, RGBA(0.5, 0.3, 0.9, 0),
+				laser_rule_accelerated(vel, 0.02 * rng_real() * sign(re(vel))));
+			l->width = 15;
+
+			real speed1 = rng_range(1, 3.5);
+			real speed2 = rng_range(1, 3.5);
+
+			real baseangle = rng_angle();
+			real spin = rng_range(M_PI/52, M_PI/60);
+			spin *= rng_sign();
 
 			PROJECTILE(
 				.proto = pp_soul,
 				.pos = pos,
 				.color = RGBA(0.4, 0.0, 1.0, 0.0),
-				.rule = linear,
-				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
-				.flags = PFLAG_NOSPAWNFLARE,
+				.move = move_linear(speed1 * rng_dir()),
+				.flags = PFLAG_NOSPAWNFLARE | PFLAG_MANUALANGLE,
+				.angle = baseangle,
+				.angle_delta = spin,
 			);
 
 			PROJECTILE(
 				.proto = pp_bigball,
 				.pos = pos,
 				.color = RGBA(1.0, 0.0, 0.4, 0.0),
-				.rule = linear,
-				.args = { (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)) },
+				.move = move_linear(speed2 * rng_dir()),
 				.flags = PFLAG_NOSPAWNFLARE,
 			);
 
@@ -104,24 +151,13 @@ void elly_lhc(Boss *b, int t) {
 					.pos = pos,
 					.color = RGBA(0.3, 0.3, 1.0, 0.0),
 					.timeout = 60,
-					.rule = linear,
-					.draw_rule = ScaleFade,
-					.args = { (10+2*frand())*cexp(2*M_PI*I*i/5), 0, 2+5*I },
+					.draw_rule = pdraw_timeout_scalefade(2, 5, 1, 0),
+					.move = move_linear(rng_range(10,12) * cdir(M_TAU / 5 * i)),
 					.flags = PFLAG_REQUIREDPARTICLE,
 				);
 			}
 		}
-	}
-
-	FROM_TO(0, 100000,7-global.diff) {
-		play_sfx_ex("shot2",10,false);
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = b->pos,
-			.color = RGBA(0.0, 0.4, 1.0, 0.0),
-			.rule = asymptotic,
-			.args = { cexp(2.0*I*_i), 3 },
-		);
+		WAIT(LHC_PERIOD - 20);
 	}
 }
 

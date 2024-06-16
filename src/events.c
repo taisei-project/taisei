@@ -2,20 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "events.h"
+
 #include "config.h"
 #include "global.h"
+#include "transition.h"
 #include "video.h"
-#include "gamepad.h"
 
 static hrtime_t keyrepeat_paused_until;
 static int global_handlers_lock = 0;
+static DYNAMIC_ARRAY(EventHandler) global_handlers_pending;
 static DYNAMIC_ARRAY(EventHandler) global_handlers;
 static DYNAMIC_ARRAY(SDL_Event) deferred_events;
 
@@ -56,6 +56,7 @@ void events_shutdown(void) {
 #endif
 
 	dynarray_free_data(&global_handlers);
+	dynarray_free_data(&global_handlers_pending);
 }
 
 static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
@@ -80,7 +81,11 @@ void events_register_handler(EventHandler *handler) {
 	assert(handler->priority >= EPRIO_FIRST);
 	assert(handler->priority <= EPRIO_LAST);
 
-	*dynarray_append(&global_handlers) = *handler;
+	if(global_handlers_lock) {
+		dynarray_append(&global_handlers_pending, *handler);
+	} else {
+		dynarray_append(&global_handlers, *handler);
+	}
 
 	// don't bother sorting, since most of the time we will need to re-sort it
 	// together with local handlers when polling
@@ -93,7 +98,7 @@ static bool hfilter_remove_pending(const void *pelem, void *ignored) {
 
 void events_unregister_handler(EventHandlerProc proc) {
 	dynarray_foreach_elem(&global_handlers, EventHandler *h, {
-		if(h->proc == proc) {
+		if(h->proc == proc && !h->_private.removal_pending) {
 			h->_private.removal_pending = true;
 			break;
 		}
@@ -221,6 +226,11 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 
 	if(--global_handlers_lock == 0) {
 		dynarray_filter(&global_handlers, hfilter_remove_pending, NULL);
+		dynarray_ensure_capacity(&global_handlers, global_handlers.num_elements + global_handlers_pending.num_elements);
+		dynarray_foreach_elem(&global_handlers_pending, EventHandler *h, {
+			*dynarray_append(&global_handlers) = *h;
+		});
+		global_handlers_pending.num_elements = 0;
 	}
 
 	dynarray_foreach_elem(&deferred_events, SDL_Event *evt, {
@@ -249,7 +259,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 }
 
 void events_defer(SDL_Event *evt) {
-	*dynarray_append(&deferred_events) = *evt;
+	dynarray_append(&deferred_events, *evt);
 }
 
 void events_pause_keyrepeat(void) {
@@ -263,7 +273,6 @@ void events_pause_keyrepeat(void) {
  */
 
 static bool events_handler_quit(SDL_Event *event, void *arg);
-static bool events_handler_config(SDL_Event *event, void *arg);
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg);
 static bool events_handler_clipboard(SDL_Event *event, void *arg);
 static bool events_handler_hotkeys(SDL_Event *event, void *arg);
@@ -339,7 +348,6 @@ static EventHandler default_handlers[] = {
 	{ .proc = events_handler_debug_winevt,          .priority = EPRIO_SYSTEM,       .event_type = SDL_WINDOWEVENT },
 #endif
 	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
-	{ .proc = events_handler_config,                .priority = EPRIO_SYSTEM,       .event_type = 0 },
 	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
 	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_KEYDOWN },
 	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_KEYDOWN },
@@ -364,27 +372,6 @@ static void events_unregister_default_handlers(void) {
 static bool events_handler_quit(SDL_Event *event, void *arg) {
 	taisei_quit();
 	return true;
-}
-
-static bool events_handler_config(SDL_Event *event, void *arg) {
-	if(event->type != MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)) {
-		return false;
-	}
-
-	ConfigValue *val = event->user.data1;
-
-	switch(event->user.code) {
-		case CONFIG_GAMEPAD_ENABLED:
-			// TODO: Refactor gamepad code so that we don't have to do this.
-			if(val->i) {
-				gamepad_init();
-			} else {
-				gamepad_shutdown();
-			}
-			break;
-	}
-
-	return false;
 }
 
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
@@ -513,7 +500,8 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 	SDL_Keymod mod = event->key.keysym.mod;
 
 	if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
-		video_take_screenshot();
+		bool viewport_only = (mod & KMOD_ALT);
+		video_take_screenshot(viewport_only);
 		return true;
 	}
 
@@ -528,7 +516,7 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 	}
 
 	if(scan == config_get_int(CONFIG_KEY_RELOAD_RESOURCES)) {
-		reload_all_resources();
+		res_reload_all();
 		return true;
 	}
 

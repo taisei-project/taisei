@@ -2,33 +2,35 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "decompress_wrapper.h"
+#include "decompress_wrapper_public.h"
+
+#include "hashtable.h"
 #include "rwops/rwops_ro.h"
 #include "rwops/rwops_zstd.h"
 #include "util/strbuf.h"
+#include "util/stringops.h"
 
 // NOTE: Largely based on readonly_wrapper. Sorry for the copypasta.
 // This is currently hardcoded to only support transparent decompression of .zst files.
 
+VFS_NODE_TYPE(VFSDecompNode, {
+	VFSNode *wrapped;
+	bool compr_zstd;
+});
+
 #define ZST_SUFFIX ".zst"
-#define WRAPPED(n) ((VFSNode*)(n)->data1)
 
-struct decomp_data {
-	uint compr_zstd : 1;
-};
-
-static_assert_nomsg(sizeof(struct decomp_data) <= sizeof(void*));
+#define WRAPPED(node) VFS_NODE_CAST(VFSDecompNode, node)->wrapped
 
 static char *vfs_decomp_repr(VFSNode *node) {
 	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
 	char *repr = strjoin("decompress view of ", wrapped_repr, NULL);
-	free(wrapped_repr);
+	mem_free(wrapped_repr);
 	return repr;
 }
 
@@ -64,9 +66,8 @@ static bool vfs_decomp_mkdir(VFSNode *parent, const char *subdir) {
 static VFSNode *vfs_decomp_locate(VFSNode *dirnode, const char *path) {
 	VFSNode *wrapped = WRAPPED(dirnode);
 	VFSNode *child = vfs_node_locate(wrapped, path);
-	struct decomp_data data = { 0 };
-
 	VFSNode *ochild = NULL;
+	bool zstd = false;
 
 	if(child != NULL && !vfs_node_query(child).exists) {
 		ochild = child;
@@ -80,17 +81,22 @@ static VFSNode *vfs_decomp_locate(VFSNode *dirnode, const char *path) {
 		memcpy(p + plen, ZST_SUFFIX, sizeof(ZST_SUFFIX));
 
 		child = vfs_node_locate(wrapped, p);
-		VFSInfo i = vfs_node_query(child);
 
-		if(i.error || i.is_dir) {
-			vfs_decref(child);
+		if(child == NULL) {
 			child = ochild;
 		} else {
-			data.compr_zstd = true;
+			VFSInfo i = vfs_node_query(child);
 
-			if(ochild) {
-				vfs_decref(ochild);
-				ochild = NULL;
+			if(i.error || i.is_dir) {
+				vfs_decref(child);
+				child = ochild;
+			} else {
+				zstd = true;
+
+				if(ochild) {
+					vfs_decref(ochild);
+					ochild = NULL;
+				}
 			}
 		}
 	}
@@ -101,7 +107,10 @@ static VFSNode *vfs_decomp_locate(VFSNode *dirnode, const char *path) {
 
 	VFSNode *wrapped_child = NOT_NULL(vfs_decomp_wrap(child));
 	vfs_decref(child);
-	memcpy(&wrapped_child->data2, &data, sizeof(data));
+
+	if(zstd) {
+		VFS_NODE_CAST(VFSDecompNode, wrapped_child)->compr_zstd = true;
+	}
 
 	return wrapped_child;
 }
@@ -112,16 +121,13 @@ static SDL_RWops *vfs_decomp_open(VFSNode *filenode, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	struct decomp_data data;
-	memcpy(&data, &filenode->data2, sizeof(data));
-
 	SDL_RWops *raw = vfs_node_open(WRAPPED(filenode), mode);
 
 	if(!raw) {
 		return NULL;
 	}
 
-	if(data.compr_zstd) {
+	if(VFS_NODE_CAST(VFSDecompNode, filenode)->compr_zstd) {
 		return SDL_RWWrapZstdReaderSeekable(raw, -1, true);
 	}
 
@@ -166,7 +172,7 @@ static const char *vfs_decomp_iter(VFSNode *node, void **opaque) {
 	struct decomp_iter_data *i = *opaque;
 
 	if(!i) {
-		i = calloc(1, sizeof(*i));
+		i = ALLOC(typeof(*i));
 		ht_create(&i->visited);
 		*opaque = i;
 	}
@@ -193,12 +199,12 @@ static void vfs_decomp_iter_stop(VFSNode *node, void **opaque) {
 		vfs_node_iter_stop(wrapped, &i->opaque);
 		ht_destroy(&i->visited);
 		strbuf_free(&i->temp_buf);
-		free(i);
+		mem_free(i);
 		*opaque = NULL;
 	}
 }
 
-static VFSNodeFuncs vfs_funcs_decomp = {
+VFS_NODE_FUNCS(VFSDecompNode, {
 	.repr = vfs_decomp_repr,
 	.query = vfs_decomp_query,
 	.free = vfs_decomp_free,
@@ -210,7 +216,7 @@ static VFSNodeFuncs vfs_funcs_decomp = {
 	.open = vfs_decomp_open,
 	.mount = vfs_decomp_mount,
 	.unmount = vfs_decomp_unmount,
-};
+});
 
 VFSNode *vfs_decomp_wrap(VFSNode *base) {
 	if(base == NULL) {
@@ -219,10 +225,9 @@ VFSNode *vfs_decomp_wrap(VFSNode *base) {
 
 	vfs_incref(base);
 
-	VFSNode *wrapper = vfs_alloc();
-	wrapper->funcs = &vfs_funcs_decomp;
-	wrapper->data1 = base;
-	return wrapper;
+	return &VFS_ALLOC(VFSDecompNode, {
+		.wrapped = base,
+	})->as_generic;
 }
 
 bool vfs_make_decompress_view(const char *path) {
@@ -231,10 +236,6 @@ bool vfs_make_decompress_view(const char *path) {
 
 	char npath[strlen(path)+1];
 	strcpy(npath, buf);
-
-	if(vfs_query(path).is_readonly) {
-		return true;
-	}
 
 	vfs_path_split_right(buf, &path_parent, &path_subdir);
 
@@ -251,6 +252,12 @@ bool vfs_make_decompress_view(const char *path) {
 		return false;
 	}
 
+	if(VFS_NODE_TRY_CAST(VFSDecompNode, node)) {
+		vfs_decref(node);
+		vfs_decref(parent);
+		return true;
+	}
+
 	if(!vfs_node_unmount(parent, path_subdir)) {
 		vfs_decref(node);
 		vfs_decref(parent);
@@ -262,10 +269,8 @@ bool vfs_make_decompress_view(const char *path) {
 	vfs_decref(node);
 
 	if(!vfs_node_mount(parent, path_subdir, wrapper)) {
-		log_error("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
-		vfs_decref(parent);
-		vfs_decref(wrapper);
-		return false;
+		log_fatal("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
+		UNREACHABLE;
 	}
 
 	vfs_decref(parent);

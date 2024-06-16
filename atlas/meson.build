@@ -1,6 +1,6 @@
 
 atlases_dir = meson.current_source_dir()
-atlases_overrides_dir = join_paths(atlases_dir, 'overrides')
+atlases_config_dir = join_paths(atlases_dir, 'config')
 resources_gfx_dir = join_paths(resources_pkg_main, 'gfx')
 
 # Args are applied in this order:
@@ -43,6 +43,7 @@ atlases = [
     ['common_ui',   ['--width=1024', '--height=1024']],
     ['huge',        []],
     ['portraits',   ['--width=4096', '--height=4096']],
+    ['temp_stagex', []],
 ]
 
 atlas_profiles = [
@@ -66,7 +67,7 @@ foreach profile : atlas_profiles
         run_target(atlas_target,
             command : [
                 gen_atlas_command,
-                atlases_overrides_dir,
+                atlases_config_dir,
                 join_paths(atlases_dir, atlas_name),
                 resources_gfx_dir,
                 atlas_common_args,

@@ -2,14 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include "thread.h"
 
 typedef struct TaskManager TaskManager;
 typedef struct Task Task;
@@ -51,7 +51,7 @@ typedef struct TaskParams {
 
 	/**
 	 * Priority of the task. Lower values mean higher priority. Higher priority tasks are added
-	 * to the queue ahead of the lower priority ones, and thus will start execute sooner. Note
+	 * to the queue ahead of the lower priority ones, and thus will start executing sooner. Note
 	 * that this affects only the pending tasks. A task that already began executing cannot be
 	 * interrupted, regardless of its priority.
 	 */
@@ -74,7 +74,7 @@ typedef struct TaskParams {
  * On success, returns a pointer to the created TaskManager.
  * On failure, returns NULL.
  */
-TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name)
+TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *name)
 	attr_nodiscard attr_returns_max_aligned attr_nonnull(3);
 
 /**

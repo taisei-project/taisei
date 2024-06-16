@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "util.h"
 #include "shader_program.h"
+
 #include "renderer/api.h"
+#include "util/kvparser.h"
 
 static char *shader_program_path(const char *name) {
 	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
@@ -39,6 +38,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
+		return;
 	}
 
 	if(!parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
@@ -47,7 +47,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 		{ NULL }
 	})) {
 		SDL_RWclose(rw);
-		free(strobjects);
+		mem_free(strobjects);
 		res_load_failed(st);
 		return;
 	}
@@ -55,7 +55,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 	SDL_RWclose(rw);
 
 	if(strobjects) {
-		ldata.objlist = calloc(1, strlen(strobjects) + 1);
+		ldata.objlist = mem_alloc(strlen(strobjects) + 1);
 		char *listptr = ldata.objlist;
 		char *objname, *srcptr = strobjects;
 
@@ -68,29 +68,29 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 			}
 		}
 
-		free(strobjects);
+		mem_free(strobjects);
 	}
 
 	if(ldata.num_objects) {
 		res_load_continue_on_main(st, load_shader_program_stage2, memdup(&ldata, sizeof(ldata)));
 	} else {
 		log_error("%s: no shader objects to link", st->path);
-		free(ldata.objlist);
+		mem_free(ldata.objlist);
 		res_load_failed(st);
 	}
 }
 
 static void load_shader_program_stage2(ResourceLoadState *st) {
 	struct shprog_load_data ldata = *(struct shprog_load_data*)NOT_NULL(st->opaque);
-	free(st->opaque);
+	mem_free(st->opaque);
 
 	ShaderObject *objs[ldata.num_objects];
 	char *objname = ldata.objlist;
 
 	for(int i = 0; i < ldata.num_objects; ++i) {
-		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, st->flags & ~RESF_RELOAD))) {
+		if(!(objs[i] = res_get_data(RES_SHADER_OBJECT, objname, st->flags & ~RESF_RELOAD))) {
 			log_error("%s: couldn't load shader object '%s'", st->path, objname);
-			free(ldata.objlist);
+			mem_free(ldata.objlist);
 			res_load_failed(st);
 			return;
 		}
@@ -98,7 +98,7 @@ static void load_shader_program_stage2(ResourceLoadState *st) {
 		objname += strlen(objname) + 1;
 	}
 
-	free(ldata.objlist);
+	mem_free(ldata.objlist);
 	ShaderProgram *prog = r_shader_program_link(ldata.num_objects, objs);
 
 	if(prog) {

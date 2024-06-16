@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -19,21 +19,25 @@ typedef enum {
 	CLI_DumpStages,
 	CLI_DumpVFSTree,
 	CLI_Quit,
+	CLI_QuitLate,
 	CLI_Credits,
 	CLI_Cutscene,
 } CLIActionType;
 
 typedef struct CLIAction CLIAction;
 struct CLIAction {
+	char *filename;
+	char *out_replay;
+	PlayerMode *plrmode;
 	CLIActionType type;
-	bool force_intro;
 	int stageid;
 	int diff;
 	int frameskip;
 	CutsceneID cutscene;
-	char *filename;
-	char *out_replay;
-	PlayerMode *plrmode;
+	bool force_intro;
+	bool unlock_all;
+	int width;
+	int height;
 };
 
 int cli_args(int argc, char **argv, CLIAction *a);

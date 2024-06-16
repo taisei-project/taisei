@@ -2,17 +2,37 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "gles.h"
+
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
+#include "../glcommon/vtable.h"
+#include "angle_egl.h"
+#include "util/env.h"
+
+#ifdef _WIN32
+	// Enable WebGL compatibility mode on Windows, because cubemaps are broken in the D3D11 backend
+	// except in WebGL mode for some reason.
+	#define ANGLE_WEBGL_DEFAULT true
+#else
+	#define ANGLE_WEBGL_DEFAULT false
+#endif
+
+attr_unused
+static SDL_GLContext gles_create_context_webgl(SDL_Window *window) {
+	int major, minor;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+	return gles_create_context_angle(window, major, minor, true);
+}
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
+	GLVT_OF(*gles_backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
+
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
 	// Load ANGLE by default by setting up some SDL-specific environment vars.
 	// These are not overwritten if they are already set in the environment, so
@@ -37,6 +57,10 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	#endif
 
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
+
+	if(env_get("TAISEI_ANGLE_WEBGL", ANGLE_WEBGL_DEFAULT)) {
+		GLVT_OF(*gles_backend).create_context = gles_create_context_webgl;
+	}
 #endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);
@@ -46,18 +70,6 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 
 void gles_init_context(SDL_Window *w) {
 	GLVT_OF(_r_backend_gl33).init_context(w);
-}
-
-bool gles_screenshot(Pixmap *out) {
-	FloatRect vp;
-	r_framebuffer_viewport_current(NULL, &vp);
-	out->width = vp.w;
-	out->height = vp.h;
-	out->format = PIXMAP_FORMAT_RGBA8;
-	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
-	glReadPixels(vp.x, vp.y, vp.w, vp.h, GL_RGBA, GL_UNSIGNED_BYTE, out->data.untyped);
-	return true;
 }
 
 bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {

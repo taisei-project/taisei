@@ -9,15 +9,15 @@ vfs_src = files(
     'readonly_wrapper.c',
     'syspath_public.c',
     'union.c',
-    'union_public.c',
     'vdir.c',
     'zipfile_public.c',
 )
 
-if taisei_deps.contains(dep_zip)
+if dep_zip.found()
     vfs_src += files(
         'zipfile.c',
         'zippath.c',
+        'zippath_rwops.c',
     )
 else
     vfs_src += files(
@@ -35,6 +35,7 @@ endif
 
 if host_machine.system() == 'emscripten'
     vfs_src += files(
+        'emscripten_fetch.c',
         'setup_emscripten.c',
         'sync_emscripten.c',
     )
@@ -48,6 +49,15 @@ else
         'setup_generic.c',
         'sync_noop.c',
     )
+endif
+
+if use_static_res_index
+    vfs_src += files('resindex.c')
+    vfs_src += resindex
+
+    if is_developer_build
+        vfs_src += files('resindex_layered.c')
+    endif
 endif
 
 subdir('platform_paths')

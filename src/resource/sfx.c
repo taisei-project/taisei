@@ -2,17 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "resource.h"
+
+#include "audio/audio.h"
 #include "sfx.h"
-#include "audio/backend.h"
 #include "sfxbgm_common.h"
-#include "util.h"
 
 static char *sound_path(const char *name) {
 	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false);

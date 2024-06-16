@@ -2,18 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "background_anim.h"
 #include "draw.h"
 
-#include "global.h"
-#include "stageutils.h"
 #include "common_tasks.h"
+#include "stageutils.h"
 
 TASK(stage5_bg_update) {
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
@@ -32,7 +29,7 @@ TASK(stage5_bg_update) {
 		stage5_draw_data->stairs.light_strength *= 0.975;
 
 		if(rng_chance(0.007)) {
-			stage5_draw_data->stairs.light_strength = fmax(stage5_draw_data->stairs.light_strength, rng_range(5, 10));
+			stage5_draw_data->stairs.light_strength = max(stage5_draw_data->stairs.light_strength, rng_range(5, 10));
 		}
 
 		YIELD;
@@ -57,7 +54,7 @@ void stage5_bg_init_spellpractice(void) {
 
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 	stage5_draw_data->stairs.roffset = -90;
-	stage5_draw_data->stairs.zoffset = 5;
+	stage5_draw_data->stairs.zoffset = 30;
 	stage5_draw_data->stairs.rad = -3;
 
 	INVOKE_TASK(stage5_bg_update);

@@ -2,17 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "entity.h"
-#include "util.h"
-#include "renderer/api.h"
-#include "global.h"
+
 #include "dynarray.h"
+#include "global.h"
+#include "renderer/api.h"
+#include "util.h"
 
 typedef struct EntityDrawHook EntityDrawHook;
 typedef LIST_ANCHOR(EntityDrawHook) EntityDrawHookList;
@@ -34,7 +33,7 @@ static struct {
 } entities;
 
 static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *arg) {
-	EntityDrawHook *hook = calloc(1, sizeof(*hook));
+	auto hook = ALLOC(EntityDrawHook);
 	hook->callback = cb;
 	hook->arg = arg;
 
@@ -45,7 +44,7 @@ static void remove_hook(EntityDrawHookList *list, EntityDrawHookCallback cb) {
 	for(EntityDrawHook *hook = list->first; hook; hook = hook->next) {
 		if(hook->callback == cb) {
 			alist_unlink(list, hook);
-			free(hook);
+			mem_free(hook);
 			return;
 		}
 	}
@@ -81,7 +80,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 	ent->spawn_id = ++entities.total_spawns;
 	ent->index = entities.registered.num_elements;
 	assume(ent->spawn_id > 0);
-	*dynarray_append(&entities.registered) = ent;
+	dynarray_append(&entities.registered, ent);
 }
 
 void ent_unregister(EntityInterface *ent) {
@@ -93,7 +92,6 @@ void ent_unregister(EntityInterface *ent) {
 	assert(dynarray_get(&entities.registered, ent->index) == ent);
 	EntityInterface *sub = entities.registered.data[--entities.registered.num_elements];
 	entities.registered.data[sub->index = ent->index] = sub;
-	del_ref(ent);
 }
 
 static int ent_cmp(const void *ptr1, const void *ptr2) {
@@ -238,4 +236,15 @@ void _ent_array_compact_Entity(BoxedEntityArray *a) {
 			memmove(a->array + i, a->array + i + 1, (a->size - i) * sizeof(a->array[0]));
 		}
 	}
+}
+
+int _ent_array_add_firstfree_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
+	for(int i = 0; i < a->size; ++i) {
+		if(!ENT_UNBOX(a->array[i])) {
+			a->array[i] = box;
+			return i;
+		}
+	}
+
+	return _ent_array_add_BoxedEntity(box, a);
 }

@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "hina.h"
 
 #include "global.h"
+#include "renderer/api.h"
 
 void stage2_draw_hina_spellbg(Boss *h, int time) {
 	SpriteParams sp = { 0 };
@@ -30,8 +29,8 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 	Animation *fireani = res_anim("fire");
 	sp.sprite_ptr = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames);
 	sp.sprite = NULL;
-	sp.pos.x = creal(h->pos);
-	sp.pos.y = cimag(h->pos);
+	sp.pos.x = re(h->pos);
+	sp.pos.y = im(h->pos);
 	sp.scale.both = 1;
 	sp.rotation = (SpriteRotationParams) { 0 };
 	sp.blend = BLEND_PREMUL_ALPHA;

@@ -2,16 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-#include "../cirno.h"
-
-#include "global.h"
 
 TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
@@ -28,7 +23,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 
 	WAIT(80);
 
-	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (creal(v) > 0));
+	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (re(v) > 0));
 	p->move = move_asymptotic_simple(v, 2);
 	p->angle = carg(p->move.velocity);
 	p->color = *RGB(0.5, 0.5, 0.5);
@@ -39,7 +34,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 
 DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W / 2.0 + 120.0*I, 0.01);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W / 2.0 + 120.0*I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int icicle_interval = difficulty_value(30, 22, 16, 8);

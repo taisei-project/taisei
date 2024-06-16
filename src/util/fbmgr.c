@@ -2,16 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "fbmgr.h"
-#include "list.h"
-#include "events.h"
+
 #include "config.h"
+#include "events.h"
+#include "list.h"
+#include "util.h"
 #include "video.h"
 
 typedef struct ManagedFramebufferData ManagedFramebufferData;
@@ -65,7 +65,7 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 	assert(cfg->attachments != NULL);
 	assert(cfg->num_attachments >= 1);
 
-	ManagedFramebuffer *mfb = calloc(1, sizeof(*mfb) + sizeof(ManagedFramebufferData));
+	auto mfb = ALLOC_FLEX(ManagedFramebuffer, sizeof(ManagedFramebufferData));
 	ManagedFramebufferData *data = GET_DATA(mfb);
 	data->resize_strategy = cfg->resize_strategy;
 	mfb->fb = r_framebuffer_create();
@@ -96,7 +96,7 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 	}
 
 	r_framebuffer_viewport_rect(mfb->fb, fb_viewport);
-	r_framebuffer_clear(mfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(mfb->fb, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 
 	list_push(&framebuffers, data);
 	return mfb;
@@ -113,7 +113,7 @@ Framebuffer *fbmgr_framebuffer_disown(ManagedFramebuffer *mfb) {
 
 			Framebuffer *fb = m->fb;
 			list_unlink(&framebuffers, d);
-			free(m);
+			mem_free(m);
 			return fb;
 		}
 	}
@@ -161,7 +161,7 @@ void fbmgr_shutdown(void) {
 }
 
 ManagedFramebufferGroup *fbmgr_group_create(void) {
-	return calloc(1, sizeof(ManagedFramebufferGroup));
+	return ALLOC(ManagedFramebufferGroup);
 }
 
 void fbmgr_group_destroy(ManagedFramebufferGroup *group) {
@@ -171,7 +171,7 @@ void fbmgr_group_destroy(ManagedFramebufferGroup *group) {
 		fbmgr_framebuffer_destroy(mfb);
 	}
 
-	free(group);
+	mem_free(group);
 }
 
 Framebuffer *fbmgr_group_framebuffer_create(ManagedFramebufferGroup *group, const char *name, const FramebufferConfig *cfg) {

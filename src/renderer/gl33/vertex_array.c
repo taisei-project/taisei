@@ -2,17 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "vertex_array.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
+#include "index_buffer.h"
+#include "vertex_buffer.h"
 
 static GLenum va_type_to_gl_type[] = {
 	[VA_FLOAT]  = GL_FLOAT,
@@ -25,7 +24,7 @@ static GLenum va_type_to_gl_type[] = {
 };
 
 VertexArray* gl33_vertex_array_create(void) {
-	VertexArray *varr = calloc(1, sizeof(VertexArray));
+	auto varr = ALLOC(VertexArray);
 	glGenVertexArrays(1, &varr->gl_handle);
 	// A VAO must be bound before it's considered valid.
 	// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glIsVertexArray.xhtml
@@ -40,9 +39,9 @@ VertexArray* gl33_vertex_array_create(void) {
 void gl33_vertex_array_destroy(VertexArray *varr) {
 	gl33_vertex_array_deleted(varr);
 	glDeleteVertexArrays(1, &varr->gl_handle);
-	free(varr->attachments);
-	free(varr->attribute_layout);
-	free(varr);
+	mem_free(varr->attachments);
+	mem_free(varr->attribute_layout);
+	mem_free(varr);
 }
 
 static void gl33_vertex_array_update_layout(VertexArray *varr) {
@@ -111,11 +110,16 @@ static void gl33_vertex_array_update_layout(VertexArray *varr) {
 			default: UNREACHABLE;
 		}
 
+		DIAGNOSTIC(push)
+		DIAGNOSTIC(ignored "-Wunreachable-code")
+
 		if(HAVE_GL_FUNC(glVertexAttribDivisor)) {
 			glVertexAttribDivisor(i, a->spec.divisor);
 		} else if(a->spec.divisor != 0) {
 			log_fatal("Renderer backend does not support instance attributes");
 		}
+
+		DIAGNOSTIC(pop)
 	}
 
 	for(uint i = varr->num_attributes; i < varr->prev_num_attributes; ++i) {
@@ -135,7 +139,7 @@ void gl33_vertex_array_attach_vertex_buffer(VertexArray *varr, VertexBuffer *vbu
 
 	// TODO: more efficient way of handling this?
 	if(attachment >= varr->num_attachments) {
-		varr->attachments = realloc(varr->attachments, (attachment + 1) * sizeof(VertexBuffer*));
+		varr->attachments = mem_realloc(varr->attachments, (attachment + 1) * sizeof(VertexBuffer*));
 		varr->num_attachments = attachment + 1;
 	}
 
@@ -162,7 +166,7 @@ IndexBuffer* gl33_vertex_array_get_index_attachment(VertexArray *varr) {
 
 void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
 	if(varr->num_attributes != nattribs) {
-		varr->attribute_layout = realloc(varr->attribute_layout, sizeof(VertexAttribFormat) * nattribs);
+		varr->attribute_layout = mem_realloc(varr->attribute_layout, sizeof(VertexAttribFormat) * nattribs);
 		varr->num_attributes = nattribs;
 	}
 

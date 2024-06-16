@@ -2,23 +2,25 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
+#include "util/callchain.h"
+
 typedef struct Transition Transition;
 typedef void (*TransitionRule)(double fade);
-typedef void (*TransitionCallback)(void *a);
+
+#define TRANSITION_RESULT_CANCELED(ccr) ((bool)(uintptr_t)ccr.result)
 
 struct Transition {
 	double fade;
 	int dur1; // first half
 	int dur2; // second half
-	TransitionCallback callback;
-	void *arg;
+	CallChain cc;
 
 	enum {
 		TRANS_IDLE,
@@ -33,8 +35,7 @@ struct Transition {
 		int dur1;
 		int dur2;
 		TransitionRule rule;
-		TransitionCallback callback;
-		void *arg;
+		CallChain cc;
 	} queued;
 };
 
@@ -45,7 +46,6 @@ void TransFadeWhite(double fade);
 void TransLoader(double fade);
 void TransEmpty(double fade);
 
-void set_transition(TransitionRule rule, int dur1, int dur2);
-void set_transition_callback(TransitionRule rule, int dur1, int dur2, TransitionCallback cb, void *arg);
+void set_transition(TransitionRule rule, int dur1, int dur2, CallChain cc);
 void draw_transition(void);
 void update_transition(void);

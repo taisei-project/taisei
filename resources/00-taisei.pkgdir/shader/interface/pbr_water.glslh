@@ -3,11 +3,17 @@
 
 #include "pbr.glslh"
 
+VARYING(6) vec2 waterTexCoord;
+
 UNIFORM(60) float time;
 UNIFORM(61) float water_depth;
 UNIFORM(62) float wave_height;
 UNIFORM(63) vec2 wave_offset;
 UNIFORM(64) float wave_scale;
 UNIFORM(65) mat4 inverse_modelview;
+UNIFORM(66) sampler2D water_noisetex;
+UNIFORM(67) vec3 water_color;
+UNIFORM(68) vec3 wave_highlight_color;
+UNIFORM(69) int water_has_bottom_layer;
 
 #endif

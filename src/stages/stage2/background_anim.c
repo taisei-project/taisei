@@ -2,17 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "background_anim.h"
 #include "draw.h"
 
 #include "stageutils.h"
-#include "coroutine.h"
 #include "common_tasks.h"
 #include "util/glm.h"
 
@@ -45,8 +42,6 @@ void stage2_bg_enable_hina_lights(void) {
 		.ease = glm_ease_sine_in,
 	);
 }
-
-#include "camcontrol.h"
 
 TASK(animate_bg_fullstage) {
 	Camera3D *cam = &stage_3d_context.cam;

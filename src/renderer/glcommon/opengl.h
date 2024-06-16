@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -99,8 +99,6 @@ typedef void (APIENTRY *PFNGLREQUESTEXTENSIONANGLEPROC) (const GLchar *name);
 typedef void (APIENTRY *PFNGLDISABLEEXTENSIONANGLEPROC) (const GLchar *name);
 #endif /* GL_ANGLE_request_extension */
 
-#include "assert.h"
-
 // NOTE: The ability to query supported GLSL versions was added in GL 4.3,
 // but it's not exposed by any extension. This is pretty silly.
 #ifndef GL_NUM_SHADING_LANGUAGE_VERSIONS
@@ -148,12 +146,6 @@ ext_flag_t glcommon_check_extension(const char *ext) attr_nonnull_all;
 ext_flag_t glcommon_require_extension(const char *ext) attr_nonnull_all;
 void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags);
 
-#if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
-	#define DEBUG_GL_DEFAULT 1
-#else
-	#define DEBUG_GL_DEFAULT 0
-#endif
-
 struct glext_s {
 	struct {
 		char major;
@@ -165,6 +157,7 @@ struct glext_s {
 
 	struct {
 		uchar avoid_sampler_uniform_updates : 1;
+		uchar disable_norm16 : 1;
 	} issues;
 
 	ext_flag_t clear_texture;

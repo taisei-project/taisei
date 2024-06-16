@@ -2,52 +2,26 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "stageobjects.h"
-#include "projectile.h"
-#include "item.h"
-#include "enemy.h"
-#include "laser.h"
-#include "stagetext.h"
-#include "boss.h"
-#include "aniplayer.h"
 
-#define MAX_projectiles             2048
-#define MAX_items                   MAX_projectiles
-#define MAX_enemies                 64
-#define MAX_lasers                  64
-#define MAX_stagetext               1024
-#define MAX_bosses                  1
+#define INIT_ARENA_SIZE (8 << 20)
 
-#define OBJECT_POOLS \
-	OBJECT_POOL(Projectile, projectiles) \
-	OBJECT_POOL(Item, items) \
-	OBJECT_POOL(Enemy, enemies) \
-	OBJECT_POOL(Laser, lasers) \
-	OBJECT_POOL(StageText, stagetext) \
-	OBJECT_POOL(Boss, bosses) \
+StageObjects stage_objects;
 
-StageObjectPools stage_object_pools;
+void stage_objpools_init(void) {
+	if(!stage_objects.arena.pages.first) {
+		marena_init(&stage_objects.arena, INIT_ARENA_SIZE - sizeof(MemArenaPage));
+	} else {
+		marena_reset(&stage_objects.arena);
+	}
 
-void stage_objpools_alloc(void) {
-	stage_object_pools = (StageObjectPools){
-		#define OBJECT_POOL(type,field) \
-			.field = OBJPOOL_ALLOC(type, MAX_##field),
-
-		OBJECT_POOLS
-		#undef OBJECT_POOL
-	};
+	stage_objects.pools = (typeof(stage_objects.pools)) {};
 }
 
-void stage_objpools_free(void) {
-	#define OBJECT_POOL(type,field) \
-		objpool_free(stage_object_pools.field);
-
-	OBJECT_POOLS
-	#undef OBJECT_POOL
+void stage_objpools_shutdown(void) {
+	marena_deinit(&stage_objects.arena);
 }

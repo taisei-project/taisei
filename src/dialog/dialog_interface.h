@@ -2,15 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #pragma once
 #include "taisei.h"
 
-#include "dialog.h"
-
+#include "dialog.h"  // IWYU pragma: export
+#include "coroutine/taskdsl.h"
 
 #define DIALOG_SCRIPTS \
 	WITH_EVENTS    (Stage1PreBoss,     (boss_appears, music_changes)) \
@@ -26,6 +26,8 @@
 	WITHOUT_EVENTS (Stage5PostBoss)                                   \
 	WITH_EVENTS    (Stage6PreBoss,     (boss_appears, music_changes)) \
 	WITHOUT_EVENTS (Stage6PreFinal)                                   \
+	WITH_EVENTS    (StageExPreBoss,    (boss_appears, music_changes)) \
+	WITHOUT_EVENTS (StageExPostBoss)                                  \
 
 
 
@@ -35,6 +37,7 @@
 		_name##DialogEvents **out_events; \
 		int called_for_preload; \
 		ResourceFlags preload_rflags; \
+		ResourceGroup *preload_group; \
 	});
 
 #define WITHOUT_EVENTS(_name) \

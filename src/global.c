@@ -2,13 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "global.h"
+
+#include "util/env.h"
+#include "gamepad.h"
 
 Global global;
 
@@ -29,6 +30,12 @@ void init_global(CLIAction *cli) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 
+	global.is_kiosk_mode = env_get("TAISEI_KIOSK", false);
+
+	if(global.is_kiosk_mode) {
+		SDL_SetHintWithPriority(SDL_HINT_NO_SIGNAL_HANDLERS, 0, SDL_HINT_DEFAULT);
+	}
+
 	fpscounter_reset(&global.fps.logic);
 	fpscounter_reset(&global.fps.render);
 	fpscounter_reset(&global.fps.busy);
@@ -43,7 +50,24 @@ bool gamekeypressed(KeyIndex key) {
 
 static SDL_atomic_t quitting;
 
+static bool taisei_is_quit_forbidden(void) {
+	return global.is_kiosk_mode && env_get("TAISEI_KIOSK_PREVENT_QUIT", true);
+}
+
+bool taisei_is_quit_hidden(void) {
+#ifdef __EMSCRIPTEN__
+	return true;
+#else
+	return taisei_is_quit_forbidden();
+#endif
+}
+
 void taisei_quit(void) {
+	if(taisei_is_quit_forbidden()) {
+		log_info("Running in kiosk mode; exit request ignored");
+		return;
+	}
+
 	if(SDL_AtomicCAS(&quitting, 0, 1)) {
 		log_info("Exit requested");
 	}

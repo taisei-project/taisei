@@ -2,16 +2,19 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "private.h"
 #include "vdir.h"
 
-VFSNode *vfs_root;
+#include "list.h"
+#include "log.h"
+#include "util/io.h"
+#include "util/stringops.h"
+
+VFSNode *vfs_root = NULL;
 
 typedef struct vfs_tls_s {
 	char *error_str;
@@ -32,8 +35,8 @@ static void vfs_free(VFSNode *node);
 static void vfs_tls_free(void *vtls) {
 	if(vtls) {
 		vfs_tls_t *tls = vtls;
-		free(tls->error_str);
-		free(tls);
+		mem_free(tls->error_str);
+		mem_free(tls);
 	}
 }
 
@@ -42,7 +45,7 @@ static vfs_tls_t* vfs_tls_get(void) {
 		vfs_tls_t *tls = SDL_TLSGet(vfs_tls_id);
 
 		if(!tls) {
-			SDL_TLSSet(vfs_tls_id, calloc(1, sizeof(vfs_tls_t)), vfs_tls_free);
+			SDL_TLSSet(vfs_tls_id, ALLOC(vfs_tls_t), vfs_tls_free);
 			tls = SDL_TLSGet(vfs_tls_id);
 		}
 
@@ -55,23 +58,21 @@ static vfs_tls_t* vfs_tls_get(void) {
 }
 
 void vfs_init(void) {
-	vfs_root = vfs_alloc();
-	vfs_vdir_init(vfs_root);
-
+	vfs_root = vfs_vdir_create();
 	vfs_tls_id = SDL_TLSCreate();
 
 	if(vfs_tls_id) {
 		vfs_tls_fallback = NULL;
 	} else {
 		log_warn("SDL_TLSCreate(): failed: %s", SDL_GetError());
-		vfs_tls_fallback = calloc(1, sizeof(vfs_tls_t));
+		vfs_tls_fallback = ALLOC(typeof(*vfs_tls_fallback));
 	}
 }
 
 static void* call_shutdown_hook(List **vlist, List *vhook, void *arg) {
 	vfs_shutdownhook_t *hook = (vfs_shutdownhook_t*)vhook;
 	hook->func(hook->arg);
-	free(list_unlink(vlist, vhook));
+	mem_free(list_unlink(vlist, vhook));
 	return NULL;
 }
 
@@ -89,16 +90,10 @@ void vfs_shutdown(void) {
 }
 
 void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
-	vfs_shutdownhook_t *hook = malloc(sizeof(vfs_shutdownhook_t));
-	hook->func = func;
-	hook->arg = arg;
-	list_append(&shutdown_hooks, hook);
-}
-
-VFSNode* vfs_alloc(void) {
-	VFSNode *node = calloc(1, sizeof(VFSNode));
-	vfs_incref(node);
-	return node;
+	list_append(&shutdown_hooks, ALLOC(vfs_shutdownhook_t, {
+		.func = func,
+		.arg = arg,
+	}));
 }
 
 static void vfs_free(VFSNode *node) {
@@ -110,14 +105,14 @@ static void vfs_free(VFSNode *node) {
 		node->funcs->free(node);
 	}
 
-	free(node);
+	mem_free(node);
 }
 
-void vfs_incref(VFSNode *node) {
+void (vfs_incref)(VFSNode *node) {
 	SDL_AtomicIncRef(&node->refcount);
 }
 
-bool vfs_decref(VFSNode *node) {
+bool (vfs_decref)(VFSNode *node) {
 	if(!node) {
 		return true;
 	}
@@ -130,7 +125,7 @@ bool vfs_decref(VFSNode *node) {
 	return false;
 }
 
-VFSNode* vfs_locate(VFSNode *root, const char *path) {
+VFSNode *(vfs_locate)(VFSNode *root, const char *path) {
 	if(!*path) {
 		vfs_incref(root);
 		return root;
@@ -179,7 +174,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 }
 
 bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
-	if(!vfs_mount(vfs_root, mountpoint, subtree)) {
+	if(!vfs_mount(root, mountpoint, subtree)) {
 		vfs_decref(subtree);
 		return false;
 	}
@@ -193,11 +188,12 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
 	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");
 	char *r;
 
-	SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_node_repr(root, false));
-	free(r);
+	r = vfs_node_repr(root, false);
+	SDL_RWprintf(dest, "%s = %s\n", newprefix, r);
+	mem_free(r);
 
 	if(!is_dir) {
-		free(newprefix);
+		mem_free(newprefix);
 		return;
 	}
 
@@ -210,24 +206,28 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
 	}
 
 	vfs_node_iter_stop(root, &o);
-	free(newprefix);
+	mem_free(newprefix);
 }
 
 const char* vfs_get_error(void) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return "VFS is not initialized";
+	}
+
 	vfs_tls_t *tls = vfs_tls_get();
 	return tls->error_str ? tls->error_str : "No error";
 }
 
-void vfs_set_error(char *fmt, ...) {
+void (vfs_set_error)(char *fmt, ...) {
 	vfs_tls_t *tls = vfs_tls_get();
 	va_list args;
 	va_start(args, fmt);
 	char *err = vstrfmt(fmt, args);
-	free(tls->error_str);
+	mem_free(tls->error_str);
 	tls->error_str = err;
 	va_end(args);
 
-	log_debug("%s", tls->error_str);
+	// log_debug("%s", tls->error_str);
 }
 
 void vfs_set_error_from_sdl(void) {

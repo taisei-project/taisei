@@ -7,3 +7,7 @@ dashdown_left = d5 6 7 8 9 10 11
 dashdown_right = m d5 6 7 8 9 10 11
 
 dashdown_wait = d5 6 7 d10 8 d5 9 10 11
+
+charge_begin = d5 6 7 8 9 10 11
+charge_idle = d3 10 11
+charge_end = m d3 6 7 8 9 10 11

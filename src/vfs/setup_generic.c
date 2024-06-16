@@ -2,18 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "public.h"
 #include "setup.h"
-#include "error.h"
-#include "util.h"
+
 #include "loadpacks.h"
 #include "platform_paths/platform_paths.h"
+#include "public.h"
+#include "util/env.h"
 
 // NOTE: For simplicity, we will assume that vfs_sync is not needed in this backend.
 
@@ -108,8 +106,8 @@ void vfs_setup(CallChain next) {
 		log_warn("%s", vfs_get_error());
 	}
 
-	free(local_res_path);
-	free(cache_path_allocated);
+	mem_free(local_res_path);
+	mem_free(cache_path_allocated);
 
 	// set up the final "res" union and get rid of the temporaries
 

@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -11,9 +11,9 @@
 
 #include <SDL.h>
 
-void* memdup(const void *src, size_t size) attr_returns_allocated attr_nonnull(1);
+// IWYU pragma: private, include "util.h"
+
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) attr_nonnull(2, 3);
-bool is_main_thread(void);
 
 typedef union FloatBits {
 	float val;
@@ -41,6 +41,11 @@ INLINE double bits_to_double(uint64_t i) {
 	return ((DoubleBits) { .bits = i }).val;
 }
 
-extern SDL_threadID main_thread_id;
-
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
+
+#define SWAP(_a, _b) ({ \
+	auto _swap_temp = _a; \
+	_a = _b; \
+	_b = _swap_temp; \
+	(void)0; \
+})

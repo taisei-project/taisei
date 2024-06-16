@@ -2,16 +2,17 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "shaders.h"
-#include "util.h"
+
+#include "log.h"
 #include "opengl.h"
 #include "rwops/rwops_autobuf.h"
+#include "util/io.h"
+#include "util/stringops.h"
 
 ShaderLangInfoArray glcommon_shader_lang_table = { 0 };
 
@@ -22,15 +23,17 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 		}
 	});
 
-	ShaderLangInfo *lang = dynarray_append(&glcommon_shader_lang_table);
-	lang->lang = SHLANG_GLSL;
-	lang->glsl.version = v;
+	dynarray_append(&glcommon_shader_lang_table, {
+		.lang = SHLANG_GLSL,
+		.glsl.version = v,
+	});
 
 	if(v.profile == GLSL_PROFILE_NONE && v.version >= 330) {
 		v.profile = GLSL_PROFILE_CORE;
-		lang = dynarray_append(&glcommon_shader_lang_table);
-		lang->lang = SHLANG_GLSL;
-		lang->glsl.version = v;
+		dynarray_append(&glcommon_shader_lang_table, {
+			.lang = SHLANG_GLSL,
+			.glsl.version = v,
+		});
 	}
 }
 

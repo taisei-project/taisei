@@ -2,20 +2,23 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "global.h"
 #include "stagedraw.h"
-#include "stagetext.h"
-#include "video.h"
-#include "resource/postprocess.h"
+
 #include "entity.h"
-#include "util/fbmgr.h"
+#include "events.h"
+#include "global.h"
 #include "replay/struct.h"
+#include "resource/postprocess.h"
+#include "stageobjects.h"
+#include "stagetext.h"
+#include "util/env.h"
+#include "util/fbmgr.h"
+#include "util/graphics.h"
+#include "video.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -47,7 +50,6 @@ static struct {
 
 	struct {
 		ShaderProgram *fxaa;
-		ShaderProgram *copy_depth;
 	} shaders;
 
 	PostprocessShader *viewport_pp;
@@ -83,6 +85,10 @@ static struct {
 	}
 };
 
+bool stage_draw_is_initialized(void) {
+	return stagedraw.mfb_group;
+}
+
 static double fb_scale(void) {
 	float vp_width, vp_height;
 	video_get_viewport_size(&vp_width, &vp_height);
@@ -117,7 +123,7 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, fl
 			break;
 	}
 
-	scale = fmax(0.1, scale);
+	scale = max(0.1, scale);
 	*w = round(VIEWPORT_W * scale);
 	*h = round(VIEWPORT_H * scale);
 }
@@ -137,7 +143,7 @@ static void stage_framebuffer_resize_strategy(void *userdata, IntExtent *out_dim
 static void stage_framebuffer_resize_strategy_cleanup(void *userdata) {
 	StageFramebufferResizeParams *rp = userdata;
 	if(--rp->refs <= 0) {
-		free(rp);
+		mem_free(rp);
 	}
 }
 
@@ -267,31 +273,28 @@ static void stage_draw_destroy_framebuffers(void) {
 	stagedraw.mfb_group = NULL;
 }
 
-void stage_draw_pre_init(void) {
-	stagedraw.mfb_group = fbmgr_group_create();
-
-	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
+void stage_draw_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"hud/heart",
 		"hud/star",
 		"star",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"powersurge_flow",
 		"titletransition",
 		"hud",
 	NULL);
 
-	preload_resources(RES_MODEL, RESF_PERMANENT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"hud",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"copy_depth",
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"ingame_menu",
 		"powersurge_effect",
 		"powersurge_feedback",
@@ -308,34 +311,41 @@ void stage_draw_pre_init(void) {
 		#endif
 	NULL);
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 		"mono",
 		"small",
 		"monosmall",
 	NULL);
 
+	if(stage_is_demo_mode()) {
+		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
+			"text_demo",
+		NULL);
+	}
+
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
-		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 			"graph",
 		NULL);
 	}
 
 	if(stagedraw.objpool_stats) {
-		preload_resources(RES_FONT, RESF_PERMANENT,
+		res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 			"monotiny",
 		NULL);
 	}
 }
 
 void stage_draw_init(void) {
-	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
+	stagedraw.mfb_group = fbmgr_group_create();
+
+	stagedraw.viewport_pp = res_get_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = res_shader("text_hud");
 	stagedraw.hud_text.font = res_font("standard");
 	stagedraw.shaders.fxaa = res_shader("fxaa");
-	stagedraw.shaders.copy_depth = res_shader("copy_depth");
 
 	r_shader_standard();
 
@@ -396,13 +406,13 @@ static void stage_draw_collision_areas(void) {
 	for(Projectile *p = global.projs.first; p; p = p->next) {
 		cmplx gsize = projectile_graze_size(p);
 
-		if(creal(gsize)) {
+		if(re(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
 				.color = RGB(0, 0.5, 0.5),
 				.sprite_ptr = &stagedraw.dummy,
-				.pos = { creal(p->pos), cimag(p->pos) },
+				.pos = { re(p->pos), im(p->pos) },
 				.rotation.angle = p->angle + M_PI/2,
-				.scale = { .x = creal(gsize), .y = cimag(gsize) },
+				.scale = { .x = re(gsize), .y = im(gsize) },
 				.blend = BLEND_SUB,
 			});
 		}
@@ -415,9 +425,9 @@ static void stage_draw_collision_areas(void) {
 	for(Projectile *p = global.projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
-			.pos = { creal(p->pos), cimag(p->pos) },
+			.pos = { re(p->pos), im(p->pos) },
 			.rotation.angle = p->angle + M_PI/2,
-			.scale = { .x = creal(p->collision_size), .y = cimag(p->collision_size) },
+			.scale = { .x = re(p->collision_size), .y = im(p->collision_size) },
 			.blend = BLEND_ALPHA,
 		});
 	}
@@ -428,7 +438,7 @@ static void stage_draw_collision_areas(void) {
 		if(hurt_radius > 0) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = &stagedraw.dummy,
-				.pos = { creal(e->pos), cimag(e->pos) },
+				.pos = { re(e->pos), im(e->pos) },
 				.scale = { .x = hurt_radius * 2, .y = hurt_radius * 2 },
 				.blend = BLEND_ALPHA,
 			});
@@ -438,7 +448,7 @@ static void stage_draw_collision_areas(void) {
 	if(global.boss && boss_is_player_collision_active(global.boss)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
-			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
+			.pos = { re(global.boss->pos), im(global.boss->pos) },
 			.scale = { .x = BOSS_HURT_RADIUS * 2, .y = BOSS_HURT_RADIUS * 2 },
 			.blend = BLEND_ALPHA,
 		});
@@ -446,7 +456,7 @@ static void stage_draw_collision_areas(void) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = &stagedraw.dummy,
-		.pos = { creal(global.plr.pos), cimag(global.plr.pos) },
+		.pos = { re(global.plr.pos), im(global.plr.pos) },
 		.scale.both = 2, // NOTE: actual player is a singular point
 	});
 
@@ -474,7 +484,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 
 static void draw_wall_of_text(float f, const char *txt) {
 	Sprite spr;
-	BBox bbox;
+	TextBBox bbox;
 
 	char buf[strlen(txt) + 4];
 	memcpy(buf, txt, sizeof(buf) - 4);
@@ -500,7 +510,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_uniform_float("w", spr.tex_area.w);
 	r_uniform_float("h", spr.tex_area.h);
 	r_uniform_float("ratio", h/w);
-	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
+	r_uniform_vec2("origin", re(global.boss->pos)/h, im(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
 	r_uniform_sampler("tex", spr.tex);
 	r_draw_quad();
@@ -529,7 +539,7 @@ static void draw_spellbg(int t) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "boss_spellcircle0",
 		.shader = "sprite_default",
-		.pos = { creal(b->pos), cimag(b->pos) },
+		.pos = { re(b->pos), im(b->pos) },
 		.rotation.angle = global.frames * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
 		.scale.both = scale,
@@ -572,25 +582,8 @@ static bool fxaa_rule(Framebuffer *fb) {
 }
 
 static bool copydepth_rule(Framebuffer *fb) {
-	r_state_push();
-	r_enable(RCAP_DEPTH_TEST);
-	r_depth_func(DEPTH_ALWAYS);
-	r_blend(BLEND_NONE);
-	r_shader_ptr(stagedraw.shaders.copy_depth);
-
 	Framebuffer *target_fb = r_framebuffer_current();
-	FramebufferAttachment prev_outputs[FRAMEBUFFER_MAX_OUTPUTS];
-	FramebufferAttachment outputs[FRAMEBUFFER_MAX_OUTPUTS];
-	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
-		outputs[i] = FRAMEBUFFER_ATTACH_NONE;
-	}
-
-	r_framebuffer_get_output_attachments(target_fb, prev_outputs);
-	r_framebuffer_set_output_attachments(target_fb, outputs);
-	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
-	r_framebuffer_set_output_attachments(target_fb, prev_outputs);
-	r_state_pop();
-
+	r_framebuffer_copy(target_fb, fb, BUFFER_DEPTH);
 	return false;
 }
 
@@ -616,6 +609,10 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 	if(ent->type == ENT_TYPE_ID(Item)) {
 		Item *i = ENT_CAST(ent, Item);
 		return i->type == ITEM_VOLTAGE;
+	}
+
+	if(ent->type == ENT_TYPE_ID(YumemiSlave)) {
+		return true;
 	}
 
 	return false;
@@ -683,8 +680,8 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	cmplx pos = fpos;
 
 	r_shader("boss_zoom");
-	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
-	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
+	r_uniform_vec2("blur_orig", re(pos)  / VIEWPORT_W,  1-im(pos)  / VIEWPORT_H);
+	r_uniform_vec2("fix_orig",  re(fpos) / VIEWPORT_W,  1-im(fpos) / VIEWPORT_H);
 	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
@@ -779,7 +776,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 			if(trans_intro) {
 				r_shader("spellcard_intro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
 				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
 				int tn = global.frames - b->current->endtime;
@@ -787,8 +784,8 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
-				r_uniform_float("t", fmax(0, tn / (float)delay + 1));
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
+				r_uniform_float("t", max(0, tn / (float)delay + 1));
 			}
 
 			r_blend(BLEND_PREMUL_ALPHA);
@@ -807,7 +804,7 @@ static void stage_render_bg(StageInfo *stage) {
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
 		r_mat_mv_push();
@@ -830,7 +827,7 @@ static void stage_render_bg(StageInfo *stage) {
 		Framebuffer *staging = stage_get_fbpair(FBPAIR_BG_AUX)->back;
 
 		r_state_push();
-		r_framebuffer_clear(staging, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_framebuffer_clear(staging, BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		draw_powersurge_effect(staging, BLEND_NONE);
 		r_shader_standard();
 		r_framebuffer(background->front);
@@ -899,7 +896,7 @@ void stage_draw_overlay(void) {
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
+	r_uniform_vec2("player", re(global.plr.pos), VIEWPORT_H - im(global.plr.pos));
 }
 
 static inline void begin_viewport_shake(void) {
@@ -1018,7 +1015,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 		coevent_signal(&stagedraw.events.background_drawn);
 	} else if(!key_nobg) {
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 
 	// draw the 2D objects
@@ -1085,7 +1082,7 @@ struct glyphcb_state {
 	Color *color1, *color2;
 };
 
-static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_attribs, void *userdata) {
+static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_attribs, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0' && charcode != ',') {
@@ -1093,22 +1090,21 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstance
 	}
 
 	spr_attribs->rgba = *st->color1;
-	return 0;
 }
 
 static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	Font *fnt_int = res_font("standard");
 	Font *fnt_fract = res_font("small");
 
-	int pw = global.plr.power + global.plr.power_overflow;
+	int pw = global.plr.power_stored;
 
 	Color *c_whole, c_whole_buf, *c_fract, c_fract_buf;
 	Color *c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
 
-	if(pw <= PLR_MAX_POWER) {
+	if(pw <= PLR_MAX_POWER_EFFECTIVE) {
 		c_whole = &stagedraw.hud_text.color.active;
 		c_fract = &stagedraw.hud_text.color.inactive;
-	} else if(pw - PLR_MAX_POWER < 100) {
+	} else if(pw - PLR_MAX_POWER_EFFECTIVE < 100) {
 		c_whole = &stagedraw.hud_text.color.active;
 		c_fract = color_mul(color_copy(&c_fract_buf, &stagedraw.hud_text.color.inactive), c_op_mod);
 	} else {
@@ -1136,7 +1132,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	});
 
 	draw_fraction(
-		PLR_MAX_POWER / 100.0,
+		PLR_MAX_POWER_EFFECTIVE / 100.0,
 		ALIGN_LEFT,
 		xpos,
 		ypos,
@@ -1148,7 +1144,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	);
 }
 
-static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
+static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint64_t score) {
 	format_huge_num(10, score, bufsize, buf);
 
 	Font *fnt = res_font("standard");
@@ -1174,22 +1170,51 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
-	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
+	char buf[128];
+	auto objpools = &stage_objects.pools.as_array;
+	MemArena *arena = &stage_objects.arena;
+
 	Font *font = res_font("monotiny");
 
 	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
-	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
-		ObjectPoolStats stats;
-		char buf[32];
-		objpool_get_stats(*pool, &stats);
+	r_shader("text_hud");
 
-		snprintf(buf, sizeof(buf), "%zu | %5zu", stats.usage, stats.peak_usage);
-		// draw_text(ALIGN_LEFT  | AL_Flag_NoAdjust, (int)x,           (int)y, stats.tag, font);
-		// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, (int)(x + width), (int)y, buf,       font);
-		// y += stringheight(buf, font) * 1.1;
+	float lineskip = font_get_lineskip(font);
 
-		text_draw(stats.tag, &(TextParams) {
+	text_draw("Arena memory:", &(TextParams) {
+		.pos = { x, y },
+		.font_ptr = font,
+		.align = ALIGN_LEFT,
+	});
+
+	snprintf(buf, sizeof(buf),
+		"%zukb | %5zukb",
+		arena->total_used / 1024,
+		arena->total_allocated / 1024
+	);
+
+	text_draw(buf, &(TextParams) {
+		.pos = { x + width, y },
+		.font_ptr = font,
+		.align = ALIGN_RIGHT,
+	});
+
+	y += lineskip * 1.5;
+
+	const char *const names[] = {
+		#define GET_POOL_NAME(t, n) #t,
+		OBJECT_POOLS(GET_POOL_NAME)
+		#undef GET_POOL_NAME
+	};
+
+	static_assert(ARRAY_SIZE(*objpools) == ARRAY_SIZE(names));
+
+	for(int i = 0; i < ARRAY_SIZE(*objpools); ++i) {
+		MemPool *p = &(*objpools)[i];
+
+		snprintf(buf, sizeof(buf), "%u | %7u", p->num_used, p->num_allocated);
+
+		text_draw(names[i], &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
@@ -1201,8 +1226,9 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 			.align = ALIGN_RIGHT,
 		});
 
-		y += font_get_lineskip(font);
+		y += lineskip;
 	}
+
 	r_shader_ptr(sh_prev);
 }
 
@@ -1272,10 +1298,6 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 	r_mat_mv_pop();
-
-	if(stagedraw.objpool_stats) {
-		stage_draw_hud_objpool_stats(0, 390, HUD_EFFECTIVE_WIDTH);
-	}
 
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
@@ -1443,6 +1465,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			.color = RGB(1.0, 0.5, 0.2),
 		});
 	}
+
+	if(stagedraw.objpool_stats) {
+		stage_draw_hud_objpool_stats(0, 440, HUD_EFFECTIVE_WIDTH);
+	}
 }
 
 void stage_draw_bottom_text(void) {
@@ -1450,10 +1476,9 @@ void stage_draw_bottom_text(void) {
 	Font *font;
 
 #ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d (%d:%02d) ",
+	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, frames: %d (%d:%02d) ",
 		global.fps.logic.fps,
 		global.fps.render.fps,
-		global.timer,
 		global.frames,
 		global.frames / 3600,
 		(global.frames % 3600) / 60
@@ -1479,9 +1504,8 @@ void stage_draw_bottom_text(void) {
 		.font_ptr = font,
 	});
 
-	if(global.replay.input.replay != NULL) {
-		ReplayState *rst = &global.replay.input;
-
+	ReplayState *rst = &global.replay.input;
+	if(rst->replay != NULL && (!stage_is_demo_mode() || rst->play.desync_frame >= 0)) {
 		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
@@ -1641,7 +1665,7 @@ void stage_draw_hud(void) {
 	float extraspell_fadein = 1;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-		extraspell_fadein  = fmin(1, -fmin(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+		extraspell_fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
 
 		float fadeout;
 
@@ -1651,7 +1675,7 @@ void stage_draw_hud(void) {
 			fadeout = 0;
 		}
 
-		float fade = fmax(extraspell_fadein, fadeout);
+		float fade = max(extraspell_fadein, fadeout);
 		extraspell_alpha = 1 - fade;
 	}
 
@@ -1770,7 +1794,7 @@ void stage_draw_hud(void) {
 
 	// Extra Spell indicator
 	if(extraspell_alpha > 0) {
-		float s2 = fmax(0, swing(extraspell_alpha, 3));
+		float s2 = max(0, swing(extraspell_alpha, 3));
 		r_state_push();
 		r_shader("text_default");
 		r_mat_mv_push();
@@ -1806,20 +1830,82 @@ void stage_draw_hud(void) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "boss_indicator",
 			.shader = "sprite_default",
-			.pos = { VIEWPORT_X+creal(global.boss->pos), 590 },
+			.pos = { VIEWPORT_X+re(global.boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
+		});
+	}
+
+	// Demo indicator
+	if(stage_is_demo_mode()) {
+		cmplxf pos = CMPLXF(
+			VIEWPORT_X + VIEWPORT_W * 0.5f,
+			VIEWPORT_Y + VIEWPORT_H * 0.5f - 75
+		);
+
+		float bg_width = 250;
+		float bg_height = 60;
+
+		Sprite *bg = res_sprite("part/smoke");
+
+		SpriteParams sp = {
+			.sprite_ptr = bg,
+			.shader_ptr = res_shader("sprite_default"),
+			.color = RGBA(0.1, 0.1, 0.2, 0.07),
+		};
+
+		r_mat_mv_push();
+		r_mat_mv_translate(re(pos), im(pos), 0);
+		r_mat_mv_scale(bg_width / bg->w, bg_height / bg->h, 1);
+
+		r_mat_mv_push();
+		r_mat_mv_rotate(global.frames * 0.5 * DEG2RAD, 0, 0, 1);
+		r_draw_sprite(&sp);
+		r_mat_mv_pop();
+
+		sp.color = RGBA(0.2, 0.1, 0.1, 0.07);
+
+		r_mat_mv_push();
+		r_mat_mv_rotate(global.frames * -0.93 * DEG2RAD, 0, 0, 1);
+		r_draw_sprite(&sp);
+		r_mat_mv_pop();
+
+		r_mat_mv_pop();
+
+		text_draw("Demo", &(TextParams) {
+			.align = ALIGN_CENTER,
+			.font = "big",
+			.shader = "text_demo",
+			.shader_params = &(ShaderCustomParams) { global.frames / 60.0f },
+			.pos.as_cmplx = pos,
 		});
 	}
 }
 
 void stage_display_clear_screen(const StageClearBonus *bonus) {
 	StageTextTable tbl;
-	stagetext_begin_table(&tbl, bonus->all_clear ? "All Clear!" : "Stage Clear!", RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2,
+
+	bool all_clear = bonus->all_clear.base;
+	const char *title = all_clear ? "All Clear!" : "Stage Clear!";
+
+	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), 2*VIEWPORT_W/3,
 		20, 5184000, 60, 60);
-	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus->base);
+	stagetext_table_add_numeric_nonzero(&tbl, "Stage Clear bonus", bonus->base);
 	stagetext_table_add_numeric_nonzero(&tbl, "Life bonus", bonus->lives);
 	stagetext_table_add_numeric_nonzero(&tbl, "Voltage bonus", bonus->voltage);
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
+
+	if(all_clear) {
+		stagetext_table_add_separator(&tbl);
+		stagetext_table_add_numeric_nonzero(&tbl, "All Clear bonus", bonus->all_clear.base);
+
+		if(bonus->all_clear.diff_bonus) {
+			char tmp[128];
+			int percent = (bonus->all_clear.diff_multiplier - 1.0) * 100;
+			snprintf(tmp, sizeof(tmp), "Difficulty bonus (+%i%%)", percent);
+			stagetext_table_add_numeric_nonzero(&tbl, tmp, bonus->all_clear.diff_bonus);
+		}
+	}
+
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
 	stagetext_end_table(&tbl);

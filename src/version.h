@@ -2,14 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include "util/strbuf.h"
+
+#include <SDL_rwops.h>
 
 #ifdef TAISEI_BUILDCONF_DEBUG
 	#define TAISEI_VERSION_BUILD_TYPE_0 "debug"
@@ -78,6 +80,7 @@ typedef enum {
 #define TAISEI_VERSION_SIZE (sizeof(uint8_t) * 3 + sizeof(uint16_t))
 
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level);
-char* taisei_version_tostring(TaiseiVersion *version);
+char *taisei_version_tostring(TaiseiVersion *version);
+void taisei_version_tostrbuf(StringBuffer *sbuf, TaiseiVersion *version);
 size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
 size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);

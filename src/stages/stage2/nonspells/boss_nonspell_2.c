@@ -2,16 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "nonspells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 TASK(speen, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
@@ -32,6 +27,8 @@ TASK(speen, { BoxedBoss boss; }) {
 TASK(balls, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 
+	real velocity = difficulty_value(2.0, 2.33, 2.66, 3.0);
+
 	for(;;) {
 		WAIT(75);
 		play_sfx("shot_special1");
@@ -47,17 +44,17 @@ TASK(balls, { BoxedBoss boss; }) {
 				.proto = pp_bigball,
 				.pos = boss->pos,
 				.color = RGB(0.8, 0.0, 0.8),
-				.move = move_asymptotic_halflife(8 * d, 3 * d, 60),
+				.move = move_asymptotic_halflife(8/3.0*velocity * d, velocity * d, 60),
 			);
 
-			int m = 8;
+			int m = difficulty_value(4, 6, 8, 8);
 			for(int j = 0; j < m; ++j) {
-				real s = (m - j) / (real)m;
+				real s = (m - j) / 8.0;
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = boss->pos,
 					.color = j & 1 ? RGBA(0.8, 0.0, 0.0, 0.0) : RGBA(0.0, 0.0, 0.8, 0.0),
-					.move = move_asymptotic_halflife((8 - 3 * s) * d, 3 * d, 60),
+					.move = move_asymptotic_halflife((8/3.0 - s) * velocity * d, velocity * d, 60),
 				);
 			}
 		}
@@ -68,7 +65,7 @@ DEFINE_EXTERN_TASK(stage2_boss_nonspell_2) {
 	STAGE_BOOKMARK(boss-non2);
 
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 100*I, 0.01);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100*I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(speen, ENT_BOX(boss));

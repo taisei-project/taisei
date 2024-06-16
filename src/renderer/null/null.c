@@ -2,14 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "../api.h"
-#include "resource/shader_object.h"
 #include "../common/backend.h"
 
 static char placeholder;
@@ -129,8 +126,13 @@ static void null_framebuffer_viewport(Framebuffer *framebuffer, FloatRect vp) { 
 static void null_framebuffer_viewport_current(Framebuffer *framebuffer, FloatRect *vp) { *vp = default_fb_viewport; }
 static void null_framebuffer(Framebuffer *framebuffer) { }
 static Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
-static void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }
+static void null_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval) { }
+static void null_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) { }
 static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
+
+static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, void *userdata, FramebufferReadAsyncCallback callback) {
+	callback(NULL, userdata);
+}
 
 static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
 static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
@@ -188,8 +190,6 @@ static void null_vsync(VsyncMode mode) { }
 static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
 static void null_swap(SDL_Window *window) { }
-
-static bool null_screenshot(Pixmap *dest) { return false; }
 
 RendererBackend _r_backend_null = {
 	.name = "null",
@@ -254,7 +254,9 @@ RendererBackend _r_backend_null = {
 		.framebuffer = null_framebuffer,
 		.framebuffer_current = null_framebuffer_current,
 		.framebuffer_clear = null_framebuffer_clear,
+		.framebuffer_copy = null_framebuffer_copy,
 		.framebuffer_get_size = null_framebuffer_get_size,
+		.framebuffer_read_async = null_framebuffer_read_async,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_get_debug_label = null_vertex_buffer_get_debug_label,
 		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,
@@ -285,6 +287,5 @@ RendererBackend _r_backend_null = {
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,
-		.screenshot = null_screenshot,
 	},
 };

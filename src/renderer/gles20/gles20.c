@@ -2,16 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "gles20.h"
-#include "../glescommon/gles.h"
+
 #include "../gl33/gl33.h"
-#include "../gl33/vertex_array.h"
+#include "../gl33/vertex_array.h"   // IWYU pragma: keep
+#include "../glcommon/vtable.h"
+#include "../glescommon/gles.h"
 #include "index_buffer.h"
 
 static void gles20_init(void) {
@@ -60,7 +60,6 @@ RendererBackend _r_backend_gles20 = {
 	.funcs = {
 		.init = gles20_init,
 		.texture_dump = gles_texture_dump,
-		.screenshot = gles_screenshot,
 		.index_buffer_create = gles20_index_buffer_create,
 		.index_buffer_get_capacity = gles20_index_buffer_get_capacity,
 		.index_buffer_get_index_size = gles20_index_buffer_get_index_size,

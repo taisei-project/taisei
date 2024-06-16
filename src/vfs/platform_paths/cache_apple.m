@@ -6,14 +6,14 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#include "taisei.h"
-
 #include "platform_paths.h"
 #include "util.h"
 #include "../syspath_public.h"
 
-// `Rect` clashes with macOS SDK namespace, override here
-#define Rect apple_Rect
+// HACK: work around name clashes with macOS SDK
+#define Rect __apple_Rect
+#define thread_create __apple_thread_create
+#define ThreadID __apple_ThreadID
 
 #include <Foundation/Foundation.h>
 

@@ -2,15 +2,14 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "util.h"
 #include "shader_object.h"
+
 #include "renderer/api.h"
+#include "util/io.h"
 
 struct shobj_type {
 	const char *ext;
@@ -76,7 +75,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 		return;
 	}
 
-	struct shobj_load_data *ldata = calloc(1, sizeof(struct shobj_load_data));
+	auto ldata = ALLOC(struct shobj_load_data);
 
 	char backend_macro[32] = "BACKEND_";
 	{
@@ -146,7 +145,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 
 fail:
 	shader_free_source(&ldata->source);
-	free(ldata);
+	mem_free(ldata);
 	res_load_failed(st);
 }
 
@@ -155,7 +154,7 @@ static void load_shader_object_stage2(ResourceLoadState *st) {
 
 	ShaderObject *shobj = r_shader_object_compile(&ldata->source);
 	shader_free_source(&ldata->source);
-	free(ldata);
+	mem_free(ldata);
 
 	if(shobj) {
 		r_shader_object_set_debug_label(shobj, st->name);

@@ -15,6 +15,7 @@ util_src = files(
     'miscmath.c',
     'pngcruft.c',
     'rectpack.c',
+    'sort_r.c',
     'strbuf.c',
     'stringops.c',
 )
@@ -23,24 +24,8 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
-config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', cc.compiles(
-    'struct { int dummy; } __attribute__((designated_init)) x;',
-    name : '__attribute__((designated_init)) with -Werror',
-    args : ['-Wattributes', '-Werror']
-))
-
-use_libcrypto = get_option('use_libcrypto')
-
-if use_libcrypto == 'auto'
-    use_libcrypto = dep_crypto.found()
-else
-    use_libcrypto = (use_libcrypto == 'true')
-endif
-
-if use_libcrypto
-    assert(dep_crypto.found(), 'use_libcrypto forced but libcrypto not found. Install OpenSSL or disable use_libcrypto.')
+if dep_crypto.found()
     util_src += files('sha256_openssl.c')
-    util_deps += [dep_crypto]
 else
     util_src += files('sha256.c')
 endif

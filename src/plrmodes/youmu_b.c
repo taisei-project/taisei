@@ -2,17 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
+#include "youmu.h"
 
+#include "audio/audio.h"
+#include "dialog/youmu.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "youmu.h"
+#include "stage.h"
 #include "util/glm.h"
-#include "stagedraw.h"
 
 #define SHOT_BASIC_DAMAGE 60
 #define SHOT_BASIC_DELAY 6
@@ -23,7 +24,8 @@
 #define SHOT_SPREAD_DAMAGE 40
 #define SHOT_SPREAD_DELAY 12
 
-#define SHOT_ORBS_SPIRIT_DAMAGE 90
+#define SHOT_ORBS_SPIRIT_DAMAGE 60
+#define SHOT_ORBS_SPIRIT_RELEASED_DAMAGEFACTOR 1.5
 #define SHOT_ORBS_SPIRIT_SPAWN_DELAY 11
 #define SHOT_ORBS_DELAY_BASE 45
 #define SHOT_ORBS_DELAY_PER_POWER -5
@@ -72,7 +74,7 @@ static void youmu_homing_trail(YoumuBController *ctrl, Projectile *p, cmplx v, i
 		.sprite_ptr = ctrl->sprites.smoothdot,
 		.pos = p->pos,
 		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), &p->color),
-		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*creal(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*cimag(p->pos)/VIEWPORT_H*M_TAU)), 2),
+		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*re(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*im(p->pos)/VIEWPORT_H*M_TAU)), 2),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.5+0.5*I, 3+7*I, 1, 0, 2),
 		.timeout = to,
 		.flags = PFLAG_NOREFLECT,
@@ -90,7 +92,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 	float f = 0.0f;
 
 	if(tt > 0.1) {
-		f = fminf(1.0f, (tt - 0.1f) / 0.2f);
+		f = min(1.0f, (tt - 0.1f) / 0.2f);
 	}
 
 	if(tt > 0.5f) {
@@ -176,7 +178,7 @@ TASK(youmu_haunting_shot_spread, { YoumuBController *ctrl; }) {
 			continue;
 		}
 
-		INVOKE_TASK(youmu_burst_shot, ctrl, 2 * plr->power / 100);
+		INVOKE_TASK(youmu_burst_shot, ctrl, 2 * player_get_effective_power(plr) / 100);
 		WAIT(SHOT_SPREAD_DELAY);
 	}
 }
@@ -240,7 +242,7 @@ TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
 		.pos = p->pos,
 		.move = p->move,
 		.angle = p->angle,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.layer = LAYER_PLAYER_SHOT,
 	);
 }
@@ -290,6 +292,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 				p->timeout = 0;
 				// p->move.velocity = 0;
 				p->move.retention *= 0.9;
+				p->damage *= SHOT_ORBS_SPIRIT_RELEASED_DAMAGEFACTOR;
 				aim_peaked = false;
 				aim_strength = -0.2;
 				speed *= 1.2;
@@ -301,7 +304,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 		if(orb) {
 			target = orb->pos;
 		} else {
-			target = plrutil_homing_target(p->pos, creal(global.plr.pos) - 128*I);
+			target = plrutil_homing_target(p->pos, re(global.plr.pos) - 128*I);
 		}
 
 		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity);
@@ -322,7 +325,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 			}
 		}
 
-		real s = fmax(speed, cabs(p->move.velocity));
+		real s = max(speed, cabs(p->move.velocity));
 		p->move.velocity = s * cnormalize(p->move.velocity + aim_strength * s * aimdir);
 		approach_asymptotic_p(&speed, speed_target, 0.05, 1e-5);
 
@@ -338,7 +341,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 20,
 		.color = RGBA(0.1, 0.5, 0.1, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.01*(1+I), 1, 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -349,7 +352,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 30,
 		.color = RGBA(0.1, 0.1, 0.5, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(1, 0.01*(1+I), 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -360,7 +363,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 40,
 		.color = RGBA(0.5, 0.1, 0.1, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.8, -0.3*(1+I), 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -452,12 +455,12 @@ TASK(youmu_haunting_shot_orbs, { YoumuBController *ctrl; }) {
 			continue;
 		}
 
-		int power_rank = plr->power / 100;
+		int power_rank = player_get_effective_power(plr) / 100;
 
 		INVOKE_TASK(youmu_orb_shot,
 			.ctrl = ctrl,
 			.lifetime = SHOT_ORBS_LIFETIME_BASE + power_rank * SHOT_ORBS_LIFETIME_PER_POWER,
-			.spirit_damage = SHOT_ORBS_SPIRIT_DAMAGE,  // 120 - 18 * 4 * (1 - pow(1 - (plr->power / 100) / 4.0, 1.5));
+			.spirit_damage = SHOT_ORBS_SPIRIT_DAMAGE,
 			.spirit_spawn_delay = SHOT_ORBS_SPIRIT_SPAWN_DELAY
 		);
 
@@ -479,7 +482,7 @@ TASK(youmu_haunting_bomb_slice_petal, { YoumuBController *ctrl; cmplx pos; cmplx
 	real transition_time = 40;
 
 	for(real t = 0; t <= transition_time; ++t) {
-		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), fmin(1, t / transition_time));
+		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / transition_time));
 		YIELD;
 	}
 }
@@ -495,7 +498,7 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 			.func = youmu_particle_slice_draw,
 			.args[0].as_ptr = &ctrl->plr->ani,
 		},
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.timeout = 100,
 		.angle = ARGS.angle,
 		.layer = LAYER_PARTICLE_HIGH | 0x1,
@@ -509,9 +512,9 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 		real a = 0;
 
 		if(tt > 0.5) {
-			a = fmax(0, 1 - (tt - 0.5) / 0.5);
+			a = max(0, 1 - (tt - 0.5) / 0.5);
 		} else {
-			a = fmin(1, tt / 0.2);
+			a = min(1, tt / 0.2);
 		}
 
 		p->color = *RGBA(a, a, a, 0);
@@ -595,19 +598,19 @@ static void youmu_haunting_init(Player *plr) {
 	INVOKE_TASK(youmu_haunting_controller, ENT_BOX(plr));
 }
 
-static void youmu_haunting_preload(void) {
+static void youmu_haunting_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"proj/youmu",
 		"part/youmu_slice",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

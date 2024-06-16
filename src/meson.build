@@ -60,7 +60,6 @@ taisei_src = files(
     'color.c',
     'common_tasks.c',
     'config.c',
-    'coroutine.c',
     'credits.c',
     'dialog.c',
     'difficulty.c',
@@ -77,7 +76,6 @@ taisei_src = files(
     'item.c',
     'list.c',
     'log.c',
-    'main.c',
     'move.c',
     'player.c',
     'plrmodes.c',
@@ -86,7 +84,7 @@ taisei_src = files(
     'projectile.c',
     'projectile_prototypes.c',
     'random.c',
-    'refs.c',
+    'ringbuf.c',
     'stage.c',
     'stagedraw.c',
     'stageinfo.c',
@@ -95,25 +93,19 @@ taisei_src = files(
     'stageutils.c',
     'stats.c',
     'taskmanager.c',
+    'thread.c',
     'transition.c',
     'version.c',
     'video.c',
     'video_postprocess.c',
+    'watchdog.c',
 )
+
+taisei_main_src = files('main.c')
 
 if is_developer_build
     taisei_src += files(
         'camcontrol.c'
-    )
-endif
-
-if get_option('objpools')
-    taisei_src += files(
-        'objectpool.c',
-    )
-else
-    taisei_src += files(
-        'objectpool_fake.c',
     )
 endif
 
@@ -124,11 +116,13 @@ if host_machine.system() == 'nx'
 endif
 
 subdir('audio')
+subdir('coroutine')
 subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
 subdir('lasers')
+subdir('memory')
 subdir('menu')
 subdir('pixmap')
 subdir('plrmodes')
@@ -142,11 +136,13 @@ subdir('vfs')
 
 taisei_src += [
     audio_src,
+    coroutine_src,
     cutscenes_src,
     dialog_src,
     eventloop_src,
     filewatch_src,
     lasers_src,
+    memory_src,
     menu_src,
     pixmap_src,
     plrmodes_src,
@@ -187,8 +183,7 @@ if stages_live_reload
     taisei_deps += cc.find_library('dl', required : false)
 
     taisei_stages_compile_command = [
-        # FIXME: no good way to get the effective meson command…
-        'meson', 'compile', '-C', meson.project_build_root(), '-v', taisei_stages.name(),
+        find_program('meson'), 'compile', '-C', meson.project_build_root(), '-v', taisei_stages.name(),
     ]
 
     r = run_command(format_array_command, taisei_stages_compile_command, check : true)
@@ -204,6 +199,7 @@ endif
 configure_file(configuration : config, output : 'build_config.h')
 
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
+have_libtaisei = false
 
 if host_machine.system() == 'emscripten'
     if get_option('b_staticpic')
@@ -219,47 +215,46 @@ if host_machine.system() == 'emscripten'
         'ApplyInverseTransforms',
         'Bezier_*',
         'DecodeImageData',
+        'DoUVTransform',
+        'EmitFancyRGB',
+        'EmitRescaledAlphaRGB',
+        'EmitRescaledRGB',
+        'EmitSampledRGB',
         'Emscripten_*',
         'FT_*',
         'FlushRenderCommands',
-        'HIDAPI_*',
+        'ReconstructRow',
         'SDL_*',
         'T1_*',
         'TT_*',
         'VP8*',
+        'VP8ExitCritical',
         'WebP*',
         'ZSTD_*',
         '__*',
-        '_audio_*',
+        '__ftello_unlocked',
+        '__fwritex',
+        '__shgetc',
+        '__toread',
+        '__vfprintf_internal',
         '_dynarray_*',
-        '_free_resources',
         '_ht_*',
-        '_r_*',
+        '_taisei_log*',
         '_text_draw',
         'af_*',
         'afm_*',
         'apply_kerning',
         'astream_*',
-        'audio_*',
         'basist*',
-        'bgm_*',
-        'bind_isactive',
-        'bind_setvalue',
-        'calloc',
         'camera3d_*',
         'cf2_*',
         'cff_*',
         'deflate*',
-        'draw_menu_list',
-        'draw_transition',
-        'ent_draw',
         'fbmgr_*',
         'fclose',
         'fread',
-        'free',
         'ft_*',
         'gamepad_*',
-        'get_exts',
         'get_glyph',
         'gl33_*',
         'glcommon_*',
@@ -267,60 +262,35 @@ if host_machine.system() == 'emscripten'
         'hash_bucket',
         'ht_*',
         'inflate*',
-        'list_foreach',
-        'load_resource',
-        'load_resource_finish',
         'log_*',
-        'malloc',
+        'log_internal',
         'op_get_next_page',
         'op_seek_helper',
-        'parse_keyvalue_*',
         'pfr_*',
         'pixmap_*',
-        'play_sfx',
-        'play_sfx_*',
-        'player_property',
         'png_*',
-        'preload_path',
-        'printf_*',
+        'printf_core',
         'px_*',
         'qsort',
-        'r_*',
-        'replace_sfx',
-        'resource_for_each',
-        'rwutil_*',
         'sfnt_*',
         'sift',
-        'stage3d_*',
-        'stop_sfx',
-        'stop_sfx_fadeout',
+        'stdio_*',
         'strtox',
-        'submit_play_sfx',
         't1_*',
         't42_*',
-        'taisei_commit_persistent_data',
-        'task_detach',
-        'task_finish',
-        'task_free',
-        'taskmgr_*',
         'tt_*',
         'vfs_decref',
-        'vfs_incref',
-        'vfs_node_*',
-        'video_*',
+        'wrapper_cmp',
     ]
 
     em_debug = is_debug_build
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
-    em_common_args = [
-        '-s', 'DEFAULT_TO_CXX=0',
-    ]
+    em_common_args = []
     em_link_args = [
         '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
-        '-s', 'ALLOW_UNIMPLEMENTED_SYSCALLS=0',
         '-s', 'ASYNCIFY_REMOVE=@0@'.format(','.join(asyncify_ignore)),
         '-s', 'AUTO_ARCHIVE_INDEXES=0',
         '-s', 'AUTO_JS_LIBRARIES=0',
@@ -331,8 +301,11 @@ if host_machine.system() == 'emscripten'
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
         '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'FETCH',
+        '-s', 'FETCH_SUPPORT_INDEXEDDB=0',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
+        '-s', 'GL_ENABLE_GET_PROC_ADDRESS',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
         '-s', 'GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0',
@@ -340,10 +313,10 @@ if host_machine.system() == 'emscripten'
         '-s', 'IGNORE_MISSING_MAIN=0',
         '-s', 'INITIAL_MEMORY=268435456',
         '-s', 'LLD_REPORT_UNDEFINED',
-        '-s', 'LZ4=1',
         '-s', 'MAX_WEBGL_VERSION=2',
         '-s', 'MIN_WEBGL_VERSION=2',
         '-s', 'MODULARIZE=0',
+        '-s', 'STACK_SIZE=1MB',
         '-s', 'STRICT_JS=1',
         '-s', 'SUPPORT_BIG_ENDIAN=1',
         '-s', 'WASM=1',
@@ -351,6 +324,7 @@ if host_machine.system() == 'emscripten'
         '-legl.js',
         '-lidbfs.js',
         '-lwebgl.js',
+        '-lhtml5',   # NOTE: SDL dependency; should be fixed there
     ]
 
     em_link_args += subproject('koishi').get_variable('koishi_external_link_args')
@@ -358,11 +332,10 @@ if host_machine.system() == 'emscripten'
     if em_debug
         em_link_output_suffixes += ['wasm.map']
         em_link_args += [
-            '--emrun',
             '--profiling',
             '-g3',
             '-gsource-map',
-            '--source-map-base', meson.get_cross_property('source_map_base', 'http://0.0.0.0:6931/'),
+            '--source-map-base', meson.get_external_property('source_map_base', 'http://0.0.0.0:6931/'),
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_ASSERTIONS=1',
             '-s', 'GL_DEBUG=1',
@@ -370,7 +343,6 @@ if host_machine.system() == 'emscripten'
         ]
     else
         em_link_args += [
-            '-O@0@'.format(get_option('optimization')),
             '-g0',
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
@@ -385,12 +357,30 @@ if host_machine.system() == 'emscripten'
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
 
-    libtaisei = static_library(taisei_basename, taisei_src, version_deps,
+    meson_link_whole_is_broken = meson.version().version_compare('>1.1.0')
+
+    if meson_link_whole_is_broken
+        warning('Installing private static library to work around a Meson bug: https://github.com/mesonbuild/meson/issues/12638')
+    endif
+
+    libtaisei = static_library(taisei_basename, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps,
         c_pch : 'pch/taisei_pch.h',
         c_args : [em_common_args, taisei_c_args],
-        install : false,
+        install : meson_link_whole_is_broken,
+        install_dir : '.',
+        install_tag : 'trash',
+        # Explicitly give it a predictable name, in case we have to remove it via install script
+        name_prefix : 'lib',
+        name_suffix : 'a',
     )
+
+    if meson_link_whole_is_broken
+        meson.add_install_script(
+            post_install_remove_command, 'lib' + libtaisei.name() + '.a',
+            install_tag : 'trash',
+        )
+    endif
 
     taisei = static_library(taisei_basename + '-full',
         link_whole : libtaisei,
@@ -401,7 +391,6 @@ if host_machine.system() == 'emscripten'
             meson.get_compiler('cpp').cmd_array(),
             taisei,
             '--pre-js', em_preamble,
-            em_bundle_link_args,
             '--shell-file', em_shell,
             get_option('c_args'),
             get_option('c_link_args'),
@@ -413,13 +402,14 @@ if host_machine.system() == 'emscripten'
         output : em_link_outputs,
         install : true,
         install_dir : bindir,
+        install_tag : 'runtime',
         console : true,
     )
 
     bindist_deps += taisei_html
 elif host_machine.system() == 'nx'
     taisei_elf_name = '@0@.elf'.format(taisei_basename)
-    taisei_elf = executable(taisei_elf_name, taisei_src, version_deps,
+    taisei_elf = executable(taisei_elf_name, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
@@ -446,33 +436,44 @@ elif host_machine.system() == 'nx'
 
     taisei_nro_name = '@0@.nro'.format(taisei_basename)
     taisei_nro = custom_target(taisei_nro_name,
-        # NOTE: Unfortunately we can't just put 'taisei_elf' directly into the command array.
-        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
-        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
-
         command : [
             find_program('elf2nro'),
-            taisei_elf.full_path(),   # workaround for the above issue
+            taisei_elf,
             '@OUTPUT@',
             '--nacp=@0@'.format(taisei_nacp.full_path()),   # if we could pass the path in a standalone argument, we could have meson generate an implicit dependency here...
             '--icon=@0@'.format(nx_icon_path),
         ],
         build_by_default : true,
-        depends : [taisei_elf, taisei_nacp],
+        depends : [taisei_nacp],
         install : true,
         install_dir : bindir,
+        install_tag : 'runtime',
         output : taisei_nro_name,
     )
     bindist_deps += taisei_nro
 else
-    taisei = executable(taisei_basename, taisei_src, version_deps,
+    libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
-        gui_app : not get_option('win_console'),
+        install : false,
+    )
+
+    libtaisei_dep = declare_dependency(
+        compile_args : taisei_c_args,
+        dependencies : taisei_deps,
+        include_directories : include_directories('.'),
+        link_with : libtaisei,
+    )
+
+    taisei = executable(taisei_basename, taisei_main_src,
+        dependencies : stages_live_reload ? libtaisei_dep.as_link_whole() : libtaisei_dep,
+        win_subsystem : get_option('win_console') ? 'console' : 'windows',
         install : true,
         install_dir : bindir,
         export_dynamic : stages_live_reload,
     )
+
     bindist_deps += taisei
+    have_libtaisei = true
 endif

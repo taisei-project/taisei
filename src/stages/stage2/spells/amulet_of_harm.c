@@ -2,16 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
@@ -20,21 +15,19 @@ TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	p->move.velocity += ov;
 }
 
-static void amulet_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		r_draw_sprite(&(SpriteParams) {
-			.color = RGBA(2, 1, 1, 0),
-			.sprite = "fairy_circle_big",
-			.pos.as_cmplx = e->pos,
-			.rotation.angle = t * 5 * DEG2RAD,
-		});
+static void amulet_draw(Enemy *e, EnemyDrawParams p) {
+	r_draw_sprite(&(SpriteParams) {
+		.color = RGBA(2, 1, 1, 0),
+		.sprite = "fairy_circle_big",
+		.pos.as_cmplx = p.pos,
+		.rotation.angle = p.time * 5 * DEG2RAD,
+	});
 
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = "enemy/swirl",
-			.pos.as_cmplx = e->pos,
-			.rotation.angle = t * -10 * DEG2RAD,
-		});
-	}
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "enemy/swirl",
+		.pos.as_cmplx = p.pos,
+		.rotation.angle = p.time * -10 * DEG2RAD,
+	});
 }
 
 TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; }) {
@@ -60,7 +53,7 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 					.pos = p->pos,
 					.color = RGB(0.2 + 0.8 * tanh(cabs2(o - core->pos) / 4200), 0.2, 1.0),
 					.max_viewport_dist = p->max_viewport_dist,
-					.move = move_towards(o, 0.02),
+					.move = move_from_towards(p->pos, o, 0.02),
 				);
 
 				INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * accel));
@@ -77,7 +70,7 @@ TASK(amulet, {
 	MoveParams move;
 	CoEvent *death_event;
 }) {
-	Enemy *core = create_enemy_p(&global.enemies, ARGS.pos, 2000, amulet_visual, NULL, 0, 0, 0, 0);
+	Enemy *core = create_enemy(ARGS.pos, 2000, (EnemyVisual) { amulet_draw });
 	core->hurt_radius = 18;
 	core->hit_radius = 36;
 	core->flags |= EFLAG_NO_VISUAL_CORRECTION;
@@ -180,7 +173,7 @@ TASK(fan_burst, { Boss *boss; }) {
 
 DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 200.0*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect wander_bounds = viewport_bounds(64);
@@ -196,7 +189,7 @@ DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 		real arange = M_PI/3;
 
 		for(int i = 0; i < cnt; ++i) {
-			real s = 4 * fmax(2, log1p(cabs(boss->move.velocity)));
+			real s = 4 * max(2, log1p(cabs(boss->move.velocity)));
 			cmplx dir = cnormalize(-boss->move.velocity) * cdir(arange * (i / (cnt - 1.0) - 0.5));
 
 			play_sfx("redirect");

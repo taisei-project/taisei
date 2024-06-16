@@ -2,9 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #pragma once
 #include "taisei.h"
@@ -29,8 +29,9 @@ void strbuf_clear(StringBuffer *strbuf)
 void strbuf_free(StringBuffer *strbuf)
 	attr_nonnull(1);
 
-void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize])
+int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize])
 	attr_nonnull(1, 3);
 
-void strbuf_cat(StringBuffer *strbuf, const char *str)
-	attr_nonnull(1, 2);
+INLINE int strbuf_cat(StringBuffer *strbuf, const char *str) {
+	return strbuf_ncat(strbuf, strlen(str), str);
+}

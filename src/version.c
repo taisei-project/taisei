@@ -2,11 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "version.h"
 
@@ -63,14 +61,24 @@ size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version) {
 	return wrote_total;
 }
 
-char* taisei_version_tostring(TaiseiVersion *version) {
-	if(!version->tweak) {
-		if(!version->patch) {
-			return strfmt("%u.%u", version->major, version->minor);
-		}
+char *taisei_version_tostring(TaiseiVersion *version) {
+	StringBuffer sbuf = {};
+	taisei_version_tostrbuf(&sbuf, version);
+	return sbuf.start;
+}
 
-		return strfmt("%u.%u.%u", version->major, version->minor, version->patch);
+void taisei_version_tostrbuf(StringBuffer *sbuf, TaiseiVersion *version) {
+	strbuf_printf(sbuf, "%u.%u", version->major, version->minor);
+
+	if(!version->patch && !version->tweak) {
+		return;
 	}
 
-	return strfmt("%u.%u.%u.%u", version->major, version->minor, version->patch, version->tweak);
+	strbuf_printf(sbuf, ".%u", version->patch);
+
+	if(!version->tweak) {
+		return;
+	}
+
+	strbuf_printf(sbuf, ".%u", version->tweak);
 }

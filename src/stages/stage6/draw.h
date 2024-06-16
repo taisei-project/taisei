@@ -2,16 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "util/fbpair.h"
-#include "stagedraw.h"
+#include "stageinfo.h"
 #include "stageutils.h"
+#include "util/fbpair.h"
 
 enum {
 	NUM_STARS = 400
@@ -31,6 +31,8 @@ typedef struct Stage6DrawData {
 		Framebuffer *aux_fb;
 		FBPair fbpair;
 	} baryon;
+
+	BoxedTask boss_rotation;
 
 	struct {
 		PBRModel rim;
@@ -54,9 +56,6 @@ Stage6DrawData* stage6_get_draw_data(void);
 void stage6_drawsys_init(void);
 void stage6_drawsys_shutdown(void);
 void stage6_draw(void);
-
-void baryon_center_draw(Enemy*, int, bool);
-void baryon(Enemy*, int, bool);
 
 extern ShaderRule stage6_bg_effects[];
 extern ShaderRule stage6_postprocess[];

@@ -2,21 +2,22 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "menu.h"
-#include "common.h"
 #include "ingamemenu.h"
-#include "submenus.h"
+
+#include "common.h"
+#include "events.h"
 #include "global.h"
-#include "stagedraw.h"
-#include "video.h"
-#include "options.h"
+#include "menu.h"
 #include "renderer/api.h"
+#include "resource/font.h"
+#include "stagedraw.h"
+#include "submenus.h"
+#include "util/graphics.h"
+#include "video.h"
 
 static void return_to_title(MenuData *m, void *arg) {
 	global.gameover = GAMEOVER_ABORT;
@@ -113,21 +114,28 @@ static void ingame_menu_input(MenuData *m) {
 	}, EFLAG_MENU);
 }
 
-MenuData* create_ingame_menu(void) {
+static void free_ingame_menu(MenuData *m) {
+	mem_free(m->context);
+}
+
+MenuData *create_ingame_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
 	m->input = ingame_menu_input;
+	m->end = free_ingame_menu;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
-	m->context = "Game Paused";
+	m->context = ALLOC(IngameMenuContext, {
+		.title = "Game Paused",
+	});
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Return to Game", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop the Game", return_to_title, NULL)->transition = TransFadeBlack;
-	set_transition(TransEmpty, 0, m->transition_out_time);
+	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
 }
@@ -137,22 +145,25 @@ static void skip_stage(MenuData *m, void *arg) {
 	menu_action_close(m, arg);
 }
 
-MenuData* create_ingame_menu_replay(void) {
+MenuData *create_ingame_menu_replay(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
+	m->end = free_ingame_menu;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
-	m->context = "Replay Paused";
+	m->context = ALLOC(IngameMenuContext, {
+		.title = "Replay Paused",
+	});
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Continue Watching", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Stage", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Skip the Stage", skip_stage, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop Watching", return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;
-	set_transition(TransEmpty, 0, m->transition_out_time);
+	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
 }
@@ -186,10 +197,12 @@ void draw_ingame_menu(MenuData *menu) {
 
 	r_shader("text_default");
 
-	if(menu->context) {
+	IngameMenuContext *ctx = menu->context;
+
+	if(ctx && ctx->title) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		r_color(RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)));
-		text_draw(menu->context, &(TextParams) {
+		text_draw(ctx->title, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, -2 * 35 },
 		});

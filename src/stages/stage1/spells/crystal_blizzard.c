@@ -2,18 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(crystal_wall) {
 	int num_crystals = difficulty_value(18, 21, 24, 27);
@@ -65,7 +58,7 @@ TASK(cirno_frostbolt, { cmplx pos; cmplx vel; }) {
 
 DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W / 2.0 + 300 * I, 0.1);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W / 2.0 + 300 * I, 0.1);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int frostbolt_period = difficulty_value(4, 3, 2, 1);
@@ -80,7 +73,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
 
-		boss->move = move_towards_power(global.plr.pos, 1, 0.1);
+		boss->move = move_towards_exp(boss->move.velocity, global.plr.pos, 1, 0.1);
 
 		for(int t = 0; t < 370; ++t) {
 			play_sfx_loop("shot1_loop");

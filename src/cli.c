@@ -2,23 +2,24 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include <getopt.h>
-
 #include "cli.h"
-#include "difficulty.h"
-#include "util.h"
-#include "log.h"
-#include "stage.h"
-#include "plrmodes.h"
-#include "version.h"
+
 #include "cutscenes/cutscene.h"
 #include "cutscenes/scenes.h"
+#include "difficulty.h"
+#include "log.h"
+#include "plrmodes.h"
+#include "stageinfo.h"
+#include "util.h"
+#include "util/env.h"
+#include "util/io.h"
+#include "version.h"
+
+#include <getopt.h>
 
 struct TsOption { struct option opt; const char *help; const char *argname; };
 
@@ -28,6 +29,8 @@ enum {
 	OPT_CUTSCENE_LIST,
 	OPT_FORCE_INTRO,
 	OPT_REREPLAY,
+	OPT_POPCACHE,
+	OPT_UNLOCKALL,
 };
 
 static void print_help(struct TsOption* opts) {
@@ -88,10 +91,14 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
 		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
 		{{"skip-to-bookmark",   required_argument,  0, 'b'},            "Fast-forward stage to a specific STAGE_BOOKMARK call"},
+		{{"unlock-all",         no_argument,        0, OPT_UNLOCKALL},  "Unlock all content"},
 #endif
 		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
 		{{"renderer",           required_argument,  0, OPT_RENDERER},   "Choose the rendering backend", renderer_list},
+		{{"populate-cache",     no_argument,        0, OPT_POPCACHE},   "Attempt to load all available resources, populating the cache, then exit"},
+		{{"width",              required_argument,  0, 'W'},            "Set window width", "WIDTH"},
+		{{"height",             required_argument,  0, 'H'},            "Set window height", "HEIGHT"},
 		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
 		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
 		{ 0 }
@@ -246,6 +253,19 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 'v':
 			tsfprintf(stdout, "%s %s\n", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 			exit(0);
+		case OPT_POPCACHE:
+			env_set("TAISEI_AGGRESSIVE_PRELOAD", 1, true);
+			a->type = CLI_QuitLate;
+			break;
+		case OPT_UNLOCKALL:
+			a->unlock_all = true;
+			break;
+		case 'W':
+			a->width = strtol(optarg, NULL, 10);
+			break;
+		case 'H':
+			a->height = strtol(optarg, NULL, 10);
+			break;
 		default:
 			UNREACHABLE;
 		}
@@ -289,8 +309,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 }
 
 void free_cli_action(CLIAction *a) {
-	free(a->filename);
+	mem_free(a->filename);
 	a->filename = NULL;
-	free(a->out_replay);
+	mem_free(a->out_replay);
 	a->out_replay = NULL;
 }

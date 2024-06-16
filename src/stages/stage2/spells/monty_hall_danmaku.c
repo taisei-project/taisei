@@ -2,16 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 #define NUM_SLOTS 3
 #define SLOT_WIDTH (VIEWPORT_W / (real)NUM_SLOTS)
@@ -122,7 +117,7 @@ TASK(cards, { BoxedBoss boss; }) {
 	for(int t = 0; t < 360;) {
 		for(int i = 0; i < cnt; ++i) {
 			play_sfx("shot3");
-			cmplx o = creal(boss->pos) + side * (ofs + (w*i)/cnt) + I*cimag(boss->pos);
+			cmplx o = re(boss->pos) + side * (ofs + (w*i)/cnt) + I*im(boss->pos);
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = o,
@@ -134,7 +129,7 @@ TASK(cards, { BoxedBoss boss; }) {
 
 		side = -side;
 		t += WAIT(period);
-		period = imax(1, period - period_reduction);
+		period = max(1, period - period_reduction);
 	}
 }
 
@@ -144,7 +139,7 @@ DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
 	COEVENTS_ARRAY(goat_trigger) events;
 	TASK_HOST_EVENTS(events);
 
-	boss->move = move_towards(VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I, 0.06);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I, 0.06);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int plr_slot;
@@ -174,7 +169,7 @@ DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
 		}
 
 		WAIT(90);
-		plr_slot = creal(global.plr.pos) / SLOT_WIDTH;
+		plr_slot = re(global.plr.pos) / SLOT_WIDTH;
 
 		// goat1_slot is the one that we will reveal
 		if(goat1_slot == plr_slot) {

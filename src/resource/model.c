@@ -2,17 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "model.h"
-#include "list.h"
-#include "resource.h"
-#include "renderer/api.h"
+
 #include "iqm.h"
+#include "renderer/api.h"
+#include "resource.h"
+#include "util.h"
 
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".iqm"
@@ -372,7 +371,7 @@ static void load_model_stage1(ResourceLoadState *st) {
 	TRY(iqm_read_header(path, rw, &hdr));
 
 	assume(hdr.num_meshes > 0);
-	meshes = calloc(hdr.num_meshes, sizeof(*meshes));
+	meshes = ALLOC_ARRAY(hdr.num_meshes, typeof(*meshes));
 
 	TRY_SEEK(hdr.ofs_meshes);
 	TRY(iqm_read_meshes(path, rw, hdr.num_meshes, meshes));
@@ -392,7 +391,7 @@ static void load_model_stage1(ResourceLoadState *st) {
 	}
 
 	assume(hdr.num_vertexarrays > 0);
-	vert_arrays = calloc(hdr.num_vertexarrays, sizeof(*vert_arrays));
+	vert_arrays = ALLOC_ARRAY(hdr.num_vertexarrays, typeof(*vert_arrays));
 
 	TRY_SEEK(hdr.ofs_vertexarrays);
 	VertexArrayIndices va_indices;
@@ -402,7 +401,7 @@ static void load_model_stage1(ResourceLoadState *st) {
 	TRY(iqm_read_vertex_arrays(path, rw, hdr.num_vertexarrays, vert_arrays, &va_indices));
 
 	assume(hdr.num_vertexes > 0);
-	vertices = calloc(hdr.num_vertexes, sizeof(*vertices));
+	vertices = ALLOC_ARRAY(hdr.num_vertexes, typeof(*vertices));
 
 	TRY_SEEK(vert_arrays[va_indices.position].offset);
 	TRY(iqm_read_vert_positions(path, rw, hdr.num_vertexes, vertices));
@@ -417,12 +416,12 @@ static void load_model_stage1(ResourceLoadState *st) {
 	TRY(iqm_read_vert_tangents(path, rw, hdr.num_vertexes, vertices));
 
 	assume(hdr.num_triangles > 0);
-	indices = calloc(hdr.num_triangles, sizeof(*indices));
+	indices = ALLOC_ARRAY(hdr.num_triangles, typeof(*indices));
 
 	TRY_SEEK(hdr.ofs_triangles);
 	TRY(iqm_read_triangles(path, rw, hdr.num_triangles, &indices->tri));
 
-	ldata = calloc(1, sizeof(*ldata));
+	ldata = ALLOC(typeof(*ldata));
 	ldata->vertices = vertices;
 	ldata->indices = indices->indices;
 	ldata->ofs_vertices = 0;
@@ -431,8 +430,8 @@ static void load_model_stage1(ResourceLoadState *st) {
 	ldata->num_indices = hdr.num_triangles * 3;
 
 cleanup:
-	free(meshes);
-	free(vert_arrays);
+	mem_free(meshes);
+	mem_free(vert_arrays);
 	SDL_RWclose(rw);
 
 	if(ldata) {
@@ -444,16 +443,16 @@ cleanup:
 	return;
 
 fail:
-	free(vertices);
-	free(indices);
-	free(ldata);
+	mem_free(vertices);
+	mem_free(indices);
+	mem_free(ldata);
 	ldata = NULL;
 	goto cleanup;
 }
 
 static void load_model_stage2(ResourceLoadState *st) {
 	ModelLoadData *ldata = NOT_NULL(st->opaque);
-	Model *mdl = calloc(1, sizeof(*mdl));
+	auto mdl = ALLOC(Model);
 
 	r_model_add_static(
 		mdl,
@@ -464,9 +463,9 @@ static void load_model_stage2(ResourceLoadState *st) {
 		ldata->indices + ldata->ofs_indices
 	);
 
-	free(ldata->vertices);
-	free(ldata->indices);
-	free(ldata);
+	mem_free(ldata->vertices);
+	mem_free(ldata->indices);
+	mem_free(ldata);
 
 	res_load_finished(st, mdl);
 }
@@ -480,7 +479,7 @@ static bool check_model_path(const char *path) {
 }
 
 static void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	free(model);
+	mem_free(model);
 }
 
 ResourceHandler model_res_handler = {

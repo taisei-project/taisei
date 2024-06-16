@@ -2,13 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "material.h"
+
+#include "util.h"
+#include "util/io.h"
+#include "util/kvparser.h"
 
 static char *material_path(const char *basename);
 static bool material_check_path(const char *path);
@@ -25,7 +27,7 @@ ResourceHandler material_res_handler = {
 		.check = material_check_path,
 		.load = material_load_stage1,
 		.transfer = material_transfer,
-		.unload = free,
+		.unload = mem_free,
 	},
 };
 
@@ -56,10 +58,10 @@ struct mat_load_data {
 
 static void free_mat_load_data(struct mat_load_data *ld) {
 	for(int i = 0; i < ARRAY_SIZE(ld->maps); ++i) {
-		free(ld->maps[i]);
+		mem_free(ld->maps[i]);
 	}
 
-	free(ld);
+	mem_free(ld);
 }
 
 static void material_load_stage2(ResourceLoadState *st);
@@ -72,15 +74,14 @@ static void material_load_stage1(ResourceLoadState *st) {
 		res_load_failed(st);
 	}
 
-	struct mat_load_data *ld = calloc(1, sizeof(*ld));
-	ld->mat = calloc(1, sizeof(*ld->mat));
-	*ld->mat = (PBRMaterial) {
+	auto ld = ALLOC(struct mat_load_data);
+	ld->mat = ALLOC(typeof(*ld->mat), {
 		.diffuse_color = { 1, 1, 1 },
 		.ambient_color = { 1, 1, 1 },
 		.roughness_value = 1,
 		.metallic_value = 0,
 		.depth_scale = 0,
-	};
+	});
 
 	bool ok = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 		{ "diffuse_map",      .out_str = &ld->diffuse_map },
@@ -117,7 +118,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 
 #define LOADMAP(_map_) do { \
 	if(ld->_map_##_map) { \
-		ld->mat->_map_##_map = get_resource_data( \
+		ld->mat->_map_##_map = res_get_data( \
 			RES_TEXTURE, ld->_map_##_map, st->flags & ~RESF_RELOAD); \
 		if(UNLIKELY(ld->mat->_map_##_map == NULL)) { \
 			log_error("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \
@@ -146,6 +147,6 @@ static bool material_transfer(void *dst, void *src) {
 	PBRMaterial *mdst = dst;
 	PBRMaterial *msrc = src;
 	*mdst = *msrc;
-	free(msrc);
+	mem_free(msrc);
 	return true;
 }

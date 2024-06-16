@@ -2,14 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "rwops_trace.h"
-#include "util.h"
+#include "log.h"
 
 #define TRACE_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
 #define TRACE_TDATA(rw) ((TData*)((rw)->hidden.unknown.data2))
@@ -40,7 +38,7 @@ static int trace_close(SDL_RWops *rw) {
 	}
 
 	TRACE(rw, "closed %i", ret);
-	free(rw->hidden.unknown.data2);
+	mem_free(rw->hidden.unknown.data2);
 	SDL_FreeRW(rw);
 	return ret;
 }
@@ -99,7 +97,7 @@ SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose) {
 
 	memset(rw, 0, sizeof(SDL_RWops));
 
-	TData *tdata = calloc(1, sizeof(*tdata) + strlen(tag) + 1);
+	auto tdata = ALLOC_FLEX(TData, strlen(tag) + 1);
 	tdata->autoclose = autoclose;
 	strcpy(tdata->tag, tag);
 

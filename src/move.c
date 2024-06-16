@@ -2,28 +2,35 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-#include "taisei.h"
 
 #include "move.h"
 #include "util/miscmath.h"
 
 cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
-	cmplx v = p->velocity;
+	MoveParams o = *p;
+	cmplx orig_velocity = o.velocity;
+	*pos += orig_velocity;
+	o.velocity = o.acceleration + cmul_finite(o.retention, o.velocity);
 
-	*pos += v;
-	p->velocity = p->acceleration + p->retention * v;
+	if(o.attraction) {
+		cmplx av = o.attraction_point - *pos;
 
-	if(p->attraction) {
-		cmplx av = p->attraction_point - *pos;
-
-		p->velocity += p->attraction * cnormalize(av) * pow(cabs(av), p->attraction_exponent);
+		if(LIKELY(o.attraction_exponent == 1)) {
+			o.velocity += cmul_finite(o.attraction, av);
+		} else {
+			real m = cabs2(av);
+			assume(m >= 0);
+			m = pow(m, o.attraction_exponent - 0.5);
+			assert(isfinite(m));
+			o.velocity += cmul_finite(o.attraction, av * m);
+		}
 	}
 
-	return v;
+	p->velocity = o.velocity;
+	return orig_velocity;
 }
 
 cmplx move_update_multiple(uint times, cmplx *restrict pos, MoveParams *restrict p) {

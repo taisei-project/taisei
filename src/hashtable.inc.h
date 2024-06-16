@@ -4,7 +4,6 @@
 #include "hashtable.h"
 #include "list.h"
 #include "util/stringops.h"
-#include "util/assert.h"
 #include "log.h"
 
 #include <SDL.h>
@@ -386,14 +385,14 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht))
  * ht_XXX_t* ht_XXX_new(void);
  *
  * Convenience function; allocates and initializes a new hashtable structure.
- * You must free() it manually when you're done with it (but don't forget to
+ * You must mem_free() it manually when you're done with it (but don't forget to
  * ht_*_destroy() it as well).
  *
  * Returns the allocated hashtable structure.
  */
 INLINE attr_returns_allocated
 HT_DECLARE_FUNC(HT_BASETYPE*, new, (void))  {
-	HT_BASETYPE *ht = calloc(1, sizeof(HT_BASETYPE));
+	auto ht = ALLOC(HT_BASETYPE);
 	HT_FUNC(create)(ht);
 	return ht;
 }
@@ -804,7 +803,7 @@ HT_DECLARE_FUNC(void, write_unlock, (HT_BASETYPE *ht)) {
 HT_DECLARE_FUNC(void, create, (HT_BASETYPE *ht)) {
 	ht_size_t size = HT_MIN_SIZE;
 
-	ht->elements = calloc(size, sizeof(*ht->elements));
+	ht->elements = ALLOC_ARRAY(size, typeof(*ht->elements));
 	ht->num_elements_allocated = size;
 	ht->num_elements_occupied = 0;
 	ht->hash_mask = size - 1;
@@ -823,7 +822,7 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht)) {
 	SDL_DestroyCond(ht->sync.cond);
 	SDL_DestroyMutex(ht->sync.mutex);
 	#endif
-	free(ht->elements);
+	mem_free(ht->elements);
 }
 
 HT_DECLARE_PRIV_FUNC(HT_TYPE(element)*, find_element, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash)) {
@@ -1133,7 +1132,7 @@ HT_DECLARE_PRIV_FUNC(bool, set, (
 
 HT_DECLARE_PRIV_FUNC(void, check_elem_count, (HT_BASETYPE *ht)) {
 	#ifdef DEBUG
-	ht_size_t num_elements = 0;
+	attr_unused ht_size_t num_elements = 0;
 	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
 		if(ht->elements[i].hash & HT_HASH_LIVE_BIT) {
 			++num_elements;
@@ -1150,7 +1149,7 @@ HT_DECLARE_PRIV_FUNC(void, resize, (HT_BASETYPE *ht, size_t new_size)) {
 	ht_size_t old_size = ht->num_elements_allocated;
 	HT_PRIV_FUNC(check_elem_count)(ht);
 
-	HT_TYPE(element) *new_elements = calloc(new_size, sizeof(*ht->elements));
+	auto new_elements = ALLOC_ARRAY(new_size, typeof(*ht->elements));
 	ht->max_psl = 0;
 
 	for(ht_size_t i = 0; i < old_size; ++i) {
@@ -1164,7 +1163,7 @@ HT_DECLARE_PRIV_FUNC(void, resize, (HT_BASETYPE *ht, size_t new_size)) {
 	ht->num_elements_allocated = new_size;
 	ht->hash_mask = new_size - 1;
 
-	free(old_elements);
+	mem_free(old_elements);
 
 	/*
 	log_debug(

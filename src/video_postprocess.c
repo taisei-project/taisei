@@ -2,18 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
-#include "taisei.h"
+#include "video_postprocess.h"
 
-#include "log.h"
 #include "resource/postprocess.h"
+#include "util/fbmgr.h"
 #include "util/graphics.h"
 #include "video.h"
-#include "video_postprocess.h"
-#include "util/fbmgr.h"
 
 struct VideoPostProcess {
 	ManagedFramebufferGroup *mfb_group;
@@ -23,15 +21,18 @@ struct VideoPostProcess {
 };
 
 VideoPostProcess *video_postprocess_init(void) {
-	PostprocessShader *pps = get_resource_data(RES_POSTPROCESS, "global", RESF_OPTIONAL | RESF_PERMANENT | RESF_PRELOAD);
+	// TODO separate group?
+	res_group_preload(NULL, RES_POSTPROCESS, RESF_OPTIONAL, "global", NULL);
+	PostprocessShader *pps = res_get_data(RES_POSTPROCESS, "global", RESF_OPTIONAL);
 
 	if(!pps) {
 		return NULL;
 	}
 
-	VideoPostProcess *vpp = calloc(1, sizeof(*vpp));
-	vpp->pp_pipeline = pps;
-	vpp->mfb_group = fbmgr_group_create();
+	auto vpp = ALLOC(VideoPostProcess, {
+		.pp_pipeline = pps,
+		.mfb_group = fbmgr_group_create(),
+	});
 
 	FBAttachmentConfig a = { 0 };
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
@@ -56,7 +57,7 @@ VideoPostProcess *video_postprocess_init(void) {
 void video_postprocess_shutdown(VideoPostProcess *vpp) {
 	if(vpp) {
 		fbmgr_group_destroy(vpp->mfb_group);
-		free(vpp);
+		mem_free(vpp);
 	}
 }
 

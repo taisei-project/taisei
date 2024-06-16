@@ -19,7 +19,7 @@ UNIFORM(9) sampler2D ibl_brdf_lut;
 // These either modulate their respective maps, or are used instead of them
 UNIFORM(10) vec4 diffuseRGB_metallicA;
 UNIFORM(11) vec4 ambientRGB_roughnessA;
-UNIFORM(12) float depth_scale;
+UNIFORM(12) vec4 environmentRGB_depthScale;
 
 UNIFORM(13) mat4 inv_camera_transform;   // only used if PBR_FEATURE_ENVIRONMENT_MAP is set
 

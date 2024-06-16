@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -12,7 +12,7 @@
 #include "resource.h"
 #include "shader_program.h"
 #include "renderer/api.h"
-#include "util/graphics.h"
+#include "util/fbpair.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;
@@ -46,7 +46,7 @@ struct PostprocessShaderUniform {
 typedef void (*PostprocessDrawFuncPtr)(Framebuffer *fb, double w, double h);
 typedef void (*PostprocessPrepareFuncPtr)(Framebuffer *fb, ShaderProgram *prog, void *arg);
 
-PostprocessShader* postprocess_load(const char *path, uint flags);
+PostprocessShader *postprocess_load(const char *path, ResourceFlags flags);
 void postprocess_unload(PostprocessShader **list);
 void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height, void *arg);
 

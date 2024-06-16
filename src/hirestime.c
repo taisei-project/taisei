@@ -2,14 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
-#include "util.h"
 #include "hirestime.h"
+
+#include "log.h"
+#include "thread.h"
+#include "util/env.h"
+#include "util/miscmath.h"
+
+#include <SDL_timer.h>
 
 static bool use_hires;
 static hrtime_t time_current;
@@ -81,7 +85,7 @@ void time_shutdown(void) {
 
 hrtime_t time_get(void) {
 	if(use_hires) {
-		assert(is_main_thread());
+		assert(thread_current_is_main());
 		time_update();
 		return time_current;
 	}

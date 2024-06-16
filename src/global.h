@@ -2,74 +2,42 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
+#include "cli.h"
+#include "config.h"
+#include "dialog.h"
+#include "enemy.h"
+#include "framerate.h"
+#include "item.h"
+#include "lasers/laser.h"
+#include "projectile.h"
+#include "random.h"
+#include "replay/state.h"
+#include "stageinfo.h"
+
 #include <SDL.h>
 #include <SDL_platform.h>
 
-#include "util.h"
-#include "color.h"
-
-#include "resource/sfx.h"
-#include "resource/bgm.h"
-#include "resource/font.h"
-#include "resource/animation.h"
-
-#include "menu/menu.h"
-
-#include "player.h"
-#include "projectile.h"
-#include "enemy.h"
-#include "item.h"
-#include "boss.h"
-#include "laser.h"
-#include "dialog.h"
-#include "list.h"
-#include "refs.h"
-#include "config.h"
-#include "resource/resource.h"
-#include "replay/state.h"
-#include "random.h"
-#include "events.h"
-#include "difficulty.h"
-#include "color.h"
-#include "audio/audio.h"
-#include "rwops/all.h"
-#include "cli.h"
-#include "hirestime.h"
-#include "log.h"
-#include "framerate.h"
-#include "renderer/api.h"
-#include "stageinfo.h"
-
 enum {
 	// defaults
-#ifdef __SWITCH__
-	RESX = 1280,
-	RESY = 720,
-#else
 	RESX = 800,
 	RESY = 600,
-#endif
 
 	VIEWPORT_X = 40,
 	VIEWPORT_Y = 20,
 	VIEWPORT_W = 480,
 	VIEWPORT_H = 560,
 
-	MAX_CONTINUES = 3,
+	MAX_CONTINUES = 5,
 
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
-	EVENT_KILLED,
-	ACTION_DESTROY,
-	ACTION_ACK,
-	ACTION_NONE,
 
 	FPS = 60,
 
@@ -101,15 +69,12 @@ typedef struct {
 	LaserList lasers;
 
 	int frames; // stage global timer
-	int timer; // stage event timer (freezes on bosses, dialogs, etc.)
 	int stage_start_frame;
 
 	int frameskip;
 
 	Boss *boss;
 	Dialog *dialog;
-
-	RefArray refs;
 
 	GameoverType gameover;
 	int gameover_time;
@@ -134,6 +99,7 @@ typedef struct {
 	uint is_practice_mode : 1;
 	uint is_headless : 1;
 	uint is_replay_verification : 1;
+	uint is_kiosk_mode : 1;
 } Global;
 
 extern Global global;
@@ -142,6 +108,7 @@ void init_global(CLIAction *cli);
 
 void taisei_quit(void);
 bool taisei_quit_requested(void);
+bool taisei_is_quit_hidden(void);
 void taisei_commit_persistent_data(void);
 
 // XXX: Move this somewhere?

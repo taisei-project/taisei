@@ -2,18 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
 #include "../api.h"
-#include "opengl.h"
-#include "resource/texture.h"
 #include "../common/backend.h"
 #include "common_buffer.h"
+#include "opengl.h"
+#include "resource/texture.h"
 
 typedef struct TextureUnit TextureUnit;
 
@@ -21,6 +21,7 @@ typedef enum BufferBindingIndex {
 	GL33_BUFFER_BINDING_ARRAY,
 	GL33_BUFFER_BINDING_COPY_WRITE,
 	GL33_BUFFER_BINDING_PIXEL_UNPACK,
+	GL33_BUFFER_BINDING_PIXEL_PACK,
 
 	GL33_NUM_BUFFER_BINDINGS,
 

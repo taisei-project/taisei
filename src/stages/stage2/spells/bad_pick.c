@@ -2,21 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "spells.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 #define SLOTS 5
 
 static int slot_of_position(cmplx pos) {
-	return (int)(creal(pos) / (VIEWPORT_W / SLOTS) + 1) - 1;  // correct rounding for slot == -1
+	return (int)(re(pos) / (VIEWPORT_W / SLOTS) + 1) - 1;  // correct rounding for slot == -1
 }
 
 TASK(bad_pick_bullet, { cmplx pos; cmplx vel; cmplx accel; int target_slot; }) {
@@ -32,7 +27,7 @@ TASK(bad_pick_bullet, { cmplx pos; cmplx vel; cmplx accel; int target_slot; }) {
 		int slot = slot_of_position(p->pos);
 
 		if(slot != ARGS.target_slot) {
-			p->move.velocity = copysign(creal(p->move.velocity), ARGS.target_slot - slot) + I*cimag(p->move.velocity);
+			p->move.velocity = copysign(re(p->move.velocity), ARGS.target_slot - slot) + I*im(p->move.velocity);
 		}
 	}
 }
@@ -58,7 +53,7 @@ TASK(walls, { int duration; }) {
 			real shift = 0;
 
 			if(global.diff == D_Lunatic) {
-				shift = 0.3 * fmax(0, t - 100);
+				shift = 0.3 * max(0, t - 100);
 			}
 
 			for(int i = 1; i < SLOTS; i++) {
@@ -81,7 +76,7 @@ TASK(walls, { int duration; }) {
 
 DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(pick_boss_position(), 0.02);
+	boss->move = move_from_towards(boss->pos, pick_boss_position(), 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int balls_per_slot = difficulty_value(15, 15, 20, 25);

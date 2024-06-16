@@ -2,18 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
+#include "rwops_zlib.h"
+
+#include "log.h"
+#include "rwops_util.h"
+#include "util/miscmath.h"
 
 #include <SDL.h>
 #include <zlib.h>
-
-#include "rwops_zlib.h"
-#include "rwops_util.h"
-#include "util.h"
 
 #define MIN_CHUNK_SIZE 1024
 
@@ -96,23 +96,31 @@ static int common_close(SDL_RWops *rw) {
 		if(z->type == TYPE_DEFLATE) {
 			deflate_flush(z);
 			deflateEnd(z->stream);
-			free(z->buffer_aux);
+			mem_free(z->buffer_aux);
 		} else {
 			inflateEnd(z->stream);
 		}
 
-		free(z->buffer);
-		free(z->stream);
+		mem_free(z->buffer);
+		mem_free(z->stream);
 
 		if(z->autoclose) {
 			SDL_RWclose(z->wrapped);
 		}
 
-		free(z);
+		mem_free(z);
 		SDL_FreeRW(rw);
 	}
 
 	return 0;
+}
+
+static void *zlib_alloc(void *opaque, unsigned int items, unsigned int size) {
+	return mem_alloc_array(items, size);
+}
+
+static void zlib_free(void *opaque, void *address) {
+	return mem_free(address);
 }
 
 static SDL_RWops *common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclose) {
@@ -133,14 +141,16 @@ static SDL_RWops *common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclos
 	rw->seek = common_seek;
 	rw->close = common_close;
 
-	ZData *z = calloc(1, sizeof(ZData));
-	z->stream = calloc(1, sizeof(z_stream));
-	z->buffer_size = bufsize;
-	z->buffer = z->buffer_ptr = calloc(1, bufsize);
-
-	z->wrapped = wrapped;
-	z->autoclose = autoclose;
-
+	auto z = ALLOC(ZData, {
+		.buffer_size = bufsize,
+		.wrapped = wrapped,
+		.autoclose = autoclose,
+	});
+	z->stream = ALLOC(z_stream, {
+		.zalloc = zlib_alloc,
+		.zfree = zlib_free,
+	});
+	z->buffer = z->buffer_ptr = mem_alloc(bufsize);
 	rw->hidden.unknown.data1 = z;
 
 	return rw;
@@ -303,11 +313,11 @@ static SDL_RWops *wrap_writer(
 	ZData *z = ZDATA(rw);
 	z->type = TYPE_DEFLATE;
 	z->buffer_aux_size = z->buffer_size;
-	z->buffer_aux = calloc(1, z->buffer_aux_size);
+	z->buffer_aux = mem_alloc(z->buffer_aux_size);
 	z->window_bits = window_bits;
 
 	if(clevel >= 0) {
-		clevel = iclamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
+		clevel = clamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
 	}
 
 	int status = deflateInit2(

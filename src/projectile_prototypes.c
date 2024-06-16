@@ -2,15 +2,11 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "projectile.h"
-#include "util.h"
-#include "random.h"
 
 typedef struct PPBasicPriv {
 	const char *sprite_name;
@@ -19,9 +15,14 @@ typedef struct PPBasicPriv {
 	cmplx collision_size;
 } PPBasicPriv;
 
-static void pp_basic_preload(ProjPrototype *proto) {
-	preload_resource(RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_PERMANENT);
+static void pp_basic_preload(ProjPrototype *proto, ResourceGroup *rg) {
+	res_group_preload(rg, RES_SPRITE, 0, ((PPBasicPriv*)proto->private)->sprite_name, NULL);
 	// not assigning ->sprite here because it'll block the thread until loaded
+}
+
+static void pp_basic_reset(ProjPrototype *proto) {
+	PPBasicPriv *pdata = proto->private;
+	pdata->sprite = NULL;
 }
 
 static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
@@ -38,6 +39,7 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 #define _PP_BASIC(sprite, width, height, colwidth, colheight) \
 	ProjPrototype _pp_##sprite = { \
 		.preload = pp_basic_preload, \
+		.reset = pp_basic_reset, \
 		.init_projectile = pp_basic_init_projectile, \
 		.private = (&(PPBasicPriv) { \
 			.sprite_name = "proj/" #sprite, \
@@ -53,24 +55,10 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 #define PP_PLAYER(sprite, width, height) _PP_BASIC(sprite, width, height, 0, 0)
 #include "projectile_prototypes/player.inc.h"
 
-static void pp_blast_init_projectile(ProjPrototype *proto, Projectile *p) {
-	pp_basic_init_projectile(proto, p);
-	assert(p->rule == NULL);
-	assert(p->timeout > 0);
-
-	real a1_x, a1_y, a2_x, a2_y;
-	a1_x = rng_range(0, 360);
-	a1_y = rng_real();
-	a2_x = rng_real();
-	a2_y = rng_real();
-
-	p->args[1] = CMPLX(a1_x, a1_y);
-	p->args[2] = CMPLX(a2_x, a2_y);
-}
-
 ProjPrototype _pp_blast = {
 	.preload = pp_basic_preload,
-	.init_projectile = pp_blast_init_projectile,
+	.reset = pp_basic_reset,
+	.init_projectile = pp_basic_init_projectile,
 	.private = &(PPBasicPriv) {
 		.sprite_name = "part/blast",
 		.size = 128 * (1+I),

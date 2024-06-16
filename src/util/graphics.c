@@ -2,16 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "graphics.h"
-#include "global.h"
 #include "video.h"
-#include "pixmap/pixmap.h"
 
 void set_ortho(float w, float h) {
 	r_mat_proj_ortho(0, w, h, 0, -100, 100);
@@ -186,3 +182,4 @@ void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, F
 void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 	draw_framebuffer_attachment(fb, width, height, FRAMEBUFFER_ATTACH_COLOR0);
 }
+

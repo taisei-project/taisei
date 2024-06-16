@@ -2,23 +2,28 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "taisei.h"
-
 #include "boss.h"
-#include "global.h"
-#include "stage.h"
-#include "stagetext.h"
-#include "stagedraw.h"
-#include "entity.h"
-#include "util/glm.h"
-#include "portrait.h"
-#include "stages/stage5/stage5.h"  // for unlockable bonus BGM
-#include "stageobjects.h"
+
+#include "audio/audio.h"
 #include "dynstage.h"
+#include "entity.h"
+#include "global.h"
+#include "portrait.h"
+#include "stage.h"
+#include "stagedraw.h"
+#include "stageobjects.h"
+#include "stages/stage5/stage5.h"  // for unlockable bonus BGM
+#include "stagetext.h"
+#include "util/env.h"
+#include "util/glm.h"
+#include "util/graphics.h"
+
+#define DAMAGE_PER_POWER_POINT 500.0f
+#define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -37,10 +42,21 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
 
-Boss *create_boss(char *name, char *ani, cmplx pos) {
-	Boss *boss = objpool_acquire(stage_object_pools.bosses);
+TASK(boss_damage_to_power, { BoxedBoss boss; }) {
+	auto boss = TASK_BIND(ARGS.boss);
 
-	boss->name = strdup(name);
+	for(;;WAIT(2)) {
+		if(boss->damage_to_power_accum >= DAMAGE_PER_POWER_ITEM) {
+			spawn_item(boss->pos, ITEM_POWER);
+			boss->damage_to_power_accum -= DAMAGE_PER_POWER_ITEM;
+		}
+	}
+}
+
+Boss *create_boss(const char *name, char *ani, cmplx pos) {
+	auto boss = STAGE_ACQUIRE_OBJ(Boss);
+
+	boss->name = name;
 	boss->pos = pos;
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
@@ -63,6 +79,7 @@ Boss *create_boss(char *name, char *ani, cmplx pos) {
 
 	COEVENT_INIT_ARRAY(boss->events);
 	INVOKE_TASK(boss_particles, ENT_BOX(boss));
+	INVOKE_TASK(boss_damage_to_power, ENT_BOX(boss));
 
 	return boss;
 }
@@ -123,7 +140,6 @@ static const Color *boss_healthbar_color(AttackType atype) {
 		[AT_Spellcard]     = { 1.00, 0.00, 0.00, 1.00 },
 		[AT_SurvivalSpell] = { 0.00, 1.00, 0.00, 1.00 },
 		[AT_ExtraSpell]    = { 1.00, 0.40, 0.00, 1.00 },
-		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
 	};
 
 	assert(atype >= 0 && atype < sizeof(colors)/sizeof(*colors));
@@ -155,19 +171,10 @@ static StageProgress *get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
-	if(a->type == AT_ExtraSpell || (a->info != NULL && a->info->type == AT_ExtraSpell)) {
-		if(global.plr.voltage < global.voltage_threshold) {
-			return true;
-		}
-	}
-
-	// Immediates are handled in a special way by process_boss,
-	// but may be considered skipped/nonexistent for other purposes
-	if(a->type == AT_Immediate) {
-		return true;
-	}
-
 	// Skip zero-length spells. Zero-length AT_Move and AT_Normal attacks are ok.
+	// FIXME: I'm really not sure what was the purpose of this, but for now I'm abusing this to
+	// conditionally flag the extra spell as skipped. Investigate whether we can remove simplify
+	// things a bit and remove this function.
 	if(ATTACK_IS_SPELL(a->type) && a->timeout <= 0) {
 		return true;
 	}
@@ -179,13 +186,6 @@ static Attack* boss_get_final_attack(Boss *boss) {
 	Attack *final;
 	for(final = boss->attacks + boss->acount - 1; final >= boss->attacks && boss_should_skip_attack(boss, final); --final);
 	return final >= boss->attacks ? final : NULL;
-}
-
-attr_unused
-static Attack* boss_get_next_attack(Boss *boss) {
-	Attack *next;
-	for(next = boss->current + 1; next < boss->attacks + boss->acount && boss_should_skip_attack(boss, next); ++next);
-	return next < boss->attacks + boss->acount ? next : NULL;
 }
 
 static bool boss_attack_is_final(Boss *boss, Attack *a) {
@@ -249,7 +249,7 @@ static void update_healthbar(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(player_nearby) {
+	if(player_nearby || boss->in_background) {
 		target_opacity *= 0.25;
 	}
 
@@ -277,7 +277,7 @@ static void update_healthbar(Boss *boss) {
 			float spell_maxhp;
 
 			if(spell->type == AT_SurvivalSpell) {
-				spell_hp = spell_maxhp = fmax(1, total_maxhp * 0.1);
+				spell_hp = spell_maxhp = max(1, total_maxhp * 0.1f);
 			} else {
 				spell_hp = spell->hp;
 				spell_maxhp = spell->maxhp;
@@ -297,10 +297,10 @@ static void update_healthbar(Boss *boss) {
 				target_opacity = 0.0;
 			}
 		} else if(total_maxhp > 0) {
-			total_maxhp = fmax(0.001, total_maxhp);
+			total_maxhp = max(0.001f, total_maxhp);
 
 			if(total_hp > 0) {
-				total_hp = fmax(0.001, total_hp);
+				total_hp = max(0.001f, total_hp);
 			}
 
 			target_fill = total_hp / total_maxhp;
@@ -348,12 +348,12 @@ static void update_hud(Boss *boss) {
 		target_spell_opacity = 0.0;
 	}
 
-	if(cimag(global.plr.pos) < 128) {
+	if(im(global.plr.pos) < 128) {
 		target_plrproximity_opacity = 0.25;
 	}
 
 	if(boss->current && !attack_has_finished(boss->current) && boss->current->type != AT_Move) {
-		int frames = boss->current->timeout + imin(0, boss->current->starttime - global.frames);
+		int frames = boss->current->timeout + min(0, boss->current->starttime - global.frames);
 		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
 	}
 
@@ -369,7 +369,7 @@ static void draw_radial_healthbar(Boss *boss) {
 
 	r_state_push();
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_mv_translate(re(boss->pos), im(boss->pos), 0);
 	r_mat_mv_scale(220, 220, 0);
 	r_shader("healthbar_radial");
 	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
@@ -420,7 +420,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 	opacity *= 1 - 2 * fabs(f - 0.5);
 	cmplx pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
 
-	draw_boss_text(ALIGN_CENTER, creal(pos), cimag(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
+	draw_boss_text(ALIGN_CENTER, re(pos), im(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
 }
 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
@@ -451,12 +451,12 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(x), cimag(x),0);
+	r_mat_mv_translate(re(x), im(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_mv_scale(scale,scale,1);
 	r_mat_mv_rotate(glm_ease_quad_out(f) * 2 * M_PI, 0.8, -0.2, 0);
 
-	float spellname_opacity_noplr = opacity_noplr * fmin(1, warn_progress/0.6);
+	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6f);
 	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
 
 	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
@@ -473,7 +473,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 
 	if(warn_progress < 1) {
-		draw_spell_warning(font, cimag(x0) - font_get_lineskip(font), warn_progress, opacity);
+		draw_spell_warning(font, im(x0) - font_get_lineskip(font), warn_progress, opacity);
 	}
 
 	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
@@ -494,7 +494,8 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		bool kern = font_get_kerning_enabled(font);
 		font_set_kerning_enabled(font, false);
 
-		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+		// TODO: display plrmode-specific data?
+		snprintf(buf, sizeof(buf), "%u / %u", p->global.num_cleared, p->global.num_played);
 
 		draw_boss_text(ALIGN_RIGHT,
 			VIEWPORT_W - 10 - text_width(font, buf, 0), 0,
@@ -551,9 +552,9 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	float char_in = clamp(a * 1.5, 0, 1);
-	float char_out = fmin(1, 2 - (2 * a));
-	float char_opacity_in = 0.75 * fmin(1, a * 5);
+	float char_in = clamp(a * 1.5f, 0, 1);
+	float char_out = min(1, 2 - (2 * a));
+	float char_opacity_in = 0.75f * min(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
@@ -574,19 +575,19 @@ static void draw_spell_portrait(Boss *b, int time) {
 
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = char_spr,
-			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+			.pos = { char_spr->w * 0.5 + VIEWPORT_W * powf(1 - char_in, 4 - i * 0.3f) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
-			.scale.both = 1.0 + 0.02 * (fmin(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+			.scale.both = 1.0f + 0.02f * (min(1, a * 1.2f)) + i * 0.5 * powf(1 - o, 2),
 		});
 	}
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = char_spr,
-		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
-		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * fmin(1, char_in * 2) * (1 - fmin(1, (1 - char_out) * 5))),
+		.pos = { char_spr->w * 0.5f + VIEWPORT_W * powf(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
 		.flip.x = true,
-		.scale.both = 1.0 + 0.1 * (1 - char_out),
+		.scale.both = 1.0f + 0.1f * (1 - char_out),
 	});
 
 	r_mat_mv_pop();
@@ -603,7 +604,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	color_mul_scalar(&c, 1.5 - s);
 
 	r_draw_sprite(&(SpriteParams) {
-		.pos = { creal(p->pos), cimag(p->pos) },
+		.pos = { re(p->pos), im(p->pos) },
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
 		.color = &c,
@@ -615,8 +616,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 static Projectile *spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	return PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		// this is in sync with the boss position oscillation
-		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
+		.pos = boss->pos + boss_get_sprite_offset(boss),
 		.color = clr,
 		.draw_rule = boss_glow_draw,
 		.timeout = timeout,
@@ -654,10 +654,15 @@ DEFINE_TASK(boss_particles) {
 				.timeout = 180,
 				.draw_rule = pdraw_timeout_scale(2, 0.01),
 				.angle = rng_angle(),
+				.flags = PFLAG_MANUALANGLE,
 			));
 		}
 
-		if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
+		if(
+			!(global.frames % (2 + 2 * is_extra)) &&
+			(is_spell || boss_is_dying(boss)) &&
+			!boss->in_background
+		) {
 			float glowstr = 0.5;
 			float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
 			spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
@@ -667,14 +672,14 @@ DEFINE_TASK(boss_particles) {
 
 void draw_boss_background(Boss *boss) {
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_mv_translate(re(boss->pos), im(boss->pos), 0);
 	r_mat_mv_rotate(global.frames * 4.0 * DEG2RAD, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
 
 	if(boss_is_dying(boss)) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		f -= t*(t-0.7)/fmax(0.01, 1-t);
+		f -= t * (t - 0.7f) / max(0.01f, 1-t);
 	}
 
 	r_mat_mv_scale(f, f, 1);
@@ -683,6 +688,10 @@ void draw_boss_background(Boss *boss) {
 		.color = RGBA(1, 1, 1, 0),
 	});
 	r_mat_mv_pop();
+}
+
+cmplx boss_get_sprite_offset(Boss *boss) {
+	return 6 * sin(global.frames/25.0) * I;
 }
 
 static void ent_draw_boss(EntityInterface *ent) {
@@ -699,10 +708,14 @@ static void ent_draw_boss(EntityInterface *ent) {
 		boss_alpha = (1 - t) + 0.3;
 	}
 
+	Color *c = RGB(1.0f, 1.0f - red, 1.0f - red * 0.5f);
+	color_lerp(c, RGB(0.2f, 0.2f, 0.2f), boss->background_transition);
+	color_mul_scalar(c, boss_alpha);
+
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		.pos = { creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0) },
-		.color = RGBA_MUL_ALPHA(1, 1-red, 1-red/2, boss_alpha),
+		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
+		.color = c,
 	});
 }
 
@@ -800,12 +813,13 @@ void draw_boss_overlay(Boss *boss) {
 }
 
 static void boss_rule_extra(Boss *boss, float alpha) {
-	if(global.frames % 5) {
+	if(global.frames % 5 || boss->in_background) {
 		return;
 	}
 
-	int cnt = 5 * fmax(1, alpha);
-	alpha = fmin(2, alpha);
+	// XXX: not sure why, but the cast is needed to not desync 1.4 replays
+	int cnt = 5 * (double)max(1, alpha);
+	alpha = min(2, alpha);
 	int lt = 1;
 
 	if(alpha == 0) {
@@ -815,9 +829,9 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 
 	for(int i = 0; i < cnt; ++i) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
-		cmplx dir = cexp(I*(a+global.frames/50.0));
+		cmplx dir = cdir(a+global.frames/50.0);
 		cmplx vel = dir * 3;
-		float v = fmax(0, alpha - 1);
+		float v = max(0, alpha - 1);
 		float psina = psin(a);
 
 		PARTICLE(
@@ -855,6 +869,7 @@ bool boss_is_vulnerable(Boss *boss) {
 	Attack *atk = boss->current;
 
 	return
+		!boss->in_background &&
 		atk &&
 		atk->type != AT_Move &&
 		atk->type != AT_SurvivalSpell &&
@@ -862,8 +877,14 @@ bool boss_is_vulnerable(Boss *boss) {
 }
 
 bool boss_is_player_collision_active(Boss *boss) {
-	// TODO: possibly only enable if attack_is_active()?
-	return boss->current && !boss_is_dying(boss) && !boss_is_fleeing(boss);
+	return
+		boss->current &&
+		boss->current->type != AT_Move &&
+		attack_is_active(boss->current) &&
+		!boss->in_background &&
+		boss->background_transition < 0.5f &&
+		!boss_is_dying(boss) &&
+		!boss_is_fleeing(boss);
 }
 
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
@@ -893,7 +914,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 	if(pattern_time < max_damage_time) {
 		float span = max_damage_time - min_damage_time;
-		factor = clampf((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
+		factor = clamp((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
 	}
 
 	if(factor == 0) {
@@ -904,7 +925,9 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		boss->lastdamageframe = global.frames;
 	}
 
-	boss->current->hp -= dmg->amount * factor;
+	float damage = min(boss->current->hp, dmg->amount * factor);
+	boss->current->hp -= damage;
+	boss->damage_to_power_accum += damage;
 
 	if(boss->current->hp < boss->current->maxhp * 0.1) {
 		play_sfx_loop("hit1");
@@ -919,7 +942,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = attack_was_failed(a);
 
-	int time_left = iclamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
+	int time_left = clamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
 
 	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
@@ -931,7 +954,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 
 	if(bonus->failed) {
 		bonus->time /= 4;
-		bonus->endurance = base * 0.1 * (fmax(0, a->failtime - a->starttime) / (double)a->timeout);
+		bonus->endurance = base * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
 	} else if(survival) {
 		bonus->survival = base * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
@@ -945,7 +968,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	SpellBonus bonus = { 0 };
 	calc_spell_bonus(a, &bonus);
 
-	const char *title = bonus.failed ? "Spell Card failed..."  : "Spell Card captured!";
+	const char *title = bonus.failed ? "Spell Card failed…"  : "Spell Card captured!";
 
 	char diff_bonus_text[6];
 	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
@@ -996,12 +1019,6 @@ static int attack_end_delay(Boss *boss) {
 	return attacktype_end_delay(boss->current->type);
 }
 
-static void boss_call_rule(Boss *boss, int t) {
-	if(boss->current->rule) {
-		boss->current->rule(boss, t);
-	}
-}
-
 static bool spell_is_overload(AttackInfo *spell) {
 	// HACK HACK HACK
 	StagesExports *e = dynstage_get_exports();
@@ -1009,16 +1026,21 @@ static bool spell_is_overload(AttackInfo *spell) {
 	return spell == &stage5_spells->extra.overload;
 }
 
+static void clear_hazards_and_enemies(void) {
+	enemy_kill_all(&global.enemies);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+}
+
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
+	boss->in_background = false;
 	boss->current->hp = 0;
-	boss_call_rule(boss, EVENT_DEATH);
 
 	aniplayer_soft_switch(&boss->ani,"main",0);
 
 	if(t != AT_Move) {
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+		clear_hazards_and_enemies();
 	}
 
 	if(ATTACK_IS_SPELL(t)) {
@@ -1028,7 +1050,7 @@ void boss_finish_current_attack(Boss *boss) {
 			StageProgress *p = get_spellstage_progress(boss->current, NULL, true);
 
 			if(p) {
-				++p->num_cleared;
+				progress_register_stage_cleared(p, global.plr.mode);
 			}
 
 			// HACK
@@ -1044,6 +1066,17 @@ void boss_finish_current_attack(Boss *boss) {
 			ITEM_POINTS, 12,
 			ITEM_BOMB_FRAGMENT, (attack_was_failed(boss->current) ? 0 : 1)
 		);
+	}
+
+	if(boss->current < boss->attacks + boss->acount - 1) {
+		// If the next attack is an extra spell, determine whether we have enough voltage now, and
+		// if not, skip it. This can't be done any later, because we have to know whether to start
+		// the death sequence this frame (since the extra spell is usually the final one).
+		Attack *next = boss->current + 1;
+		if(next->type == AT_ExtraSpell && global.plr.voltage < global.voltage_threshold) {
+			// see boss_should_skip_attack()
+			next->timeout = 0;
+		}
 	}
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
@@ -1066,18 +1099,11 @@ void process_boss(Boss **pboss) {
 	aniplayer_update(&boss->ani);
 	update_hud(boss);
 
-	if(boss->global_rule) {
-		boss->global_rule(boss, global.frames - boss->birthtime);
-	}
+	fapproach_asymptotic_p(&boss->background_transition, boss->in_background ? 1.0f : 0.0f, 0.15, 1e-3);
+	boss->ent.draw_layer = lerp(LAYER_BOSS, LAYER_BACKGROUND, boss->background_transition);
 
 	if(!boss->current || dialog_is_active(global.dialog)) {
 		return;
-	}
-
-	if(boss->current->type == AT_Immediate) {
-		boss->current->endtime = global.frames;
-		boss->current->endtime_undelayed = global.frames;
-		coevent_signal_once(&boss->current->events.finished);
 	}
 
 	int time = global.frames - boss->current->starttime;
@@ -1094,8 +1120,6 @@ void process_boss(Boss **pboss) {
 		if(boss->current->type != AT_Move && remaining <= 11*FPS && remaining > 0 && !(time % FPS)) {
 			play_sfx(remaining <= 6*FPS ? "timeout2" : "timeout1");
 		}
-
-		boss_call_rule(boss, time);
 	}
 
 	if(extra) {
@@ -1105,7 +1129,7 @@ void process_boss(Boss **pboss) {
 
 		if(attack_has_finished(boss->current)) {
 			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
-			float a = fmax((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
+			float a = max((base + ampl * s) * p * 0.5f, 5 * powf(1 - p, 3));
 			if(a < 2) {
 				stage_shake_view(3 * a);
 				boss_rule_extra(boss, a);
@@ -1123,12 +1147,12 @@ void process_boss(Boss **pboss) {
 		} else if(time < 0) {
 			boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
 		} else {
-			float o = fmin(0, -5 + time/30.0);
-			float q = (time <= 150? 1 - pow(time/250.0, 2) : fmin(1, time/60.0));
+			float o = min(0, -5 + time/30.0f);
+			float q = (time <= 150? 1 - powf(time/250.0f, 2) : min(1, time/60.0f));
 
-			boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) * q);
+			boss_rule_extra(boss, max(1-time/300.0f, base + ampl * s) * q);
 			if(o) {
-				boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) - o);
+				boss_rule_extra(boss, max(1-time/300.0f, base + ampl * s) - o);
 
 				stage_shake_view(5);
 				if(o > -0.05) {
@@ -1151,7 +1175,7 @@ void process_boss(Boss **pboss) {
 			// XXX: do we actually need to call this for AT_Move attacks at all?
 			//      it should be harmless, but probably unnecessary.
 			//      i'll be conservative and leave it in for now.
-			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+			clear_hazards_and_enemies();
 		}
 	}
 
@@ -1254,24 +1278,6 @@ void process_boss(Boss **pboss) {
 			}
 
 			boss->current++;
-			assert(boss->current != NULL);
-
-			if(boss->current->type == AT_Immediate) {
-				boss->current->starttime = global.frames;
-				boss_call_rule(boss, EVENT_BIRTH);
-
-				coevent_signal_once(&boss->current->events.initiated);
-				coevent_signal_once(&boss->current->events.started);
-				coevent_signal_once(&boss->current->events.finished);
-				coevent_signal_once(&boss->current->events.completed);
-				COEVENT_CANCEL_ARRAY(boss->current->events);
-
-				if(dialog_is_active(global.dialog)) {
-					break;
-				}
-
-				continue;
-			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
 				COEVENT_CANCEL_ARRAY(boss->current->events);
@@ -1287,7 +1293,7 @@ void process_boss(Boss **pboss) {
 }
 
 void boss_reset_motion(Boss *boss) {
-	boss->move = move_stop(0.8);
+	boss->move = move_dampen(boss->move.velocity, 0.8);
 }
 
 static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
@@ -1296,8 +1302,8 @@ static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArg
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
-	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
-	r_uniform_vec2("clear_origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("origin", re(p->pos), VIEWPORT_H - im(p->pos));
+	r_uniform_vec2("clear_origin", re(p->pos), VIEWPORT_H - im(p->pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
@@ -1325,7 +1331,7 @@ void boss_death(Boss **boss) {
 	}
 
 	if(!fleed) {
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+		clear_hazards_and_enemies();
 		stage_shake_view(100);
 
 		PARTICLE(
@@ -1346,7 +1352,6 @@ void boss_death(Boss **boss) {
 
 static void free_attack(Attack *a) {
 	COEVENT_CANCEL_ARRAY(a->events);
-	free(a->name);
 }
 
 void free_boss(Boss *boss) {
@@ -1359,8 +1364,7 @@ void free_boss(Boss *boss) {
 	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
-	free(boss->name);
-	objpool_release(stage_object_pools.bosses, boss);
+	STAGE_RELEASE_OBJ(boss);
 }
 
 static void boss_schedule_next_attack(Boss *b, Attack *a) {
@@ -1386,12 +1390,12 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	StageProgress *p = get_spellstage_progress(a, &i, true);
 
 	if(p) {
-		++p->num_played;
-
 		if(!p->unlocked) {
 			log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
 			p->unlocked = true;
 		}
+
+		progress_register_stage_played(p, global.plr.mode);
 	}
 
 	// This should go before a->rule(b,EVENT_BIRTH), so it doesn’t reset values set by the attack rule.
@@ -1399,7 +1403,6 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	b->shot_damage_multiplier = 1.0;
 
 	a->starttime = global.frames + attacktype_start_delay(a->type);
-	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sfx(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
@@ -1418,24 +1421,20 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 		}
 	}
 
-	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+	clear_hazards_and_enemies();
 }
 
-static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+Attack *boss_add_attack(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossRule draw_rule) {
 	assert(boss->acount < BOSS_MAX_ATTACKS);
 
 	Attack *a = &boss->attacks[boss->acount];
 	boss->acount += 1;
 	memset(a, 0, sizeof(Attack));
-
 	a->type = type;
-	a->name = strdup(name);
+	a->name = name;
 	a->timeout = timeout * FPS;
-
 	a->maxhp = hp;
 	a->hp = hp;
-
-	a->rule = rule;
 	a->draw_rule = draw_rule;
 
 	COEVENT_INIT_ARRAY(a->events);
@@ -1444,13 +1443,12 @@ static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float t
 }
 
 static Attack *_boss_add_attack_from_info(Boss *boss, AttackInfo *info){
-	Attack *a = _boss_add_attack(
+	Attack *a = boss_add_attack(
 		boss,
 		info->type,
 		info->name,
 		info->timeout,
 		info->hp,
-		info->rule,
 		info->draw_rule
 	);
 
@@ -1514,32 +1512,10 @@ static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
 	);
 }
 
-Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
-	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+Attack *boss_add_attack_task(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
 	setup_attack_task(boss, a, task);
 	return a;
-}
-
-TASK_WITH_INTERFACE(legacy_attack_helper, BossAttack) {
-	INIT_BOSS_ATTACK(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS);
-}
-
-static void setup_legacy_attack(Boss *boss, Attack *atk) {
-	if(!atk->rule) {
-		return;
-	}
-
-	INVOKE_TASK_WHEN(&atk->events.initiated, legacy_attack_helper,
-		.boss = ENT_BOX(boss),
-		.attack = atk
-	);
-}
-
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
-	Attack *atk = _boss_add_attack(boss, type, name, timeout, hp, rule, draw_rule);
-	setup_legacy_attack(boss, atk);
-	return atk;
 }
 
 void boss_set_attack_bonus(Attack *a, int rank) {
@@ -1562,39 +1538,33 @@ void boss_set_attack_bonus(Attack *a, int rank) {
 	}
 }
 
-static void boss_generic_move(Boss *b, int time) {
-	Attack *atck = b->current;
+TASK(boss_generic_move_finish, { BoxedBoss boss; cmplx dest; }) {
+	Boss *b = TASK_BIND(ARGS.boss);
+	b->pos = ARGS.dest;
+	b->move = move_linear(0);
+}
 
-	if(atck->info->pos_dest == BOSS_NOMOVE) {
-		return;
-	}
-
-	if(time == EVENT_DEATH) {
-		b->pos = atck->info->pos_dest;
-		return;
-	}
-
-	// because GO_TO is unreliable and linear is just not hip and cool enough
-
-	float f = (time + ATTACK_START_DELAY) / ((float)atck->timeout + ATTACK_START_DELAY);
-	float x = f;
-	float a = 0.3;
-	f = 1 - pow(f - 1, 4);
-	f = f * (1 + a * pow(1 - x, 2));
-	b->pos = atck->info->pos_dest * f + BOSS_DEFAULT_SPAWN_POS * (1 - f);
+TASK_WITH_INTERFACE(boss_generic_move, BossAttack) {
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	cmplx dest = ARGS.attack->info->pos_dest;
+	b->move = move_from_towards(b->pos, dest, 0.07);
+	INVOKE_TASK_WHEN(&ARGS.attack->events.completed, boss_generic_move_finish, ENT_BOX(b), dest);
+	BEGIN_BOSS_ATTACK(&ARGS);
 }
 
 Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move) {
 	if(move) {
-		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
+		Attack *m = boss_add_attack_task(
+			boss, AT_Move, "Generic Move", 0.5, 0,
+			TASK_INDIRECT(BossAttack, boss_generic_move), NULL
+		);
+		m->info = info;
 	}
 
 	Attack *a = _boss_add_attack_from_info(boss, info);
 
 	if(info->task._cotask_BossAttack_thunk) {
 		setup_attack_task(boss, a, info->task);
-	} else {
-		setup_legacy_attack(boss, a);
 	}
 
 	return a;
@@ -1610,10 +1580,10 @@ Attack *boss_add_attack_from_info_with_args(
 }
 
 Attack *boss_add_attack_task_with_args(
-	Boss *boss, AttackType type, char *name, float timeout, int hp,
+	Boss *boss, AttackType type, const char *name, float timeout, int hp,
 	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args
 ) {
-	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
 	setup_attack_task_with_custom_args(boss, a, task, args.ptr, args.size);
 	return a;
 }
@@ -1629,10 +1599,11 @@ void _begin_boss_attack_task(const BossAttackTaskArgs *args) {
 	WAIT_EVENT_OR_DIE(&args->attack->events.started);
 }
 
-void boss_preload(void) {
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+void boss_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
 		"charge_extra",
+		"discharge",
 		"spellend",
 		"spellclear",
 		"timeout1",
@@ -1640,16 +1611,17 @@ void boss_preload(void) {
 		"bossdeath",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"boss_circle",
 		"boss_indicator",
 		"boss_spellcircle0",
 		"part/arc",
+		"part/blast_huge_rays",
 		"part/boss_shadow",
 		"spell",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"boss_zoom",
 		"boss_death",
 		"spellcard_intro",
@@ -1663,7 +1635,7 @@ void boss_preload(void) {
 	StageInfo *s = global.stage;
 
 	if(s->type != STAGE_SPELL || s->spell->type == AT_ExtraSpell) {
-		preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 			"stage3/wspellclouds",
 			"stage4/kurumibg2",
 		NULL);

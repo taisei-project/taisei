@@ -2,16 +2,16 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
-#include "dialog.h"
-#include "stage.h"
-#include "portrait.h"
+#include "dialog.h"  // IWYU pragma: export
+#include "stage.h"  // IWYU pragma: export
+#include "portrait.h"  // IWYU pragma: export
 
 #define DIALOG_BEGIN(_interface) \
 	if(ARGS.called_for_preload) { \
@@ -57,11 +57,11 @@
 	if(ARGS.called_for_preload)
 
 #define PRELOAD_CHAR(name) \
-	portrait_preload_base_sprite(#name, NULL, ARGS.preload_rflags); \
+	portrait_preload_base_sprite(ARGS.preload_group, #name, NULL, ARGS.preload_rflags); \
 	for(const char *_charname = #name; _charname; _charname = NULL)
 
 #define PRELOAD_VARIANT(variant) \
-	portrait_preload_base_sprite(_charname, #variant, ARGS.preload_rflags)
+	portrait_preload_base_sprite(ARGS.preload_group, _charname, #variant, ARGS.preload_rflags)
 
 #define PRELOAD_FACE(face) \
-	portrait_preload_face_sprite(_charname, #face, ARGS.preload_rflags)
+	portrait_preload_face_sprite(ARGS.preload_group, _charname, #face, ARGS.preload_rflags)

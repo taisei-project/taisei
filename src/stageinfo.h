@@ -2,19 +2,20 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #pragma once
 #include "taisei.h"
 
-#include "renderer/api.h"
-#include "difficulty.h"
 #include "boss.h"
+#include "difficulty.h"
 #include "progress.h"
+#include "renderer/api.h"
 
 typedef void (*StageProc)(void);
+typedef void (*StagePreloadProc)(ResourceGroup *rg);
 typedef bool (*ShaderRule)(Framebuffer*); // true = drawn to color buffer
 
 // two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
@@ -31,11 +32,9 @@ typedef enum StageType {
 typedef struct StageProcs StageProcs;
 struct StageProcs {
 	StageProc begin;
-	StageProc preload;
+	StagePreloadProc preload;
 	StageProc end;
 	StageProc draw;
-	StageProc event;
-	StageProc update;
 	ShaderRule *shader_rules;
 	ShaderRule *postprocess_rules;
 	StageProcs *spellpractice_procs;

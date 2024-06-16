@@ -2,16 +2,18 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
 #include "taisei.h"
 
 #include "color.h"
+#include "resource/resource.h"
 #include "resource/sprite.h"
-#include "coroutine.h"
+#include "coroutine/coevent.h"
+#include "renderer/api.h"
 
 typedef enum DialogSide {
 	DIALOG_SIDE_RIGHT,
@@ -32,6 +34,8 @@ typedef struct DialogActor {
 	const char *face;
 
 	Sprite composite;
+
+	void (*draw_dynamic_overlay)(SpriteParams*);
 
 	float opacity;
 	float target_opacity;
@@ -130,6 +134,6 @@ bool dialog_page(Dialog *d)
 
 bool dialog_is_active(Dialog *d);
 
-void dialog_preload(void);
+void dialog_preload(ResourceGroup *rg);
 
 #include "dialog/dialog_interface.h"

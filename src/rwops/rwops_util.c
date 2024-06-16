@@ -2,14 +2,12 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "taisei.h"
+ * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ */
 
 #include "rwops_util.h"
-#include "util.h"
+#include "util/miscmath.h"
 
 int64_t rwutil_compute_seek_pos(int64_t offset, int whence, int64_t pos, int64_t size) {
 	int64_t new_pos;
@@ -71,7 +69,7 @@ int64_t rwutil_seek_emulated_abs(
 	}
 
 	while(new_pos > *pos) {
-		size_t want_read_size = imin(new_pos - *pos, readbuf_size);
+		size_t want_read_size = min(new_pos - *pos, readbuf_size);
 		size_t read_size = SDL_RWread(rw, readbuf, 1, want_read_size);
 		assert(read_size <= want_read_size);
 

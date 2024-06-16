@@ -7,24 +7,23 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#include "taisei.h"
-
-#include "public.h"
 #include "setup.h"
-#include "util.h"
+#include "emscripten_fetch_public.h"
+#include "decompress_wrapper_public.h"
 
 static void vfs_setup_onsync(CallChainResult ccr) {
-	VfsSetupFixedPaths paths = {
-		.res_path = "/" TAISEI_BUILDCONF_DATA_PATH,
-		.storage_path = "/persistent/storage",
-		.cache_path ="/persistent/cache",
-	};
+	vfs_setup_storage_syspath("/persistent/storage");
+	vfs_setup_cache_syspath("/persistent/cache");
 
-	vfs_setup_fixedpaths_onsync(ccr, &paths);
+	vfs_create_union_mountpoint("res");
+	attr_unused bool mount_ok = vfs_mount_fetchfs("res-dir");
+	assert(mount_ok);
+	vfs_make_decompress_view("res-dir");
+	vfs_load_packages("res-dir", "res");
+	vfs_mount_alias("res", "res-dir");
+	vfs_unmount("res-dir");
+
+	vfs_setup_onsync_done(ccr);
 }
 
-void vfs_setup(CallChain next) {
-	vfs_init();
-	CallChain *cc = memdup(&next, sizeof(next));
-	vfs_sync(VFS_SYNC_LOAD, CALLCHAIN(vfs_setup_onsync, cc));
-}
+VFS_SETUP_SYNCING(vfs_setup_onsync)
