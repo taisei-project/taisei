@@ -1,3 +1,8 @@
-@sprite_count = 1
+@sprite_count = 8
 
-main = d1 0
+main = d7 0 1 2 3
+
+glasses = d1 4
+lower_glasses = d5 7 6 5 0
+raise_glasses = d5 0 5 6 7
+
