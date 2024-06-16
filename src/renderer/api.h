@@ -1018,3 +1018,10 @@ INLINE
 bool r_supports(RendererFeature feature) {
 	return r_features() & r_feature_bit(feature);
 }
+
+INLINE
+uint r_integer_log_2(uint x) {
+	uint log = 0;
+	while(x >>= 1) ++log;
+	return log;
+}
