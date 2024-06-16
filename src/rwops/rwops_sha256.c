@@ -25,7 +25,7 @@ static int rwsha256_close(void *ctx) {
 	return 0;
 }
 
-static int64_t rwsha256_seek(void *ctx, int64_t offset, int whence) {
+static int64_t rwsha256_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	struct sha256_ctx *sctx = ctx;
 
 	if(!offset && whence == SDL_IO_SEEK_CUR) {

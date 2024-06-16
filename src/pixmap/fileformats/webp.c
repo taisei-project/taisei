@@ -60,7 +60,7 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 	VP8StatusCode status = WebPGetFeatures(webp_buffer, webp_bufsize, &features);
 
 	if(UNLIKELY(status != VP8_STATUS_OK)) {
-		mem_free(webp_buffer);
+		SDL_free(webp_buffer);
 		log_error("WebPGetFeatures() failed: %s", webp_error_str(status));
 		return false;
 	}
@@ -81,7 +81,7 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 	size_t scanline_size = pixel_size * pixmap->width;
 
 	if(UNLIKELY(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / scanline_size)) {
-		mem_free(webp_buffer);
+		SDL_free(webp_buffer);
 		log_error("The image is too large");
 		return false;
 	}
@@ -114,7 +114,7 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 		}
 	}
 
-	mem_free(webp_buffer);
+	SDL_free(webp_buffer);
 
 	if(UNLIKELY(!ok)) {
 		mem_free(pixmap->data.untyped);

@@ -183,18 +183,19 @@ static void init_sdl(void) {
 	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
 
 	if(sdl_logprio >= SDL_LOG_PRIORITY_VERBOSE) {
-		SDL_LogSetAllPriority(sdl_logprio);
+		SDL_SetLogPriorities(sdl_logprio);
 		SDL_SetLogOutputFunction(sdl_log, NULL);
 	}
 
 	log_info("SDL initialized");
 
-	SDL_Version v;
-	SDL_VERSION(&v);
-	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
+	int v = SDL_VERSION;
+	log_info("Compiled against SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
 
-	SDL_GetVersion(&v);
-	log_info("Using SDL %u.%u.%u", v.major, v.minor, v.patch);
+	v = SDL_GetVersion();
+	log_info("Using SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
 }
 
 static void log_lib_versions(void) {

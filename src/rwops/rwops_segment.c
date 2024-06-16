@@ -17,7 +17,7 @@ typedef struct Segment {
 	bool autoclose;
 } Segment;
 
-static int64_t segment_seek(void *ctx, int64_t offset, int whence) {
+static int64_t segment_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	Segment *s = ctx;
 
 	switch(whence) {

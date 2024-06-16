@@ -39,7 +39,7 @@ static int trace_close(void *ctx) {
 	return ret;
 }
 
-static int64_t trace_seek(void *ctx, int64_t offset, int whence) {
+static int64_t trace_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	TData *tdata = ctx;
 	int64_t p = SDL_SeekIO(tdata->wrapped, offset, whence);
 	TRACE(tdata, "seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, offset, whence, p);

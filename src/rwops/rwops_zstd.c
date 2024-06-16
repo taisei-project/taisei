@@ -39,9 +39,9 @@ typedef struct ZstdData {
 	bool autoclose;
 } ZstdData;
 
-static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, int whence);
+static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whence);
 
-static int64_t rwzstd_seek(void *ctx, int64_t offset, int whence) {
+static int64_t rwzstd_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZstdData *zdata = ctx;
 
 	if(!offset && whence == SDL_IO_SEEK_CUR) {
@@ -302,7 +302,7 @@ static int rwzstd_reopen(void *ctx) {
 	return 0;
 }
 
-static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, int whence) {
+static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZstdData *z = ctx;
 	char buf[1024];
 

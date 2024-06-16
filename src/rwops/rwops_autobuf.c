@@ -40,7 +40,7 @@ static int auto_close(void *ctx) {
 	return 0;
 }
 
-static int64_t auto_seek(void *ctx, int64_t offset, int whence) {
+static int64_t auto_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	Buffer *b = ctx;
 	return SDL_SeekIO(b->memio, offset, whence);
 }

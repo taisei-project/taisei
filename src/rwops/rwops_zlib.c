@@ -66,7 +66,7 @@ typedef struct ZData {
 
 #define TYPENAME(z) ((z)->type == TYPE_DEFLATE ? "a deflate" : "an inflate")
 
-static int64_t common_seek(void *ctx, int64_t offset, int whence) {
+static int64_t common_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZData *z = ctx;
 
 	if(!offset && whence == SDL_IO_SEEK_CUR) {
@@ -122,7 +122,7 @@ static void zlib_free(void *opaque, void *address) {
 	return mem_free(address);
 }
 
-static int64_t inflate_seek_emulated(void *ctx, int64_t offset, int whence);
+static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whence);
 static size_t inflate_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status);
 static size_t deflate_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
 
@@ -376,7 +376,7 @@ static int inflate_reopen(void *ctx) {
 	return 0;
 }
 
-static int64_t inflate_seek_emulated(void *ctx, int64_t offset, int whence) {
+static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZData *z = ctx;
 	char buf[1024];
 

@@ -134,7 +134,7 @@ static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAtt
 	callback(NULL, userdata);
 }
 
-static int64_t null_vertex_buffer_stream_seek(void *ctx, int64_t offset, int whence) { return 0; }
+static int64_t null_vertex_buffer_stream_seek(void *ctx, int64_t offset, SDL_IOWhence whence) { return 0; }
 static int64_t null_vertex_buffer_stream_size(void *ctx) { return (1 << 16); }
 static size_t null_vertex_buffer_stream_write(void *ctx, const void *data, size_t size, SDL_IOStatus *status) { return size; }
 

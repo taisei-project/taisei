@@ -115,7 +115,7 @@ static struct {
 	float clear_depth;
 	r_feature_bits_t features;
 
-	SDL_GLContext *gl_context;
+	SDL_GLContext gl_context;
 	SDL_Window *window;
 
 #ifndef STATIC_GLES3

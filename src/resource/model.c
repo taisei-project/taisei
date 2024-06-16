@@ -72,7 +72,7 @@ static bool read_fields(SDL_IOStream *rw, size_t n, uint32_t fields[n]) {
 	}
 
 	for(size_t i = 0; i < n; ++i) {
-		fields[i] = SDL_SwapLE32(fields[i]);
+		fields[i] = SDL_Swap32LE(fields[i]);
 	}
 
 	return true;

@@ -80,7 +80,7 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 	int have_bufsize;
 
 	audio.sink = SDL_OpenAudioDeviceStream(
-		SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &want, mixer_callback, NULL);
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, mixer_callback, NULL);
 
 	if(!audio.sink) {
 		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDeviceStream");

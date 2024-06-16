@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "rwops_stdiofp.h"
+#include <SDL3/SDL_error.h>
 
 #include <stdio.h>
 
@@ -19,7 +20,7 @@ typedef struct IOStreamStdioFPData {
 	SDL_bool autoclose;
 } IOStreamStdioFPData;
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
 	FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
 	int stdiowhence;
@@ -45,7 +46,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
 		}
 		return pos;
 	}
-	return SDL_Error(SDL_EFSEEK);
+	return SDL_SetError("Seek error");
 }
 
 static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
@@ -53,7 +54,8 @@ static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOS
 	FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
 	const size_t bytes = fread(ptr, 1, size, fp);
 	if (bytes == 0 && ferror(fp)) {
-		SDL_Error(SDL_EFREAD);
+		*status = SDL_IO_STATUS_ERROR;
+		SDL_SetError("Read error");
 	}
 	return bytes;
 }
@@ -63,7 +65,8 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
 	FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
 	const size_t bytes = fwrite(ptr, 1, size, fp);
 	if (bytes == 0 && ferror(fp)) {
-		SDL_Error(SDL_EFWRITE);
+		*status = SDL_IO_STATUS_ERROR;
+		SDL_SetError("Write error");
 	}
 	return bytes;
 }
@@ -74,7 +77,7 @@ static int SDLCALL stdio_close(void *userdata)
 	int status = 0;
 	if (rwopsdata->autoclose) {
 		if (fclose(rwopsdata->fp) != 0) {
-			status = SDL_Error(SDL_EFWRITE);
+			status = SDL_SetError("Write error");
 		}
 	}
 	SDL_free(rwopsdata);

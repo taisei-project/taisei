@@ -20,7 +20,7 @@ static int dummy_close(void *ctx) {
 	return 0;
 }
 
-static int64_t dummy_seek(void *ctx, int64_t offset, int whence) {
+static int64_t dummy_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	return SDL_SeekIO(DUMMY_SOURCE(ctx), offset, whence);
 }
 

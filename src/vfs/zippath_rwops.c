@@ -75,7 +75,7 @@ static int ziprw_close(void *vdata) {
 	return 0;
 }
 
-static int64_t ziprw_seek(void *vdata, int64_t offset, int whence) {
+static int64_t ziprw_seek(void *vdata, int64_t offset, SDL_IOWhence whence) {
 	ZipIOData *rwdata = vdata;
 
 	if(!ziprw_get_zipfile(rwdata)) {

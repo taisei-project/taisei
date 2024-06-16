@@ -10,7 +10,7 @@
 
 #include "gl33.h"
 
-static int64_t gl33_buffer_stream_seek(void *ctx, int64_t offset, int whence) {
+static int64_t gl33_buffer_stream_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	CommonBuffer *cbuf = ctx;
 
 	switch(whence) {
