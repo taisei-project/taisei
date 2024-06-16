@@ -15,6 +15,7 @@ util_src = files(
     'miscmath.c',
     'pngcruft.c',
     'rectpack.c',
+    'sort_r.c',
     'strbuf.c',
     'stringops.c',
 )

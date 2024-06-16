@@ -365,6 +365,74 @@ config.set('TAISEI_BUILDCONF_HAVE_STATIC_ASSERT_WITHOUT_MSG', cc.compiles(
     args : ['-Werror']
 ))
 
+config.set('TAISEI_BUILDCONF_HAVE_GNU_QSORT_R', cc.links(
+    '''
+    #define _GNU_SOURCE
+    #include <stdlib.h>
+    #include <stdint.h>
+    int cmp(const void *a, const void *b, void *ctx) {
+        (*(int*)ctx)++;
+        return *(int*)a - *(int*)b;
+    }
+    int sort_test(size_t size, int array[size]) {
+        int i = 0;
+        qsort_r(array, size, sizeof(*array), cmp, &i);
+        return i;
+    }
+    int main(int argc, char **argv) {
+        volatile int a[] = { 1, 3, 3, 7, 9, 0, 0, 1 };
+        return sort_test(sizeof(a)/sizeof(*a), (int*)a);
+    }
+    ''',
+    name : 'GNU qsort_r()',
+    args : ['-Wall', '-Werror']
+))
+
+config.set('TAISEI_BUILDCONF_HAVE_BSD_QSORT_R', cc.links(
+    '''
+    #define _DEFAULT_SOURCE
+    #include <stdlib.h>
+    #include <stdint.h>
+    int cmp(void *ctx, const void *a, const void *b) {
+        (*(int*)ctx)++;
+        return *(int*)a - *(int*)b;
+    }
+    int sort_test(size_t size, int array[size]) {
+        int i = 0;
+        qsort_r(array, size, sizeof(*array), &i, cmp);
+        return i;
+    }
+    int main(int argc, char **argv) {
+        volatile int a[] = { 1, 3, 3, 7, 9, 0, 0, 1 };
+        return sort_test(sizeof(a)/sizeof(*a), (int*)a);
+    }
+    ''',
+    name : 'BSD qsort_r()',
+    args : ['-Wall', '-Werror']
+))
+
+config.set('TAISEI_BUILDCONF_HAVE_MICROSOFT_QSORT_S', cc.links(
+    '''
+    #include <stdlib.h>
+    #include <stdint.h>
+    int cmp(void *ctx, const void *a, const void *b) {
+        (*(int*)ctx)++;
+        return *(int*)a - *(int*)b;
+    }
+    int sort_test(size_t size, int array[size]) {
+        int i = 0;
+        qsort_s(array, size, sizeof(*array), cmp, &i);
+        return i;
+    }
+    int main(int argc, char **argv) {
+        volatile int a[] = { 1, 3, 3, 7, 9, 0, 0, 1 };
+        return sort_test(sizeof(a)/sizeof(*a), (int*)a);
+    }
+    ''',
+    name : 'Microsoft qsort_s()',
+    args : ['-Wall', '-Werror']
+))
+
 prefer_relpath_systems = [
     'windows',
 ]
