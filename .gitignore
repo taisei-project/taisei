@@ -5,6 +5,7 @@ osxbuild/
 releases/
 emsdk/
 .ctagsdb
+tags
 .*DS_Store
 __pycache__
 *.out
