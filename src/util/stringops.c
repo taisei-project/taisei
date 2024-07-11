@@ -131,7 +131,7 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
 	};
 }
 
-char* strappend(char **dst, char *src) {
+char* strappend(char **dst, const char *src) {
 	if(!*dst) {
 		return *dst = strdup(src);
 	}

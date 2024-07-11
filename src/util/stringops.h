@@ -62,7 +62,7 @@ void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
 char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated;
 char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
-char* strappend(char **dst, char *src);
+char* strappend(char **dst, const char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);
 
