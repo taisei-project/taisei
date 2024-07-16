@@ -172,8 +172,14 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 
 	ADD_MACRO(NULL);
 
+	SPIRVTarget target = SPIRV_TARGET_OPENGL_450;
+
+	if(options->lang->lang == SHLANG_SPIRV) {
+		target = options->lang->spirv.target;
+	}
+
 	result = spirv_compile(in, &spirv, &(SPIRVCompileOptions) {
-		.target = SPIRV_TARGET_OPENGL_450, // TODO: specify this in the shader
+		.target = target,
 		.optimization_level = options->optimization_level,
 		.filename = options->filename,
 		.macros = macros,
@@ -184,6 +190,11 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 	});
 
 	if(result) {
+		if(options->lang->lang == SHLANG_SPIRV) {
+			*out = spirv;
+			return result;
+		}
+
 		result = spirv_decompile(&spirv, out, &(SPIRVDecompileOptions) {
 			.lang = options->lang,
 		});
