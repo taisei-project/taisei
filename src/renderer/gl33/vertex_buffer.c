@@ -16,12 +16,12 @@ VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 	gl33_buffer_init(&vbuf->cbuf, capacity, data, GL_STATIC_DRAW);
 
 	snprintf(vbuf->cbuf.debug_label, sizeof(vbuf->cbuf.debug_label), "VBO #%i", vbuf->cbuf.gl_handle);
-	log_debug("Created VBO %u with %zukb of storage", vbuf->cbuf.gl_handle, vbuf->cbuf.size / 1024);
+	log_debug("Created VBO %u with %zukb of storage", vbuf->cbuf.gl_handle, vbuf->cbuf.cachedbuf.size / 1024);
 	return vbuf;
 }
 
 void gl33_vertex_buffer_destroy(VertexBuffer *vbuf) {
-	log_debug("Deleted VBO %u with %zukb of storage", vbuf->cbuf.gl_handle, vbuf->cbuf.size / 1024);
+	log_debug("Deleted VBO %u with %zukb of storage", vbuf->cbuf.gl_handle, vbuf->cbuf.cachedbuf.size / 1024);
 	gl33_buffer_destroy(&vbuf->cbuf);
 }
 

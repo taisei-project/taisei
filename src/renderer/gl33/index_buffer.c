@@ -35,14 +35,13 @@ IndexBuffer *gl33_index_buffer_create(uint index_size, size_t max_elements) {
 	IndexBuffer *ibuf = (IndexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ELEMENT_ARRAY, sizeof(IndexBuffer));
 	ibuf->index_size = index_size;
 	ibuf->index_datatype = index_size_to_datatype(index_size);
-	ibuf->cbuf.size = max_elements * index_size;
 	ibuf->cbuf.pre_bind = gl33_index_buffer_pre_bind;
 	ibuf->cbuf.post_bind = gl33_index_buffer_post_bind;
 
 	snprintf(ibuf->cbuf.debug_label, sizeof(ibuf->cbuf.debug_label), "IBO #%i", ibuf->cbuf.gl_handle);
 
-	gl33_buffer_init_cache(&ibuf->cbuf, ibuf->cbuf.size);
-	max_elements = ibuf->cbuf.size / index_size;
+	cachedbuf_resize(&ibuf->cbuf.cachedbuf, max_elements * index_size);
+	max_elements = ibuf->cbuf.cachedbuf.size / index_size;
 
 	log_debug("Created IBO %u for %zu elements", ibuf->cbuf.gl_handle, max_elements);
 	return ibuf;
@@ -53,20 +52,15 @@ void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao) {
 	ibuf->vao = vao;
 
 	if(!initialized) {
-		GLenum usage = GL_STATIC_DRAW;
-
-		if(ibuf->cbuf.cache.update_begin < ibuf->cbuf.size) {
-			usage = GL_DYNAMIC_DRAW;
-		}
-
-		gl33_buffer_init(&ibuf->cbuf, ibuf->cbuf.size, NULL, usage);
+		GLenum usage = GL_DYNAMIC_DRAW;  // FIXME
+		gl33_buffer_init(&ibuf->cbuf, ibuf->cbuf.cachedbuf.size, NULL, usage);
 		glcommon_set_debug_label_gl(GL_BUFFER, ibuf->cbuf.gl_handle, ibuf->cbuf.debug_label);
 		log_debug("Initialized %s", ibuf->cbuf.debug_label);
 	}
 }
 
 size_t gl33_index_buffer_get_capacity(IndexBuffer *ibuf) {
-	return ibuf->cbuf.size / ibuf->index_size;
+	return ibuf->cbuf.cachedbuf.size / ibuf->index_size;
 }
 
 uint gl33_index_buffer_get_index_size(IndexBuffer *ibuf) {
@@ -86,11 +80,11 @@ void gl33_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) {
 }
 
 void gl33_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) {
-	ibuf->cbuf.offset = offset * ibuf->index_size;
+	ibuf->cbuf.cachedbuf.stream_offset = offset * ibuf->index_size;
 }
 
 size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf) {
-	return ibuf->cbuf.offset / ibuf->index_size;
+	return ibuf->cbuf.cachedbuf.stream_offset / ibuf->index_size;
 }
 
 void gl33_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) {
