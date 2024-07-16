@@ -11,20 +11,13 @@
 
 #include "opengl.h"
 #include "../api.h"
+#include "../common/cached_buffer.h"
 
 typedef struct CommonBuffer CommonBuffer;
 
 struct CommonBuffer {
-	SDL_IOStream *stream;
+	CachedBuffer cachedbuf;
 
-	struct {
-		char *buffer;
-		size_t update_begin;
-		size_t update_end;
-	} cache;
-
-	size_t offset;
-	size_t size;
 	size_t commited_size;
 	GLuint gl_handle;
 	GLuint gl_usage_hint;
@@ -36,7 +29,6 @@ struct CommonBuffer {
 };
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size);
-void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity);
 void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint);
 void gl33_buffer_destroy(CommonBuffer *cbuf);
 void gl33_buffer_invalidate(CommonBuffer *cbuf);
