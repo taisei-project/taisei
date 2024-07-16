@@ -1,6 +1,7 @@
 
 r_common_src = files(
     'backend.c',
+    'cached_buffer.c',
     'magic_uniforms.c',
     'matstack.c',
     'models.c',

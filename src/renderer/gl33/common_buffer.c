@@ -10,108 +10,43 @@
 
 #include "gl33.h"
 
-static int64_t gl33_buffer_stream_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
-	CommonBuffer *cbuf = ctx;
-
-	switch(whence) {
-		case SDL_IO_SEEK_CUR : {
-			cbuf->offset += offset;
-			break;
-		}
-
-		case SDL_IO_SEEK_END : {
-			cbuf->offset = cbuf->size + offset;
-			break;
-		}
-
-		case SDL_IO_SEEK_SET : {
-			cbuf->offset = offset;
-			break;
-		}
-	}
-
-	assert(cbuf->offset <= cbuf->size);
-	return cbuf->offset;
-}
-
-static int64_t gl33_buffer_stream_size(void *ctx) {
-	CommonBuffer *cbuf = ctx;
-	return cbuf->size;
-}
-
-static size_t gl33_buffer_stream_write(
-	void *ctx, const void *data, size_t size, SDL_IOStatus *status
-) {
-	CommonBuffer *cbuf = ctx;
-	size_t offset = cbuf->offset;
-	size_t req_bufsize = offset + size;
-
-	if(UNLIKELY(req_bufsize > cbuf->size)) {
-		gl33_buffer_resize(cbuf, req_bufsize);
-		assert(req_bufsize <= cbuf->size);
-		assert(offset == cbuf->offset);
-	}
-
-	if(LIKELY(size > 0)) {
-		memcpy(cbuf->cache.buffer + cbuf->offset, data, size);
-		cbuf->cache.update_begin = min(cbuf->offset, cbuf->cache.update_begin);
-		cbuf->cache.update_end = max(cbuf->offset + size, cbuf->cache.update_end);
-		cbuf->offset += size;
-	}
-
-	return size;
-}
-
 SDL_IOStream *gl33_buffer_get_stream(CommonBuffer *cbuf) {
-	return cbuf->stream;
+	return cbuf->cachedbuf.stream;
 }
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size) {
 	CommonBuffer *cbuf = mem_alloc(alloc_size);
 	cbuf->bindidx = bindidx;
 	glGenBuffers(1, &cbuf->gl_handle);
-	cbuf->stream = NOT_NULL(SDL_OpenIO(&(SDL_IOStreamInterface) {
-		.version = sizeof(SDL_IOStreamInterface),
-		.write = gl33_buffer_stream_write,
-		.seek = gl33_buffer_stream_seek,
-		.size = gl33_buffer_stream_size,
-	}, cbuf));
+	cachedbuf_init(&cbuf->cachedbuf);
 	return cbuf;
-}
-
-void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity) {
-	capacity = topow2(capacity);
-
-	if(cbuf->size != capacity || !cbuf->cache.buffer) {
-		cbuf->cache.buffer = mem_realloc(cbuf->cache.buffer, capacity);
-		cbuf->size = cbuf->commited_size = capacity;
-		cbuf->cache.update_begin = capacity;
-	}
 }
 
 void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint) {
 	size_t data_size = capacity;
-	gl33_buffer_init_cache(cbuf, capacity);
+	cachedbuf_resize(&cbuf->cachedbuf, capacity);
 	cbuf->gl_usage_hint = usage_hint;
 
 	GL33_BUFFER_TEMP_BIND(cbuf, {
 		assert(glIsBuffer(cbuf->gl_handle));
 
 		GLenum target = gl33_bindidx_to_glenum(cbuf->bindidx);
-		glBufferData(target, cbuf->size, NULL, usage_hint);
+		glBufferData(target, cbuf->cachedbuf.size, NULL, usage_hint);
+		cbuf->commited_size = cbuf->cachedbuf.size;
 
 		if(data != NULL) {
 			glBufferSubData(target, 0, data_size, data);
-			memcpy(cbuf->cache.buffer, data, data_size);
+			memcpy(cbuf->cachedbuf.cache, data, data_size);
 		}
 	});
+
+	log_debug("%s: capacity requested: %zu; actual: %zu", cbuf->debug_label, data_size, cbuf->commited_size);
 }
 
 void gl33_buffer_destroy(CommonBuffer *cbuf) {
-	mem_free(cbuf->cache.buffer);
 	gl33_buffer_deleted(cbuf);
 	glDeleteBuffers(1, &cbuf->gl_handle);
-	SDL_CloseIO(cbuf->stream);
+	cachedbuf_deinit(&cbuf->cachedbuf);
 	mem_free(cbuf);
 }
 
@@ -119,62 +54,35 @@ void gl33_buffer_invalidate(CommonBuffer *cbuf) {
 	// TODO: a better way to set this properly in advance
 	cbuf->gl_usage_hint = GL_DYNAMIC_DRAW;
 	GL33_BUFFER_TEMP_BIND(cbuf, {
-		glBufferData(gl33_bindidx_to_glenum(cbuf->bindidx), cbuf->size, NULL, cbuf->gl_usage_hint);
+		cbuf->commited_size = cbuf->cachedbuf.size;
+		glBufferData(gl33_bindidx_to_glenum(cbuf->bindidx), cbuf->commited_size, NULL, cbuf->gl_usage_hint);
 	});
-	cbuf->offset = 0;
+	cbuf->cachedbuf.stream_offset = 0;
 }
 
 void gl33_buffer_resize(CommonBuffer *cbuf, size_t new_size) {
-	assert(cbuf->cache.buffer != NULL);
-
-	size_t old_size = cbuf->size;
-	new_size = topow2(new_size);
-
-	if(UNLIKELY(cbuf->size == new_size)) {
-		return;
-	}
-
-	log_warn("Resizing buffer %u (%s) from %zu to %zu",
-		cbuf->gl_handle, cbuf->debug_label, old_size, new_size
-	);
-
-	cbuf->size = new_size;
-	cbuf->cache.buffer = mem_realloc(cbuf->cache.buffer, new_size);
-	cbuf->cache.update_begin = 0;
-	cbuf->cache.update_end = min(old_size, new_size);
-
-	if(cbuf->offset > new_size) {
-		cbuf->offset = new_size;
-	}
+	assert(cbuf->cachedbuf.cache != NULL);
+	cachedbuf_resize(&cbuf->cachedbuf, new_size);
 }
 
 void gl33_buffer_flush(CommonBuffer *cbuf) {
-	if(cbuf->cache.update_begin >= cbuf->cache.update_end) {
+	auto update = cachedbuf_flush(&cbuf->cachedbuf);
+
+	if(!update.size) {
 		return;
 	}
-
-	size_t update_size = cbuf->cache.update_end - cbuf->cache.update_begin;
-	assert(update_size > 0);
 
 	GL33_BUFFER_TEMP_BIND(cbuf, {
 		GLenum target = gl33_bindidx_to_glenum(cbuf->bindidx);
 
-		if(cbuf->size != cbuf->commited_size) {
+		if(cbuf->cachedbuf.size != cbuf->commited_size) {
 			log_debug("Resizing buffer %u (%s) from %zu to %zu",
-				cbuf->gl_handle, cbuf->debug_label, cbuf->commited_size, cbuf->size
+				cbuf->gl_handle, cbuf->debug_label, cbuf->commited_size, cbuf->cachedbuf.size
 			);
-			glBufferData(target, cbuf->size, NULL, cbuf->gl_usage_hint);
-			cbuf->commited_size = cbuf->size;
+			glBufferData(target, cbuf->cachedbuf.size, cbuf->cachedbuf.cache, cbuf->gl_usage_hint);
+			cbuf->commited_size = cbuf->cachedbuf.size;
+		} else {
+			glBufferSubData(target, update.offset, update.size, update.data);
 		}
-
-		glBufferSubData(
-			target,
-			cbuf->cache.update_begin,
-			update_size,
-			cbuf->cache.buffer + cbuf->cache.update_begin
-		);
 	});
-
-	cbuf->cache.update_begin = cbuf->size;
-	cbuf->cache.update_end = 0;
 }
