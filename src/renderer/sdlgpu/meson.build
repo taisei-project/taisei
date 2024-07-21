@@ -1,6 +1,15 @@
 
 r_sdlgpu_src = files(
+    'common_buffer.c',
+    'framebuffer.c',
+    'index_buffer.c',
     'sdlgpu.c',
+    'sdlgpu.c',
+    'shader_object.c',
+    'shader_program.c',
+    'texture.c',
+    'vertex_array.c',
+    'vertex_buffer.c',
 )
 
 r_sdlgpu_deps = []
