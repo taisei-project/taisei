@@ -224,7 +224,6 @@ typedef void (*FramebufferReadAsyncCallback)(const Pixmap *pixmap, void *userdat
 typedef enum Primitive {
 	PRIM_POINTS,
 	PRIM_LINE_STRIP,
-	PRIM_LINE_LOOP,
 	PRIM_LINES,
 	PRIM_TRIANGLE_STRIP,
 	PRIM_TRIANGLES,
