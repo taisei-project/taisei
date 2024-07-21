@@ -21,7 +21,8 @@ typedef struct RendererFuncs {
 	void (*post_init)(void);
 	void (*shutdown)(void);
 
-	SDL_Window* (*create_window)(const char *title, int x, int y, int w, int h, uint32_t flags);
+	SDL_Window *(*create_window)(const char *title, int x, int y, int w, int h, uint32_t flags);
+	void (*unclaim_window)(SDL_Window *window);
 
 	r_feature_bits_t (*features)(void);
 
