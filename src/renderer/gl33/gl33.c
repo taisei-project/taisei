@@ -570,7 +570,6 @@ GLenum gl33_prim_to_gl_prim(Primitive prim) {
 	static GLenum map[] = {
 		[PRIM_POINTS]         = GL_POINTS,
 		[PRIM_LINE_STRIP]     = GL_LINE_STRIP,
-		[PRIM_LINE_LOOP]      = GL_LINE_LOOP,
 		[PRIM_LINES]          = GL_LINES,
 		[PRIM_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP,
 		[PRIM_TRIANGLES]      = GL_TRIANGLES,
