@@ -531,6 +531,7 @@ void r_post_init(void);
 void r_release_resources(void);
 void r_shutdown(void);
 const char *r_backend_name(void);
+void r_unclaim_window(SDL_Window *window);
 
 r_feature_bits_t r_features(void);
 

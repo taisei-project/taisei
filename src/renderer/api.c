@@ -258,6 +258,12 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 	return B.create_window(title, x, y, w, h, flags);
 }
 
+void r_unclaim_window(SDL_Window *window) {
+	if(B.unclaim_window) {
+		B.unclaim_window(window);
+	}
+}
+
 r_feature_bits_t r_features(void) {
 	return B.features();
 }

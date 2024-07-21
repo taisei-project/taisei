@@ -463,6 +463,7 @@ static const char *modeflagsstr(uint32_t flags) {
 
 static void video_new_window_internal(uint display, uint w, uint h, uint32_t flags, bool fallback) {
 	if(video.window) {
+		r_unclaim_window(video.window);
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
 		video.num_resize_events = 0;
@@ -1063,8 +1064,9 @@ void video_shutdown(void) {
 	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);
 	events_unregister_handler(video_handle_config_event);
-	r_shutdown();
+	r_unclaim_window(video.window);
 	SDL_DestroyWindow(video.window);
+	r_shutdown();
 	dynarray_free_data(&video.win_modes);
 	dynarray_free_data(&video.fs_modes);
 	SDL_VideoQuit();
