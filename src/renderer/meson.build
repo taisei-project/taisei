@@ -5,14 +5,13 @@ renderer_opts = {
     'gl33' : get_option('r_gl33').require(
         host_machine.system() not in ['nx', 'emscripten'],
         error_message : 'OpenGL 3.3 is not supported on this platform'),
-    'gles20' : get_option('r_gles20').disable_auto_if(not shader_transpiler_enabled),
     'gles30' : get_option('r_gles30').disable_auto_if(
         not (shader_transpiler_enabled or transpile_glsl)),
     'null' : get_option('r_null'),
 }
 
 default_renderer = get_option('r_default')
-renderers_prio = ['gl33', 'gles30', 'gles20']
+renderers_prio = ['gl33', 'gles30']
 
 if default_renderer == 'auto'
     foreach renderer : renderers_prio
@@ -55,7 +54,6 @@ subdir('null')
 subdir('glcommon')
 subdir('gl33')
 subdir('glescommon')
-subdir('gles20')
 subdir('gles30')
 
 included_deps = []
@@ -85,11 +83,9 @@ r_macro = ' '.join(r_macro)
 config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
 config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)
 
-have_gles_renderer = (
-    renderer_opts['gles30'].allowed() or
-    renderer_opts['gles20'].allowed())
+have_gles_renderer = renderer_opts['gles30'].allowed()
 
 if angle_enabled and not have_gles_renderer
     error('An OpenGL ES renderer is required to use ANGLE. ' +
-          'Enable r_gles30 or r_gles20, or disable install_angle.')
+          'Enable r_gles30, or disable install_angle.')
 endif
