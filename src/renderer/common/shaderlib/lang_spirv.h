@@ -27,12 +27,17 @@ typedef struct ShaderLangInfoSPIRV {
 	SPIRVTarget target;
 } ShaderLangInfoSPIRV;
 
+typedef enum SPIRVCompileFlag {
+	SPIRV_CFLAG_DEBUG_INFO = (1 << 0),
+	SPIRV_CFLAG_VULKAN_RELAXED = (1 << 1),
+} SPIRVCompileFlag;
+
 typedef struct SPIRVCompileOptions {
+	ShaderMacro *macros;
+	const char *filename;
 	SPIRVTarget target;
 	SPIRVOptimizationLevel optimization_level;
-	bool debug_info;
-	const char *filename;
-	ShaderMacro *macros;
+	uint8_t flags;
 } SPIRVCompileOptions;
 
 typedef struct SPIRVDecompileOptions {
