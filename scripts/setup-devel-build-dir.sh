@@ -11,7 +11,6 @@ ${MESON:-meson} \
     -Db_lto=false \
     -Db_ndebug=false \
     -Db_sanitize=address,undefined \
-    -Dr_gles20=true \
     -Dr_gles30=true \
     -Dshader_transpiler=true \
     -Duse_libcrypto=false \

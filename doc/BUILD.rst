@@ -479,8 +479,6 @@ Enable or disable the various renderer backends for Taisei.
    meson configure build/ -Dr_gl33=enabled
    # for GL ES 3.0
    meson configure build/ -Dr_gles30=enabled
-   # for GL ES 2.0 (not recommended)
-   meson configure build/ -Dr_gles20=enabled
    # No-op backend (nothing displayed).
    # Disabling this will break the replay-verification mode.
    meson configure build/ -Dr_null=enabled
@@ -501,12 +499,12 @@ Default Renderer (``-Dr_default``)
 ''''''''''''''''''''''''''''''''''
 
 * Default: ``auto``
-* Options: ``auto``, ``gl33``, ``gles30``, ``gles20``, ``null``
+* Options: ``auto``, ``gl33``, ``gles30``, ``null``
 
 Sets the default renderer to use when Taisei launches.
 
 When set to ``auto``, defaults to the first enabled backend in this order:
-``gl33``, ``gles30``, ``gles20``.
+``gl33``, ``gles30``.
 
 The chosen backend must not be disabled.
 
@@ -516,8 +514,6 @@ The chosen backend must not be disabled.
    meson configure build/ -Dr_default=gl33
    # for GL ES 3.0
    meson configure build/ -Dr_default=gles30
-   # for GL ES 2.0 (not recommended)
-   meson configure build/ -Dr_default=gles20
 
 You can switch the renderer using the ``--renderer`` flag on the ``taisei``
 binary. (i.e: ``taisei --renderer gles30``).

@@ -117,12 +117,10 @@ Video and OpenGL
 
       -  ``gl33``: the OpenGL 3.3 Core renderer
       -  ``gles30``: the OpenGL ES 3.0 renderer
-      -  ``gles20``: the OpenGL ES 2.0 renderer
       -  ``null``: the no-op renderer (nothing is displayed)
 
    Note that the actual subset of usable backends, as well as the default
-   choice, can be controlled by build options. The ``gles`` backends are not
-   built by default.
+   choice, can be controlled by build options.
 
 **TAISEI_LIBGL**
    | Default: unset
