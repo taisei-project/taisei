@@ -21,6 +21,8 @@ typedef enum ShaderLanguage {
 	SHLANG_INVALID,
 	SHLANG_GLSL,
 	SHLANG_SPIRV,
+
+	SHLANG_FIRST = SHLANG_INVALID + 1,
 } ShaderLanguage;
 
 typedef struct ShaderMacro {

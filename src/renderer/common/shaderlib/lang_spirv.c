@@ -105,8 +105,13 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	shaderc_target_env env = resolve_env(options->target, &env_version);
 	shaderc_compile_options_set_target_env(opts, env, env_version);
 
-	if(options->debug_info) {
+	if(options->flags & SPIRV_CFLAG_DEBUG_INFO) {
 		shaderc_compile_options_set_generate_debug_info(opts);
+	}
+
+	if(env == shaderc_target_env_vulkan && (options->flags & SPIRV_CFLAG_VULKAN_RELAXED)) {
+		shaderc_compile_options_set_vulkan_rules_relaxed(opts, true);
+		shaderc_compile_options_set_auto_bind_uniforms(opts, true);
 	}
 
 	if(options->macros) {

@@ -16,7 +16,7 @@
 #include "rwops/rwops_zstd.h"
 #include "vfs/public.h"
 
-#define CACHE_VERSION 5
+#define CACHE_VERSION 6
 #define CRC_INIT 0
 
 #define MAX_CONTENT_SIZE          (1024 * 1024)
@@ -85,9 +85,6 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 		case SHLANG_GLSL: {
 			SDL_WriteU16LE(dest, src->lang.glsl.version.version);
 			SDL_WriteU8(dest, src->lang.glsl.version.profile);
-
-			// TODO remove this (legacy attrib info)
-			SDL_WriteU8(dest, 0);
 			break;
 		}
 
@@ -168,21 +165,6 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src)
 		case SHLANG_GLSL: {
 			out_src->lang.glsl.version.version = READU16LE(s);
 			out_src->lang.glsl.version.profile = READU8(s);
-
-			// TODO remove this
-			uint nattrs = READU8(s);
-
-			if(nattrs > 0) {
-				log_warn("Ignoring legacy attribute info stored in cached shader");
-
-				for(uint i = 0; i < nattrs; ++i) {
-					(void)READU32LE(s);
-					uint len = READU8(s);
-					char discard[len + 1];
-					SDL_ReadIO(s, discard, len);
-				}
-			}
-
 			break;
 		}
 
