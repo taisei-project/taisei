@@ -77,6 +77,6 @@ elif [[ "$fileid" == *" PNG image data"* ]]; then
         fi
     fi
 else
-    msg "unhandled file type" 1>&2
+    msg "unhandled file type" >&2
     exit 1
 fi
