@@ -27,7 +27,7 @@ makewebp() {
         -lossless \
         -q 100 \
         -m 6 \
-        "$input" -o "$output" 2>&1 | while read line; do msg "[cwebp] $line"; done
+        "$input" -o "$output" 2>&1 | while read -r line; do msg "[cwebp] $line"; done
 }
 
 fileid="$(file "$src")"
@@ -54,7 +54,7 @@ if [[ "$fileid" == *" Web/P image"* ]]; then
     fi
 elif [[ "$fileid" == *" PNG image data"* ]]; then
     msg "leanifying..."
-    leanify -vvv "$src" 2>&1 | while read line; do msg "[leanify] $line"; done
+    leanify -vvv "$src" 2>&1 | while read -r line; do msg "[leanify] $line"; done
     png_size="$(getsize "$src")"
     id="$(identify "$src")"
 
