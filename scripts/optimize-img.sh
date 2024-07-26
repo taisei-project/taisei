@@ -4,18 +4,18 @@ set -e
 
 src="$1"
 
-if ! [[ -f "$src"  ]]; then
-    echo "Usage: $0 file.{png,webp}" 1>&2
+if ! [[ -f "$src" ]]; then
+    printf -- "Usage: %s file.{png,webp}\n" "$0" >&2
     exit 1
 fi
 
 msg() {
-    echo "$src: $@"
+    printf -- '%s: %s\n' "$src" "$@"
 }
 
 getsize() {
     local out="$(wc -c "$1")"
-    echo -n "${out%% *}"
+    printf -- '%s' "${out%% *}"
 }
 
 makewebp() {
