@@ -10,7 +10,7 @@ if ! [[ -f "$src" ]]; then
 fi
 
 msg() {
-    printf -- '%s: %s\n' "$src" "$@"
+    printf -- '%s: %s\n' "$src" "$*"
 }
 
 getsize() {
