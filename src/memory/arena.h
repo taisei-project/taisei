@@ -70,3 +70,35 @@ INLINE void *marena_memdup(MemArena *arena, const void *buf, size_t size) {
 INLINE char *marena_strdup(MemArena *arena, const char *src) {
 	return marena_memdup(arena, src, strlen(src) + 1);
 }
+
+/*
+ * These are similar to the macros in memory.h, except they also take an Arena pointer as the
+ * first argument.
+ */
+
+#define ARENA_ALLOC(_arena, _type, ...)\
+	MACROHAX_OVERLOAD_HASARGS(ARENA_ALLOC_, __VA_ARGS__)(_arena, _type, ##__VA_ARGS__)
+
+#define ARENA_ALLOC_0(_arena, _type) \
+	(_type *)__builtin_choose_expr( \
+		alignof(_type) > alignof(max_align_t), \
+		marena_alloc_aligned(_arena, sizeof(_type), alignof(_type)), \
+		marena_alloc(_arena, sizeof(_type)))
+
+#define ARENA_ALLOC_1(_arena, _type, ...) ({ \
+		auto _alloc_ptr = ARENA_ALLOC_0(_arena, _type); \
+		*_alloc_ptr = (_type) __VA_ARGS__; \
+		_alloc_ptr; \
+	})
+
+#define ARENA_ALLOC_ARRAY(_arena, _nmemb, _type) \
+	(_type *)__builtin_choose_expr( \
+		alignof(_type) > alignof(max_align_t), \
+		marena_alloc_array_aligned(_arena, _nmemb, sizeof(_type), alignof(_type)), \
+		marena_alloc_array(_arena, _nmemb, sizeof(_type)))
+
+#define ARENA_ALLOC_FLEX(_arena, _type, _extra_size) \
+	(_type *)__builtin_choose_expr( \
+		alignof(_type) > alignof(max_align_t), \
+		marena_alloc_aligned(_arena, sizeof(_type) + (_extra_size), alignof(_type)), \
+		marena_alloc(_arena, sizeof(_type) + (_extra_size)))
