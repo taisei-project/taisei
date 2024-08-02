@@ -10,6 +10,10 @@
 #include "taisei.h"
 
 #include "lang_spirv.h"
+#include "reflect.h"
+
+#include "memory/arena.h"
 
 bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) attr_nonnull(1, 2, 3);
 bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) attr_nonnull(1, 2, 3);
+ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) attr_nonnull(1, 2);
