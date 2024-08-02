@@ -266,6 +266,10 @@ typedef _Complex double cmplx;
 #define attr_malloc \
 	__attribute__ ((malloc))
 
+#ifdef __clang__
+	#undef TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS
+#endif
+
 // Function returns a pointer that must be 'freed' with the specified deallocator function
 #ifdef TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS
 	#define attr_dealloc(deallocator, arg_index) \
