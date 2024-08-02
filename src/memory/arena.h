@@ -49,6 +49,13 @@ void *marena_alloc_array(MemArena *arena, size_t num_members, size_t size)
 	attr_returns_allocated
 	attr_nonnull_all;
 
+void *marena_alloc_array_aligned(MemArena *arena, size_t num_members, size_t size, size_t align)
+	attr_alloc_size(2, 3)
+	attr_alloc_align(4)
+	attr_malloc
+	attr_returns_allocated
+	attr_nonnull_all;
+
 void *marena_alloc_aligned(MemArena *arena, size_t size, size_t alignment)
 	attr_alloc_size(2)
 	attr_alloc_align(3)

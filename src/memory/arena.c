@@ -112,7 +112,11 @@ void *marena_alloc(MemArena *arena, size_t size) {
 }
 
 void *marena_alloc_array(MemArena *arena, size_t num_members, size_t size) {
-	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), alignof(max_align_t));
+	return marena_alloc_array_aligned(arena, num_members, size, alignof(max_align_t));
+}
+
+void *marena_alloc_array_aligned(MemArena *arena, size_t num_members, size_t size, size_t align) {
+	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), align);
 }
 
 void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
