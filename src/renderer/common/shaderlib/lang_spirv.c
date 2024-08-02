@@ -6,10 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "log.h"
-#include "shaderlib.h"
 #include "lang_spirv_private.h"
+#include "shaderlib.h"
+#include "reflect.h"
 
+#include "log.h"
+#include "renderer/api.h"
 #include "util.h"
 
 #include <shaderc/shaderc.h>
@@ -280,4 +282,213 @@ spvc_error:
 	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(context));
 	spvc_context_destroy(context);
 	return false;
+}
+
+static uint spvc_compiler_get_member_decoration_fallback(
+	spvc_compiler comp, spvc_type_id id, uint member_idx, SpvDecoration dec, uint fallback
+) {
+	if(!spvc_compiler_has_member_decoration(comp, id, member_idx, dec)) {
+		return fallback;
+	}
+
+	return spvc_compiler_get_member_decoration(comp, id, member_idx, dec);
+}
+
+static uint spvc_compiler_get_decoration_fallback(
+	spvc_compiler comp, spvc_type_id id, SpvDecoration dec, uint fallback
+) {
+	if(!spvc_compiler_has_decoration(comp, id, dec)) {
+		return fallback;
+	}
+
+	return spvc_compiler_get_decoration(comp, id, dec);
+}
+
+typedef struct SPIRVReflectContext {
+	MemArena *arena;
+	ShaderReflection *reflection;
+	struct {
+		spvc_context ctx;
+		spvc_compiler compiler;
+		spvc_resources res;
+	} spvc;
+} SPIRVReflectContext;
+
+static uint get_collapsed_array_dimensions(spvc_type type) {
+	uint dims = spvc_type_get_num_array_dimensions(type);
+
+	if(dims == 0) {
+		return 0;
+	}
+
+	uint s = 1;
+	for(uint d = 0; d < dims; ++d) {
+		SpvId dim = spvc_type_get_array_dimension(type, d);
+		assert(spvc_type_array_dimension_is_literal(type, d));
+		s *= dim;
+	}
+
+	return s;
+}
+
+static bool _spirv_reflect_ubos(SPIRVReflectContext *rctx) {
+	spvc_result spvc_return_code = SPVC_SUCCESS;
+	auto reflection = rctx->reflection;
+	const spvc_reflected_resource *res_list;
+	size_t res_size;
+
+	SPVCCALL(spvc_resources_get_resource_list_for_type(
+		rctx->spvc.res, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &res_list, &res_size));
+
+	reflection->num_uniform_buffers = res_size;
+	reflection->uniform_buffers = ARENA_ALLOC_ARRAY(rctx->arena, res_size, typeof(*reflection->uniform_buffers));
+
+	for(size_t i = 0; i < res_size; ++i) {
+		auto res = &res_list[i];
+
+		auto buf_typeid = res->base_type_id;
+		auto buf_type = spvc_compiler_get_type_handle(rctx->spvc.compiler, buf_typeid);
+
+		size_t buf_size = 0;
+		spvc_compiler_get_declared_struct_size(rctx->spvc.compiler, buf_type, &buf_size);
+
+		uint num_members = spvc_type_get_num_member_types(buf_type);
+
+		auto block = &reflection->uniform_buffers[i];
+		*block = (ShaderBlock) {
+			.name = marena_strdup(rctx->arena, res->name),
+			.set = spvc_compiler_get_decoration_fallback(rctx->spvc.compiler, res->id, SpvDecorationDescriptorSet, 0),
+			.binding = spvc_compiler_get_decoration_fallback(rctx->spvc.compiler, res->id, SpvDecorationBinding, 0),
+			.num_fields = num_members,
+			.size = buf_size,
+			.fields = ARENA_ALLOC_ARRAY(rctx->arena, num_members, typeof(*reflection->uniform_buffers[i].fields)),
+		};
+
+		for(uint m = 0; m < num_members; ++m) {
+			spvc_type_id mtypeid = spvc_type_get_member_type(buf_type, m);
+			spvc_type mtype = spvc_compiler_get_type_handle(rctx->spvc.compiler, mtypeid);
+
+			spvc_basetype mbasetype = spvc_type_get_basetype(mtype);
+			assert(spvc_type_get_bit_width(mtype) == 8 * shader_basetype_size(mbasetype));
+
+			uint mtype_vecsize = spvc_type_get_vector_size(mtype);
+
+			block->fields[m] = (ShaderStructField) {
+				.name = marena_strdup(rctx->arena, spvc_compiler_get_member_name(rctx->spvc.compiler, buf_typeid, m)),
+				.offset = spvc_compiler_get_member_decoration_fallback(
+					rctx->spvc.compiler, buf_typeid, m, SpvDecorationOffset, 0),
+				.type = {
+					.base_type = spvc_type_get_basetype(mtype),
+					.array_size = get_collapsed_array_dimensions(mtype),
+					.array_stride = spvc_compiler_get_decoration_fallback(
+						rctx->spvc.compiler, mtypeid, SpvDecorationArrayStride, 0),
+					.matrix_stride = ({
+						uint stride = spvc_compiler_get_member_decoration_fallback(
+							rctx->spvc.compiler, buf_typeid, m, SpvDecorationMatrixStride, 0);
+
+						if(stride == 1) {
+							// NOTE: Assumes std140 layout
+							stride = 16 * ((shader_basetype_size(mbasetype) * mtype_vecsize - 1) / 16 + 1);
+							log_warn("SPIRV-Cross bug: matrix stride query returned 1; assuming %d. "
+							         "Please update SPIRV-Cross", stride);
+						}
+
+						stride;
+					}),
+					.matrix_columns = spvc_type_get_columns(mtype),
+					.vector_size = mtype_vecsize,
+				},
+			};
+		}
+	}
+
+spvc_error:
+	return spvc_return_code;
+}
+
+static ShaderSamplerDimension sampler_dim_from_spv_dim(SpvDim dim) {
+	switch(dim) {
+		case SpvDim1D:			return SHADER_SAMPLER_DIM_1D;
+		case SpvDim2D:			return SHADER_SAMPLER_DIM_2D;
+		case SpvDim3D:			return SHADER_SAMPLER_DIM_3D;
+		case SpvDimCube:		return SHADER_SAMPLER_DIM_CUBE;
+		case SpvDimBuffer:		return SHADER_SAMPLER_DIM_BUFFER;
+		default:				return SHADER_SAMPLER_DIM_UNKNOWN;
+	}
+}
+
+static ShaderSamplerType sampler_type_from_spvc_type(spvc_type type) {
+	return (ShaderSamplerType) {
+		.dim = sampler_dim_from_spv_dim(spvc_type_get_image_dimension(type)),
+		.is_arrayed = spvc_type_get_image_arrayed(type),
+		.is_depth = spvc_type_get_image_is_depth(type),
+		.is_multisampled = spvc_type_get_image_multisampled(type),
+	};
+}
+
+static bool _spirv_reflect_samplers(SPIRVReflectContext *rctx) {
+	spvc_result spvc_return_code = SPVC_SUCCESS;
+	auto reflection = rctx->reflection;
+	const spvc_reflected_resource *res_list;
+	size_t res_size;
+
+	SPVCCALL(spvc_resources_get_resource_list_for_type(
+		rctx->spvc.res, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE, &res_list, &res_size));
+
+	reflection->num_samplers = res_size;
+	reflection->samplers = ARENA_ALLOC_ARRAY(rctx->arena, res_size, typeof(*reflection->samplers));
+
+	for(uint i = 0; i < res_size; ++i) {
+		auto res = &res_list[i];
+		auto type = spvc_compiler_get_type_handle(rctx->spvc.compiler, res->type_id);
+
+		reflection->samplers[i] = (ShaderSampler) {
+			.name = marena_strdup(rctx->arena, res->name),
+			.set = spvc_compiler_get_decoration_fallback(rctx->spvc.compiler, res->id, SpvDecorationDescriptorSet, 0),
+			.binding = spvc_compiler_get_decoration_fallback(rctx->spvc.compiler, res->id, SpvDecorationBinding, 0),
+			.array_size = get_collapsed_array_dimensions(type),
+			.type = sampler_type_from_spvc_type(type),
+		};
+	}
+
+spvc_error:
+	return spvc_return_code;
+}
+
+ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
+	spvc_result spvc_return_code = SPVC_SUCCESS;
+
+	SPIRVReflectContext rctx = {
+		.arena = arena,
+	};
+
+	spvc_parsed_ir ir = NULL;
+
+	spvc_context_create(&rctx.spvc.ctx);
+
+	if(rctx.spvc.ctx == NULL) {
+		log_error("Failed to initialize SPIRV-Cross");
+		return NULL;
+	}
+
+	rctx.reflection = ARENA_ALLOC(arena, typeof(*rctx.reflection), {});
+
+	size_t spirv_size = (src->content_size - 1) / sizeof(uint32_t);
+	const uint32_t *spirv = (uint32_t*)(void*)src->content;
+
+	SPVCCALL(spvc_context_parse_spirv(rctx.spvc.ctx, spirv, spirv_size, &ir));
+	SPVCCALL(spvc_context_create_compiler(
+		rctx.spvc.ctx, SPVC_BACKEND_NONE, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &rctx.spvc.compiler));
+	SPVCCALL(spvc_compiler_create_shader_resources(rctx.spvc.compiler, &rctx.spvc.res));
+
+	SPVCCALL(_spirv_reflect_ubos(&rctx));
+	SPVCCALL(_spirv_reflect_samplers(&rctx));
+
+	spvc_context_destroy(rctx.spvc.ctx);
+	return rctx.reflection;
+
+spvc_error:
+	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(rctx.spvc.ctx));
+	spvc_context_destroy(rctx.spvc.ctx);
+	return NULL;
 }
