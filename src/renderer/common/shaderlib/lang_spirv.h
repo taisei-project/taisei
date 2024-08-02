@@ -42,6 +42,7 @@ typedef struct SPIRVCompileOptions {
 
 typedef struct SPIRVDecompileOptions {
 	const ShaderLangInfo *lang;
+	bool vulkan_semantics;
 } SPIRVDecompileOptions;
 
 typedef struct SPIRVTranspileOptions {
