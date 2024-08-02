@@ -11,6 +11,8 @@
 
 #include "../api.h"
 
+#include "memory/arena.h"
+
 struct ShaderProgram {
 	union {
 		struct {
@@ -19,7 +21,20 @@ struct ShaderProgram {
 		};
 		ShaderObject *as_array[2];
 	} stages;
+	MemArena arena;
+	ht_str2ptr_t uniforms;
 	char debug_label[R_DEBUG_LABEL_SIZE];
+};
+
+struct Uniform {
+	ShaderProgram *shader;
+
+	// XXX: We have have to set uniforms separately per each stage.
+	// We could've stored pointers to the relevant ShaderObjectUniform pointers here directly,
+	// but that would required special handling in case of a dynamic shader reload.
+	// Make it a stupid wrapper around the string key for now.
+	const char *name;
+	hash_t hash;
 };
 
 ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);

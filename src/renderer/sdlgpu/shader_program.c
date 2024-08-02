@@ -42,12 +42,17 @@ ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs
 		return NULL;
 	}
 
-	return mem_dup(&p, sizeof(p));
+	ShaderProgram *prog = mem_dup(&p, sizeof(p));
+	marena_init(&prog->arena, 1 << 11);
+	ht_create(&prog->uniforms);
+	return prog;
 }
 
 void sdlgpu_shader_program_destroy(ShaderProgram *prog) {
 	sdlgpu_shader_object_destroy(prog->stages.fragment);
 	sdlgpu_shader_object_destroy(prog->stages.vertex);
+	marena_deinit(&prog->arena);
+	ht_destroy(&prog->uniforms);
 	mem_free(prog);
 }
 
@@ -59,17 +64,82 @@ const char* sdlgpu_shader_program_get_debug_label(ShaderProgram *prog) {
 	return prog->debug_label;
 }
 
-Uniform *sdlgpu_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash) {
-	log_error("TODO %s %s %x", prog->debug_label, uniform_name, uniform_name_hash);
-	return NULL;
+typedef struct PerStageUniforms {
+	ShaderObjectUniform *vert;
+	ShaderObjectUniform *frag;
+} PerStageUniforms;
+
+static PerStageUniforms sdlgpu_shader_uniform_get_per_stage(const Uniform *uni) {
+	auto prog = uni->shader;
+
+	return (PerStageUniforms) {
+		.vert = ht_get_prehashed(&prog->stages.vertex->uniforms, uni->name, uni->hash, NULL),
+		.frag = ht_get_prehashed(&prog->stages.fragment->uniforms, uni->name, uni->hash, NULL),
+	};
+}
+
+static bool sdlgpu_shader_uniform_validate(Uniform *uni, PerStageUniforms *out_stguniforms) {
+	auto stg = sdlgpu_shader_uniform_get_per_stage(uni);
+
+	if(!stg.vert && !stg.frag) {
+		return false;
+	}
+
+	if(stg.vert && stg.frag && !sdlgpu_shader_object_uniform_types_compatible(stg.vert, stg.frag)) {
+		log_error("Uniform %s has different types in vertex and fragment stages, this is not supported", uni->name);
+		return false;
+	}
+
+	if(out_stguniforms) {
+		*out_stguniforms = stg;
+	}
+
+	return true;
+}
+
+Uniform *sdlgpu_shader_uniform(ShaderProgram *prog, const char *name, hash_t name_hash) {
+	Uniform *uni = NULL;
+	if(!ht_lookup_prehashed(&prog->uniforms, name, name_hash, (void**)&uni)) {
+		Uniform u = {
+			.shader = prog,
+			.name = name,
+			.hash = name_hash,
+		};
+
+		if(sdlgpu_shader_uniform_validate(&u, NULL)) {
+			u.name = marena_strdup(&prog->arena, u.name);
+			uni = ARENA_ALLOC(&prog->arena, typeof(*uni), u);
+			ht_set(&prog->uniforms, name, uni);
+		}
+	}
+
+	return uni;
 }
 
 UniformType sdlgpu_uniform_type(Uniform *uniform) {
-	return UNIFORM_UNKNOWN;
+	PerStageUniforms stg;
+
+	if(!sdlgpu_shader_uniform_validate(uniform, &stg)) {
+		return UNIFORM_UNKNOWN;
+	}
+
+	return (stg.frag ?: stg.vert)->type;
 }
 
-void sdlgpu_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
-	UNREACHABLE;
+void sdlgpu_uniform(Uniform *uni, uint offset, uint count, const void *data) {
+	PerStageUniforms stg;
+
+	if(!sdlgpu_shader_uniform_validate(uni, &stg)) {
+		return;
+	}
+
+	if(stg.vert) {
+		sdlgpu_shader_object_uniform_set_data(uni->shader->stages.vertex, stg.vert, offset, count, data);
+	}
+
+	if(stg.frag) {
+		sdlgpu_shader_object_uniform_set_data(uni->shader->stages.fragment, stg.frag, offset, count, data);
+	}
 }
 
 void sdlgpu_unref_texture_from_samplers(Texture *tex) {
@@ -81,6 +151,7 @@ void sdlgpu_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew
 }
 
 bool sdlgpu_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
-	*dst = *src;
-	return true;
+	// *dst = *src;
+	log_error("FIXME FIXME FIXME");
+	return false;
 }

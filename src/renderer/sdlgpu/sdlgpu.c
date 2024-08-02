@@ -135,9 +135,13 @@ static void sdlgpu_draw(
 
 	SDL_GpuColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS] = {};
 
+	auto active_program = sdlgpu.st.shader;
+	auto v_shader = active_program->stages.vertex;
+	auto f_shader = active_program->stages.fragment;
+
 	SDL_GpuGraphicsPipelineCreateInfo p = {
-		.vertexShader = sdlgpu.st.shader->stages.vertex->shader,
-		.fragmentShader = sdlgpu.st.shader->stages.fragment->shader,
+		.vertexShader = v_shader->shader,
+		.fragmentShader = f_shader->shader,
 		.vertexInputState = varr->vertex_input_state,
 		.primitiveType = sdlgpu_primitive_ts2sdl(prim),
 		.rasterizerState = {
@@ -213,6 +217,16 @@ static void sdlgpu_draw(
 	SDL_GpuBindGraphicsPipeline(pass, pipeline);
 	SDL_GpuBindVertexBuffers(pass, 0, bindings, ARRAY_SIZE(bindings));
 	SDL_GpuDrawPrimitives(pass, firstvert, count);
+
+	if(v_shader->uniform_buffer.data) {
+		SDL_GpuPushVertexUniformData(sdlgpu.frame.cbuf,
+			v_shader->uniform_buffer.binding, v_shader->uniform_buffer.data, v_shader->uniform_buffer.size);
+	}
+
+	if(f_shader->uniform_buffer.data) {
+		SDL_GpuPushFragmentUniformData(sdlgpu.frame.cbuf,
+			f_shader->uniform_buffer.binding, f_shader->uniform_buffer.data, f_shader->uniform_buffer.size);
+	}
 
 	SDL_GpuEndRenderPass(pass);
 
@@ -337,6 +351,9 @@ RendererBackend _r_backend_sdlgpu = {
 		.shader_program_link = sdlgpu_shader_program_link,
 		.shader_program_set_debug_label = sdlgpu_shader_program_set_debug_label,
 		.shader_program_transfer = sdlgpu_shader_program_transfer,
+		.shader_uniform = sdlgpu_shader_uniform,
+		.uniform = sdlgpu_uniform,
+		.uniform_type = sdlgpu_uniform_type,
 		.shutdown = sdlgpu_shutdown,
 		.vertex_array_attach_index_buffer = sdlgpu_vertex_array_attach_index_buffer,
 		.vertex_array_attach_vertex_buffer = sdlgpu_vertex_array_attach_vertex_buffer,
