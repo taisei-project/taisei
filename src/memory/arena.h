@@ -62,3 +62,11 @@ void *marena_alloc_aligned(MemArena *arena, size_t size, size_t alignment)
 	attr_malloc
 	attr_returns_allocated
 	attr_nonnull_all;
+
+INLINE void *marena_memdup(MemArena *arena, const void *buf, size_t size) {
+	return memcpy(marena_alloc(arena, size), buf, size);
+}
+
+INLINE char *marena_strdup(MemArena *arena, const char *src) {
+	return marena_memdup(arena, src, strlen(src) + 1);
+}
