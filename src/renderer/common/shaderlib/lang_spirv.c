@@ -99,7 +99,7 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	shaderc_compile_options_set_source_language(opts, shaderc_source_language_glsl);
 	shaderc_compile_options_set_optimization_level(opts, resolve_opt_level(options->optimization_level));
 	shaderc_compile_options_set_forced_version_profile(opts, in->lang.glsl.version.version, resolve_glsl_profile(&in->lang.glsl.version));
-	shaderc_compile_options_set_auto_map_locations(opts, true);
+	// shaderc_compile_options_set_auto_map_locations(opts, true);
 
 	uint32_t env_version;
 	shaderc_target_env env = resolve_env(options->target, &env_version);
@@ -110,8 +110,21 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	}
 
 	if(env == shaderc_target_env_vulkan && (options->flags & SPIRV_CFLAG_VULKAN_RELAXED)) {
+		// FIXME: these are hardcoded for SDLGPU requirements.
+		// We should expose these in SPIRVCompileOptions and move shader translation logic into the backends.
+
 		shaderc_compile_options_set_vulkan_rules_relaxed(opts, true);
 		shaderc_compile_options_set_auto_bind_uniforms(opts, true);
+
+		if(in->stage == SHADER_STAGE_VERTEX) {
+			shaderc_compile_options_set_default_uniform_block_set_and_binding(opts, 1, 0);
+		} else {
+			shaderc_compile_options_set_binding_descriptor_set(opts, 2);
+			shaderc_compile_options_set_default_uniform_block_set_and_binding(opts, 3, 0);
+		}
+
+		// Required to eliminate unused samplers (FIXME: filter these out during reflection if possible?)
+		shaderc_compile_options_set_optimization_level(opts, SPIRV_OPTIMIZE_PERFORMANCE);
 	}
 
 	if(options->macros) {
@@ -249,6 +262,7 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 	SPVCCALL(spvc_compiler_options_set_uint(spvc_options, SPVC_COMPILER_OPTION_GLSL_VERSION, options->lang->glsl.version.version));
 	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_ES, options->lang->glsl.version.profile == GLSL_PROFILE_ES));
 	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION, false));
+	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_VULKAN_SEMANTICS, options->vulkan_semantics));
 	SPVCCALL(spvc_compiler_install_compiler_options(compiler, spvc_options));
 	SPVCCALL(spvc_compiler_compile(compiler, &code));
 
