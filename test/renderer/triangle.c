@@ -14,18 +14,18 @@ int main(int argc, char **argv) {
 	test_init_renderer();
 
 	const char *vert_shader_src =
-		"#version 330\n"
+		"#version 420\n"
 		"layout(location = 0) in vec2 a_position;\n"
 		"layout(location = 1) in vec4 a_color;\n"
-		"out vec4 v_color;\n"
+		"layout(location = 0) out vec4 v_color;\n"
 		"void main(void) {\n"
 		"	gl_Position = vec4(a_position, 0, 1);\n"
 		"	v_color = a_color;\n"
 		"}\n";
 
 	const char *frag_shader_src =
-		"#version 330\n"
-		"in vec4 v_color;\n"
+		"#version 420\n"
+		"layout(location = 0) in vec4 v_color;\n"
 		"layout(location = 0) out vec4 o_color;\n"
 		"void main(void) {\n"
 		"	o_color = v_color;\n"
