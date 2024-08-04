@@ -18,6 +18,8 @@
 
 #include <SDL3/SDL_gpu.h>
 
+typedef uint16_t sdlgpu_id_t;
+
 typedef struct SDLGPUGlobal {
 	SDL_GpuDevice *device;
 	SDL_Window *window;
@@ -28,6 +30,7 @@ typedef struct SDLGPUGlobal {
 
 		struct {
 			SDL_GpuTexture *tex;
+			SDL_GpuTextureFormat fmt;
 			uint32_t width;
 			uint32_t height;
 		} swapchain;
@@ -44,6 +47,11 @@ typedef struct SDLGPUGlobal {
 		DepthTestFunc depth_func;
 		IntRect scissor;
 	} st;
+
+	struct {
+		sdlgpu_id_t shader_programs;
+		sdlgpu_id_t vertex_arrays;
+	} ids;
 } SDLGPUGlobal;
 
 extern SDLGPUGlobal sdlgpu;

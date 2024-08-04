@@ -15,6 +15,7 @@
 #include "texture.h"
 #include "vertex_array.h"
 #include "vertex_buffer.h"
+#include "pipeline_cache.h"
 
 SDLGPUGlobal sdlgpu;
 
@@ -24,6 +25,7 @@ void sdlgpu_renew_swapchain_texture(void) {
 	if((sdlgpu.frame.swapchain.tex = SDL_GpuAcquireSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window, &w, &h))) {
 		sdlgpu.frame.swapchain.width = w;
 		sdlgpu.frame.swapchain.height = h;
+		sdlgpu.frame.swapchain.fmt = SDL_GpuGetSwapchainTextureFormat(sdlgpu.device, sdlgpu.window);
 		// log_debug("%u %u", w, h);
 	}
 }
@@ -62,12 +64,15 @@ static void sdlgpu_init(void) {
 	}
 
 	sdlgpu.st.blend = BLEND_NONE;
+
+	sdlgpu_pipecache_init();
 }
 
 static void sdlgpu_post_init(void) {
 }
 
 static void sdlgpu_shutdown(void) {
+	sdlgpu_pipecache_deinit();
 	SDL_GpuUnclaimWindow(sdlgpu.device, sdlgpu.window);
 	SDL_GpuDestroyDevice(sdlgpu.device);
 	sdlgpu.device = NULL;
@@ -81,7 +86,7 @@ static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, 
 	sdlgpu.window = SDL_CreateWindow(title, w, h, flags);
 
 	if(sdlgpu.window && !SDL_GpuClaimWindow(
-		sdlgpu.device, sdlgpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_MAILBOX
+		sdlgpu.device, sdlgpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC
 	)) {
 		log_sdl_error(LOG_FATAL, "SDL_GpuClaimWindow");
 	}
@@ -133,70 +138,45 @@ static void sdlgpu_draw(
 
 	sdlgpu_vertex_array_flush_buffers(varr);
 
-	SDL_GpuColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS] = {};
+	PipelineDescription pd = {
+		.blend_mode = sdlgpu.st.blend,
+		.cap_bits = sdlgpu.st.caps,
+		.cull_mode = sdlgpu.st.cull,
+		.depth_func = sdlgpu.st.depth_func,
+		.num_outputs = outputs.num_color_attachments,
+		.primitive = prim,
+		.shader_program = sdlgpu.st.shader,
+		.vertex_array = varr,
+	};
+
+	if(!(pd.cap_bits & r_capability_bit(RCAP_CULL_FACE))) {
+		pd.cull_mode = 0;
+	}
+
+	if(!(pd.cap_bits & r_capability_bit(RCAP_DEPTH_TEST))) {
+		pd.depth_func = DEPTH_ALWAYS;
+	}
+
+	{
+		assert(outputs.num_color_attachments <= ARRAY_SIZE(pd.outputs));
+
+		uint i;
+
+		for(i = 0; i < outputs.num_color_attachments; ++i) {
+			pd.outputs[i].format = outputs.color_formats[i];
+		}
+
+		for(; i < ARRAY_SIZE(pd.outputs); ++i) {
+			pd.outputs[i].format = PIPECACHE_FMT_MASK;
+		}
+	}
 
 	auto active_program = sdlgpu.st.shader;
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
 
-	SDL_GpuGraphicsPipelineCreateInfo p = {
-		.vertexShader = v_shader->shader,
-		.fragmentShader = f_shader->shader,
-		.vertexInputState = varr->vertex_input_state,
-		.primitiveType = sdlgpu_primitive_ts2sdl(prim),
-		.rasterizerState = {
-			.cullMode = sdlgpu.st.caps & r_capability_bit(RCAP_CULL_FACE)
-				? sdlgpu_cullmode_ts2sdl(sdlgpu.st.cull)
-				: SDL_GPU_CULLMODE_NONE,
-			.fillMode = SDL_GPU_FILLMODE_FILL,
-			.frontFace = SDL_GPU_FRONTFACE_CLOCKWISE,
-		},
-		.multisampleState = {
-			.sampleMask = 0xFFFF,
-		},
-		.depthStencilState = {
-			.depthTestEnable = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST),
-			.depthWriteEnable = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE),
-			.stencilTestEnable = false,
-			.writeMask = 0x0,
-			.compareOp = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)
-				? SDL_GPU_COMPAREOP_ALWAYS
-				: sdlgpu_cmpop_ts2sdl(sdlgpu.st.depth_func),
-		},
-		.attachmentInfo = {
-			.colorAttachmentDescriptions = color_attachment_descriptions,
-			.colorAttachmentCount = outputs.num_color_attachments,
-		},
-	};
 
-	auto fmt = SDL_GpuGetSwapchainTextureFormat(sdlgpu.device, sdlgpu.window);  // FIXME
-
-	SDL_GpuColorAttachmentBlendState blend = {
-		.colorWriteMask = 0xF,
-		.blendEnable = sdlgpu.st.blend != BLEND_NONE,
-		.alphaBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
-		.colorBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_COLOR_OP)),
-		.srcColorBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
-		.srcAlphaBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
-		.dstColorBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
-		.dstAlphaBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
-	};
-
-	for(int i = 0; i < outputs.num_color_attachments; ++i) {
-		color_attachment_descriptions[i] = (SDL_GpuColorAttachmentDescription) {
-			.format = fmt,
-			.blendState = blend,
-		};
-	}
-
-	SDL_GpuGraphicsPipeline *pipeline = SDL_GpuCreateGraphicsPipeline(sdlgpu.device, &p);
-
-	SDL_GpuRenderPass *pass = SDL_GpuBeginRenderPass(
-		sdlgpu.frame.cbuf,
-		outputs.color, outputs.num_color_attachments,
-		outputs.have_depth_stencil ? &outputs.depth_stencil : NULL);
-
-	SDL_GpuBufferBinding bindings[p.vertexInputState.vertexBindingCount];
+	SDL_GpuBufferBinding bindings[varr->vertex_input_state.vertexBindingCount];
 
 	for(uint i = 0; i < ARRAY_SIZE(bindings); ++i) {
 		uint slot = varr->binding_to_attachment_map[i];
@@ -204,6 +184,11 @@ static void sdlgpu_draw(
 			.buffer = dynarray_get(&varr->attachments, slot)->cbuf.gpubuf,
 		};
 	}
+
+	SDL_GpuRenderPass *pass = SDL_GpuBeginRenderPass(
+		sdlgpu.frame.cbuf,
+		outputs.color, outputs.num_color_attachments,
+		outputs.have_depth_stencil ? &outputs.depth_stencil : NULL);
 
 	if(sdlgpu.st.scissor.w && sdlgpu.st.scissor.h) {
 		SDL_GpuSetScissor(pass, &(SDL_GpuRect) {
@@ -214,7 +199,7 @@ static void sdlgpu_draw(
 		});
 	}
 
-	SDL_GpuBindGraphicsPipeline(pass, pipeline);
+	SDL_GpuBindGraphicsPipeline(pass, sdlgpu_pipecache_get(&pd));
 	SDL_GpuBindVertexBuffers(pass, 0, bindings, ARRAY_SIZE(bindings));
 	SDL_GpuDrawPrimitives(pass, firstvert, count);
 
@@ -229,8 +214,6 @@ static void sdlgpu_draw(
 	}
 
 	SDL_GpuEndRenderPass(pass);
-
-	SDL_GpuReleaseGraphicsPipeline(sdlgpu.device, pipeline);
 }
 
 static void sdlgpu_draw_indexed(

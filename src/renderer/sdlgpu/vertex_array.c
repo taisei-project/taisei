@@ -145,24 +145,7 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 	memcpy((void*)varr->vertex_input_state.vertexBindings, sdl_bindings, sizeof_bindings);
 	varr->vertex_input_state.vertexBindingCount = num_sdl_bindings;
 
-	auto st = &varr->vertex_input_state;
-
-	log_debug(" *** BINDINGS:");
-	for(uint i = 0; i < st->vertexBindingCount; ++i) {
-		log_debug("[%u] binding:   %u", i, st->vertexBindings[i].binding);
-		log_debug("[%u] stride:    %u", i, st->vertexBindings[i].stride);
-		log_debug("[%u] inputRate: %u", i, st->vertexBindings[i].inputRate);
-		log_debug("[%u] stepRate:  %u", i, st->vertexBindings[i].stepRate);
-		log_debug("[%u] attachment map: %u", i, varr->binding_to_attachment_map[i]);
-	}
-
-	log_debug(" *** ATTRIBS:");
-	for(uint i = 0; i < st->vertexAttributeCount; ++i) {
-		log_debug("[%u] location:  %u", i, st->vertexAttributes[i].location);
-		log_debug("[%u] binding:   %u", i, st->vertexAttributes[i].binding);
-		log_debug("[%u] format:    %u", i, st->vertexAttributes[i].format);
-		log_debug("[%u] offset:    %u", i, st->vertexAttributes[i].offset);
-	}
+	varr->layout_id = ++sdlgpu.ids.vertex_arrays;
 }
 
 void sdlgpu_vertex_array_flush_buffers(VertexArray *varr) {

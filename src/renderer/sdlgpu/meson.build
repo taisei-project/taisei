@@ -3,6 +3,7 @@ r_sdlgpu_src = files(
     'common_buffer.c',
     'framebuffer.c',
     'index_buffer.c',
+    'pipeline_cache.c',
     'sdlgpu.c',
     'sdlgpu.c',
     'shader_object.c',

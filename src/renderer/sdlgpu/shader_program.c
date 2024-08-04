@@ -45,6 +45,10 @@ ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs
 	ShaderProgram *prog = mem_dup(&p, sizeof(p));
 	marena_init(&prog->arena, 1 << 11);
 	ht_create(&prog->uniforms);
+	prog->id = ++sdlgpu.ids.shader_programs;
+
+	snprintf(prog->debug_label, sizeof(prog->debug_label), "Shader program #%u", prog->id);
+
 	return prog;
 }
 

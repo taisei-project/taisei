@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "sdlgpu.h"
+
 #include "../api.h"
 
 struct VertexArray {
@@ -18,6 +20,7 @@ struct VertexArray {
 	SDL_GpuVertexInputState vertex_input_state;
 	uint *binding_to_attachment_map;
 
+	sdlgpu_id_t layout_id;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 

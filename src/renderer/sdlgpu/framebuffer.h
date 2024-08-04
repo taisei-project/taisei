@@ -50,6 +50,7 @@ typedef struct DefaultFramebufferState {
 
 typedef struct RenderPassOutputs {
 	SDL_GpuColorAttachmentInfo color[FRAMEBUFFER_MAX_OUTPUTS];
+	SDL_GpuTextureFormat color_formats[FRAMEBUFFER_MAX_OUTPUTS];
 	SDL_GpuDepthStencilAttachmentInfo depth_stencil;
 	uint num_color_attachments;
 	bool have_depth_stencil;

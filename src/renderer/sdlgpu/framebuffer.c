@@ -172,6 +172,8 @@ static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutpu
 		.storeOp = swapchain_tex ? SDL_GPU_STOREOP_DONT_CARE : SDL_GPU_STOREOP_STORE,
 	};
 
+	outputs->color_formats[0] = sdlgpu.frame.swapchain.fmt;
+
 	outputs->have_depth_stencil = false;
 	outputs->num_color_attachments = swapchain_tex ? 1 : 0;
 

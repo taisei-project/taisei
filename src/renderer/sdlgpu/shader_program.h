@@ -11,6 +11,8 @@
 
 #include "../api.h"
 
+#include "sdlgpu.h"
+
 #include "memory/arena.h"
 
 struct ShaderProgram {
@@ -23,6 +25,7 @@ struct ShaderProgram {
 	} stages;
 	MemArena arena;
 	ht_str2ptr_t uniforms;
+	sdlgpu_id_t id;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
@@ -40,7 +43,7 @@ struct Uniform {
 ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);
 void sdlgpu_shader_program_destroy(ShaderProgram *prog);
 void sdlgpu_shader_program_set_debug_label(ShaderProgram *prog, const char *label);
-const char* sdlgpu_shader_program_get_debug_label(ShaderProgram *prog);
+const char *sdlgpu_shader_program_get_debug_label(ShaderProgram *prog);
 
 Uniform *sdlgpu_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash);
 UniformType sdlgpu_uniform_type(Uniform *uniform);
