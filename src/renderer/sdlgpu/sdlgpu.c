@@ -56,7 +56,7 @@ static void sdlgpu_submit_frame(void) {
 
 static void sdlgpu_init(void) {
 	sdlgpu = (SDLGPUGlobal) {
-		.device = SDL_GpuCreateDevice(SDL_GPU_BACKEND_ALL, true, false),
+		.device = SDL_GpuCreateDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, false, NULL),
 	};
 
 	if(!sdlgpu.device) {
@@ -191,7 +191,7 @@ static void sdlgpu_draw(
 		outputs.have_depth_stencil ? &outputs.depth_stencil : NULL);
 
 	if(sdlgpu.st.scissor.w && sdlgpu.st.scissor.h) {
-		SDL_GpuSetScissor(pass, &(SDL_GpuRect) {
+		SDL_GpuSetScissor(pass, &(SDL_Rect) {
 			.w = sdlgpu.st.scissor.w,
 			.h = sdlgpu.st.scissor.h,
 			.x = sdlgpu.st.scissor.x,

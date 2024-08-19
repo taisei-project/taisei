@@ -19,7 +19,7 @@ struct CommonBuffer {
 	SDL_GpuBuffer *gpubuf;
 	SDL_GpuTransferBuffer *transferbuf;
 	SDL_GpuBufferUsageFlags usage;
-	size_t commited_sze;
+	size_t commited_size;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 

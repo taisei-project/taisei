@@ -16,7 +16,7 @@ typedef struct FramebufferAttachmentLoadState {
 	SDL_GpuLoadOp op;
 	union {
 		union {
-			SDL_GpuColor as_sdlgpu;
+			SDL_FColor as_sdlgpu;
 			Color as_taisei;
 		} color;
 		float depth;

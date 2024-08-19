@@ -46,7 +46,7 @@ void sdlgpu_buffer_resize(CommonBuffer *cbuf, size_t new_size) {
 }
 
 static bool sdlgpu_buffer_resize_gpubuf(CommonBuffer *cbuf) {
-	if(cbuf->commited_sze == cbuf->cachedbuf.size) {
+	if(cbuf->commited_size == cbuf->cachedbuf.size) {
 		assert(cbuf->gpubuf != NULL);
 		return false;
 	}
@@ -59,10 +59,17 @@ static bool sdlgpu_buffer_resize_gpubuf(CommonBuffer *cbuf) {
 		SDL_GpuReleaseTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 	}
 
-	cbuf->gpubuf = SDL_GpuCreateBuffer(sdlgpu.device, cbuf->usage, cbuf->cachedbuf.size);
-	cbuf->transferbuf = SDL_GpuCreateTransferBuffer(
-		sdlgpu.device, SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD, cbuf->cachedbuf.size);
-	cbuf->commited_sze = cbuf->cachedbuf.size;
+	cbuf->gpubuf = SDL_GpuCreateBuffer(sdlgpu.device, &(SDL_GpuBufferCreateInfo) {
+		.usageFlags = cbuf->usage,
+		.sizeInBytes = cbuf->cachedbuf.size,
+	});
+
+	cbuf->transferbuf = SDL_GpuCreateTransferBuffer(sdlgpu.device, &(SDL_GpuTransferBufferCreateInfo) {
+		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+		.sizeInBytes = cbuf->cachedbuf.size,
+	});
+
+	cbuf->commited_size = cbuf->cachedbuf.size;
 
 	sdlgpu_buffer_update_debug_label(cbuf);
 
@@ -87,13 +94,11 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 		return;
 	}
 
-	auto copypass = SDL_GpuBeginCopyPass(sdlgpu.frame.cbuf);
+	uint8_t *mapped = SDL_GpuMapTransferBuffer(sdlgpu.device, cbuf->transferbuf, SDL_TRUE);
+	memcpy(mapped + update.offset, update.data, update.size);
+	SDL_GpuUnmapTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 
-	SDL_GpuSetTransferData(sdlgpu.device, update.data, &(SDL_GpuTransferBufferRegion) {
-		.transferBuffer = cbuf->transferbuf,
-		.offset = update.offset,
-		.size = update.size,
-	}, true);
+	auto copypass = SDL_GpuBeginCopyPass(sdlgpu.frame.cbuf);
 
 	SDL_GpuUploadToBuffer(copypass, &(SDL_GpuTransferBufferLocation) {
 		.transferBuffer = cbuf->transferbuf,

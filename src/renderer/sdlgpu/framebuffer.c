@@ -166,7 +166,7 @@ static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutpu
 	SDL_GpuTexture *swapchain_tex = sdlgpu_get_swapchain_texture();
 
 	outputs->color[0] = (SDL_GpuColorAttachmentInfo) {
-		.textureSlice.texture = swapchain_tex,
+		.texture = swapchain_tex,
 		.clearColor = sdlgpu.st.default_framebuffer.color.clear.color.as_sdlgpu,
 		.loadOp = sdlgpu.st.default_framebuffer.color.op,
 		.storeOp = swapchain_tex ? SDL_GPU_STOREOP_DONT_CARE : SDL_GPU_STOREOP_STORE,
