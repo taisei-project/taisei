@@ -29,7 +29,7 @@ void strbuf_clear(StringBuffer *strbuf)
 void strbuf_free(StringBuffer *strbuf)
 	attr_nonnull(1);
 
-int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize])
+int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[])
 	attr_nonnull(1, 3);
 
 INLINE int strbuf_cat(StringBuffer *strbuf, const char *str) {
