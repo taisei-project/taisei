@@ -442,16 +442,15 @@ static void log_queue_init(void) {
 }
 
 static void log_queue_shutdown_internal(bool force_sync) {
-	if(!logging.queue.thread) {
-		return;
+	if(logging.queue.thread) {
+		SDL_LockMutex(logging.queue.mutex);
+		logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
+		SDL_BroadcastCondition(logging.queue.cond);
+		SDL_UnlockMutex(logging.queue.mutex);
+		thread_wait(logging.queue.thread);
+		logging.queue.thread = NULL;
 	}
 
-	SDL_LockMutex(logging.queue.mutex);
-	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
-	SDL_BroadcastCondition(logging.queue.cond);
-	SDL_UnlockMutex(logging.queue.mutex);
-	thread_wait(logging.queue.thread);
-	logging.queue.thread = NULL;
 	SDL_DestroyMutex(logging.queue.mutex);
 	logging.queue.mutex = NULL;
 	SDL_DestroyCondition(logging.queue.cond);
