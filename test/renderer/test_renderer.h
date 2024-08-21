@@ -31,6 +31,12 @@ static void test_init_basic(void) {
 	test_init_sdl();
 }
 
+static void test_shutdown_basic(void) {
+	log_shutdown();
+	events_shutdown();
+	SDL_Quit();
+}
+
 static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src) {
 	// TODO: This is mostly copypasted from resource/shader_object; add a generic API for this
 
@@ -93,4 +99,9 @@ static void test_init_renderer(void) {
 		.width = 800,
 		.height = 600,
 	});
+}
+
+static void test_shutdown_renderer(void) {
+	video_shutdown();
+	test_shutdown_basic();
 }
