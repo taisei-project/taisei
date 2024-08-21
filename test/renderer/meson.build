@@ -1,6 +1,7 @@
 
 tests = [
     'triangle',
+    'texture',
 ]
 
 foreach test : tests
