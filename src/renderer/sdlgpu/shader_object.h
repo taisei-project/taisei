@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "sdlgpu.h"
+
 #include "../api.h"
 #include "../common/shaderlib/reflect.h"
 
@@ -21,8 +23,6 @@ typedef struct ShaderObjectUniform {
 	union {
 		struct {
 			uint binding;
-			uint array_size;
-			Texture *bound_textures[];
 		} sampler;
 
 		struct {
@@ -43,6 +43,7 @@ struct ShaderObject {
 	} uniform_buffer;
 
 	ht_str2ptr_t uniforms;
+	DYNAMIC_ARRAY(Texture*) sampler_bindings;
 
 	ShaderStage stage;
 	SDL_AtomicInt refs;

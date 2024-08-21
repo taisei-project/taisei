@@ -37,11 +37,11 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo
 }
 
 static ShaderObjectUniform *sdlgpu_shader_object_alloc_uniform(
-	ShaderObject *shobj, const char *name, size_t extra
+	ShaderObject *shobj, const char *name
 ) {
 	assert(!ht_lookup(&shobj->uniforms, name, NULL));
 
-	auto uni = ARENA_ALLOC_FLEX(&shobj->arena, ShaderObjectUniform, extra);
+	auto uni = ARENA_ALLOC(&shobj->arena, ShaderObjectUniform);
 	ht_set(&shobj->uniforms, name, uni);
 
 	return NOT_NULL(uni);
@@ -59,7 +59,7 @@ static void sdlgpu_shader_object_add_buffer_backed_uniform(
 
 	log_debug("Added %s", field->name);
 
-	*sdlgpu_shader_object_alloc_uniform(shobj, field->name, 0) = (ShaderObjectUniform) {
+	*sdlgpu_shader_object_alloc_uniform(shobj, field->name) = (ShaderObjectUniform) {
 		.type = type,
 		.buffer_backed = {
 			.offset = field->offset,
@@ -92,19 +92,21 @@ static void sdlgpu_shader_object_add_sampler_uniform(
 	auto type = sampler_type_to_uniform_type(&sampler->type);
 
 	if(type == UNIFORM_UNKNOWN) {
-		log_warn("Uniform %s has an unsupported type, ignoring", sampler->name);
+		log_warn("Sampler %s has an unsupported type, ignoring", sampler->name);
+		return;
+	}
+
+	if(sampler->array_size) {
+		log_warn("Sampler %s is an array; this is not supported by SDLGPU, ignoring", sampler->name);
 		return;
 	}
 
 	log_debug("Added %s", sampler->name);
 
-	size_t bound_tex_storage = sampler->array_size * sizeof(Texture*);
-
-	*sdlgpu_shader_object_alloc_uniform(shobj, sampler->name, bound_tex_storage) = (ShaderObjectUniform) {
+	*sdlgpu_shader_object_alloc_uniform(shobj, sampler->name) = (ShaderObjectUniform) {
 		.type = type,
 		.sampler = {
 			.binding = sampler->binding,
-			.array_size = sampler->array_size,
 		},
 	};
 }
@@ -240,9 +242,14 @@ void sdlgpu_shader_object_uniform_set_data(
 	uint offset, uint count, const void *data
 ) {
 	if(is_sampler_uniform(uni->type)) {
-		assert(offset + count <= uni->sampler.array_size);
-		Texture *const *textures = data;
-		memcpy(uni->sampler.bound_textures + offset, textures, sizeof(*textures) * count);
+		uint min_size = uni->sampler.binding + 1;
+		dynarray_ensure_capacity(&shobj->sampler_bindings, min_size);
+
+		while(shobj->sampler_bindings.num_elements < min_size) {
+			*dynarray_append(&shobj->sampler_bindings) = NULL;
+		}
+
+		dynarray_set(&shobj->sampler_bindings, uni->sampler.binding, *(Texture**)data);
 	} else {
 		// FIXME no source buffer size supplied by the API, infer it.
 		auto uti = r_uniform_type_info(uni->type);
@@ -278,7 +285,7 @@ bool sdlgpu_shader_object_uniform_types_compatible(ShaderObjectUniform *a, Shade
 	}
 
 	if(is_sampler_uniform(a->type)) {
-		return a->sampler.array_size == b->sampler.array_size;
+		return true;
 	}
 
 	return !memcmp(&a->buffer_backed.type, &b->buffer_backed.type, sizeof(a->buffer_backed.type));
