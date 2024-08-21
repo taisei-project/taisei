@@ -78,8 +78,8 @@ int main(int argc, char **argv) {
 	r_vertex_buffer_destroy(vert_buf);
 	r_vertex_array_destroy(vert_array);
 
-	// FIXME doesn't work when "default" shader is not loaded
-	// r_shader_program_destroy(prog);
+	r_shader_program_destroy(prog);
 
+	test_shutdown_renderer();
 	return 0;
 }
