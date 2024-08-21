@@ -84,6 +84,10 @@ void _dynarray_set_elements(dynarray_size_t sizeof_element, DynamicArray *darr, 
 }
 
 void _dynarray_filter(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_filter_predicate_t predicate, void *userdata) {
+	if(UNLIKELY(!darr->data)) {
+		return;
+	}
+
 	char *p = darr->data;
 	char *end = p + sizeof_element * darr->num_elements;
 	dynarray_size_t shift = 0;
