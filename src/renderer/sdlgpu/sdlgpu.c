@@ -199,9 +199,19 @@ static void sdlgpu_draw(
 		});
 	}
 
+	FloatRect *vp = sdlgpu_framebuffer_viewport_pointer(sdlgpu.st.framebuffer);
+
+	SDL_GpuSetViewport(pass, &(SDL_GpuViewport) {
+		.x = vp->x,
+		.y = vp->y,
+		.h = vp->h,
+		.w = vp->w,
+		.minDepth = 0,
+		.maxDepth = 1,
+	});
+
 	SDL_GpuBindGraphicsPipeline(pass, sdlgpu_pipecache_get(&pd));
 	SDL_GpuBindVertexBuffers(pass, 0, bindings, ARRAY_SIZE(bindings));
-	SDL_GpuDrawPrimitives(pass, firstvert, count);
 
 	if(v_shader->uniform_buffer.data) {
 		SDL_GpuPushVertexUniformData(sdlgpu.frame.cbuf,

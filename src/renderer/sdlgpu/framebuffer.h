@@ -67,6 +67,7 @@ void sdlgpu_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags
 IntExtent sdlgpu_framebuffer_get_size(Framebuffer *framebuffer);
 void sdlgpu_framebuffer_viewport(Framebuffer *fb, FloatRect vp);
 void sdlgpu_framebuffer_viewport_current(Framebuffer *fb, FloatRect *vp);
+FloatRect *sdlgpu_framebuffer_viewport_pointer(Framebuffer *fb);
 void sdlgpu_framebuffer_set_debug_label(Framebuffer *fb, const char *label);
 const char *sdlgpu_framebuffer_get_debug_label(Framebuffer* fb);
 

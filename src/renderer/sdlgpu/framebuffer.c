@@ -134,7 +134,7 @@ IntExtent sdlgpu_framebuffer_get_size(Framebuffer *fb) {
 	};
 }
 
-static FloatRect *sdlgpu_framebuffer_viewport_pointer(Framebuffer *fb) {
+FloatRect *sdlgpu_framebuffer_viewport_pointer(Framebuffer *fb) {
 	if(fb) {
 		return &fb->viewport;
 	} else {
