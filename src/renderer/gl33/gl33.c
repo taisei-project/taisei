@@ -1113,7 +1113,6 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 
 	if(R.progs.pending == prog) {
 		R.progs.pending = NULL;
-		r_shader_standard();
 	}
 
 	if(R.progs.gl_prog == prog->gl_handle) {
