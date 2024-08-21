@@ -285,6 +285,22 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 	if(result) {
 		if(options->lang->lang == SHLANG_SPIRV) {
 			*out = spirv;
+
+#ifdef DEBUG
+			ShaderSource decomp = {};
+			spirv_decompile(out, &decomp, &(SPIRVDecompileOptions) {
+				.lang = &(ShaderLangInfo) {
+					.lang = SHLANG_GLSL,
+					.glsl.version.version = 460,
+					.glsl.version.profile = GLSL_PROFILE_CORE,
+				},
+				.vulkan_semantics = (target != SPIRV_TARGET_OPENGL_450),
+			});
+
+			log_debug("Decompiled source:\n%s\n\n ", decomp.content);
+			mem_free(decomp.content);
+#endif
+
 			return result;
 		}
 
