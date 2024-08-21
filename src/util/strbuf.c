@@ -66,7 +66,11 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 	return size_required;
 }
 
-int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]) {
+int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[]) {
+	if(UNLIKELY(!datasize)) {
+		return 0;
+	}
+
 	assert(datasize < INT32_MAX);
 	strbuf_reserve(strbuf, datasize + 1);
 	assert_nolog(strbuf_size_available(strbuf) >= datasize + 1);
