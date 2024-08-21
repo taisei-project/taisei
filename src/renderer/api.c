@@ -34,12 +34,6 @@ void r_init(void) {
 	_r_mat_init();
 }
 
-typedef struct BlurInfo {
-	const char *progname;
-	int kernel_size;
-	float sigma;
-} BlurInfo;
-
 void r_post_init(void) {
 	B.post_init();
 	_r_models_init();
