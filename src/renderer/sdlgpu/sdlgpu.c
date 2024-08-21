@@ -126,6 +126,18 @@ static ShaderProgram *sdlgpu_shader_current(void) {
 	return sdlgpu.st.shader;
 }
 
+static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBinding bindings[]) {
+	dynarray_foreach(&shader->sampler_bindings, uint i, Texture **pt, {
+		Texture *tex = *pt;
+		assert(tex != NULL);
+		sdlgpu_texture_update_sampler(tex);
+		bindings[i] = (SDL_GpuTextureSamplerBinding) {
+			.texture = tex->gpu_texture,
+			.sampler = tex->sampler,
+		};
+	});
+}
+
 static void sdlgpu_draw(
 	VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance
 ) {
@@ -175,7 +187,6 @@ static void sdlgpu_draw(
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
 
-
 	SDL_GpuBufferBinding bindings[varr->vertex_input_state.vertexBindingCount];
 
 	for(uint i = 0; i < ARRAY_SIZE(bindings); ++i) {
@@ -223,6 +234,19 @@ static void sdlgpu_draw(
 			f_shader->uniform_buffer.binding, f_shader->uniform_buffer.data, f_shader->uniform_buffer.size);
 	}
 
+	if(v_shader->sampler_bindings.num_elements) {
+		SDL_GpuTextureSamplerBinding bindings[v_shader->sampler_bindings.num_elements];
+		fill_sampler_bindings(v_shader, bindings);
+		SDL_GpuBindVertexSamplers(pass, 0, bindings, ARRAY_SIZE(bindings));
+	}
+
+	if(f_shader->sampler_bindings.num_elements) {
+		SDL_GpuTextureSamplerBinding bindings[f_shader->sampler_bindings.num_elements];
+		fill_sampler_bindings(f_shader, bindings);
+		SDL_GpuBindFragmentSamplers(pass, 0, bindings, ARRAY_SIZE(bindings));
+	}
+
+	SDL_GpuDrawPrimitives(pass, firstvert, count);
 	SDL_GpuEndRenderPass(pass);
 }
 
@@ -347,6 +371,21 @@ RendererBackend _r_backend_sdlgpu = {
 		.shader_uniform = sdlgpu_shader_uniform,
 		.uniform = sdlgpu_uniform,
 		.uniform_type = sdlgpu_uniform_type,
+		.texture_create = sdlgpu_texture_create,
+		.texture_get_size = sdlgpu_texture_get_size,
+		.texture_get_params = sdlgpu_texture_get_params,
+		.texture_get_debug_label = sdlgpu_texture_get_debug_label,
+		.texture_set_debug_label = sdlgpu_texture_set_debug_label,
+		.texture_set_filter = sdlgpu_texture_set_filter,
+		.texture_set_wrap = sdlgpu_texture_set_wrap,
+		.texture_destroy = sdlgpu_texture_destroy,
+		.texture_invalidate = sdlgpu_texture_invalidate,
+		.texture_fill = sdlgpu_texture_fill,
+		.texture_fill_region = sdlgpu_texture_fill_region,
+		.texture_clear = sdlgpu_texture_clear,
+		.texture_type_query = sdlgpu_texture_type_query,
+		.texture_dump = sdlgpu_texture_dump,
+		.texture_transfer = sdlgpu_texture_transfer,
 		.shutdown = sdlgpu_shutdown,
 		.vertex_array_attach_index_buffer = sdlgpu_vertex_array_attach_index_buffer,
 		.vertex_array_attach_vertex_buffer = sdlgpu_vertex_array_attach_vertex_buffer,
