@@ -9,5 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-void r_models_init(void);
-void r_models_shutdown(void);
+#include "sprite_batch.h"   // IWYU pragma: export
+
+#include "../api.h"
+
+void _r_sprite_batch_end_frame(void);
+void _r_sprite_batch_texture_deleted(Texture *tex);

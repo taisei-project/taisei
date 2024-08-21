@@ -18,7 +18,7 @@ static struct {
 	Model quad;
 } _r_models;
 
-void _r_models_init(void) {
+void r_models_init(void) {
 	VertexAttribSpec spec[] = {
 		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // position
 		{ 2, VA_FLOAT, VA_CONVERT_FLOAT }, // texcoord
@@ -54,7 +54,7 @@ void _r_models_init(void) {
 	r_model_add_static(&_r_models.quad, PRIM_TRIANGLE_STRIP, 4, quad, 0, NULL);
 }
 
-void _r_models_shutdown(void) {
+void r_models_shutdown(void) {
 	r_vertex_array_destroy(_r_models.varr);
 	r_vertex_buffer_destroy(_r_models.vbuf);
 	r_index_buffer_destroy(_r_models.ibuf);

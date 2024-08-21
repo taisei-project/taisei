@@ -11,7 +11,7 @@
 #include "../api.h"
 #include "../common/backend.h"
 #include "../common/matstack.h"
-#include "../common/sprite_batch.h"
+#include "../common/sprite_batch_internal.h"
 #include "../glcommon/debug.h"
 #include "../glcommon/vtable.h"
 #include "common_buffer.h"

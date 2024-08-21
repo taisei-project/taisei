@@ -20,6 +20,8 @@
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
 #include "progress.h"
+#include "renderer/common/models.h"
+#include "renderer/common/sprite_batch.h"
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
@@ -67,6 +69,8 @@ static void taisei_shutdown(void) {
 	gamemode_shutdown();
 	taskmgr_global_shutdown();
 	audio_shutdown();
+	r_models_shutdown();
+	r_sprite_batch_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
 	stageinfo_shutdown();
@@ -409,6 +413,8 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	});
 	filewatch_init();
 	res_init();
+	r_models_init();
+	r_sprite_batch_init();
 	r_post_init();
 
 	res_group_init(&ctx->rg);
