@@ -27,6 +27,7 @@ static void test_init_sdl(void) {
 
 static void test_init_basic(void) {
 	setlocale(LC_ALL, "C");
+	thread_init();
 	test_init_log();
 	test_init_sdl();
 }
@@ -34,6 +35,7 @@ static void test_init_basic(void) {
 static void test_shutdown_basic(void) {
 	log_shutdown();
 	events_shutdown();
+	thread_shutdown();
 	SDL_Quit();
 }
 
