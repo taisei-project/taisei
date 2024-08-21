@@ -9,9 +9,5 @@
 #pragma once
 #include "taisei.h"
 
-#include "../api.h"
-
-void _r_sprite_batch_init(void);
-void _r_sprite_batch_shutdown(void);
-void _r_sprite_batch_end_frame(void);
-void _r_sprite_batch_texture_deleted(Texture *tex);
+void r_sprite_batch_init(void);
+void r_sprite_batch_shutdown(void);

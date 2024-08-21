@@ -10,8 +10,7 @@
 
 #include "common/backend.h"
 #include "common/matstack.h"
-#include "common/models.h"
-#include "common/sprite_batch.h"
+#include "common/sprite_batch_internal.h"
 #include "common/state.h"
 #include "coroutine/coroutine.h"
 #include "resource/resource.h"
@@ -36,8 +35,6 @@ void r_init(void) {
 
 void r_post_init(void) {
 	B.post_init();
-	_r_models_init();
-	_r_sprite_batch_init();
 
 	res_group_init(&R.rg);
 
@@ -76,8 +73,6 @@ void r_release_resources(void) {
 
 void r_shutdown(void) {
 	_r_state_shutdown();
-	_r_sprite_batch_shutdown();
-	_r_models_shutdown();
 	B.shutdown();
 }
 

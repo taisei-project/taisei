@@ -6,7 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "sprite_batch.h"
+#include "sprite_batch_internal.h"
 
 #include "../api.h"
 #include "util/glm.h"
@@ -54,7 +54,7 @@ static struct SpriteBatchState {
 #endif
 } _r_sprite_batch;
 
-void _r_sprite_batch_init(void) {
+void r_sprite_batch_init(void) {
 #if SPRITE_BATCH_STATS
 	preload_resource(RES_FONT, "monotiny", RESF_PERMANENT);
 #endif
@@ -111,7 +111,7 @@ void _r_sprite_batch_init(void) {
 	_r_sprite_batch.renderer_features = r_features();
 }
 
-void _r_sprite_batch_shutdown(void) {
+void r_sprite_batch_shutdown(void) {
 	r_vertex_array_destroy(_r_sprite_batch.varr);
 	r_vertex_buffer_destroy(_r_sprite_batch.vbuf);
 }
