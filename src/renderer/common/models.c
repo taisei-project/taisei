@@ -64,9 +64,9 @@ void r_model_add_static(
 	Model *out_mdl,
 	Primitive prim,
 	size_t num_vertices,
-	GenericModelVertex vertices[num_vertices],
+	GenericModelVertex vertices[],
 	size_t num_indices,
-	uint32_t indices[num_indices]
+	uint32_t indices[]
 ) {
 	out_mdl->vertex_array = _r_models.varr;
 	out_mdl->num_vertices = num_vertices;
@@ -84,8 +84,7 @@ void r_model_add_static(
 		out_mdl->offset = vert_ofs;
 	}
 
-	SDL_WriteIO(vert_stream, vertices,
-		    sizeof(GenericModelVertex) * num_vertices);
+	SDL_WriteIO(vert_stream, vertices, sizeof(GenericModelVertex) * num_vertices);
 }
 
 VertexBuffer* r_vertex_buffer_static_models(void) {
