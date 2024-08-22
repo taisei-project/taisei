@@ -113,7 +113,7 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 				? sdlgpu_cullmode_ts2sdl(sdlgpu.st.cull)
 				: SDL_GPU_CULLMODE_NONE,
 			.fillMode = SDL_GPU_FILLMODE_FILL,
-			.frontFace = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
+			.frontFace = SDL_GPU_FRONTFACE_CLOCKWISE,
 		},
 		.multisampleState = {
 			.sampleMask = 0xFFFF,
