@@ -107,7 +107,7 @@ void gles30_fbcopyfallback_init(void) {
 	r_shader_object_destroy(vert_shobj);
 	r_shader_object_destroy(frag_shobj);
 
-	blit_uniforms.outputs_enabled = NOT_NULL(r_shader_uniform(blit_shader, "outputs_enabled[0]"));
+	blit_uniforms.outputs_enabled = NOT_NULL(r_shader_uniform(blit_shader, "outputs_enabled"));
 	blit_uniforms.depth_enabled = NOT_NULL(r_shader_uniform(blit_shader, "depth_enabled"));
 	blit_uniforms.input_depth = NOT_NULL(r_shader_uniform(blit_shader, "input_depth"));
 

@@ -164,7 +164,7 @@ static MagicUniformSpec magic_unfiroms[] = {
 	[UMAGIC_MATRIX_TEX]      = { "r_textureMatrix",       "mat4", UNIFORM_MAT4 },
 	[UMAGIC_COLOR]           = { "r_color",               "vec4", UNIFORM_VEC4 },
 	[UMAGIC_VIEWPORT]        = { "r_viewport",            "vec4", UNIFORM_VEC4 },
-	[UMAGIC_COLOR_OUT_SIZES] = { "r_colorOutputSizes[0]", "vec2", UNIFORM_VEC2 },
+	[UMAGIC_COLOR_OUT_SIZES] = { "r_colorOutputSizes",    "vec2", UNIFORM_VEC2 },
 	[UMAGIC_DEPTH_OUT_SIZE]  = { "r_depthOutputSize",     "vec2", UNIFORM_VEC2 },
 };
 static_assert(ARRAY_SIZE(magic_unfiroms) == NUM_MAGIC_UNIFORMS);
@@ -325,6 +325,10 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		glGetActiveUniform(prog->gl_handle, i, maxlen, NULL, &size, &type, name);
 		loc = glGetUniformLocation(prog->gl_handle, name);
+
+		if(strendswith(name, "[0]")) {
+			name[strlen(name) - 3] = 0;
+		}
 
 		if(loc < 0) {
 			// builtin uniform

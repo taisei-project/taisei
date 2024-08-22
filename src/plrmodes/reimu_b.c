@@ -282,9 +282,9 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("time", global.frames / 60.0f);
 	r_uniform_vec2("gap_size", GAP_WIDTH/2.0f, GAP_LENGTH/2.0f);
-	r_uniform_vec2_array("gaps[0]", 0, NUM_GAPS, gaps);
-	r_uniform_float_array("gap_angles[0]", 0, NUM_GAPS, angles);
-	r_uniform_int_array("gap_links[0]", 0, NUM_GAPS, links);
+	r_uniform_vec2_array("gaps", 0, NUM_GAPS, gaps);
+	r_uniform_float_array("gap_angles", 0, NUM_GAPS, angles);
+	r_uniform_int_array("gap_links", 0, NUM_GAPS, links);
 	draw_framebuffer_tex(framebuffers->front, VIEWPORT_W, VIEWPORT_H);
 
 	r_blend(BLEND_PREMUL_ALPHA);

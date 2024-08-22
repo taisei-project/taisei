@@ -140,8 +140,8 @@ void camera3d_set_point_light_uniforms(
 	vec3 lrad[num_lights];
 	camera3d_fill_point_light_uniform_vectors(cam, num_lights, lights, lpos, lrad);
 
-	r_uniform_vec3_array("light_positions[0]", 0, num_lights, lpos);
-	r_uniform_vec3_array("light_colors[0]", 0, num_lights, lrad);
+	r_uniform_vec3_array("light_positions", 0, num_lights, lpos);
+	r_uniform_vec3_array("light_colors", 0, num_lights, lrad);
 	r_uniform_int("light_count", num_lights);
 }
 
