@@ -9,24 +9,12 @@
 #pragma once
 #include "taisei.h"
 
-#include "hashtable.h"
 #include "../api.h"
+#include "../common/magic_uniforms.h"
 #include "opengl.h"
+
+#include "hashtable.h"
 #include "resource/shader_program.h"
-
-typedef enum MagicUniformIndex {
-	UMAGIC_INVALID = -1,
-
-	UMAGIC_MATRIX_MV,
-	UMAGIC_MATRIX_PROJ,
-	UMAGIC_MATRIX_TEX,
-	UMAGIC_COLOR,
-	UMAGIC_VIEWPORT,
-	UMAGIC_COLOR_OUT_SIZES,
-	UMAGIC_DEPTH_OUT_SIZE,
-
-	NUM_MAGIC_UNIFORMS,
-} MagicUniformIndex;
 
 struct ShaderProgram {
 	GLuint gl_handle;
