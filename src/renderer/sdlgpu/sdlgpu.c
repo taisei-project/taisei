@@ -54,6 +54,7 @@ static void sdlgpu_submit_frame(void) {
 	}
 
 	sdlgpu.frame.fence = SDL_GpuSubmitAndAcquireFence(sdlgpu.frame.cbuf);
+	sdlgpu.frame.cbuf = NULL;
 }
 
 static void sdlgpu_init(void) {
@@ -74,6 +75,10 @@ static void sdlgpu_post_init(void) {
 }
 
 static void sdlgpu_shutdown(void) {
+	SDL_GpuWaitForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
+	SDL_GpuReleaseFence(sdlgpu.device, sdlgpu.frame.fence);
+	SDL_GpuSubmit(sdlgpu.frame.cbuf);
+
 	sdlgpu_pipecache_deinit();
 	SDL_GpuUnclaimWindow(sdlgpu.device, sdlgpu.window);
 	SDL_GpuDestroyDevice(sdlgpu.device);

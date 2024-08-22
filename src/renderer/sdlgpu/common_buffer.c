@@ -30,6 +30,7 @@ CommonBuffer *sdlgpu_buffer_create(SDL_GpuBufferUsageFlags usage, size_t alloc_s
 }
 
 void sdlgpu_buffer_destroy(CommonBuffer *cbuf) {
+	SDL_GpuReleaseTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 	SDL_GpuReleaseBuffer(sdlgpu.device, cbuf->gpubuf);
 	cachedbuf_deinit(&cbuf->cachedbuf);
 	mem_free(cbuf);
