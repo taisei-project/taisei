@@ -152,23 +152,6 @@ static struct {
 	[UNIFORM_MAT4]         = { uset_mat4,  uget_mat4 },
 };
 
-typedef struct MagicUniformSpec {
-	const char *name;
-	const char *typename;
-	UniformType type;
-} MagicUniformSpec;
-
-static MagicUniformSpec magic_unfiroms[] = {
-	[UMAGIC_MATRIX_MV]       = { "r_modelViewMatrix",     "mat4", UNIFORM_MAT4 },
-	[UMAGIC_MATRIX_PROJ]     = { "r_projectionMatrix",    "mat4", UNIFORM_MAT4 },
-	[UMAGIC_MATRIX_TEX]      = { "r_textureMatrix",       "mat4", UNIFORM_MAT4 },
-	[UMAGIC_COLOR]           = { "r_color",               "vec4", UNIFORM_VEC4 },
-	[UMAGIC_VIEWPORT]        = { "r_viewport",            "vec4", UNIFORM_VEC4 },
-	[UMAGIC_COLOR_OUT_SIZES] = { "r_colorOutputSizes",    "vec2", UNIFORM_VEC2 },
-	[UMAGIC_DEPTH_OUT_SIZE]  = { "r_depthOutputSize",     "vec2", UNIFORM_VEC2 },
-};
-static_assert(ARRAY_SIZE(magic_unfiroms) == NUM_MAGIC_UNIFORMS);
-
 static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	// these are validated properly in gl33_uniform
 	assert(offset < uniform->array_size);
