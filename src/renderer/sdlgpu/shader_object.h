@@ -13,6 +13,7 @@
 
 #include "../api.h"
 #include "../common/shaderlib/reflect.h"
+#include "../common/magic_uniforms.h"
 
 #include <SDL3/SDL_gpu.h>
 
@@ -44,6 +45,7 @@ struct ShaderObject {
 
 	ht_str2ptr_t uniforms;
 	DYNAMIC_ARRAY(Texture*) sampler_bindings;
+	ShaderObjectUniform *magic_unfiroms[NUM_MAGIC_UNIFORMS];
 
 	ShaderStage stage;
 	SDL_AtomicInt refs;

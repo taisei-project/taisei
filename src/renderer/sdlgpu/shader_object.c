@@ -47,6 +47,41 @@ static ShaderObjectUniform *sdlgpu_shader_object_alloc_uniform(
 	return NOT_NULL(uni);
 }
 
+static bool sdlgpu_shader_object_init_magic_uniform(
+	ShaderObject *shobj, MagicUniformSpec *muspec, const char *uname, ShaderObjectUniform *uniform
+) {
+	if(strcmp(muspec->name, uname)) {
+		return false;
+	}
+
+	if(uniform->type != muspec->type) {
+		log_warn("Magic uniform %s has wrong type; expected %s", uname, muspec->typename);
+		return true;
+	}
+
+	// TODO verify array size
+
+	uint idx = muspec - magic_unfiroms;
+	assert(idx < NUM_MAGIC_UNIFORMS);
+	assert(shobj->magic_unfiroms[idx] == NULL);
+
+	log_debug("Found magic uniform #%u %s", idx, uname);
+	shobj->magic_unfiroms[idx] = uniform;
+	return true;
+}
+
+static bool sdlgpu_shader_object_try_init_magic_uniform(
+	ShaderObject *shobj, const char *uname, ShaderObjectUniform *uniform
+) {
+	for(uint i = 0; i < NUM_MAGIC_UNIFORMS; ++i) {
+		if(sdlgpu_shader_object_init_magic_uniform(shobj, &magic_unfiroms[i], uname, uniform)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static void sdlgpu_shader_object_add_buffer_backed_uniform(
 	ShaderObject *shobj, const ShaderStructField *field
 ) {
@@ -59,13 +94,17 @@ static void sdlgpu_shader_object_add_buffer_backed_uniform(
 
 	log_debug("Added %s", field->name);
 
-	*sdlgpu_shader_object_alloc_uniform(shobj, field->name) = (ShaderObjectUniform) {
+	auto uniform = sdlgpu_shader_object_alloc_uniform(shobj, field->name);
+
+	*uniform = (ShaderObjectUniform) {
 		.type = type,
 		.buffer_backed = {
 			.offset = field->offset,
 			.type = field->type,
 		},
 	};
+
+	sdlgpu_shader_object_try_init_magic_uniform(shobj, field->name, uniform);
 }
 
 static UniformType sampler_type_to_uniform_type(const ShaderSamplerType *stype) {
@@ -103,12 +142,16 @@ static void sdlgpu_shader_object_add_sampler_uniform(
 
 	log_debug("Added %s", sampler->name);
 
-	*sdlgpu_shader_object_alloc_uniform(shobj, sampler->name) = (ShaderObjectUniform) {
+	auto uniform = sdlgpu_shader_object_alloc_uniform(shobj, sampler->name);
+
+	*uniform = (ShaderObjectUniform) {
 		.type = type,
 		.sampler = {
 			.binding = sampler->binding,
 		},
 	};
+
+	sdlgpu_shader_object_try_init_magic_uniform(shobj, sampler->name, uniform);
 }
 
 static void sdlgpu_shader_object_init_uniforms(ShaderObject *shobj, const ShaderReflection *reflection) {
@@ -241,6 +284,10 @@ void sdlgpu_shader_object_uniform_set_data(
 	ShaderObject *shobj, ShaderObjectUniform *uni,
 	uint offset, uint count, const void *data
 ) {
+	if(!uni) {
+		return;
+	}
+
 	if(is_sampler_uniform(uni->type)) {
 		uint min_size = uni->sampler.binding + 1;
 		dynarray_ensure_capacity(&shobj->sampler_bindings, min_size);

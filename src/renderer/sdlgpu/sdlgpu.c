@@ -17,6 +17,8 @@
 #include "vertex_buffer.h"
 #include "pipeline_cache.h"
 
+#include "../common/matstack.h"
+
 SDLGPUGlobal sdlgpu;
 
 void sdlgpu_renew_swapchain_texture(void) {
@@ -138,8 +140,37 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBin
 	});
 }
 
-static void sdlgpu_draw(
-	VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance
+static void sdlgpu_set_magic_uniforms(
+	ShaderObject *shobj, const FloatRect *viewport
+) {
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_MV], 0, 1,
+		_r_matrices.modelview.head);
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_PROJ], 0, 1,
+		_r_matrices.projection.head);
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_TEX], 0, 1,
+		_r_matrices.texture.head);
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_COLOR], 0, 1,
+		&sdlgpu.st.default_color);
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_VIEWPORT], 0, 1,
+		viewport);
+
+	// TODO UMAGIC_COLOR_OUT_SIZES, UMAGIC_DEPTH_OUT_SIZE
+	// We really should have only 1 output size
+	// Attaching mismatched textures to the same framebuffer is not supported
+}
+
+static void sdlgpu_draw_generic(
+	VertexArray *varr,
+	Primitive prim,
+	uint first,
+	uint count,
+	uint instances,
+	bool is_indexed
 ) {
 	RenderPassOutputs outputs;
 	sdlgpu_framebuffer_setup_outputs(sdlgpu.st.framebuffer, &outputs);
@@ -221,6 +252,9 @@ static void sdlgpu_draw(
 		.maxDepth = 1,
 	});
 
+	sdlgpu_set_magic_uniforms(v_shader, vp);
+	sdlgpu_set_magic_uniforms(f_shader, vp);
+
 	SDL_GpuBindGraphicsPipeline(pass, sdlgpu_pipecache_get(&pd));
 	SDL_GpuBindVertexBuffers(pass, 0, bindings, ARRAY_SIZE(bindings));
 
@@ -246,14 +280,48 @@ static void sdlgpu_draw(
 		SDL_GpuBindFragmentSamplers(pass, 0, bindings, ARRAY_SIZE(bindings));
 	}
 
-	SDL_GpuDrawPrimitives(pass, firstvert, count);
+	if(is_indexed) {
+		SDL_GpuIndexElementSize isize;
+
+		switch(NOT_NULL(varr->index_attachment)->index_size) {
+			case 2:
+				isize = SDL_GPU_INDEXELEMENTSIZE_16BIT;
+				break;
+
+			case 4:
+				isize = SDL_GPU_INDEXELEMENTSIZE_32BIT;
+				break;
+
+			default:
+				UNREACHABLE;
+		}
+
+		SDL_GpuBindIndexBuffer(pass, &(SDL_GpuBufferBinding) {
+			.buffer = varr->index_attachment->cbuf.gpubuf,
+			.offset = 0,
+		}, isize);
+
+		SDL_GpuDrawIndexedPrimitives(pass, 0, first, count, instances);
+	} else {
+		// ??? instances ???
+		SDL_GpuDrawPrimitives(pass, first, count);
+	}
+
 	SDL_GpuEndRenderPass(pass);
+}
+
+static void sdlgpu_draw(
+	VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance
+) {
+	assert(base_instance == 0);
+	sdlgpu_draw_generic(varr, prim, firstvert, count, instances, false);
 }
 
 static void sdlgpu_draw_indexed(
 	VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance
 ) {
-	UNREACHABLE;
+	assert(base_instance == 0);
+	sdlgpu_draw_generic(varr, prim, firstidx, count, instances, true);
 }
 
 static void sdlgpu_swap(SDL_Window *window) {
@@ -310,6 +378,14 @@ static void sdlgpu_scissor(IntRect scissor) {
 
 static void sdlgpu_scissor_current(IntRect *scissor) {
 	*scissor = sdlgpu.st.scissor;
+}
+
+static void sdlgpu_cull(CullFaceMode mode) {
+	sdlgpu.st.cull = mode;
+}
+
+static CullFaceMode sdlgpu_cull_current(void) {
+	return sdlgpu.st.cull;
 }
 
 RendererBackend _r_backend_sdlgpu = {
@@ -404,5 +480,7 @@ RendererBackend _r_backend_sdlgpu = {
 		.vertex_buffer_set_debug_label = sdlgpu_vertex_buffer_set_debug_label,
 		.vsync = sdlgpu_vsync,
 		.swap = sdlgpu_swap,
+		.cull = sdlgpu_cull,
+		.cull_current = sdlgpu_cull_current,
 	}
 };

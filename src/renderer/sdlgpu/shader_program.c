@@ -137,13 +137,8 @@ void sdlgpu_uniform(Uniform *uni, uint offset, uint count, const void *data) {
 		return;
 	}
 
-	if(stg.vert) {
-		sdlgpu_shader_object_uniform_set_data(uni->shader->stages.vertex, stg.vert, offset, count, data);
-	}
-
-	if(stg.frag) {
-		sdlgpu_shader_object_uniform_set_data(uni->shader->stages.fragment, stg.frag, offset, count, data);
-	}
+	sdlgpu_shader_object_uniform_set_data(uni->shader->stages.vertex, stg.vert, offset, count, data);
+	sdlgpu_shader_object_uniform_set_data(uni->shader->stages.fragment, stg.frag, offset, count, data);
 }
 
 void sdlgpu_unref_texture_from_samplers(Texture *tex) {
