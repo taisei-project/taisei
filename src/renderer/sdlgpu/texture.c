@@ -503,8 +503,8 @@ bool sdlgpu_texture_type_query(
 	result->optimal_pixmap_format = pixfmt;
 	result->optimal_pixmap_origin = PIXMAP_ORIGIN_TOPLEFT;
 
-	result->supplied_pixmap_origin_supported = (pxorigin == result->supplied_pixmap_origin_supported);
-	result->supplied_pixmap_format_supported = (pxfmt == result->supplied_pixmap_format_supported);
+	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
+	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);
 
 	return true;
 }
