@@ -469,7 +469,9 @@ void sdlgpu_texture_clear(Texture *tex, const Color *clr) {
 }
 
 void sdlgpu_texture_destroy(Texture *tex) {
-	UNREACHABLE;
+	SDL_GpuReleaseTexture(sdlgpu.device, tex->gpu_texture);
+	SDL_GpuReleaseSampler(sdlgpu.device, tex->sampler);
+	mem_free(tex);
 }
 
 bool sdlgpu_texture_type_query(
