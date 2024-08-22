@@ -1576,7 +1576,7 @@ void stage_draw_bottom_text(void) {
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
 		r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 		r_uniform_vec3("color_high", 0.0, 1.0, 0.0);
-		r_uniform_float_array("points[0]", 0, graphspan, graph);
+		r_uniform_float_array("points", 0, graphspan, graph);
 		draw_graph(142, SCREEN_H - text_h, graphspan, text_h);
 	}
 #endif
@@ -1605,7 +1605,7 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
 	r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.0);
-	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
+	r_uniform_float_array("points", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	// x -= w * 1.1;
@@ -1615,7 +1615,7 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	r_uniform_vec3("color_low",  0.0, 1.0, 0.0);
 	r_uniform_vec3("color_mid",  1.0, 0.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.5);
-	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
+	r_uniform_float_array("points", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
 	r_state_pop();

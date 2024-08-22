@@ -147,7 +147,7 @@ void r_flush_sprites(void) {
 
 	r_shader_ptr(NOT_NULL(_r_sprite_batch.shader));
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
-	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
+	r_uniform_sampler_array("tex_aux", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capabilities(_r_sprite_batch.capbits);
