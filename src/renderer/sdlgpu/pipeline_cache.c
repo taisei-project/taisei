@@ -138,10 +138,10 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 		.blendEnable = sdlgpu.st.blend != BLEND_NONE,
 		.alphaBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
 		.colorBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_COLOR_OP)),
-		.srcColorBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
-		.srcAlphaBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
-		.dstColorBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
-		.dstAlphaBlendFactor = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
+		.srcColorBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
+		.srcAlphaBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
+		.dstColorBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
+		.dstAlphaBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
 	};
 
 	for(int i = 0; i < pd->num_outputs; ++i) {
