@@ -819,7 +819,7 @@ void r_scissor(int x, int y, int w, int h);
 void r_scissor_rect(IntRect scissor);
 void r_scissor_current(IntRect *scissor) attr_nonnull(1);
 
-void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint32_t indices[num_indices]);
+void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[], size_t num_indices, uint32_t indices[]);
 const Model *r_model_get_quad(void) attr_returns_nonnull;
 
 void r_vsync(VsyncMode mode);
