@@ -10,52 +10,6 @@ typedef struct Vertex2D {
 	vec4 color;
 } Vertex2D;
 
-static Texture *load_texture(const char *path) {
-	auto istream = SDL_RWFromFile(path, "rb");
-
-	if(!istream) {
-		log_sdl_error(LOG_FATAL, "SDL_IOFromFile");
-	}
-
-	Pixmap px = {};
-	PixmapFormat fmt = PIXMAP_FORMAT_RGBA8;
-	PixmapOrigin origin = PIXMAP_ORIGIN_TOPLEFT;
-
-	if(r_features() & RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) {
-		origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	}
-
-	if(!pixmap_load_stream(istream, PIXMAP_FILEFORMAT_AUTO, &px, fmt)) {
-		log_fatal("pixmap_load_stream() failed");
-	}
-
-	SDL_RWclose(istream);
-
-	pixmap_convert_inplace_realloc(&px, fmt);
-	pixmap_flip_to_origin_inplace(&px, origin);
-
-	Texture *tex = r_texture_create(&(TextureParams) {
-		.class = TEXTURE_CLASS_2D,
-		.type = r_texture_type_from_pixmap_format(fmt),
-		.width = px.width,
-		.height = px.height,
-		.layers = 1,
-		.filter.min = TEX_FILTER_LINEAR,
-		.filter.mag = TEX_FILTER_LINEAR,
-		.wrap.s = TEX_WRAP_REPEAT,
-		.wrap.t = TEX_WRAP_REPEAT,
-	});
-
-	if(!tex) {
-		log_fatal("r_texture_create() failed");
-	}
-
-	r_texture_fill(tex, 0, 0, &px);
-	mem_free(px.data.untyped);
-
-	return tex;
-}
-
 int main(int argc, char **argv) {
 	test_init_renderer();
 	time_init();
@@ -127,7 +81,7 @@ int main(int argc, char **argv) {
 		.offset = 0,
 	};
 
-	Texture *tex = load_texture("texture0.webp");
+	Texture *tex = test_renderer_load_texture("texture0.webp");
 
 	r_shader_ptr(prog);
 	auto u_sampler = r_shader_uniform(prog, "u_sampler");
