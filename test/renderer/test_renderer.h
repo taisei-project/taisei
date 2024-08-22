@@ -5,6 +5,7 @@
 #include "events.h"
 #include "log.h"
 #include "renderer/api.h"
+#include "resource/iqm_loader/iqm_loader.h"
 #include "rwops/rwops_stdiofp.h"
 #include "util/compat.h"
 #include "video.h"
@@ -137,6 +138,33 @@ static Texture *test_renderer_load_texture(const char *path) {
 	mem_free(px.data.untyped);
 
 	return tex;
+}
+
+attr_unused
+static Model test_renderer_load_iqm(const char *path) {
+	IQMModel iqm;
+
+	auto io = SDL_IOFromFile(path, "rb");
+
+	if(!io) {
+		log_sdl_error(LOG_FATAL, "SDL_IOFromFile");
+		UNREACHABLE;
+	}
+
+	bool ok = iqm_load_stream(&iqm, path, io);
+	SDL_CloseIO(io);
+
+	if(!ok) {
+		log_fatal("iqm_load_stream() failed");
+	}
+
+	Model mdl;
+	r_model_add_static(&mdl, PRIM_TRIANGLES, iqm.num_vertices, iqm.vertices, iqm.num_indices, iqm.indices);
+
+	mem_free(iqm.vertices);
+	mem_free(iqm.indices);
+
+	return mdl;
 }
 
 static void test_init_renderer(void) {
