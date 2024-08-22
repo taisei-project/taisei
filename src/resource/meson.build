@@ -17,3 +17,6 @@ resource_src = files(
 
 subdir('texture_loader')
 resource_src += resource_texload_src
+
+subdir('iqm_loader')
+resource_src += resource_iqmload_src
