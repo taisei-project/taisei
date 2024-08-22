@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
 	}
 
 	r_shader_program_destroy(prog);
+	r_texture_destroy(tex);
 
 	time_shutdown();
 	r_models_shutdown();

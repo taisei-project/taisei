@@ -106,8 +106,8 @@ int main(int argc, char **argv) {
 
 	r_vertex_buffer_destroy(vert_buf);
 	r_vertex_array_destroy(vert_array);
-
 	r_shader_program_destroy(prog);
+	r_texture_destroy(tex);
 
 	time_shutdown();
 	test_shutdown_renderer();
