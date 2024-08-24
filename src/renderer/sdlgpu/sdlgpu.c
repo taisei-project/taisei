@@ -92,9 +92,7 @@ static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, 
 
 	sdlgpu.window = SDL_CreateWindow(title, w, h, flags);
 
-	if(sdlgpu.window && !SDL_GpuClaimWindow(
-		sdlgpu.device, sdlgpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC
-	)) {
+	if(sdlgpu.window && !SDL_GpuClaimWindow(sdlgpu.device, sdlgpu.window)) {
 		log_sdl_error(LOG_FATAL, "SDL_GpuClaimWindow");
 	}
 
@@ -306,10 +304,9 @@ static void sdlgpu_draw_generic(
 			.offset = 0,
 		}, isize);
 
-		SDL_GpuDrawIndexedPrimitives(pass, 0, first, count, instances);
+		SDL_GpuDrawIndexedPrimitives(pass, 0, first, count, instances, 0);
 	} else {
-		// ??? instances ???
-		SDL_GpuDrawPrimitives(pass, first, count);
+		SDL_GpuDrawPrimitives(pass, first, count, instances, 0);
 	}
 
 	SDL_GpuEndRenderPass(pass);
