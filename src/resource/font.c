@@ -417,8 +417,8 @@ static SpriteSheet *add_spritesheet(SpriteSheetAnchor *spritesheets) {
 			.filter.min = TEX_FILTER_LINEAR,
 			.wrap.s = TEX_WRAP_CLAMP,
 			.wrap.t = TEX_WRAP_CLAMP,
-			.mipmaps = TEX_MIPMAPS_MAX,
-			.mipmap_mode = TEX_MIPMAP_AUTO,
+			.mipmaps = 1,
+			.mipmap_mode = TEX_MIPMAP_MANUAL,
 		})
 	});
 
