@@ -78,3 +78,5 @@ INLINE void sdlgpu_texture_decref(Texture *tex) {
 		sdlgpu_texture_destroy(tex);
 	}
 }
+
+void sdlgpu_texture_init_type_remap_table(void);

@@ -229,6 +229,7 @@ static void sdlgpu_init(void) {
 	sdlgpu.frame.cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
 	sdlgpu.frame.upload_cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
 	sdlgpu_pipecache_init();
+	sdlgpu_texture_init_type_remap_table();
 
 	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.null_textures); ++i) {
 		sdlgpu.null_textures[i] = sdlgpu_create_null_texture(i);

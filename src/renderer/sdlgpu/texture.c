@@ -13,6 +13,12 @@
 
 #include "util.h"
 
+static int8_t texture_type_uncompressed_remap_table[] = {
+	#define INIT_ENTRY(type_suffix, ...) \
+		[TEX_TYPE_##type_suffix] = TEX_TYPE_INVALID,
+	TEX_TYPES_UNCOMPRESSED(INIT_ENTRY)
+};
+
 static SDL_GpuTextureFormat sdlgpu_texfmt_ts2sdl(TextureType t) {
 	switch(t) {
 		case TEX_TYPE_RGBA_8:						return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
@@ -60,6 +66,30 @@ static SDL_GpuTextureFormat sdlgpu_texfmt_ts2sdl(TextureType t) {
 	}
 }
 
+static SDL_GpuTextureFormat sdlgpu_texfmt_ts2sdl_checksupport(TextureType t) {
+	SDL_GpuTextureFormat fmt = sdlgpu_texfmt_ts2sdl(t);
+
+	if(fmt == SDL_GPU_TEXTUREFORMAT_INVALID) {
+		return fmt;
+	}
+
+	SDL_GpuTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+
+	if(TEX_TYPE_IS_DEPTH(t)) {
+		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
+	} else {
+		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+	}
+
+	// FIXME query support for cubemaps separately?
+
+	if(SDL_GpuSupportsTextureFormat(sdlgpu.device, fmt, SDL_GPU_TEXTURETYPE_2D, usage)) {
+		return fmt;
+	}
+
+	return SDL_GPU_TEXTUREFORMAT_INVALID;
+}
+
 static SDL_GpuTextureFormat sdlgpu_texfmt_to_srgb(SDL_GpuTextureFormat fmt) {
 	switch(fmt) {
 		case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM: return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
@@ -71,29 +101,11 @@ static SDL_GpuTextureFormat sdlgpu_texfmt_to_srgb(SDL_GpuTextureFormat fmt) {
 }
 
 static TextureType sdlgpu_remap_texture_type(TextureType tt) {
-	switch(tt) {
-		case TEX_TYPE_DEPTH_8:
-		case TEX_TYPE_DEPTH_16:
-		case TEX_TYPE_DEPTH_24:
-		case TEX_TYPE_DEPTH_32:
-		case TEX_TYPE_DEPTH_16_FLOAT:
-		case TEX_TYPE_DEPTH_32_FLOAT:
-			return TEX_TYPE_DEPTH_16;
-		default: break;
+	if(!TEX_TYPE_IS_COMPRESSED(tt)) {
+		return texture_type_uncompressed_remap_table[tt];
 	}
 
-	switch(tt) {
-		case TEX_TYPE_RGB_8:				return TEX_TYPE_RGBA_8;
-		case TEX_TYPE_RG_8:					return TEX_TYPE_RGBA_8;
-		case TEX_TYPE_RGB_16:				return TEX_TYPE_RGBA_16;
-		case TEX_TYPE_R_16:					return TEX_TYPE_RG_16;
-		case TEX_TYPE_RGB_16_FLOAT:			return TEX_TYPE_RGB_16_FLOAT;
-		case TEX_TYPE_RGB_32_FLOAT:			return TEX_TYPE_RGBA_32_FLOAT;
-		case TEX_TYPE_DEPTH_8:				return TEX_TYPE_DEPTH_16;
-		case TEX_TYPE_DEPTH_32:				return TEX_TYPE_DEPTH_24;
-		case TEX_TYPE_DEPTH_16_FLOAT:		return TEX_TYPE_DEPTH_32_FLOAT;
-		default:							return tt;
-	}
+	return tt;
 }
 
 static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GpuTextureFormat fmt) {
@@ -170,6 +182,68 @@ static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GpuTextureFormat fmt) {
 	}
 
 	UNREACHABLE;
+}
+
+void sdlgpu_texture_init_type_remap_table(void) {
+	// TODO: This logic could be generalized to all backends
+	static const int8_t fallback_table[][9] = {
+		[TEX_TYPE_RGB_8]			= { TEX_TYPE_RGBA_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGBA_8]			= { TEX_TYPE_INVALID },
+		[TEX_TYPE_RG_8]				= { TEX_TYPE_RGB_8, TEX_TYPE_RGBA_8, TEX_TYPE_RG_16, TEX_TYPE_RGB_16, TEX_TYPE_RGBA_16, TEX_TYPE_INVALID },
+		[TEX_TYPE_R_8]				= { TEX_TYPE_R_8, TEX_TYPE_RG_8, TEX_TYPE_R_16, TEX_TYPE_RGB_8, TEX_TYPE_RG_16, TEX_TYPE_RGBA_8, TEX_TYPE_RGB_16, TEX_TYPE_RGBA_16, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGBA_16]			= { TEX_TYPE_RGBA_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGB_16]			= { TEX_TYPE_RGBA_16, TEX_TYPE_RGB_8, TEX_TYPE_RGBA_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_RG_16]			= { TEX_TYPE_RGB_16, TEX_TYPE_RGBA_16, TEX_TYPE_RG_8, TEX_TYPE_RGB_8, TEX_TYPE_RGBA_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_R_16]				= { TEX_TYPE_RG_16, TEX_TYPE_RGB_16, TEX_TYPE_RGBA_16, TEX_TYPE_R_8, TEX_TYPE_RG_8, TEX_TYPE_RGB_8, TEX_TYPE_RGBA_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGBA_16_FLOAT]	= { TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGB_16_FLOAT]		= { TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_RGB_32_FLOAT, TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_RG_16_FLOAT]		= { TEX_TYPE_RGB_16_FLOAT, TEX_TYPE_RG_32_FLOAT, TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_RGB_32_FLOAT, TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_R_16_FLOAT]		= { TEX_TYPE_RG_16_FLOAT, TEX_TYPE_R_32_FLOAT, TEX_TYPE_RGB_16_FLOAT, TEX_TYPE_RG_32_FLOAT, TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_RGB_32_FLOAT, TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGBA_32_FLOAT]	= { TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_RGB_32_FLOAT]		= { TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_RGB_16_FLOAT, TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_RG_32_FLOAT]		= { TEX_TYPE_RGB_32_FLOAT, TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_RG_16_FLOAT, TEX_TYPE_RGB_16_FLOAT, TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_R_32_FLOAT]		= { TEX_TYPE_RG_32_FLOAT, TEX_TYPE_RGB_32_FLOAT, TEX_TYPE_RGBA_32_FLOAT, TEX_TYPE_RG_16_FLOAT, TEX_TYPE_RGB_16_FLOAT, TEX_TYPE_RGBA_16_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_8]			= { TEX_TYPE_DEPTH_16, TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_32, TEX_TYPE_DEPTH_16_FLOAT, TEX_TYPE_DEPTH_32_FLOAT, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_16]			= { TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_32, TEX_TYPE_DEPTH_16_FLOAT, TEX_TYPE_DEPTH_32_FLOAT, TEX_TYPE_DEPTH_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_24]			= { TEX_TYPE_DEPTH_32, TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_32_FLOAT, TEX_TYPE_DEPTH_16, TEX_TYPE_DEPTH_16_FLOAT, TEX_TYPE_DEPTH_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_32]			= { TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_32_FLOAT, TEX_TYPE_DEPTH_16, TEX_TYPE_DEPTH_16_FLOAT, TEX_TYPE_DEPTH_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_16_FLOAT]	= { TEX_TYPE_DEPTH_32_FLOAT, TEX_TYPE_DEPTH_16, TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_32, TEX_TYPE_DEPTH_8, TEX_TYPE_INVALID },
+		[TEX_TYPE_DEPTH_32_FLOAT]	= { TEX_TYPE_DEPTH_16_FLOAT, TEX_TYPE_DEPTH_32, TEX_TYPE_DEPTH_24, TEX_TYPE_DEPTH_16, TEX_TYPE_DEPTH_8, TEX_TYPE_INVALID },
+	};
+
+	for(TextureType t = 0; t < ARRAY_SIZE(texture_type_uncompressed_remap_table); ++t) {
+		SDL_GpuTextureFormat gpu_format = sdlgpu_texfmt_ts2sdl_checksupport(t);
+
+		if(gpu_format != SDL_GPU_TEXTUREFORMAT_INVALID) {
+			texture_type_uncompressed_remap_table[t] = t;
+			continue;
+		}
+
+		texture_type_uncompressed_remap_table[t] = TEX_TYPE_INVALID;
+
+		for(int i = 0; i < ARRAY_SIZE(fallback_table[t]); ++i) {
+			TextureType fallback_type = fallback_table[t][i];
+
+			if(fallback_type == TEX_TYPE_INVALID) {
+				break;
+			}
+
+			gpu_format = sdlgpu_texfmt_ts2sdl_checksupport(fallback_type);
+
+			if(gpu_format != SDL_GPU_TEXTUREFORMAT_INVALID) {
+				texture_type_uncompressed_remap_table[t] = fallback_type;
+				break;
+			}
+		}
+
+		attr_unused TextureType remapped_type = texture_type_uncompressed_remap_table[t];
+		gpu_format = sdlgpu_texfmt_ts2sdl(remapped_type);
+		assert(gpu_format != SDL_GPU_TEXTUREFORMAT_INVALID);
+		assert(gpu_format == sdlgpu_texfmt_ts2sdl_checksupport(remapped_type));
+
+		log_debug("%s --> %s (GPU format: %i)",
+			r_texture_type_name(t), r_texture_type_name(remapped_type), gpu_format);
+	}
 }
 
 static bool sdlgpu_texture_check_swizzle_component(char val, char defval) {
