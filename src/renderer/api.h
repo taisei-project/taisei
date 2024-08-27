@@ -123,6 +123,8 @@ typedef enum TextureClass {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEXTURE_CLASS_2D,
 	TEXTURE_CLASS_CUBEMAP,
+
+	NUM_TEXTURE_CLASSES,
 } TextureClass;
 
 typedef enum TextureFilterMode {
