@@ -139,7 +139,7 @@ static void stage1_water_draw(vec3 pos) {
 
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
-	r_depth_func(DEPTH_ALWAYS);
+	r_depth_func(DEPTH_LESS);
 	r_shader_standard_notex();
 	r_mat_mv_push();
 	r_mat_mv_scale(10000, 900000, 1);
