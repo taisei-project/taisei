@@ -362,8 +362,6 @@ uncompressed:
 		}
 
 		assert(qr.supplied_pixmap_format_supported);
-		assert(qr.supplied_pixmap_origin_supported);
-
 		return qr.optimal_pixmap_format;
 	}
 

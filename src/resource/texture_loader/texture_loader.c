@@ -852,11 +852,22 @@ static void texture_loader_stage2(ResourceLoadState *st) {
 
 		texture = r_texture_create(&p);
 
+		if(!texture) {
+			texture_loader_failed(ld);
+			return;
+		}
+
 		char namebuf[strlen(st->name) + sizeof(" (transient)")];
 		snprintf(namebuf, sizeof(namebuf), "%s (transient)", st->name);
 		r_texture_set_debug_label(texture, namebuf);
 	} else {
 		texture = r_texture_create(&ld->params);
+
+		if(!texture) {
+			texture_loader_failed(ld);
+			return;
+		}
+
 		r_texture_set_debug_label(texture, st->name);
 	}
 
