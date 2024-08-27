@@ -1,0 +1,26 @@
+
+#ifndef SDLGPU_H
+#define SDLGPU_H
+
+#ifdef VERT_STAGE
+
+#if 0
+void __vertexMain();
+
+void main() {
+	__vertexMain();
+	gl_Position.z = 0.5 + 0.5 * gl_Position.z;
+}
+
+#define main __vertexMain
+#endif
+
+#endif
+
+#ifdef FRAG_STAGE
+
+#define gl_FragCoord vec4(gl_FragCoord.x, gl_FragCoord.y, 0.5 + 0.5 * gl_FragCoord.z, gl_FragCoord.w)
+
+#endif
+
+#endif

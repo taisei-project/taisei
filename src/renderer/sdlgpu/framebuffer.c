@@ -7,6 +7,7 @@
  */
 
 #include "framebuffer.h"
+#include "texture.h"
 
 #include "sdlgpu.h"
 
@@ -28,12 +29,12 @@ void sdlgpu_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipm
 
 	sdlgpu_framebuffer_flush(framebuffer, (1u << idx));
 
-	framebuffer->attachments[idx] = (FramebufferAttachmentData) {
-		.target = {
-			.texture = tex,
-			.mip_level = mipmap,
-		},
-		.load.op = SDL_GPU_LOADOP_LOAD,
+	sdlgpu_texture_incref(tex);
+	sdlgpu_texture_decref(framebuffer->attachments[idx].texture);
+
+	framebuffer->attachments[idx] = (TextureSlice) {
+		.texture = tex,
+		.mip_level = mipmap,
 	};
 }
 
@@ -46,8 +47,8 @@ FramebufferAttachmentQueryResult sdlgpu_framebuffer_query_attachment(
 	auto a = &framebuffer->attachments[idx];
 
 	return (FramebufferAttachmentQueryResult) {
-		.texture = a->target.texture,
-		.miplevel = a->target.mip_level,
+		.texture = a->texture,
+		.miplevel = a->mip_level,
 	};
 }
 
@@ -69,8 +70,16 @@ void sdlgpu_framebuffer_outputs(
 void sdlgpu_framebuffer_destroy(Framebuffer *framebuffer) {
 	sdlgpu_framebuffer_flush(framebuffer, ~0);
 
+	for(uint i = 0; i < ARRAY_SIZE(framebuffer->attachments); ++i) {
+		sdlgpu_texture_decref(framebuffer->attachments[i].texture);
+	}
+
 	if(sdlgpu.st.framebuffer == framebuffer) {
 		sdlgpu.st.framebuffer = NULL;
+	}
+
+	if(sdlgpu.st.prev_framebuffer == framebuffer) {
+		sdlgpu.st.prev_framebuffer = NULL;
 	}
 
 	mem_free(framebuffer);
@@ -86,7 +95,15 @@ static void sdlgpu_framebuffer_default_clear(
 
 	if(flags & BUFFER_COLOR) {
 		sdlgpu.st.default_framebuffer.color.op = SDL_GPU_LOADOP_CLEAR;
-		sdlgpu.st.default_framebuffer.color.clear.color.as_taisei = *colorval;
+		sdlgpu.st.default_framebuffer.color.clear.color = *colorval;
+	}
+}
+
+void sdlgpu_framebuffer_taint(Framebuffer *framebuffer) {
+	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+		if(framebuffer->attachments[i].texture != NULL) {
+			sdlgpu_texture_taint(framebuffer->attachments[i].texture);
+		}
 	}
 }
 
@@ -100,9 +117,9 @@ void sdlgpu_framebuffer_clear(
 
 	if(flags & BUFFER_DEPTH) {
 		auto a = &framebuffer->attachments[FRAMEBUFFER_ATTACH_DEPTH];
-		if(a->target.texture) {
-			a->load.op = SDL_GPU_LOADOP_CLEAR;
-			a->load.clear.depth = depthval;
+		if(a->texture) {
+			a->texture->load.op = SDL_GPU_LOADOP_CLEAR;
+			a->texture->load.clear.depth = depthval;
 		}
 	}
 
@@ -112,20 +129,58 @@ void sdlgpu_framebuffer_clear(
 
 			if(target != FRAMEBUFFER_ATTACH_NONE) {
 				auto a = &framebuffer->attachments[target];
-				a->load.op = SDL_GPU_LOADOP_CLEAR;
-				a->load.clear.color.as_taisei = *colorval;
+
+				if(a->texture) {
+					a->texture->load.op = SDL_GPU_LOADOP_CLEAR;
+					a->texture->load.clear.color = *colorval;
+				}
 			}
 		}
 	}
 }
 
+static SDL_GpuCopyPass *sdlgpu_framebuffer_copy_attachment(
+	SDL_GpuCopyPass *copy_pass, Framebuffer *dst, Framebuffer *src, FramebufferAttachment attachment
+) {
+	auto a_dst = &dst->attachments[attachment];
+	auto a_src = &src->attachments[attachment];
+
+	if(a_dst->texture && a_src->texture) {
+		copy_pass = sdlgpu_texture_copy(copy_pass, a_dst, a_src, true);
+	}
+
+	return copy_pass;
+}
+
 void sdlgpu_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
-	UNREACHABLE;
+	SDL_GpuCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_DRAW);
+
+	if(flags & BUFFER_COLOR) {
+		for(uint i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
+			copy_pass = sdlgpu_framebuffer_copy_attachment(copy_pass, dst, src, FRAMEBUFFER_ATTACH_COLOR0 + i);
+		}
+	}
+
+	if(flags & BUFFER_DEPTH) {
+		copy_pass = sdlgpu_framebuffer_copy_attachment(copy_pass, dst, src, FRAMEBUFFER_ATTACH_DEPTH);
+	}
 }
 
 IntExtent sdlgpu_framebuffer_get_size(Framebuffer *fb) {
 	if(fb) {
-		log_fatal("Not implemented");
+		for(int i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+			Texture *tex = fb->attachments[i].texture;
+
+			if(tex) {
+				// Assume all attachments are the same size
+				return (IntExtent) {
+					.w = tex->params.width,
+					.h = tex->params.height,
+				};
+			}
+		}
+
+		return (IntExtent) { };
 	}
 
 	return (IntExtent) {
@@ -159,7 +214,60 @@ const char *sdlgpu_framebuffer_get_debug_label(Framebuffer* fb) {
 }
 
 void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask) {
-	UNREACHABLE;
+	// log_warn("FLUSH %p [%s] mask=0x%04x", framebuffer, framebuffer->debug_label, attachment_mask);
+
+	RenderPassOutputs outputs = {
+		.depth_format = SDL_GPU_TEXTUREFORMAT_INVALID,
+	};
+
+	auto fb_depth_attachment = &framebuffer->attachments[FRAMEBUFFER_ATTACH_DEPTH];
+
+	if(
+		attachment_mask & (1u << FRAMEBUFFER_ATTACH_DEPTH) &&
+		fb_depth_attachment->texture &&
+		fb_depth_attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR
+	) {
+		outputs.depth_stencil = (SDL_GpuDepthStencilAttachmentInfo) {
+			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
+			.loadOp = SDL_GPU_LOADOP_LOAD,
+			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
+			.storeOp = SDL_GPU_STOREOP_STORE,
+			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
+			.texture = fb_depth_attachment->texture->gpu_texture,
+			.cycle = false,   // FIXME FIXME FIXME
+		};
+
+		outputs.depth_format = fb_depth_attachment->texture->gpu_format;
+		fb_depth_attachment->texture->load.op = SDL_GPU_LOADOP_LOAD;
+	}
+
+	for(uint i = FRAMEBUFFER_ATTACH_COLOR0; i < ARRAY_SIZE(framebuffer->attachments); ++i) {
+		if(
+			attachment_mask & (1u << i) &&
+			framebuffer->attachments[i].texture &&
+			framebuffer->attachments[i].texture->load.op == SDL_GPU_LOADOP_CLEAR
+		) {
+			outputs.color[outputs.num_color_attachments++] = (SDL_GpuColorAttachmentInfo) {
+				.clearColor = framebuffer->attachments[i].texture->load.clear.color.sdl_fcolor,
+				.loadOp = SDL_GPU_LOADOP_CLEAR,
+				.storeOp = SDL_GPU_STOREOP_STORE,
+				.texture = framebuffer->attachments[i].texture->gpu_texture,
+				.mipLevel = framebuffer->attachments[i].mip_level,
+				.layerOrDepthPlane = 0,
+				.cycle = false,   // FIXME FIXME FIXME
+			};
+
+			outputs.color_formats[i] = framebuffer->attachments[i].texture->gpu_format;
+			framebuffer->attachments[i].texture->load.op = SDL_GPU_LOADOP_LOAD;
+		}
+	}
+
+	// log_debug("Num color attachments to clear: %u", num_clear_attachments);
+	// log_debug("%s the depth attachment", depth_attachment.texture ? "Clearing" : "Not clearing");
+
+	if(outputs.num_color_attachments > 0 || outputs.depth_stencil.texture) {
+		sdlgpu_begin_or_resume_render_pass(&outputs);
+	}
 }
 
 static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutputs *outputs) {
@@ -167,14 +275,13 @@ static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutpu
 
 	outputs->color[0] = (SDL_GpuColorAttachmentInfo) {
 		.texture = swapchain_tex,
-		.clearColor = sdlgpu.st.default_framebuffer.color.clear.color.as_sdlgpu,
+		.clearColor = sdlgpu.st.default_framebuffer.color.clear.color.sdl_fcolor,
 		.loadOp = sdlgpu.st.default_framebuffer.color.op,
-		.storeOp = swapchain_tex ? SDL_GPU_STOREOP_DONT_CARE : SDL_GPU_STOREOP_STORE,
+		.storeOp = swapchain_tex ? SDL_GPU_STOREOP_STORE : SDL_GPU_STOREOP_DONT_CARE,
 	};
 
 	outputs->color_formats[0] = sdlgpu.frame.swapchain.fmt;
-
-	outputs->have_depth_stencil = false;
+	outputs->depth_format = SDL_GPU_TEXTUREFORMAT_INVALID;
 	outputs->num_color_attachments = swapchain_tex ? 1 : 0;
 
 	sdlgpu.st.default_framebuffer.color.op = SDL_GPU_LOADOP_LOAD;
@@ -187,5 +294,59 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 		return;
 	}
 
-	UNREACHABLE;
+	*outputs = (RenderPassOutputs) { };
+
+	auto fb_depth_attachment = &framebuffer->attachments[FRAMEBUFFER_ATTACH_DEPTH];
+
+	if(fb_depth_attachment->texture) {
+		outputs->depth_format = fb_depth_attachment->texture->gpu_format;
+		outputs->depth_stencil = (SDL_GpuDepthStencilAttachmentInfo) {
+			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
+			.loadOp = fb_depth_attachment->texture->load.op,
+			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
+			.storeOp = SDL_GPU_STOREOP_STORE,
+			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
+			.texture = fb_depth_attachment->texture->gpu_texture,
+			.cycle = false,   // FIXME FIXME FIXME
+		};
+
+		// fb_depth_attachment->texture->is_virgin = false;
+		fb_depth_attachment->texture->load.op = SDL_GPU_LOADOP_LOAD;
+	} else {
+		outputs->depth_format = SDL_GPU_TEXTUREFORMAT_INVALID;
+	}
+
+	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+		// FIXME we can't have sparse attachments
+		FramebufferAttachment target = framebuffer->output_mapping[i];
+
+		if(target == FRAMEBUFFER_ATTACH_NONE) {
+			continue;
+		}
+
+		auto attachment = &framebuffer->attachments[target];
+
+		if(attachment->texture == NULL) {
+			continue;
+		}
+
+		if(attachment->texture->load.op == SDL_GPU_LOADOP_LOAD) {
+			sdlgpu_texture_prepare(attachment->texture);
+		}
+
+		uint a = outputs->num_color_attachments++;
+		outputs->color[a] = (SDL_GpuColorAttachmentInfo) {
+			.clearColor = attachment->texture->load.clear.color.sdl_fcolor,
+			.loadOp = attachment->texture->load.op,
+			.storeOp = SDL_GPU_STOREOP_STORE,
+			.texture = attachment->texture->gpu_texture,
+			.mipLevel = attachment->mip_level,
+			.layerOrDepthPlane = 0,
+			.cycle = false,   // FIXME FIXME FIXME
+		};
+		outputs->color_formats[a] = attachment->texture->gpu_format;
+
+		// attachment->texture->is_virgin = false;
+		attachment->texture->load.op = SDL_GPU_LOADOP_LOAD;
+	}
 }

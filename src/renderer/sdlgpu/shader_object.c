@@ -8,7 +8,8 @@
 
 #include "shader_object.h"
 
-#include "renderer/common/shaderlib/reflect.h"
+#include "../common/shaderlib/reflect.h"
+#include "texture.h"
 #include "sdlgpu.h"
 
 #define UNIFORM_BLOCK_NAME "gl_DefaultUniformBlock"
@@ -125,6 +126,12 @@ static UniformType sampler_type_to_uniform_type(const ShaderSamplerType *stype) 
 	return UNIFORM_UNKNOWN;
 }
 
+static void sdlgpu_shader_object_set_sampler_binding(ShaderObject *shobj, uint binding, Texture *tex) {
+	sdlgpu_texture_incref(tex);
+	sdlgpu_texture_decref(dynarray_get(&shobj->sampler_bindings, binding));
+	dynarray_set(&shobj->sampler_bindings, binding, tex);
+}
+
 static void sdlgpu_shader_object_add_sampler_uniform(
 	ShaderObject *shobj, const ShaderSampler *sampler
 ) {
@@ -144,12 +151,28 @@ static void sdlgpu_shader_object_add_sampler_uniform(
 
 	auto uniform = sdlgpu_shader_object_alloc_uniform(shobj, sampler->name);
 
+	TextureClass tex_cls;
+
+	switch (type) {
+		case UNIFORM_SAMPLER_2D:   tex_cls = TEXTURE_CLASS_2D; break;
+		case UNIFORM_SAMPLER_CUBE: tex_cls = TEXTURE_CLASS_CUBEMAP; break;
+		default: UNREACHABLE;
+	}
+
 	*uniform = (ShaderObjectUniform) {
 		.type = type,
 		.sampler = {
 			.binding = sampler->binding,
 		},
 	};
+
+	uint min_size = sampler->binding + 1;
+	dynarray_ensure_capacity(&shobj->sampler_bindings, min_size);
+
+	while(shobj->sampler_bindings.num_elements < min_size) {
+		sdlgpu_texture_incref(sdlgpu.null_textures[tex_cls]);
+		*dynarray_append(&shobj->sampler_bindings) = sdlgpu.null_textures[tex_cls];
+	}
 
 	sdlgpu_shader_object_try_init_magic_uniform(shobj, sampler->name, uniform);
 }
@@ -190,6 +213,13 @@ static void sdlgpu_shader_object_init_uniforms(ShaderObject *shobj, const Shader
 	}
 }
 
+static void sdlgpu_shader_object_free_suballocations(ShaderObject *shobj) {
+	dynarray_free_data(&shobj->sampler_bindings);
+	ht_destroy(&shobj->uniforms);
+	marena_deinit(&shobj->arena);
+	mem_free(shobj->uniform_buffer.data);
+}
+
 ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	if(UNLIKELY(!sdlgpu_shader_language_supported(&source->lang, NULL))) {
 		log_error("Shading language not supported");
@@ -207,7 +237,17 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 		return NULL;
 	}
 
-	SDL_GpuShader *shader = SDL_GpuCreateShader(sdlgpu.device, &(SDL_GpuShaderCreateInfo) {
+	auto shobj = ALLOC(ShaderObject, {
+		.stage = source->stage,
+		.refs.value = 1,
+	});
+
+	sdlgpu_shader_object_init_uniforms(shobj, reflection);
+	uint num_samplers = shobj->sampler_bindings.num_elements;
+	uint num_uniform_buffers = reflection->num_uniform_buffers;
+	marena_deinit(&reflect_arena);
+
+	shobj->shader = SDL_GpuCreateShader(sdlgpu.device, &(SDL_GpuShaderCreateInfo) {
 		.stage = shader_stage_ts2sdl(source->stage),
 		.code = (uint8_t*)source->content,
 		.codeSize = source->content_size - 1,  // content always contains an extra NULL byte
@@ -215,37 +255,28 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 
 		// FIXME
 		.entryPointName = "main",
-		.samplerCount = reflection->num_samplers,
+		.samplerCount = num_samplers,
 		.storageTextureCount = 0,
 		.storageBufferCount = 0,
-		.uniformBufferCount = reflection->num_uniform_buffers,
+		.uniformBufferCount = num_uniform_buffers,
 	});
 
-	if(UNLIKELY(!shader)) {
+	if(UNLIKELY(!shobj->shader)) {
 		log_sdl_error(LOG_ERROR, "SDL_GpuCreateShader");
+		sdlgpu_shader_object_free_suballocations(shobj);
+		mem_free(shobj);
 		return NULL;
 	}
-
-	auto shobj = ALLOC(ShaderObject, {
-		.shader = shader,
-		.stage = source->stage,
-		.refs.value = 1,
-	});
-
-	sdlgpu_shader_object_init_uniforms(shobj, reflection);
-	marena_deinit(&reflect_arena);
 
 	return shobj;
 }
 
-static void sdlgpu_shader_object_free_suballocations(ShaderObject *shobj) {
-	ht_destroy(&shobj->uniforms);
-	marena_deinit(&shobj->arena);
-	mem_free(shobj->uniform_buffer.data);
-}
-
 void sdlgpu_shader_object_destroy(ShaderObject *shobj) {
 	if(SDL_AtomicDecRef(&shobj->refs)) {
+		dynarray_foreach_elem(&shobj->sampler_bindings, Texture **bind, {
+			sdlgpu_texture_decref(*bind);
+		});
+
 		SDL_GpuReleaseShader(sdlgpu.device, shobj->shader);
 		sdlgpu_shader_object_free_suballocations(shobj);
 		mem_free(shobj);
@@ -289,14 +320,7 @@ void sdlgpu_shader_object_uniform_set_data(
 	}
 
 	if(is_sampler_uniform(uni->type)) {
-		uint min_size = uni->sampler.binding + 1;
-		dynarray_ensure_capacity(&shobj->sampler_bindings, min_size);
-
-		while(shobj->sampler_bindings.num_elements < min_size) {
-			*dynarray_append(&shobj->sampler_bindings) = NULL;
-		}
-
-		dynarray_set(&shobj->sampler_bindings, uni->sampler.binding, *(Texture**)data);
+		sdlgpu_shader_object_set_sampler_binding(shobj, uni->sampler.binding, *(Texture**)data);
 	} else {
 		// FIXME no source buffer size supplied by the API, infer it.
 		auto uti = r_uniform_type_info(uni->type);

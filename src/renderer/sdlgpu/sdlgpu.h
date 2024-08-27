@@ -20,12 +20,27 @@
 
 typedef uint16_t sdlgpu_id_t;
 
+typedef enum CommandBufferID {
+	CBUF_UPLOAD,
+	CBUF_DRAW,
+
+	NUM_CBUFS,
+} CommandBufferID;
+
 typedef struct SDLGPUGlobal {
 	SDL_GpuDevice *device;
 	SDL_Window *window;
 
+	Texture *null_textures[NUM_TEXTURE_CLASSES];
+
 	struct {
-		SDL_GpuCommandBuffer *cbuf;
+		union {
+			struct {
+				SDL_GpuCommandBuffer *upload_cbuf;
+				SDL_GpuCommandBuffer *cbuf;
+			};
+			SDL_GpuCommandBuffer *command_buffers[NUM_CBUFS];
+		};
 		SDL_GpuFence *fence;
 
 		struct {
@@ -39,6 +54,7 @@ typedef struct SDLGPUGlobal {
 	struct {
 		ShaderProgram *shader;
 		Framebuffer *framebuffer;
+		Framebuffer *prev_framebuffer;
 		DefaultFramebufferState default_framebuffer;
 		r_capability_bits_t caps;
 		Color default_color;
@@ -47,6 +63,15 @@ typedef struct SDLGPUGlobal {
 		DepthTestFunc depth_func;
 		IntRect scissor;
 	} st;
+
+	struct {
+		SDL_GpuRenderPass *pass;
+		RenderPassOutputs outputs;
+	} render_pass;
+
+	struct {
+		SDL_GpuCopyPass *for_cbuf[NUM_CBUFS];
+	} copy_pass;
 
 	struct {
 		sdlgpu_id_t shader_programs;
@@ -123,14 +148,14 @@ INLINE SDL_GpuBlendFactor sdlgpu_blendfactor_ts2sdl(BlendFactor f) {
 
 INLINE SDL_GpuCompareOp sdlgpu_cmpop_ts2sdl(DepthTestFunc f) {
 	static const SDL_GpuCompareOp mapping[] = {
-		[SDL_GPU_COMPAREOP_NEVER] = DEPTH_NEVER,
-		[SDL_GPU_COMPAREOP_LESS] = DEPTH_LESS,
-		[SDL_GPU_COMPAREOP_EQUAL] = DEPTH_EQUAL,
-		[SDL_GPU_COMPAREOP_LESS_OR_EQUAL] = DEPTH_LEQUAL,
-		[SDL_GPU_COMPAREOP_GREATER] = DEPTH_GREATER,
-		[SDL_GPU_COMPAREOP_NOT_EQUAL] = DEPTH_NOTEQUAL,
-		[SDL_GPU_COMPAREOP_GREATER_OR_EQUAL] = DEPTH_GEQUAL,
-		[SDL_GPU_COMPAREOP_ALWAYS] = DEPTH_ALWAYS,
+		[DEPTH_ALWAYS] = SDL_GPU_COMPAREOP_ALWAYS,
+		[DEPTH_EQUAL] = SDL_GPU_COMPAREOP_EQUAL,
+		[DEPTH_GEQUAL] = SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,
+		[DEPTH_GREATER] = SDL_GPU_COMPAREOP_GREATER,
+		[DEPTH_LEQUAL] = SDL_GPU_COMPAREOP_LESS_OR_EQUAL,
+		[DEPTH_LESS] = SDL_GPU_COMPAREOP_LESS,
+		[DEPTH_NEVER] = SDL_GPU_COMPAREOP_NEVER,
+		[DEPTH_NOTEQUAL] = SDL_GPU_COMPAREOP_NOT_EQUAL,
 	};
 
 	uint idx = f;
@@ -140,3 +165,7 @@ INLINE SDL_GpuCompareOp sdlgpu_cmpop_ts2sdl(DepthTestFunc f) {
 
 void sdlgpu_renew_swapchain_texture(void);
 SDL_GpuTexture *sdlgpu_get_swapchain_texture(void);
+
+SDL_GpuRenderPass *sdlgpu_begin_or_resume_render_pass(RenderPassOutputs *outputs);
+SDL_GpuCopyPass *sdlgpu_begin_or_resume_copy_pass(CommandBufferID cbuf_id);
+void sdlgpu_stop_current_pass(CommandBufferID cbuf_id);

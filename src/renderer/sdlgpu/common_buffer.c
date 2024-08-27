@@ -99,7 +99,7 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 	memcpy(mapped + update.offset, update.data, update.size);
 	SDL_GpuUnmapTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 
-	auto copypass = SDL_GpuBeginCopyPass(sdlgpu.frame.cbuf);
+	auto copypass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
 
 	SDL_GpuUploadToBuffer(copypass, &(SDL_GpuTransferBufferLocation) {
 		.transferBuffer = cbuf->transferbuf,
@@ -109,6 +109,4 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 		.offset = update.offset,
 		.size = update.size,
 	}, true);
-
-	SDL_GpuEndCopyPass(copypass);
 }

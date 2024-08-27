@@ -9,42 +9,21 @@
 #pragma once
 #include "taisei.h"
 
+#include "texture.h"
+
 #include "../api.h"
 #include "../common/backend.h"
 
-typedef struct FramebufferAttachmentLoadState {
-	SDL_GpuLoadOp op;
-	union {
-		union {
-			SDL_FColor as_sdlgpu;
-			Color as_taisei;
-		} color;
-		float depth;
-	} clear;
-} FramebufferAttachmentLoadState;
-
-typedef struct FramebufferAttachmentData {
-	struct {
-		Texture *texture;
-		uint mip_level;
-	} target;
-	FramebufferAttachmentLoadState load;
-} FramebufferAttachmentData;
-
-static_assert(
-	sizeof ((FramebufferAttachmentData){}).load.clear.color.as_sdlgpu ==
-	sizeof ((FramebufferAttachmentData){}).load.clear.color.as_taisei);
-
 struct Framebuffer {
-	FramebufferAttachmentData attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
+	TextureSlice attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
 	FramebufferAttachment output_mapping[FRAMEBUFFER_MAX_OUTPUTS];
 	FloatRect viewport;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
 typedef struct DefaultFramebufferState {
-	FramebufferAttachmentLoadState color;
-	FramebufferAttachmentLoadState depth;
+	TextureLoadState color;
+	TextureLoadState depth;
 	FloatRect viewport;
 } DefaultFramebufferState;
 
@@ -52,8 +31,8 @@ typedef struct RenderPassOutputs {
 	SDL_GpuColorAttachmentInfo color[FRAMEBUFFER_MAX_OUTPUTS];
 	SDL_GpuTextureFormat color_formats[FRAMEBUFFER_MAX_OUTPUTS];
 	SDL_GpuDepthStencilAttachmentInfo depth_stencil;
+	SDL_GpuTextureFormat depth_format;
 	uint num_color_attachments;
-	bool have_depth_stencil;
 } RenderPassOutputs;
 
 Framebuffer *sdlgpu_framebuffer_create(void);

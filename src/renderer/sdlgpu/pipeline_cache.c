@@ -78,6 +78,14 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 	k.depth_func = pd->depth_func;
 	k.depth_test = enable_depth_test;
 	k.depth_write = enable_depth_write;
+	k.depth_format = pd->depth_format & PIPECACHE_FMT_MASK;
+	k.front_face_ccw = (pd->front_face == SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE);
+
+	if(pd->depth_format == SDL_GPU_TEXTUREFORMAT_INVALID) {
+		assert(k.depth_format == PIPECACHE_FMT_MASK);
+	} else {
+		assert(k.depth_format == pd->depth_format);
+	}
 
 	assert(k.cull_mode || !enable_cull_face);
 
@@ -97,9 +105,32 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 	return k;
 }
 
+static void dump_vertex_input_state(SDL_GpuVertexInputState *st) {
+	log_debug(" *** BINDINGS:");
+	for(uint i = 0; i < st->vertexBindingCount; ++i) {
+			log_debug("[%u] binding:   %u", i, st->vertexBindings[i].binding);
+			log_debug("[%u] stride:    %u", i, st->vertexBindings[i].stride);
+			log_debug("[%u] inputRate: %u", i, st->vertexBindings[i].inputRate);
+			log_debug("[%u] stepRate:  %u", i, st->vertexBindings[i].instanceStepRate);
+			// log_debug("[%u] attachment map: %u", i, varr->binding_to_attachment_map[i]);
+	}
+
+	log_debug(" *** ATTRIBS:");
+	for(uint i = 0; i < st->vertexAttributeCount; ++i) {
+			log_debug("[%u] location:  %u", i, st->vertexAttributes[i].location);
+			log_debug("[%u] binding:   %u", i, st->vertexAttributes[i].binding);
+			log_debug("[%u] format:    %u", i, st->vertexAttributes[i].format);
+			log_debug("[%u] offset:    %u", i, st->vertexAttributes[i].offset);
+	}
+}
+
 static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineDescription *restrict pd) {
 	auto v_shader = pd->shader_program->stages.vertex;
 	auto f_shader = pd->shader_program->stages.fragment;
+
+	log_debug("BEGIN CREATE PIPELINE");
+
+	dump_vertex_input_state(&pd->vertex_array->vertex_input_state);
 
 	SDL_GpuColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
 
@@ -113,23 +144,25 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 				? sdlgpu_cullmode_ts2sdl(sdlgpu.st.cull)
 				: SDL_GPU_CULLMODE_NONE,
 			.fillMode = SDL_GPU_FILLMODE_FILL,
-			.frontFace = SDL_GPU_FRONTFACE_CLOCKWISE,
+			.frontFace = pd->front_face,
 		},
 		.multisampleState = {
 			.sampleMask = 0xFFFF,
 		},
 		.depthStencilState = {
-			.depthTestEnable = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST),
-			.depthWriteEnable = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE),
+			.depthTestEnable = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)),
+			.depthWriteEnable = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE)),
 			.stencilTestEnable = false,
 			.writeMask = 0x0,
 			.compareOp = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)
-				? SDL_GPU_COMPAREOP_ALWAYS
-				: sdlgpu_cmpop_ts2sdl(sdlgpu.st.depth_func),
+				? sdlgpu_cmpop_ts2sdl(sdlgpu.st.depth_func)
+				: SDL_GPU_COMPAREOP_ALWAYS,
 		},
 		.attachmentInfo = {
 			.colorAttachmentDescriptions = color_attachment_descriptions,
 			.colorAttachmentCount = pd->num_outputs,
+			.hasDepthStencilAttachment = pd->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID,
+			.depthStencilFormat = pd->depth_format,
 		},
 	};
 
@@ -151,7 +184,9 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 		};
 	}
 
-	return SDL_GpuCreateGraphicsPipeline(sdlgpu.device, &pci);
+	auto r = SDL_GpuCreateGraphicsPipeline(sdlgpu.device, &pci);
+	log_debug("END CREATE PIPELINE = %p", r);
+	return r;
 }
 
 static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline_callback(ht_pcache_value_t v) {

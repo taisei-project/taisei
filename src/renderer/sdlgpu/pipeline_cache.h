@@ -19,6 +19,7 @@ enum {
 typedef struct PipelineCacheKey {
 	uint32_t blend : 28;      // enum: BlendMode
 	uint32_t attachment_formats : (FRAMEBUFFER_MAX_OUTPUTS * PIPECACHE_KEY_TEXFMT_BITS);
+	uint32_t depth_format : PIPECACHE_KEY_TEXFMT_BITS;
 	sdlgpu_id_t shader_program;
 	sdlgpu_id_t vertex_array;
 	uint8_t primitive : 4;    // enum: Primitive
@@ -26,7 +27,10 @@ typedef struct PipelineCacheKey {
 	uint8_t depth_func : 7;   // enum: DepthTestFunc
 	uint8_t depth_test : 1;
 	uint8_t depth_write : 1;
+	uint8_t front_face_ccw : 1;
 } PipelineCacheKey;
+
+static_assert((((uint)SDL_GPU_TEXTUREFORMAT_INVALID) & PIPECACHE_FMT_MASK) == PIPECACHE_FMT_MASK);
 
 typedef struct PipelineDescription {
 	ShaderProgram *shader_program;
@@ -36,11 +40,13 @@ typedef struct PipelineDescription {
 	BlendMode blend_mode;
 	Primitive primitive;
 	r_capability_bits_t cap_bits;
+	SDL_GpuFrontFace front_face;
 
 	uint num_outputs;
 	struct {
 		SDL_GpuTextureFormat format;  // must be PIPECACHE_FMT_MASK for unused outputs
 	} outputs[FRAMEBUFFER_MAX_OUTPUTS];
+	SDL_GpuTextureFormat depth_format;
 } PipelineDescription;
 
 void sdlgpu_pipecache_init(void);

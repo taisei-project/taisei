@@ -14,51 +14,50 @@
 #include "util.h"
 
 static SDL_GpuTextureFormat sdlgpu_texfmt_ts2sdl(TextureType t) {
-	static const SDL_GpuCompareOp mapping[] = {
-		[TEX_TYPE_RGBA_8] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
-		[TEX_TYPE_RGB_8] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_RG_8] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_R_8] = SDL_GPU_TEXTUREFORMAT_R8_UNORM,
-		[TEX_TYPE_RGBA_16] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
-		[TEX_TYPE_RGB_16] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_RG_16] = SDL_GPU_TEXTUREFORMAT_R16G16_UNORM,
-		[TEX_TYPE_R_16] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_RGBA_16_FLOAT] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,
-		[TEX_TYPE_RGB_16_FLOAT] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_RG_16_FLOAT] = SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT,
-		[TEX_TYPE_R_16_FLOAT] = SDL_GPU_TEXTUREFORMAT_R16_FLOAT,
-		[TEX_TYPE_RGBA_32_FLOAT] = SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT,
-		[TEX_TYPE_RGB_32_FLOAT] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_RG_32_FLOAT] = SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT,
-		[TEX_TYPE_R_32_FLOAT] = SDL_GPU_TEXTUREFORMAT_R32_FLOAT,
-		[TEX_TYPE_DEPTH_8] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_DEPTH_16] = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
-		[TEX_TYPE_DEPTH_24] = SDL_GPU_TEXTUREFORMAT_D24_UNORM,
-		[TEX_TYPE_DEPTH_32] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_DEPTH_16_FLOAT] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_DEPTH_32_FLOAT] = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
-		[TEX_TYPE_COMPRESSED_ETC1_RGB] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ETC2_RGBA] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_BC1_RGB] = SDL_GPU_TEXTUREFORMAT_BC1_UNORM,
-		[TEX_TYPE_COMPRESSED_BC3_RGBA] = SDL_GPU_TEXTUREFORMAT_BC3_UNORM,
-		[TEX_TYPE_COMPRESSED_BC4_R] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_BC5_RG] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_BC7_RGBA] = SDL_GPU_TEXTUREFORMAT_BC7_UNORM,
-		[TEX_TYPE_COMPRESSED_PVRTC1_4_RGB] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_PVRTC1_4_RGBA] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ASTC_4x4_RGBA] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ATC_RGB] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ATC_RGBA] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_PVRTC2_4_RGB] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_PVRTC2_4_RGBA] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ETC2_EAC_R11] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_ETC2_EAC_RG11] = SDL_GPU_TEXTUREFORMAT_INVALID,
-		[TEX_TYPE_COMPRESSED_FXT1_RGB] = SDL_GPU_TEXTUREFORMAT_INVALID,
-	};
+	switch(t) {
+		case TEX_TYPE_RGBA_8:						return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+		case TEX_TYPE_RGB_8:						return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_RG_8:							return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_R_8:							return SDL_GPU_TEXTUREFORMAT_R8_UNORM;
+		case TEX_TYPE_RGBA_16:						return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM;
+		case TEX_TYPE_RGB_16:						return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_RG_16:						return SDL_GPU_TEXTUREFORMAT_R16G16_UNORM;
+		case TEX_TYPE_R_16:							return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_RGBA_16_FLOAT:				return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
+		case TEX_TYPE_RGB_16_FLOAT:					return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_RG_16_FLOAT:					return SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT;
+		case TEX_TYPE_R_16_FLOAT:					return SDL_GPU_TEXTUREFORMAT_R16_FLOAT;
+		case TEX_TYPE_RGBA_32_FLOAT:				return SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT;
+		case TEX_TYPE_RGB_32_FLOAT:					return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_RG_32_FLOAT:					return SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT;
+		case TEX_TYPE_R_32_FLOAT:					return SDL_GPU_TEXTUREFORMAT_R32_FLOAT;
+		case TEX_TYPE_DEPTH_8:						return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_DEPTH_16: 					return SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+		case TEX_TYPE_DEPTH_24:						return SDL_GPU_TEXTUREFORMAT_D24_UNORM;
+		case TEX_TYPE_DEPTH_32:						return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_DEPTH_16_FLOAT:				return SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
+		case TEX_TYPE_DEPTH_32_FLOAT:				return SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
+		case TEX_TYPE_COMPRESSED_ETC1_RGB:			return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ETC2_RGBA:			return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_BC1_RGB:			return SDL_GPU_TEXTUREFORMAT_BC1_UNORM;
+		case TEX_TYPE_COMPRESSED_BC3_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC3_UNORM;
+		case TEX_TYPE_COMPRESSED_BC4_R:				return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_BC5_RG:			return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_BC7_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC7_UNORM;
+		case TEX_TYPE_COMPRESSED_PVRTC1_4_RGB:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_PVRTC1_4_RGBA:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ASTC_4x4_RGBA:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ATC_RGB:			return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ATC_RGBA:			return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_PVRTC2_4_RGB:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_PVRTC2_4_RGBA:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ETC2_EAC_R11:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_ETC2_EAC_RG11:		return SDL_GPU_TEXTUREFORMAT_INVALID;
+		case TEX_TYPE_COMPRESSED_FXT1_RGB:			return SDL_GPU_TEXTUREFORMAT_INVALID;
 
-	uint idx = t;
-	assume(idx < ARRAY_SIZE(mapping));
-	return mapping[idx];
+		default:
+			UNREACHABLE;
+	}
 }
 
 static SDL_GpuTextureFormat sdlgpu_texfmt_to_srgb(SDL_GpuTextureFormat fmt) {
@@ -72,6 +71,17 @@ static SDL_GpuTextureFormat sdlgpu_texfmt_to_srgb(SDL_GpuTextureFormat fmt) {
 }
 
 static TextureType sdlgpu_remap_texture_type(TextureType tt) {
+	switch(tt) {
+		case TEX_TYPE_DEPTH_8:
+		case TEX_TYPE_DEPTH_16:
+		case TEX_TYPE_DEPTH_24:
+		case TEX_TYPE_DEPTH_32:
+		case TEX_TYPE_DEPTH_16_FLOAT:
+		case TEX_TYPE_DEPTH_32_FLOAT:
+			return TEX_TYPE_DEPTH_16;
+		default: break;
+	}
+
 	switch(tt) {
 		case TEX_TYPE_RGB_8:				return TEX_TYPE_RGBA_8;
 		case TEX_TYPE_RG_8:					return TEX_TYPE_RGBA_8;
@@ -166,7 +176,7 @@ static bool sdlgpu_texture_check_swizzle_component(char val, char defval) {
 	return !val || val == defval;
 }
 
-static bool sdlgpu_texture_check_swizzle(const SwizzleMask *swizzle) {
+static bool sdlgpu_texture_check_swizzle(SDL_GpuTextureFormat fmt, const SwizzleMask *swizzle) {
 	return
 		sdlgpu_texture_check_swizzle_component(swizzle->r, 'r') &&
 		sdlgpu_texture_check_swizzle_component(swizzle->g, 'g') &&
@@ -210,9 +220,8 @@ static SDL_GpuTextureType sdlgpu_type_ts2sdl(TextureClass cls) {
 			return SDL_GPU_TEXTURETYPE_2D;
 		case TEXTURE_CLASS_CUBEMAP:
 			return SDL_GPU_TEXTURETYPE_CUBE;
+		default: UNREACHABLE;
 	}
-
-	UNREACHABLE;
 }
 
 static SDL_GpuSamplerMipmapMode sdlgpu_addrmode_ts2sdl(TextureWrapMode wm) {
@@ -275,6 +284,7 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 
 	auto tex = ALLOC(Texture, {
 		.params = *params,
+		.refs = 1,
 	});
 
 	tex->params.type = sdlgpu_remap_texture_type(tex->params.type);
@@ -299,25 +309,31 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 		tex_fmt = tex_fmt_srgb;
 	}
 
-	if(!sdlgpu_texture_check_swizzle(&tex->params.swizzle)) {
-		log_error("Swizzle masks are not supported");
-		goto fail;
+	if(!sdlgpu_texture_check_swizzle(tex_fmt, &tex->params.swizzle)) {
+		auto swizzle = &tex->params.swizzle;
+		log_warn("Can't apply swizzle %c%c%c%c to texture: swizzle masks are not supported",
+			swizzle->r?:'r', swizzle->g?:'g', swizzle->b?:'b', swizzle->a?:'a');
 	}
 
 	assert(tex->params.width > 0);
 	assert(tex->params.height > 0);
 
+	uint required_layers;
+
+	switch(tex->params.class) {
+		case TEXTURE_CLASS_2D:      required_layers = 1; break;
+		case TEXTURE_CLASS_CUBEMAP: required_layers = 6; break;
+		default: UNREACHABLE;
+	}
+
+	if(!tex->params.layers) {
+		tex->params.layers = required_layers;
+	}
+
+	assert(tex->params.layers == required_layers);
+
 	if(tex->params.class == TEXTURE_CLASS_CUBEMAP) {
 		assert(tex->params.width == tex->params.height);
-		assert(tex->params.layers == 6);
-	} else if(tex->params.class == TEXTURE_CLASS_2D) {
-		if(tex->params.layers == 0) {
-			tex->params.layers = 1;
-		}
-
-		assert(tex->params.layers == 1);
-	} else {
-		UNREACHABLE;
 	}
 
 	uint max_mipmaps = r_texture_util_max_num_miplevels(tex->params.width, tex->params.height);
@@ -339,17 +355,19 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 		tex->params.anisotropy = TEX_ANISOTROPY_DEFAULT;
 	}
 
+	SDL_GpuTextureType type = sdlgpu_type_ts2sdl(tex->params.class);
 	SDL_GpuTextureUsageFlagBits usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
 
 	if(is_depth_format(tex_fmt)) {
 		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
-	} else {
+	} else if(SDL_GpuSupportsTextureFormat(sdlgpu.device, tex_fmt, type, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT)) {
 		// FIXME: we don't know whether we're going to need to render to this texture or not
 		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
 	}
 
+
 	tex->gpu_texture = SDL_GpuCreateTexture(sdlgpu.device, &(SDL_GpuTextureCreateInfo) {
-		.type = sdlgpu_type_ts2sdl(tex->params.class),
+		.type = type,
 		.format = tex_fmt,
 		.width = tex->params.width,
 		.height = tex->params.height,
@@ -363,11 +381,18 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 		goto fail;
 	}
 
+	tex->gpu_format = tex_fmt;
+
+	static uint counter;
+	tex->number = ++counter;
+	tex->is_virgin = true;
+	tex->load.op = SDL_GPU_LOADOP_DONT_CARE;
+	sdlgpu_texture_set_debug_label(tex, "Unnamed");
 	return tex;
 
 fail:
 	mem_free(tex);
-	return tex;
+	return NULL;
 }
 
 void sdlgpu_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) {
@@ -407,8 +432,9 @@ const char *sdlgpu_texture_get_debug_label(Texture *tex) {
 }
 
 void sdlgpu_texture_set_debug_label(Texture *tex, const char *label) {
-	strlcpy(tex->debug_label, label, sizeof(tex->debug_label));
-	SDL_GpuSetTextureName(sdlgpu.device, tex->gpu_texture, label);
+	// strlcpy(tex->debug_label, label, sizeof(tex->debug_label));
+	snprintf(tex->debug_label, sizeof(tex->debug_label), "#%u: %s", tex->number, label);
+	SDL_GpuSetTextureName(sdlgpu.device, tex->gpu_texture, tex->debug_label);
 }
 
 void sdlgpu_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
@@ -420,10 +446,19 @@ void sdlgpu_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode w
 }
 
 void sdlgpu_texture_invalidate(Texture *tex) {
-	UNREACHABLE;
+	tex->load.op = SDL_GPU_LOADOP_DONT_CARE;
 }
 
 void sdlgpu_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image) {
+	sdlgpu_texture_fill_region(tex, mipmap, layer, 0, 0, image);
+}
+
+void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image) {
+	bool covers_whole =
+		x == 0 && y == 0 && image->width >= tex->params.width && image->height >= tex->params.height;
+
+	log_debug("Target: %p [%s] x:%d y:%d w:%d h:%d%s", tex, tex->debug_label, x, y, image->width, image->height, covers_whole ? " (whole coverage)" : "");
+
 	// TODO persistent transfer buffer for streamed textures
 	SDL_GpuTransferBuffer *tbuf = SDL_GpuCreateTransferBuffer(sdlgpu.device, &(SDL_GpuTransferBufferCreateInfo) {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
@@ -434,7 +469,24 @@ void sdlgpu_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *im
 	memcpy(mapped, image->data.untyped, image->data_size);
 	SDL_GpuUnmapTransferBuffer(sdlgpu.device, tbuf);
 
-	SDL_GpuCopyPass *copy_pass = SDL_GpuBeginCopyPass(sdlgpu.frame.cbuf);
+	if(!covers_whole && tex->load.op == SDL_GPU_LOADOP_CLEAR) {
+		sdlgpu_stop_current_pass(CBUF_UPLOAD);
+		SDL_GpuEndRenderPass(SDL_GpuBeginRenderPass(sdlgpu.frame.upload_cbuf,
+			&(SDL_GpuColorAttachmentInfo) {
+				.clearColor = tex->load.clear.color.sdl_fcolor,
+				.loadOp = SDL_GPU_LOADOP_CLEAR,
+				.storeOp = SDL_GPU_STOREOP_STORE,
+				.texture = tex->gpu_texture,
+				.mipLevel = mipmap,
+				.layerOrDepthPlane = layer,
+				.cycle = false,  // FIXME should we cycle here?
+			}, 1, NULL));
+	}
+
+	SDL_GpuCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
+
+	uint tex_h;
+	sdlgpu_texture_get_size(tex, mipmap, NULL, &tex_h);
 
 	SDL_GpuUploadToTexture(copy_pass,
 		&(SDL_GpuTextureTransferInfo) {
@@ -442,36 +494,60 @@ void sdlgpu_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *im
 		},
 		&(SDL_GpuTextureRegion) {
 			.texture = tex->gpu_texture,
+			.x = x,
+			.y = tex_h - y - image->height,
 			.w = image->width,
 			.h = image->height,
 			.d = 1,
+			.layer = layer,
+			.mipLevel = mipmap,
 		},
 	false);
 
-	SDL_GpuEndCopyPass(copy_pass);
+	sdlgpu_texture_taint(tex);
+	tex->load.op = SDL_GPU_LOADOP_LOAD;
+
 	SDL_GpuReleaseTransferBuffer(sdlgpu.device, tbuf);
 }
 
-void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image) {
-	UNREACHABLE;
-}
-
 void sdlgpu_texture_prepare(Texture *tex) {
-	UNREACHABLE;
+	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
+		log_debug("Generating mipmaps for %p (%s)", tex, tex->debug_label);
+		sdlgpu_stop_current_pass(CBUF_DRAW);
+		SDL_GpuGenerateMipmaps(sdlgpu.frame.cbuf, tex->gpu_texture);
+		tex->mipmaps_outdated = false;
+	}
 }
 
 void sdlgpu_texture_taint(Texture *tex) {
-	UNREACHABLE;
+	tex->mipmaps_outdated = true;
+	tex->is_virgin = false;
 }
 
 void sdlgpu_texture_clear(Texture *tex, const Color *clr) {
-	UNREACHABLE;
+	// FIXME add depth parameter
+	tex->load.op = SDL_GPU_LOADOP_CLEAR;
+	tex->load.clear.color = *clr;
+
+#if 0
+	Framebuffer *temp_fb = sdlgpu_framebuffer_create();
+	sdlgpu_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	sdlgpu_framebuffer_clear(temp_fb, BUFFER_COLOR, clr, 1);
+	sdlgpu_framebuffer_destroy(temp_fb);
+	tex->mipmaps_outdated = true;
+#endif
 }
 
 void sdlgpu_texture_destroy(Texture *tex) {
-	SDL_GpuReleaseTexture(sdlgpu.device, tex->gpu_texture);
-	SDL_GpuReleaseSampler(sdlgpu.device, tex->sampler);
-	mem_free(tex);
+	if(SDL_AtomicDecRef(&tex->refs)) {
+		log_debug("Texture %p (%s) is being destroyed!", tex, tex->debug_label);
+
+		assert(!strstartswith(tex->debug_label, "<NULL TEXTURE"));
+
+		SDL_GpuReleaseTexture(sdlgpu.device, tex->gpu_texture);
+		SDL_GpuReleaseSampler(sdlgpu.device, tex->sampler);
+		mem_free(tex);
+	}
 }
 
 bool sdlgpu_texture_type_query(
@@ -501,7 +577,7 @@ bool sdlgpu_texture_type_query(
 	}
 
 	result->optimal_pixmap_format = pixfmt;
-	result->optimal_pixmap_origin = PIXMAP_ORIGIN_TOPLEFT;
+	result->optimal_pixmap_origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 
 	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
 	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);
@@ -513,9 +589,8 @@ bool sdlgpu_texture_sampler_compatible(Texture *tex, UniformType sampler_type) {
 	switch(tex->params.class) {
 		case TEXTURE_CLASS_CUBEMAP:	return sampler_type == UNIFORM_SAMPLER_CUBE;
 		case TEXTURE_CLASS_2D:		return sampler_type == UNIFORM_SAMPLER_2D;
+		default: UNREACHABLE;
 	}
-
-	UNREACHABLE;
 }
 
 bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
@@ -524,4 +599,51 @@ bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 
 bool sdlgpu_texture_transfer(Texture *dst, Texture *src) {
 	UNREACHABLE;
+}
+
+static SDL_GpuCopyPass *sdlgpu_texture_copy_blit(
+	SDL_GpuCopyPass *copy_pass,
+	TextureSlice *dst,
+	TextureSlice *src,
+	bool cycle
+) {
+	UNREACHABLE;  // TODO
+}
+
+SDL_GpuCopyPass *sdlgpu_texture_copy(
+	SDL_GpuCopyPass *copy_pass,
+	TextureSlice *dst,
+	TextureSlice *src,
+	bool cycle
+) {
+	if(src->texture->gpu_format != dst->texture->gpu_format) {
+		return sdlgpu_texture_copy_blit(copy_pass, dst, src, cycle);
+	}
+
+	uint dw, dh, sw, sh;
+	r_texture_get_size(dst->texture, dst->mip_level, &dw, &dh);
+	r_texture_get_size(src->texture, src->mip_level, &sw, &sh);
+
+	if(dw != sw || dh != sh) {
+		return sdlgpu_texture_copy_blit(copy_pass, dst, src, cycle);
+	}
+
+	if(!copy_pass) {
+		copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
+	}
+
+	assert(src->texture->params.layers == dst->texture->params.layers);
+
+	SDL_GpuCopyTextureToTexture(copy_pass,
+		&(SDL_GpuTextureLocation) {
+			.texture = src->texture->gpu_texture,
+			.mipLevel = src->mip_level,
+			.layer = 0,
+		}, &(SDL_GpuTextureLocation) {
+			.texture = dst->texture->gpu_texture,
+			.mipLevel = dst->mip_level,
+			.layer = 0,
+		}, dw, dh, dst->texture->params.layers, cycle);
+
+	return copy_pass;
 }

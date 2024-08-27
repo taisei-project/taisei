@@ -21,6 +21,98 @@
 
 SDLGPUGlobal sdlgpu;
 
+static bool renderpass_outputs_compatible(const RenderPassOutputs *current, const RenderPassOutputs *new) {
+	if(current->num_color_attachments != new->num_color_attachments) {
+		return false;
+	}
+
+	if(current->depth_format != new->depth_format) {
+		return false;
+	}
+
+	if(new->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID) {
+		if(
+			current->depth_stencil.texture != new->depth_stencil.texture ||
+			new->depth_stencil.loadOp == SDL_GPU_LOADOP_CLEAR ||
+			new->depth_stencil.stencilLoadOp == SDL_GPU_LOADOP_CLEAR
+		) {
+			return false;
+		}
+	}
+
+	for(uint i = 0; i < current->num_color_attachments; ++i) {
+		if(
+			new->color[i].loadOp == SDL_GPU_LOADOP_CLEAR ||
+			current->color[i].texture != new->color[i].texture ||
+			current->color[i].mipLevel != new->color[i].mipLevel ||
+			current->color[i].layerOrDepthPlane != new->color[i].layerOrDepthPlane
+		) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static SDL_GpuRenderPass *sdlgpu_begin_render_pass(RenderPassOutputs *outputs) {
+	// assert(outputs->num_color_attachments || outputs->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID);
+
+	return SDL_GpuBeginRenderPass(sdlgpu.frame.cbuf,
+		outputs->color, outputs->num_color_attachments,
+		(outputs->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID) ? &outputs->depth_stencil : NULL);
+}
+
+SDL_GpuRenderPass *sdlgpu_begin_or_resume_render_pass(RenderPassOutputs *outputs) {
+	if(sdlgpu.copy_pass.for_cbuf[CBUF_DRAW]) {
+		SDL_GpuEndCopyPass(sdlgpu.copy_pass.for_cbuf[CBUF_DRAW]);
+		sdlgpu.copy_pass.for_cbuf[CBUF_DRAW] = NULL;
+	}
+
+	if(sdlgpu.render_pass.pass) {
+		if(!renderpass_outputs_compatible(&sdlgpu.render_pass.outputs, outputs)) {
+			SDL_GpuEndRenderPass(sdlgpu.render_pass.pass);
+			sdlgpu.render_pass.pass = NULL;
+		}
+	}
+
+	if(!sdlgpu.render_pass.pass) {
+		sdlgpu.render_pass.pass = sdlgpu_begin_render_pass(outputs);
+		sdlgpu.render_pass.outputs = *outputs;
+	}
+
+	return sdlgpu.render_pass.pass;
+}
+
+SDL_GpuCopyPass *sdlgpu_begin_or_resume_copy_pass(CommandBufferID cbuf_id) {
+	SDL_GpuCopyPass **pass = &sdlgpu.copy_pass.for_cbuf[cbuf_id];
+
+	if(!*pass) {
+		if(sdlgpu.render_pass.pass && cbuf_id == CBUF_DRAW) {
+			SDL_GpuEndRenderPass(sdlgpu.render_pass.pass);
+			sdlgpu.render_pass.pass = NULL;
+		}
+
+		*pass = SDL_GpuBeginCopyPass(sdlgpu.frame.command_buffers[cbuf_id]);
+	}
+
+	return *pass;
+}
+
+void sdlgpu_stop_current_pass(CommandBufferID cbuf_id) {
+	// cbuf_id = CBUF_DRAW;
+	if(cbuf_id == CBUF_DRAW) {
+		if(sdlgpu.render_pass.pass) {
+			SDL_GpuEndRenderPass(sdlgpu.render_pass.pass);
+			sdlgpu.render_pass.pass = NULL;
+		}
+	}
+
+	if(sdlgpu.copy_pass.for_cbuf[cbuf_id]) {
+		SDL_GpuEndCopyPass(sdlgpu.copy_pass.for_cbuf[cbuf_id]);
+		sdlgpu.copy_pass.for_cbuf[cbuf_id] = NULL;
+	}
+}
+
 void sdlgpu_renew_swapchain_texture(void) {
 	uint w, h;
 
@@ -43,11 +135,31 @@ SDL_GpuTexture *sdlgpu_get_swapchain_texture(void) {
 static void sdlgpu_submit_frame(void);
 
 static void sdlgpu_begin_frame(void) {
-	sdlgpu.frame.cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
+	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.frame.command_buffers); ++i) {
+		if(!sdlgpu.frame.command_buffers[i]) {
+			sdlgpu.frame.command_buffers[i] = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
+		}
+	}
+
 	sdlgpu_renew_swapchain_texture();
 }
 
 static void sdlgpu_submit_frame(void) {
+	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.copy_pass.for_cbuf); ++i) {
+		if(sdlgpu.copy_pass.for_cbuf[i]) {
+			SDL_GpuEndCopyPass(sdlgpu.copy_pass.for_cbuf[i]);
+			sdlgpu.copy_pass.for_cbuf[i] = NULL;
+		}
+	}
+
+	if(sdlgpu.render_pass.pass) {
+		SDL_GpuEndRenderPass(sdlgpu.render_pass.pass);
+		sdlgpu.render_pass.pass = NULL;
+	}
+
+	SDL_GpuSubmit(sdlgpu.frame.upload_cbuf);
+	sdlgpu.frame.upload_cbuf = NULL;
+
 	if(LIKELY(sdlgpu.frame.fence)) {
 		SDL_GpuWaitForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
 		SDL_GpuReleaseFence(sdlgpu.device, sdlgpu.frame.fence);
@@ -55,6 +167,52 @@ static void sdlgpu_submit_frame(void) {
 
 	sdlgpu.frame.fence = SDL_GpuSubmitAndAcquireFence(sdlgpu.frame.cbuf);
 	sdlgpu.frame.cbuf = NULL;
+}
+
+static Texture *sdlgpu_create_null_texture(TextureClass cls) {
+	uint num_layers = cls == TEXTURE_CLASS_CUBEMAP ? 6 : 1;
+
+	auto null_tex = sdlgpu_texture_create(&(TextureParams) {
+		.class = cls,
+		.type = TEX_TYPE_R_8,
+		.filter.min = TEX_FILTER_NEAREST,
+		.filter.mag = TEX_FILTER_NEAREST,
+		.wrap.s = TEX_WRAP_REPEAT,
+		.wrap.t = TEX_WRAP_REPEAT,
+		.anisotropy = 1,
+		.flags = 0,
+		.width = 1,
+		.height = 1,
+		.layers = num_layers,
+		.mipmap_mode = TEX_MIPMAP_MANUAL,
+		.mipmaps = 1,
+	});
+
+	switch(cls) {
+		case TEXTURE_CLASS_2D:
+			sdlgpu_texture_set_debug_label(null_tex, "<NULL TEXTURE 2D>");
+			break;
+		case TEXTURE_CLASS_CUBEMAP:
+			sdlgpu_texture_set_debug_label(null_tex, "<NULL TEXTURE CUBE>");
+			break;
+		default: UNREACHABLE;
+	}
+
+	alignas(max_align_t) PixelR8 pixel = { .r = 0 };
+	Pixmap content = {
+		.format = PIXMAP_FORMAT_R8,
+		.data.r8 = &pixel,
+		.data_size = sizeof(pixel),
+		.width = 1,
+		.height = 1,
+		.origin = PIXMAP_ORIGIN_TOPLEFT,
+	};
+
+	for(uint i = 0; i < num_layers; ++i) {
+		sdlgpu_texture_fill(null_tex, 0, i, &content);
+	}
+
+	return null_tex;
 }
 
 static void sdlgpu_init(void) {
@@ -68,16 +226,33 @@ static void sdlgpu_init(void) {
 
 	sdlgpu.st.blend = BLEND_NONE;
 
+	sdlgpu.frame.cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
+	sdlgpu.frame.upload_cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
 	sdlgpu_pipecache_init();
+
+	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.null_textures); ++i) {
+		sdlgpu.null_textures[i] = sdlgpu_create_null_texture(i);
+	}
 }
 
 static void sdlgpu_post_init(void) {
 }
 
 static void sdlgpu_shutdown(void) {
-	SDL_GpuWaitForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
-	SDL_GpuReleaseFence(sdlgpu.device, sdlgpu.frame.fence);
-	SDL_GpuSubmit(sdlgpu.frame.cbuf);
+	sdlgpu_submit_frame();
+
+	assert(!sdlgpu.render_pass.pass);
+	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_DRAW]);
+	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_UPLOAD]);
+
+	if(sdlgpu.frame.fence) {
+		SDL_GpuWaitForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
+		SDL_GpuReleaseFence(sdlgpu.device, sdlgpu.frame.fence);
+	}
+
+	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.null_textures); ++i) {
+		sdlgpu_texture_destroy(sdlgpu.null_textures[i]);
+	}
 
 	sdlgpu_pipecache_deinit();
 	SDL_GpuUnclaimWindow(sdlgpu.device, sdlgpu.window);
@@ -86,9 +261,7 @@ static void sdlgpu_shutdown(void) {
 }
 
 static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	if(sdlgpu.window) {
-		SDL_GpuUnclaimWindow(sdlgpu.device, sdlgpu.window);  // FIXME
-	}
+	assert(!sdlgpu.window);
 
 	sdlgpu.window = SDL_CreateWindow(title, w, h, flags);
 
@@ -135,7 +308,17 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBin
 	dynarray_foreach(&shader->sampler_bindings, uint i, Texture **pt, {
 		Texture *tex = *pt;
 		assert(tex != NULL);
+
+		if(tex->is_virgin) {
+			log_error("%p (%s) is a virgin texture! Used as sampler %i for shader %s",
+				tex, tex->debug_label, i, shader->debug_label);
+			// assert(0);
+		}
+
 		sdlgpu_texture_update_sampler(tex);
+		sdlgpu_texture_prepare(tex);
+
+
 		bindings[i] = (SDL_GpuTextureSamplerBinding) {
 			.texture = tex->gpu_texture,
 			.sampler = tex->sampler,
@@ -144,14 +327,14 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBin
 }
 
 static void sdlgpu_set_magic_uniforms(
-	ShaderObject *shobj, const FloatRect *viewport
+	ShaderObject *shobj, const FloatRect *viewport, mat4 projection_mat
 ) {
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_MV], 0, 1,
 		_r_matrices.modelview.head);
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_PROJ], 0, 1,
-		_r_matrices.projection.head);
+		projection_mat);
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_TEX], 0, 1,
 		_r_matrices.texture.head);
@@ -175,10 +358,26 @@ static void sdlgpu_draw_generic(
 	uint instances,
 	bool is_indexed
 ) {
+
+	// sdlgpu_stop_current_pass(CBUF_UPLOAD);
+
+	if(sdlgpu.st.prev_framebuffer && sdlgpu.st.prev_framebuffer != sdlgpu.st.framebuffer) {
+		sdlgpu_framebuffer_flush(sdlgpu.st.prev_framebuffer, ~0);
+		sdlgpu.st.prev_framebuffer = NULL;
+	}
+
+	r_flush_sprites();
+
 	RenderPassOutputs outputs;
 	sdlgpu_framebuffer_setup_outputs(sdlgpu.st.framebuffer, &outputs);
 
-	if(!(outputs.num_color_attachments + outputs.have_depth_stencil)) {
+	if(instances < 1) {
+		instances = 1;  // FIXME stop passing this incorrectly
+	}
+
+	bool have_depth = outputs.depth_format != SDL_GPU_TEXTUREFORMAT_INVALID;
+
+	if(!outputs.num_color_attachments && !have_depth) {
 		return;
 	}
 
@@ -193,13 +392,18 @@ static void sdlgpu_draw_generic(
 		.primitive = prim,
 		.shader_program = sdlgpu.st.shader,
 		.vertex_array = varr,
+		.depth_format = outputs.depth_format,
+		.front_face = sdlgpu.st.framebuffer ? SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE : SDL_GPU_FRONTFACE_CLOCKWISE,
 	};
 
 	if(!(pd.cap_bits & r_capability_bit(RCAP_CULL_FACE))) {
 		pd.cull_mode = 0;
 	}
 
-	if(!(pd.cap_bits & r_capability_bit(RCAP_DEPTH_TEST))) {
+	if(!have_depth) {
+		pd.depth_func = DEPTH_ALWAYS;
+		pd.cap_bits &= ~(r_capability_bit(RCAP_DEPTH_TEST) | r_capability_bit(RCAP_DEPTH_WRITE));
+	} else if(!(pd.cap_bits & r_capability_bit(RCAP_DEPTH_TEST))) {
 		pd.depth_func = DEPTH_ALWAYS;
 	}
 
@@ -221,19 +425,24 @@ static void sdlgpu_draw_generic(
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
 
-	SDL_GpuBufferBinding bindings[varr->vertex_input_state.vertexBindingCount];
+	SDL_GpuBufferBinding vbuf_bindings[varr->vertex_input_state.vertexBindingCount];
 
-	for(uint i = 0; i < ARRAY_SIZE(bindings); ++i) {
+	for(uint i = 0; i < ARRAY_SIZE(vbuf_bindings); ++i) {
 		uint slot = varr->binding_to_attachment_map[i];
-		bindings[i] = (SDL_GpuBufferBinding) {
+		vbuf_bindings[i] = (SDL_GpuBufferBinding) {
 			.buffer = dynarray_get(&varr->attachments, slot)->cbuf.gpubuf,
 		};
 	}
 
-	SDL_GpuRenderPass *pass = SDL_GpuBeginRenderPass(
-		sdlgpu.frame.cbuf,
-		outputs.color, outputs.num_color_attachments,
-		outputs.have_depth_stencil ? &outputs.depth_stencil : NULL);
+	// Set up samplers before beginning the render pass, because this may trigger mipmap regen.
+	// XXX: force at least 1 element to shut UBSan up
+	SDL_GpuTextureSamplerBinding vert_samplers[v_shader->sampler_bindings.num_elements ?: 1];
+	SDL_GpuTextureSamplerBinding frag_samplers[f_shader->sampler_bindings.num_elements ?: 1];
+
+	fill_sampler_bindings(v_shader, vert_samplers);
+	fill_sampler_bindings(f_shader, frag_samplers);
+
+	SDL_GpuRenderPass *pass = sdlgpu_begin_or_resume_render_pass(&outputs);
 
 	if(sdlgpu.st.scissor.w && sdlgpu.st.scissor.h) {
 		SDL_GpuSetScissor(pass, &(SDL_Rect) {
@@ -246,20 +455,36 @@ static void sdlgpu_draw_generic(
 
 	FloatRect *vp = sdlgpu_framebuffer_viewport_pointer(sdlgpu.st.framebuffer);
 
-	SDL_GpuSetViewport(pass, &(SDL_GpuViewport) {
+	SDL_GpuViewport gpu_vp = (SDL_GpuViewport) {
 		.x = vp->x,
 		.y = vp->y,
 		.h = vp->h,
 		.w = vp->w,
-		.minDepth = 0,
+		.minDepth = 0 ,
 		.maxDepth = 1,
-	});
+	};
 
-	sdlgpu_set_magic_uniforms(v_shader, vp);
-	sdlgpu_set_magic_uniforms(f_shader, vp);
+	if(sdlgpu.st.framebuffer != NULL) {
+		gpu_vp.y += gpu_vp.h;
+		gpu_vp.h = -gpu_vp.h;
+	}
+
+	SDL_GpuSetViewport(pass, &gpu_vp);
+
+	mat4 proj;
+	mat4 clip_conversion = {
+		{ 1.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.5f, 0.0f },
+		{ 0.0f, 0.0f, 0.5f, 1.0f },
+	};
+	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
+
+	sdlgpu_set_magic_uniforms(v_shader, vp, proj);
+	sdlgpu_set_magic_uniforms(f_shader, vp, proj);
 
 	SDL_GpuBindGraphicsPipeline(pass, sdlgpu_pipecache_get(&pd));
-	SDL_GpuBindVertexBuffers(pass, 0, bindings, ARRAY_SIZE(bindings));
+	SDL_GpuBindVertexBuffers(pass, 0, vbuf_bindings, ARRAY_SIZE(vbuf_bindings));
 
 	if(v_shader->uniform_buffer.data) {
 		SDL_GpuPushVertexUniformData(sdlgpu.frame.cbuf,
@@ -272,15 +497,11 @@ static void sdlgpu_draw_generic(
 	}
 
 	if(v_shader->sampler_bindings.num_elements) {
-		SDL_GpuTextureSamplerBinding bindings[v_shader->sampler_bindings.num_elements];
-		fill_sampler_bindings(v_shader, bindings);
-		SDL_GpuBindVertexSamplers(pass, 0, bindings, ARRAY_SIZE(bindings));
+		SDL_GpuBindVertexSamplers(pass, 0, vert_samplers, v_shader->sampler_bindings.num_elements);
 	}
 
 	if(f_shader->sampler_bindings.num_elements) {
-		SDL_GpuTextureSamplerBinding bindings[f_shader->sampler_bindings.num_elements];
-		fill_sampler_bindings(f_shader, bindings);
-		SDL_GpuBindFragmentSamplers(pass, 0, bindings, ARRAY_SIZE(bindings));
+		SDL_GpuBindFragmentSamplers(pass, 0, frag_samplers, f_shader->sampler_bindings.num_elements);
 	}
 
 	if(is_indexed) {
@@ -309,7 +530,11 @@ static void sdlgpu_draw_generic(
 		SDL_GpuDrawPrimitives(pass, first, count, instances, 0);
 	}
 
-	SDL_GpuEndRenderPass(pass);
+	if(sdlgpu.st.framebuffer) {
+		sdlgpu_framebuffer_taint(sdlgpu.st.framebuffer);
+	}
+
+	sdlgpu.st.prev_framebuffer = sdlgpu.st.framebuffer;
 }
 
 static void sdlgpu_draw(
@@ -337,7 +562,7 @@ static r_feature_bits_t sdlgpu_features(void) {
 		r_feature_bit(RFEAT_DRAW_INSTANCED) |
 		r_feature_bit(RFEAT_DEPTH_TEXTURE) |
 		r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS) |
-		// r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) |
+		r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) |
 		r_feature_bit(RFEAT_PARTIAL_MIPMAPS) |
 		0;
 }
@@ -421,6 +646,7 @@ RendererBackend _r_backend_sdlgpu = {
 		.framebuffer_set_debug_label = sdlgpu_framebuffer_set_debug_label,
 		.framebuffer_viewport = sdlgpu_framebuffer_viewport,
 		.framebuffer_viewport_current = sdlgpu_framebuffer_viewport_current,
+		.framebuffer_query_attachment = sdlgpu_framebuffer_query_attachment,
 		.index_buffer_add_indices = sdlgpu_index_buffer_add_indices,
 		.index_buffer_create = sdlgpu_index_buffer_create,
 		.index_buffer_destroy = sdlgpu_index_buffer_destroy,
