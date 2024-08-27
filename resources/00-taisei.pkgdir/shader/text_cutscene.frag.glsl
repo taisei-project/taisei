@@ -4,7 +4,7 @@
 
 float sampleNoise(vec2 tc) {
 	tc.y *= fwidth(tc.x) / fwidth(tc.y);
-	return texture(tex_aux[0], tc).r;
+	return texture(tex_aux0, tc).r;
 }
 
 void spriteMain(out vec4 fragColor) {

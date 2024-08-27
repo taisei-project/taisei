@@ -37,7 +37,9 @@ OUT(0) vec4 fragColor;
 UNIFORM(0) sampler2D tex;
 
 // see NUM_SPRITE_AUX_TEXTURES in api.h.
-UNIFORM(64) sampler2D tex_aux[3];
+UNIFORM(64) sampler2D tex_aux0;
+UNIFORM(65) sampler2D tex_aux1;
+UNIFORM(66) sampler2D tex_aux2;
 
 VARYING(0) vec2  texCoordRaw;
 VARYING(1) vec2  texCoord;
