@@ -46,6 +46,8 @@ typedef struct SDLGPUGlobal {
 		struct {
 			SDL_GpuTexture *tex;
 			SDL_GpuTextureFormat fmt;
+			SDL_GpuPresentMode present_mode;
+			SDL_GpuPresentMode next_present_mode;
 			uint32_t width;
 			uint32_t height;
 		} swapchain;

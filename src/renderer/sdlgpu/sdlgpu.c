@@ -116,6 +116,28 @@ void sdlgpu_stop_current_pass(CommandBufferID cbuf_id) {
 void sdlgpu_renew_swapchain_texture(void) {
 	uint w, h;
 
+	if(sdlgpu.frame.swapchain.present_mode != sdlgpu.frame.swapchain.next_present_mode) {
+		if(SDL_GpuSetSwapchainParameters(
+			sdlgpu.device, sdlgpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, sdlgpu.frame.swapchain.next_present_mode)
+		) {
+			sdlgpu.frame.swapchain.present_mode = sdlgpu.frame.swapchain.next_present_mode;
+		} else {
+			sdlgpu.frame.swapchain.next_present_mode = sdlgpu.frame.swapchain.present_mode;
+		}
+
+		switch(sdlgpu.frame.swapchain.present_mode) {
+			case SDL_GPU_PRESENTMODE_VSYNC:
+				log_debug("Present mode changed to VSYNC");
+				break;
+			case SDL_GPU_PRESENTMODE_IMMEDIATE:
+				log_debug("Present mode changed to IMMEDIATE");
+				break;
+			case SDL_GPU_PRESENTMODE_MAILBOX:
+				log_debug("Present mode changed to MAILBOX");
+				break;
+		}
+	}
+
 	if((sdlgpu.frame.swapchain.tex = SDL_GpuAcquireSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window, &w, &h))) {
 		sdlgpu.frame.swapchain.width = w;
 		sdlgpu.frame.swapchain.height = h;
@@ -225,7 +247,8 @@ static void sdlgpu_init(void) {
 	}
 
 	sdlgpu.st.blend = BLEND_NONE;
-
+	sdlgpu.frame.swapchain.present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+	sdlgpu.frame.swapchain.next_present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 	sdlgpu.frame.cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
 	sdlgpu.frame.upload_cbuf = NOT_NULL(SDL_GpuAcquireCommandBuffer(sdlgpu.device));
 	sdlgpu_pipecache_init();
@@ -286,7 +309,37 @@ static void sdlgpu_unclaim_window(SDL_Window *window) {
 }
 
 static void sdlgpu_vsync(VsyncMode mode) {
-	// TODO
+	SDL_GpuPresentMode present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+
+	switch(mode) {
+		case VSYNC_NONE:
+			present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
+
+			if(!SDL_GpuSupportsPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
+				present_mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+
+				if(!SDL_GpuSupportsPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
+					present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+				}
+			}
+
+		case VSYNC_NORMAL:
+		case VSYNC_ADAPTIVE:
+			break;
+	}
+
+	sdlgpu.frame.swapchain.next_present_mode = present_mode;
+}
+
+static VsyncMode sdlgpu_vsync_current(void) {
+	switch(sdlgpu.frame.swapchain.present_mode) {
+		case SDL_GPU_PRESENTMODE_VSYNC:
+			return VSYNC_NORMAL;
+		case SDL_GPU_PRESENTMODE_IMMEDIATE:
+		case SDL_GPU_PRESENTMODE_MAILBOX:
+			return VSYNC_NONE;
+		default: UNREACHABLE;
+	}
 }
 
 static void sdlgpu_framebuffer(Framebuffer *fb) {
@@ -708,6 +761,7 @@ RendererBackend _r_backend_sdlgpu = {
 		.vertex_buffer_invalidate = sdlgpu_vertex_buffer_invalidate,
 		.vertex_buffer_set_debug_label = sdlgpu_vertex_buffer_set_debug_label,
 		.vsync = sdlgpu_vsync,
+		.vsync_current = sdlgpu_vsync_current,
 		.swap = sdlgpu_swap,
 		.cull = sdlgpu_cull,
 		.cull_current = sdlgpu_cull_current,
