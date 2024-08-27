@@ -9,6 +9,7 @@
 #include "sprite_batch_internal.h"
 
 #include "../api.h"
+#include "util.h"
 #include "util/glm.h"
 #include "resource/sprite.h"
 
@@ -142,12 +143,24 @@ void r_flush_sprites(void) {
 	_r_sprite_batch.frame_stats.flushes++;
 #endif
 
+	static const char *const tex_aux_names[] = {
+		"tex_aux0",
+		"tex_aux1",
+		"tex_aux2",
+	};
+
+	static_assert(ARRAY_SIZE(tex_aux_names) == ARRAY_SIZE(_r_sprite_batch.aux_textures));
+
 	r_state_push();
 	r_mat_proj_push_premade(_r_sprite_batch.projection);
 
 	r_shader_ptr(NOT_NULL(_r_sprite_batch.shader));
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
-	r_uniform_sampler_array("tex_aux", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
+
+	for(uint i = 0; i < ARRAY_SIZE(tex_aux_names); ++i) {
+		r_uniform_sampler(tex_aux_names[i], _r_sprite_batch.aux_textures[i]);
+	}
+
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
 	r_capabilities(_r_sprite_batch.capbits);

@@ -26,12 +26,12 @@ void spriteMain(out vec4 fragColor) {
 	vec2 base_noise_coord = gl_FragCoord.xy / r_viewport.zw;
 
 	vec2 clknoise_coord = vec2(1, 20) * base_noise_coord + noise_ofs + vec2(globaltime);
-	float clk = fairy.a * texture(tex_aux[0], clknoise_coord).r;
+	float clk = fairy.a * texture(tex_aux0, clknoise_coord).r;
 	vec3 n = vec3(0.5, 0.7, 1.0) * clk;
 	fairy.rgb = mix(fairy.rgb, lum(fairy.rgb) * n, p_cloak);
 
 	vec2 maskcoord = 4 * base_noise_coord + noise_ofs;
-	float mask = texture(tex_aux[0], maskcoord).r;
+	float mask = texture(tex_aux0, maskcoord).r;
 	float m1 = 1 - smoothstep(p_summon, p_summon + 0.2, mask);
 	float m2 = 1 - smoothstep(p_summon, p_summon + 0.1, mask);
 

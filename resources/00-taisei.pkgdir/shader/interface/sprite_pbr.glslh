@@ -6,9 +6,9 @@
 #include "../lib/pbr.glslh"
 
 #define tex_diffuse    tex
-#define tex_ambient    tex_aux[0]
-#define tex_normal     tex_aux[1]
-#define tex_roughness  tex_aux[2]
+#define tex_ambient    tex_aux0
+#define tex_normal     tex_aux1
+#define tex_roughness  tex_aux2
 
 UNIFORM(1) int light_count;
 UNIFORM(2) vec3 light_positions[PBR_MAX_LIGHTS];
