@@ -21,6 +21,7 @@ typedef union Color {
 	vec4_noalign rgba;
 	vec3_noalign rgb;
 	Color3 color3;
+	SDL_FColor sdl_fcolor;
 } Color;
 
 /*
