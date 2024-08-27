@@ -645,6 +645,8 @@ void texture_loader_stage1(ResourceLoadState *st) {
 				}
 
 				break;
+
+			default: UNREACHABLE;
 		}
 
 		texture_loader_parse_filter(ld, "filter_min", str_filter_min, &ld->params.filter.min, true);
