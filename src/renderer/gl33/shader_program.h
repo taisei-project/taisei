@@ -36,9 +36,6 @@ struct Uniform {
 	uint location;
 	UniformType type;
 
-	// corresponding _SIZE uniform (for samplers; optional)
-	Uniform *size_uniform;
-
 	struct {
 		// buffer size = elem_size * array_size
 		char *pending;
