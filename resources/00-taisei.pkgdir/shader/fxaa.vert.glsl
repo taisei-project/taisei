@@ -6,7 +6,7 @@
 
 void main(void) {
     gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);
-    v_rcpFrame = 1.0 / tex_SIZE;
+    v_rcpFrame = 1.0 / tex_size;
     fxaaCoords(
 		texCoordRawIn,
 		v_rcpFrame,
