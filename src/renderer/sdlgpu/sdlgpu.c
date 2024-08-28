@@ -407,8 +407,8 @@ static ShaderProgram *sdlgpu_shader_current(void) {
 }
 
 static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBinding bindings[]) {
-	dynarray_foreach(&shader->sampler_bindings, uint i, Texture **pt, {
-		Texture *tex = *pt;
+	for(uint i = 0; i < shader->num_sampler_bindings; ++i) {
+		Texture *tex = shader->sampler_bindings[i];
 		assert(tex != NULL);
 
 		if(tex->is_virgin) {
@@ -424,7 +424,7 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GpuTextureSamplerBin
 			.texture = tex->gpu_texture,
 			.sampler = tex->sampler,
 		};
-	});
+	};
 }
 
 static void sdlgpu_set_magic_uniforms(
@@ -534,8 +534,8 @@ static void sdlgpu_draw_generic(
 
 	// Set up samplers before beginning the render pass, because this may trigger mipmap regen.
 	// XXX: force at least 1 element to shut UBSan up
-	SDL_GpuTextureSamplerBinding vert_samplers[v_shader->sampler_bindings.num_elements ?: 1];
-	SDL_GpuTextureSamplerBinding frag_samplers[f_shader->sampler_bindings.num_elements ?: 1];
+	SDL_GpuTextureSamplerBinding vert_samplers[v_shader->num_sampler_bindings ?: 1];
+	SDL_GpuTextureSamplerBinding frag_samplers[f_shader->num_sampler_bindings ?: 1];
 
 	fill_sampler_bindings(v_shader, vert_samplers);
 	fill_sampler_bindings(f_shader, frag_samplers);
@@ -594,12 +594,12 @@ static void sdlgpu_draw_generic(
 			f_shader->uniform_buffer.binding, f_shader->uniform_buffer.data, f_shader->uniform_buffer.size);
 	}
 
-	if(v_shader->sampler_bindings.num_elements) {
-		SDL_GpuBindVertexSamplers(pass, 0, vert_samplers, v_shader->sampler_bindings.num_elements);
+	if(v_shader->num_sampler_bindings) {
+		SDL_GpuBindVertexSamplers(pass, 0, vert_samplers, v_shader->num_sampler_bindings);
 	}
 
-	if(f_shader->sampler_bindings.num_elements) {
-		SDL_GpuBindFragmentSamplers(pass, 0, frag_samplers, f_shader->sampler_bindings.num_elements);
+	if(f_shader->num_sampler_bindings) {
+		SDL_GpuBindFragmentSamplers(pass, 0, frag_samplers, f_shader->num_sampler_bindings);
 	}
 
 	if(is_indexed) {

@@ -128,36 +128,36 @@ static UniformType sampler_type_to_uniform_type(const ShaderSamplerType *stype) 
 
 static void sdlgpu_shader_object_set_sampler_binding(ShaderObject *shobj, uint binding, Texture *tex) {
 	sdlgpu_texture_incref(tex);
-	sdlgpu_texture_decref(dynarray_get(&shobj->sampler_bindings, binding));
-	dynarray_set(&shobj->sampler_bindings, binding, tex);
+	sdlgpu_texture_decref(shobj->sampler_bindings[binding]);
+	shobj->sampler_bindings[binding] = tex;
 }
 
-static void sdlgpu_shader_object_add_sampler_uniform(
+static TextureClass uniform_texture_class(UniformType ut) {
+	switch (ut) {
+		case UNIFORM_SAMPLER_2D:   return TEXTURE_CLASS_2D;
+		case UNIFORM_SAMPLER_CUBE: return TEXTURE_CLASS_CUBEMAP;
+		default: UNREACHABLE;
+	}
+}
+
+static ShaderObjectUniform *sdlgpu_shader_object_add_sampler_uniform(
 	ShaderObject *shobj, const ShaderSampler *sampler
 ) {
 	auto type = sampler_type_to_uniform_type(&sampler->type);
 
 	if(type == UNIFORM_UNKNOWN) {
 		log_warn("Sampler %s has an unsupported type, ignoring", sampler->name);
-		return;
+		return NULL;
 	}
 
 	if(sampler->array_size) {
 		log_warn("Sampler %s is an array; this is not supported by SDLGPU, ignoring", sampler->name);
-		return;
+		return NULL;
 	}
 
 	log_debug("Added %s", sampler->name);
 
 	auto uniform = sdlgpu_shader_object_alloc_uniform(shobj, sampler->name);
-
-	TextureClass tex_cls;
-
-	switch (type) {
-		case UNIFORM_SAMPLER_2D:   tex_cls = TEXTURE_CLASS_2D; break;
-		case UNIFORM_SAMPLER_CUBE: tex_cls = TEXTURE_CLASS_CUBEMAP; break;
-		default: UNREACHABLE;
-	}
 
 	*uniform = (ShaderObjectUniform) {
 		.type = type,
@@ -166,15 +166,8 @@ static void sdlgpu_shader_object_add_sampler_uniform(
 		},
 	};
 
-	uint min_size = sampler->binding + 1;
-	dynarray_ensure_capacity(&shobj->sampler_bindings, min_size);
-
-	while(shobj->sampler_bindings.num_elements < min_size) {
-		sdlgpu_texture_incref(sdlgpu.null_textures[tex_cls]);
-		*dynarray_append(&shobj->sampler_bindings) = sdlgpu.null_textures[tex_cls];
-	}
-
 	sdlgpu_shader_object_try_init_magic_uniform(shobj, sampler->name, uniform);
+	return uniform;
 }
 
 static void sdlgpu_shader_object_init_uniforms(ShaderObject *shobj, const ShaderReflection *reflection) {
@@ -208,13 +201,60 @@ static void sdlgpu_shader_object_init_uniforms(ShaderObject *shobj, const Shader
 		}
 	}
 
+	if(reflection->num_samplers < 1) {
+		return;
+	}
+
+	uint max_binding_index = 0;
+	ShaderObjectUniform *sampler_uniforms[reflection->num_samplers];
+	uint num_valid_sampler_uniforms = 0;
+
 	for(uint i = 0; i < reflection->num_samplers; ++i) {
-		sdlgpu_shader_object_add_sampler_uniform(shobj, &reflection->samplers[i]);
+		ShaderSampler *sampler = &reflection->samplers[i];
+		ShaderObjectUniform *uni = sdlgpu_shader_object_add_sampler_uniform(shobj, sampler);
+
+		if(!uni) {
+			continue;
+		}
+
+		sampler_uniforms[num_valid_sampler_uniforms] = uni;
+		num_valid_sampler_uniforms++;
+
+		if(uni->sampler.binding > max_binding_index) {
+			max_binding_index = uni->sampler.binding;
+		}
+	}
+
+	uint num_sampler_bindings = max_binding_index + 1;
+	shobj->num_sampler_bindings = num_sampler_bindings;
+	shobj->sampler_bindings = ARENA_ALLOC_ARRAY(&shobj->arena, num_sampler_bindings, typeof(*shobj->sampler_bindings));
+	memset(shobj->sampler_bindings, 0, sizeof(*shobj->sampler_bindings) * num_sampler_bindings);
+
+	Texture *null_tex_fallback = sdlgpu.null_textures[TEXTURE_CLASS_2D];
+
+	for(uint i = 0; i < num_valid_sampler_uniforms; ++i) {
+		ShaderObjectUniform *uni = sampler_uniforms[i];
+		Texture *null_tex = sdlgpu.null_textures[uniform_texture_class(uni->type)];
+		sdlgpu_texture_incref(null_tex);
+		shobj->sampler_bindings[uni->sampler.binding] = null_tex;
+	}
+
+	for(uint i = 0; i < num_sampler_bindings; ++i) {
+		if(!shobj->sampler_bindings[i]) {
+			log_warn("%s: gap in sampler uniform bindings at index %u", shobj->debug_label, i);
+			sdlgpu_texture_incref(null_tex_fallback);
+			shobj->sampler_bindings[i] = null_tex_fallback;
+		}
 	}
 }
 
 static void sdlgpu_shader_object_free_suballocations(ShaderObject *shobj) {
-	dynarray_free_data(&shobj->sampler_bindings);
+	for(uint i = 0;i < shobj->num_sampler_bindings; ++i) {
+		sdlgpu_texture_decref(shobj->sampler_bindings[i]);
+	}
+
+	shobj->num_sampler_bindings = 0;
+
 	ht_destroy(&shobj->uniforms);
 	marena_deinit(&shobj->arena);
 	mem_free(shobj->uniform_buffer.data);
@@ -243,7 +283,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	});
 
 	sdlgpu_shader_object_init_uniforms(shobj, reflection);
-	uint num_samplers = shobj->sampler_bindings.num_elements;
+	uint num_samplers = shobj->num_sampler_bindings;
 	uint num_uniform_buffers = reflection->num_uniform_buffers;
 	marena_deinit(&reflect_arena);
 
@@ -273,10 +313,6 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 
 void sdlgpu_shader_object_destroy(ShaderObject *shobj) {
 	if(SDL_AtomicDecRef(&shobj->refs)) {
-		dynarray_foreach_elem(&shobj->sampler_bindings, Texture **bind, {
-			sdlgpu_texture_decref(*bind);
-		});
-
 		SDL_GpuReleaseShader(sdlgpu.device, shobj->shader);
 		sdlgpu_shader_object_free_suballocations(shobj);
 		mem_free(shobj);

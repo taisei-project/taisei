@@ -20,7 +20,6 @@
 typedef struct ShaderObjectUniform {
 	UniformType type;
 
-	alignas(alignof(max_align_t))
 	union {
 		struct {
 			uint binding;
@@ -39,13 +38,14 @@ struct ShaderObject {
 
 	struct {
 		uint8_t *data;
-		size_t size;
+		uint size;
 		uint binding;
 	} uniform_buffer;
 
 	ht_str2ptr_t uniforms;
-	DYNAMIC_ARRAY(Texture*) sampler_bindings;
 	ShaderObjectUniform *magic_unfiroms[NUM_MAGIC_UNIFORMS];
+	Texture **sampler_bindings;
+	uint num_sampler_bindings;
 
 	ShaderStage stage;
 	SDL_AtomicInt refs;
