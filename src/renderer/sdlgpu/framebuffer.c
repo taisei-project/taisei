@@ -271,7 +271,7 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 }
 
 static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutputs *outputs) {
-	SDL_GpuTexture *swapchain_tex = sdlgpu_get_swapchain_texture();
+	SDL_GpuTexture *swapchain_tex = sdlgpu.frame.swapchain.tex;
 
 	outputs->color[0] = (SDL_GpuColorAttachmentInfo) {
 		.texture = swapchain_tex,

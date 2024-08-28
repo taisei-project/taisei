@@ -132,6 +132,7 @@ typedef struct RendererFuncs {
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);
 
+	void (*begin_frame)(void);
 	void (*swap)(SDL_Window *window);
 } RendererFuncs;
 

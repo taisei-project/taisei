@@ -51,6 +51,8 @@ typedef struct SDLGPUGlobal {
 			uint32_t width;
 			uint32_t height;
 		} swapchain;
+
+		uint counter;
 	} frame;
 
 	struct {
@@ -79,6 +81,8 @@ typedef struct SDLGPUGlobal {
 		sdlgpu_id_t shader_programs;
 		sdlgpu_id_t vertex_arrays;
 	} ids;
+
+	StringBuffer debug_buf;
 } SDLGPUGlobal;
 
 extern SDLGPUGlobal sdlgpu;
@@ -171,3 +175,5 @@ SDL_GpuTexture *sdlgpu_get_swapchain_texture(void);
 SDL_GpuRenderPass *sdlgpu_begin_or_resume_render_pass(RenderPassOutputs *outputs);
 SDL_GpuCopyPass *sdlgpu_begin_or_resume_copy_pass(CommandBufferID cbuf_id);
 void sdlgpu_stop_current_pass(CommandBufferID cbuf_id);
+
+void sdlgpu_cmdbuf_debug(SDL_GpuCommandBuffer *cbuf, const char *format, ...);
