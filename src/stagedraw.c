@@ -574,6 +574,10 @@ static bool fxaa_rule(Framebuffer *fb) {
 	r_depth_func(DEPTH_ALWAYS);
 	r_blend(BLEND_NONE);
 	r_shader_ptr(stagedraw.shaders.fxaa);
+	Texture *tex = r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0);
+	uint w, h;
+	r_texture_get_size(tex, 0, &w, &h);
+	r_uniform_vec2("tex_size", w, h);
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_state_pop();
