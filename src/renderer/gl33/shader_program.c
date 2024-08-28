@@ -218,8 +218,6 @@ static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
 	UniformType utype = uniform->type;
 	if(UNIFORM_TYPE_IS_SAMPLER(utype)) {
-		Uniform *size_uniform = uniform->size_uniform;
-
 		for(uint i = 0; i < uniform->array_size; ++i) {
 			Texture *tex = uniform->textures[i];
 			GLuint preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
@@ -227,20 +225,6 @@ static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 
 			if(unit != preferred_unit) {
 				gl33_update_uniform(uniform, i, 1, &unit);
-			}
-
-			if(size_uniform) {
-				uint w, h;
-
-				if(tex) {
-					r_texture_get_size(tex, 0, &w, &h);
-				} else {
-					w = h = 0;
-				}
-
-				vec2_noalign size = { w, h };
-				gl33_update_uniform(size_uniform, i, 1, &size);
-				gl33_commit_uniform(size_uniform);
 			}
 		}
 	}
@@ -416,39 +400,6 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, uni.array_size, uni.array_size * uni.elem_size);
 	}
 
-	ht_str2ptr_iter_t iter;
-	ht_iter_begin(&prog->uniforms, &iter);
-	while(iter.has_data) {
-		Uniform *u = iter.value;
-
-		if(UNIFORM_TYPE_IS_SAMPLER(u->type)) {
-			const char *sampler_name = iter.key;
-			const char size_suffix[] = "_SIZE";
-			char size_uniform_name[strlen(sampler_name) + sizeof(size_suffix)];
-			snprintf(size_uniform_name, sizeof(size_uniform_name), "%s%s", sampler_name, size_suffix);
-			u->size_uniform = ht_get(&prog->uniforms, size_uniform_name, NULL);
-
-			if(u->size_uniform) {
-				Uniform *size_uniform = u->size_uniform;
-
-				if(size_uniform->type != UNIFORM_VEC2) {
-					log_warn("Size uniform %s has invalid type (should be vec2), ignoring", size_uniform_name);
-					u->size_uniform = NULL;
-				} else if(size_uniform->array_size != u->array_size) {
-					log_warn("Size uniform %s has invalid array size (should be %i), ignoring", size_uniform_name, u->array_size);
-					u->size_uniform = NULL;
-				} else {
-					log_debug("Bound size uniform: %s --> %s", sampler_name, size_uniform_name);
-				}
-
-				assert(u->size_uniform != NULL);  // fix your shader!
-			}
-		}
-
-		ht_iter_next(&iter);
-	}
-	ht_iter_end(&iter);
-
 	return true;
 }
 
@@ -622,7 +573,6 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 			uold->array_size = unew->array_size;
 			uold->location = unew->location;
 			assert(uold->type == unew->type);
-			uold->size_uniform = ht_get(&old_new_map, unew->size_uniform, unew->size_uniform);
 			uold->cache = unew->cache;
 
 			if(UNIFORM_TYPE_IS_SAMPLER(unew->type)) {
@@ -635,7 +585,6 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 			// Deactivate, but keep the object around, because user code may be referencing it.
 			// We also need to keep type information, in case the uniform gets re-introduced.
 			uold->location = INVALID_UNIFORM_LOCATION;
-			uold->size_uniform = NULL;
 			uold->array_size = 0;
 			uold->textures = NULL;
 			uold->cache.pending = NULL;
@@ -655,7 +604,6 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 		assert(ht_get(&dst->uniforms, iter.key, NULL) == NULL);
 
 		unew->prog = dst;
-		unew->size_uniform = ht_get(&old_new_map, unew->size_uniform, unew->size_uniform);
 		ht_set(&dst->uniforms, iter.key, unew);
 	}
 
