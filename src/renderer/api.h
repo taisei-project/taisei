@@ -826,6 +826,7 @@ const Model *r_model_get_quad(void) attr_returns_nonnull;
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
 
+void r_begin_frame(void);
 void r_swap(SDL_Window *window);
 
 void r_mat_mv_push(void);

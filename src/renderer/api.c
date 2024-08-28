@@ -827,6 +827,12 @@ VsyncMode r_vsync_current(void) {
 	return B.vsync_current();
 }
 
+void r_begin_frame(void) {
+	if(B.begin_frame) {
+		B.begin_frame();
+	}
+}
+
 void r_swap(SDL_Window *window) {
 	coroutines_draw_stats();
 	_r_sprite_batch_end_frame();
