@@ -78,7 +78,7 @@ char* ucs4_to_utf8_alloc(const uint32_t *ucs4) attr_nonnull(1) attr_returns_allo
 uint32_t utf8_getch(const char **src) attr_nonnull(1);
 
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]);
-void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_size);
+void hexdigest(const uint8_t *input, size_t input_size, char *output, size_t output_size);
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
