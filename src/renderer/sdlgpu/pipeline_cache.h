@@ -53,3 +53,5 @@ void sdlgpu_pipecache_init(void);
 void sdlgpu_pipecache_wipe(void);
 SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd);
 void sdlgpu_pipecache_deinit(void);
+void sdlgpu_pipecache_unref_shader_program(sdlgpu_id_t shader_id);
+void sdlgpu_pipecache_unref_vertex_array(sdlgpu_id_t va_id);

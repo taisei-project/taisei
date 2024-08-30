@@ -8,8 +8,9 @@
 
 #include "vertex_array.h"
 
-#include "vertex_buffer.h"
 #include "index_buffer.h"
+#include "pipeline_cache.h"
+#include "vertex_buffer.h"
 
 #include "util.h"
 
@@ -90,6 +91,7 @@ void sdlgpu_vertex_array_set_debug_label(VertexArray *varr, const char *label) {
 }
 
 void sdlgpu_vertex_array_destroy(VertexArray *varr) {
+	sdlgpu_pipecache_unref_vertex_array(varr->layout_id);
 	dynarray_free_data(&varr->attachments);
 	mem_free((void*)varr->vertex_input_state.vertexAttributes);
 	mem_free((void*)varr->vertex_input_state.vertexBindings);
@@ -172,6 +174,10 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 		(void*)varr->vertex_input_state.vertexBindings, sizeof_bindings);
 	memcpy((void*)varr->vertex_input_state.vertexBindings, sdl_bindings, sizeof_bindings);
 	varr->vertex_input_state.vertexBindingCount = num_sdl_bindings;
+
+	if(varr->layout_id) {
+		sdlgpu_pipecache_unref_vertex_array(varr->layout_id);
+	}
 
 	varr->layout_id = ++sdlgpu.ids.vertex_arrays;
 }

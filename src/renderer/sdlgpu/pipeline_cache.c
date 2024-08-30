@@ -124,6 +124,14 @@ static void dump_vertex_input_state(SDL_GPUVertexInputState *st) {
 	}
 }
 
+#define PIPECACHE_KEY_REPR_SIZE (sizeof(PipelineCacheKey) * 2 + 1)
+
+attr_unused
+static inline void sdlgpu_pipecache_key_repr(const PipelineCacheKey key, size_t buf_size, char buf[buf_size]) {
+	assume(buf_size >= PIPECACHE_KEY_REPR_SIZE);
+	hexdigest((const uint8_t*)&key, sizeof(key), buf, buf_size);
+}
+
 static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineDescription *restrict pd) {
 	auto v_shader = pd->shader_program->stages.vertex;
 	auto f_shader = pd->shader_program->stages.fragment;
@@ -202,8 +210,8 @@ SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd) {
 
 #ifdef DEBUG
 	if(created) {
-		char pipe_repr[sizeof(PipelineCacheKey) * 2 + 1] = {};
-		hexdigest((void*)&key, sizeof(key), pipe_repr, sizeof(pipe_repr));
+		char pipe_repr[PIPECACHE_KEY_REPR_SIZE] = {};
+		sdlgpu_pipecache_key_repr(key, sizeof(pipe_repr), pipe_repr);
 		log_debug("Created pipeline %s (%u total pipelines cached)", pipe_repr, pcache.cache.num_elements_occupied);
 	}
 #endif
@@ -214,4 +222,50 @@ SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd) {
 void sdlgpu_pipecache_deinit(void) {
 	sdlgpu_pipecache_wipe();
 	ht_pcache_destroy(&pcache.cache);
+}
+
+static void sdlgpu_pipecache_remove_matching(bool (*filter)(PipelineCacheKey, sdlgpu_id_t), sdlgpu_id_t id) {
+	if(UNLIKELY(pcache.cache.num_elements_occupied < 1)) {
+		return;
+	}
+
+	PipelineCacheKey keys_to_delete[pcache.cache.num_elements_occupied];
+	uint num_keys_to_delete = 0;
+
+	ht_pcache_iter_t iter;
+	ht_pcache_iter_begin(&pcache.cache, &iter);
+	for(;iter.has_data; ht_pcache_iter_next(&iter)) {
+		if(filter(iter.key, id)) {
+			keys_to_delete[num_keys_to_delete++] = iter.key;
+		}
+	}
+	ht_pcache_iter_end(&iter);
+
+	for(uint i = 0; i < num_keys_to_delete; ++i) {
+		PipelineCacheKey key = keys_to_delete[i];
+		SDL_ReleaseGPUGraphicsPipeline(sdlgpu.device, NOT_NULL(ht_pcache_get(&pcache.cache, key, NULL)));
+		ht_pcache_unset(&pcache.cache, key);
+
+#ifdef DEBUG
+		char pipe_repr[PIPECACHE_KEY_REPR_SIZE] = {};
+		sdlgpu_pipecache_key_repr(key, sizeof(pipe_repr), pipe_repr);
+		log_debug("Released pipeline %s (%u total pipelines cached)", pipe_repr, pcache.cache.num_elements_occupied);
+#endif
+	}
+}
+
+static bool match_shader_program(PipelineCacheKey key, sdlgpu_id_t id) {
+	return key.shader_program == id;
+}
+
+static bool match_vertex_array(PipelineCacheKey key, sdlgpu_id_t id) {
+	return key.vertex_array == id;
+}
+
+void sdlgpu_pipecache_unref_shader_program(sdlgpu_id_t shader_id) {
+	sdlgpu_pipecache_remove_matching(match_shader_program, shader_id);
+}
+
+void sdlgpu_pipecache_unref_vertex_array(sdlgpu_id_t va_id) {
+	sdlgpu_pipecache_remove_matching(match_vertex_array, va_id);
 }

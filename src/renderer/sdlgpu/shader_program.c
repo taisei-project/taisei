@@ -8,6 +8,7 @@
 
 #include "shader_program.h"
 #include "shader_object.h"  // IWYU pragma: keep
+#include "pipeline_cache.h"
 
 #include "util.h"
 
@@ -53,6 +54,7 @@ ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs
 }
 
 void sdlgpu_shader_program_destroy(ShaderProgram *prog) {
+	sdlgpu_pipecache_unref_shader_program(prog->id);
 	sdlgpu_shader_object_destroy(prog->stages.fragment);
 	sdlgpu_shader_object_destroy(prog->stages.vertex);
 	marena_deinit(&prog->arena);
