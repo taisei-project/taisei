@@ -229,12 +229,12 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 	) {
 		outputs.depth_stencil = (SDL_GpuDepthStencilAttachmentInfo) {
 			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
-			.loadOp = SDL_GPU_LOADOP_LOAD,
+			.loadOp = SDL_GPU_LOADOP_CLEAR,
 			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
 			.storeOp = SDL_GPU_STOREOP_STORE,
 			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
 			.texture = fb_depth_attachment->texture->gpu_texture,
-			.cycle = false,   // FIXME FIXME FIXME
+			.cycle = true,   // FIXME add a client hint for cycling?
 		};
 
 		outputs.depth_format = fb_depth_attachment->texture->gpu_format;
@@ -254,7 +254,7 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 				.texture = framebuffer->attachments[i].texture->gpu_texture,
 				.mipLevel = framebuffer->attachments[i].mip_level,
 				.layerOrDepthPlane = 0,
-				.cycle = false,   // FIXME FIXME FIXME
+				.cycle = true,   // FIXME add a client hint for cycling?
 			};
 
 			outputs.color_formats[i] = framebuffer->attachments[i].texture->gpu_format;
@@ -307,7 +307,8 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 			.storeOp = SDL_GPU_STOREOP_STORE,
 			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
 			.texture = fb_depth_attachment->texture->gpu_texture,
-			.cycle = false,   // FIXME FIXME FIXME
+			// FIXME add a client hint for cycling?
+			.cycle = fb_depth_attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR,
 		};
 
 		// fb_depth_attachment->texture->is_virgin = false;
@@ -342,7 +343,8 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 			.texture = attachment->texture->gpu_texture,
 			.mipLevel = attachment->mip_level,
 			.layerOrDepthPlane = 0,
-			.cycle = false,   // FIXME FIXME FIXME
+			// FIXME add a client hint for cycling?
+			.cycle = attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR,
 		};
 		outputs->color_formats[a] = attachment->texture->gpu_format;
 

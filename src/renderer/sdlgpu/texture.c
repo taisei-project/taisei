@@ -543,6 +543,8 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 	memcpy(mapped, image->data.untyped, image->data_size);
 	SDL_GpuUnmapTransferBuffer(sdlgpu.device, tbuf);
 
+	bool cycle = (bool)(tex->params.flags & TEX_FLAG_STREAM);
+
 	if(!covers_whole && tex->load.op == SDL_GPU_LOADOP_CLEAR) {
 		sdlgpu_stop_current_pass(CBUF_UPLOAD);
 		SDL_GpuEndRenderPass(SDL_GpuBeginRenderPass(sdlgpu.frame.upload_cbuf,
@@ -553,8 +555,12 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 				.texture = tex->gpu_texture,
 				.mipLevel = mipmap,
 				.layerOrDepthPlane = layer,
-				.cycle = false,  // FIXME should we cycle here?
+				.cycle = cycle,
 			}, 1, NULL));
+	}
+
+	if(tex->load.op == SDL_GPU_LOADOP_DONT_CARE) {
+		covers_whole = true;
 	}
 
 	SDL_GpuCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
@@ -576,7 +582,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 			.layer = layer,
 			.mipLevel = mipmap,
 		},
-	false);
+		covers_whole && cycle);
 
 	sdlgpu_texture_taint(tex);
 	tex->load.op = SDL_GPU_LOADOP_LOAD;
