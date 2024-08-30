@@ -364,11 +364,11 @@ void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize
 	assert(p == buf + len - 1);
 }
 
-void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_size) {
+void hexdigest(const uint8_t *input, size_t input_size, char *output, size_t output_size) {
 	assert(output_size > input_size * 2);
 
 	static char charmap[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-	uint8_t *end = input + input_size;
+	const uint8_t *end = input + input_size;
 
 	while(input < end) {
 		uint8_t byte = *input++;
