@@ -623,9 +623,9 @@ static void sdlgpu_draw_generic(
 			.offset = 0,
 		}, isize);
 
-		SDL_DrawGPUIndexedPrimitives(pass, 0, first, count, instances, 0);
+		SDL_DrawGPUIndexedPrimitives(pass, count, instances, first, 0, 0);
 	} else {
-		SDL_DrawGPUPrimitives(pass, first, count, instances, 0);
+		SDL_DrawGPUPrimitives(pass, count, instances, first, 0);
 	}
 
 	if(sdlgpu.st.framebuffer) {
