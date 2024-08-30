@@ -14,7 +14,7 @@
 
 #define UNIFORM_BLOCK_NAME "gl_DefaultUniformBlock"
 
-INLINE SDL_GpuShaderStage shader_stage_ts2sdl(ShaderStage stage) {
+INLINE SDL_GPUShaderStage shader_stage_ts2sdl(ShaderStage stage) {
 	switch(stage) {
 		case SHADER_STAGE_VERTEX:	return SDL_GPU_SHADERSTAGE_VERTEX;
 		case SHADER_STAGE_FRAGMENT:	return SDL_GPU_SHADERSTAGE_FRAGMENT;
@@ -287,7 +287,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	uint num_uniform_buffers = reflection->num_uniform_buffers;
 	marena_deinit(&reflect_arena);
 
-	shobj->shader = SDL_GpuCreateShader(sdlgpu.device, &(SDL_GpuShaderCreateInfo) {
+	shobj->shader = SDL_CreateGPUShader(sdlgpu.device, &(SDL_GPUShaderCreateInfo) {
 		.stage = shader_stage_ts2sdl(source->stage),
 		.code = (uint8_t*)source->content,
 		.codeSize = source->content_size - 1,  // content always contains an extra NULL byte
@@ -302,7 +302,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	});
 
 	if(UNLIKELY(!shobj->shader)) {
-		log_sdl_error(LOG_ERROR, "SDL_GpuCreateShader");
+		log_sdl_error(LOG_ERROR, "SDL_CreateGPUShader");
 		sdlgpu_shader_object_free_suballocations(shobj);
 		mem_free(shobj);
 		return NULL;
@@ -313,7 +313,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 
 void sdlgpu_shader_object_destroy(ShaderObject *shobj) {
 	if(SDL_AtomicDecRef(&shobj->refs)) {
-		SDL_GpuReleaseShader(sdlgpu.device, shobj->shader);
+		SDL_ReleaseGPUShader(sdlgpu.device, shobj->shader);
 		sdlgpu_shader_object_free_suballocations(shobj);
 		mem_free(shobj);
 	}
@@ -331,7 +331,7 @@ bool sdlgpu_shader_object_transfer(ShaderObject *dst, ShaderObject *src) {
 	sdlgpu_shader_object_free_suballocations(dst);
 	src->refs = dst->refs;
 
-	SDL_GpuReleaseShader(sdlgpu.device, dst->shader);
+	SDL_ReleaseGPUShader(sdlgpu.device, dst->shader);
 	*dst = *src;
 
 	return true;

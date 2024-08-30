@@ -40,16 +40,16 @@ typedef struct PipelineDescription {
 	BlendMode blend_mode;
 	Primitive primitive;
 	r_capability_bits_t cap_bits;
-	SDL_GpuFrontFace front_face;
+	SDL_GPUFrontFace front_face;
 
 	uint num_outputs;
 	struct {
-		SDL_GpuTextureFormat format;  // must be PIPECACHE_FMT_MASK for unused outputs
+		SDL_GPUTextureFormat format;  // must be PIPECACHE_FMT_MASK for unused outputs
 	} outputs[FRAMEBUFFER_MAX_OUTPUTS];
-	SDL_GpuTextureFormat depth_format;
+	SDL_GPUTextureFormat depth_format;
 } PipelineDescription;
 
 void sdlgpu_pipecache_init(void);
 void sdlgpu_pipecache_wipe(void);
-SDL_GpuGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd);
+SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd);
 void sdlgpu_pipecache_deinit(void);

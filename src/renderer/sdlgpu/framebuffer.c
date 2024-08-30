@@ -139,8 +139,8 @@ void sdlgpu_framebuffer_clear(
 	}
 }
 
-static SDL_GpuCopyPass *sdlgpu_framebuffer_copy_attachment(
-	SDL_GpuCopyPass *copy_pass, Framebuffer *dst, Framebuffer *src, FramebufferAttachment attachment
+static SDL_GPUCopyPass *sdlgpu_framebuffer_copy_attachment(
+	SDL_GPUCopyPass *copy_pass, Framebuffer *dst, Framebuffer *src, FramebufferAttachment attachment
 ) {
 	auto a_dst = &dst->attachments[attachment];
 	auto a_src = &src->attachments[attachment];
@@ -153,7 +153,7 @@ static SDL_GpuCopyPass *sdlgpu_framebuffer_copy_attachment(
 }
 
 void sdlgpu_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
-	SDL_GpuCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_DRAW);
+	SDL_GPUCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_DRAW);
 
 	if(flags & BUFFER_COLOR) {
 		for(uint i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
@@ -227,7 +227,7 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 		fb_depth_attachment->texture &&
 		fb_depth_attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR
 	) {
-		outputs.depth_stencil = (SDL_GpuDepthStencilAttachmentInfo) {
+		outputs.depth_stencil = (SDL_GPUDepthStencilAttachmentInfo) {
 			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
 			.loadOp = SDL_GPU_LOADOP_CLEAR,
 			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
@@ -247,7 +247,7 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 			framebuffer->attachments[i].texture &&
 			framebuffer->attachments[i].texture->load.op == SDL_GPU_LOADOP_CLEAR
 		) {
-			outputs.color[outputs.num_color_attachments++] = (SDL_GpuColorAttachmentInfo) {
+			outputs.color[outputs.num_color_attachments++] = (SDL_GPUColorAttachmentInfo) {
 				.clearColor = framebuffer->attachments[i].texture->load.clear.color.sdl_fcolor,
 				.loadOp = SDL_GPU_LOADOP_CLEAR,
 				.storeOp = SDL_GPU_STOREOP_STORE,
@@ -271,9 +271,9 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 }
 
 static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutputs *outputs) {
-	SDL_GpuTexture *swapchain_tex = sdlgpu.frame.swapchain.tex;
+	SDL_GPUTexture *swapchain_tex = sdlgpu.frame.swapchain.tex;
 
-	outputs->color[0] = (SDL_GpuColorAttachmentInfo) {
+	outputs->color[0] = (SDL_GPUColorAttachmentInfo) {
 		.texture = swapchain_tex,
 		.clearColor = sdlgpu.st.default_framebuffer.color.clear.color.sdl_fcolor,
 		.loadOp = sdlgpu.st.default_framebuffer.color.op,
@@ -300,7 +300,7 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 
 	if(fb_depth_attachment->texture) {
 		outputs->depth_format = fb_depth_attachment->texture->gpu_format;
-		outputs->depth_stencil = (SDL_GpuDepthStencilAttachmentInfo) {
+		outputs->depth_stencil = (SDL_GPUDepthStencilAttachmentInfo) {
 			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
 			.loadOp = fb_depth_attachment->texture->load.op,
 			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
@@ -336,7 +336,7 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 		}
 
 		uint a = outputs->num_color_attachments++;
-		outputs->color[a] = (SDL_GpuColorAttachmentInfo) {
+		outputs->color[a] = (SDL_GPUColorAttachmentInfo) {
 			.clearColor = attachment->texture->load.clear.color.sdl_fcolor,
 			.loadOp = attachment->texture->load.op,
 			.storeOp = SDL_GPU_STOREOP_STORE,

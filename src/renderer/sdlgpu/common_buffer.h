@@ -16,14 +16,14 @@ typedef struct CommonBuffer CommonBuffer;
 
 struct CommonBuffer {
 	CachedBuffer cachedbuf;
-	SDL_GpuBuffer *gpubuf;
-	SDL_GpuTransferBuffer *transferbuf;
-	SDL_GpuBufferUsageFlags usage;
+	SDL_GPUBuffer *gpubuf;
+	SDL_GPUTransferBuffer *transferbuf;
+	SDL_GPUBufferUsageFlags usage;
 	size_t commited_size;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
-CommonBuffer *sdlgpu_buffer_create(SDL_GpuBufferUsageFlags usage, size_t alloc_size);
+CommonBuffer *sdlgpu_buffer_create(SDL_GPUBufferUsageFlags usage, size_t alloc_size);
 void sdlgpu_buffer_destroy(CommonBuffer *cbuf);
 void sdlgpu_buffer_invalidate(CommonBuffer *cbuf);
 void sdlgpu_buffer_resize(CommonBuffer *cbuf, size_t new_size);

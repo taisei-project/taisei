@@ -13,7 +13,7 @@
 
 #include "util.h"
 
-static SDL_GpuVertexElementFormat vertex_elem_format(VertexAttribType type, VertexAttribConversion conv, uint vsize) {
+static SDL_GPUVertexElementFormat vertex_elem_format(VertexAttribType type, VertexAttribConversion conv, uint vsize) {
 	static struct {
 		uint8_t elements;
 		uint8_t type;
@@ -63,7 +63,7 @@ static SDL_GpuVertexElementFormat vertex_elem_format(VertexAttribType type, Vert
 		// [SDL_GPU_VERTEXELEMENTFORMAT_HALF4]         = { 0 },
 	};
 
-	for(SDL_GpuVertexElementFormat fmt = 0; fmt < ARRAY_SIZE(formats); ++fmt) {
+	for(SDL_GPUVertexElementFormat fmt = 0; fmt < ARRAY_SIZE(formats); ++fmt) {
 		if(
 			formats[fmt].type == type &&
 			formats[fmt].coversion == conv &&
@@ -116,12 +116,12 @@ IndexBuffer *sdlgpu_vertex_array_get_index_attachment(VertexArray *varr) {
 }
 
 void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
-	SDL_GpuVertexAttribute sdl_attribs[nattribs] = {};
-	SDL_GpuVertexBinding sdl_bindings[nattribs] = {};
+	SDL_GPUVertexAttribute sdl_attribs[nattribs] = {};
+	SDL_GPUVertexBinding sdl_bindings[nattribs] = {};
 	uint num_sdl_bindings = 0;
 
 	for(uint i = 0; i < nattribs; ++i) {
-		auto want_binding = (SDL_GpuVertexBinding) {
+		auto want_binding = (SDL_GPUVertexBinding) {
 			// Temporarily store taisei-side buffer attachment index here.
 			// We need this to figure out which bindings are identical.
 			// Later we will create a map of SDLGPU buffer indices to taisei ones and rewrite this.
@@ -145,7 +145,7 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 			sdl_bindings[binding_idx] = want_binding;
 		}
 
-		sdl_attribs[i] = (SDL_GpuVertexAttribute) {
+		sdl_attribs[i] = (SDL_GPUVertexAttribute) {
 			.binding = binding_idx,
 			.format = vertex_elem_format(attribs[i].spec.type, attribs[i].spec.coversion, attribs[i].spec.elements),
 			.location = i,

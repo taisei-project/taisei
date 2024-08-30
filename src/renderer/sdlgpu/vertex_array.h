@@ -17,7 +17,7 @@ struct VertexArray {
 	DYNAMIC_ARRAY(VertexBuffer*) attachments;
 	IndexBuffer *index_attachment;
 
-	SDL_GpuVertexInputState vertex_input_state;
+	SDL_GPUVertexInputState vertex_input_state;
 	uint *binding_to_attachment_map;
 
 	sdlgpu_id_t layout_id;

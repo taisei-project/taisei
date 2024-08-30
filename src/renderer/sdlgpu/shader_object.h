@@ -34,7 +34,7 @@ typedef struct ShaderObjectUniform {
 
 struct ShaderObject {
 	MemArena arena;
-	SDL_GpuShader *shader;
+	SDL_GPUShader *shader;
 
 	struct {
 		uint8_t *data;

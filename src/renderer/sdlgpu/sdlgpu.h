@@ -28,7 +28,7 @@ typedef enum CommandBufferID {
 } CommandBufferID;
 
 typedef struct SDLGPUGlobal {
-	SDL_GpuDevice *device;
+	SDL_GPUDevice *device;
 	SDL_Window *window;
 
 	Texture *null_textures[NUM_TEXTURE_CLASSES];
@@ -36,18 +36,18 @@ typedef struct SDLGPUGlobal {
 	struct {
 		union {
 			struct {
-				SDL_GpuCommandBuffer *upload_cbuf;
-				SDL_GpuCommandBuffer *cbuf;
+				SDL_GPUCommandBuffer *upload_cbuf;
+				SDL_GPUCommandBuffer *cbuf;
 			};
-			SDL_GpuCommandBuffer *command_buffers[NUM_CBUFS];
+			SDL_GPUCommandBuffer *command_buffers[NUM_CBUFS];
 		};
-		SDL_GpuFence *fence;
+		SDL_GPUFence *fence;
 
 		struct {
-			SDL_GpuTexture *tex;
-			SDL_GpuTextureFormat fmt;
-			SDL_GpuPresentMode present_mode;
-			SDL_GpuPresentMode next_present_mode;
+			SDL_GPUTexture *tex;
+			SDL_GPUTextureFormat fmt;
+			SDL_GPUPresentMode present_mode;
+			SDL_GPUPresentMode next_present_mode;
 			uint32_t width;
 			uint32_t height;
 		} swapchain;
@@ -69,12 +69,12 @@ typedef struct SDLGPUGlobal {
 	} st;
 
 	struct {
-		SDL_GpuRenderPass *pass;
+		SDL_GPURenderPass *pass;
 		RenderPassOutputs outputs;
 	} render_pass;
 
 	struct {
-		SDL_GpuCopyPass *for_cbuf[NUM_CBUFS];
+		SDL_GPUCopyPass *for_cbuf[NUM_CBUFS];
 	} copy_pass;
 
 	struct {
@@ -87,8 +87,8 @@ typedef struct SDLGPUGlobal {
 
 extern SDLGPUGlobal sdlgpu;
 
-INLINE SDL_GpuPrimitiveType sdlgpu_primitive_ts2sdl(Primitive p) {
-	static const SDL_GpuPrimitiveType mapping[] = {
+INLINE SDL_GPUPrimitiveType sdlgpu_primitive_ts2sdl(Primitive p) {
+	static const SDL_GPUPrimitiveType mapping[] = {
 		[PRIM_POINTS] = SDL_GPU_PRIMITIVETYPE_POINTLIST,
 		[PRIM_LINE_STRIP] = SDL_GPU_PRIMITIVETYPE_LINESTRIP,
 		[PRIM_LINES] = SDL_GPU_PRIMITIVETYPE_LINELIST,
@@ -101,8 +101,8 @@ INLINE SDL_GpuPrimitiveType sdlgpu_primitive_ts2sdl(Primitive p) {
 	return mapping[idx];
 }
 
-INLINE SDL_GpuCullMode sdlgpu_cullmode_ts2sdl(CullFaceMode m) {
-	static const SDL_GpuCullMode mapping[] = {
+INLINE SDL_GPUCullMode sdlgpu_cullmode_ts2sdl(CullFaceMode m) {
+	static const SDL_GPUCullMode mapping[] = {
 		[CULL_BACK] = SDL_GPU_CULLMODE_BACK,
 		[CULL_FRONT] = SDL_GPU_CULLMODE_FRONT,
 		[CULL_BOTH] = SDL_GPU_CULLMODE_NONE,  // FIXME?
@@ -113,8 +113,8 @@ INLINE SDL_GpuCullMode sdlgpu_cullmode_ts2sdl(CullFaceMode m) {
 	return mapping[idx];
 }
 
-INLINE SDL_GpuBlendOp sdlgpu_blendop_ts2sdl(BlendOp op) {
-	static const SDL_GpuBlendOp mapping[] = {
+INLINE SDL_GPUBlendOp sdlgpu_blendop_ts2sdl(BlendOp op) {
+	static const SDL_GPUBlendOp mapping[] = {
 		[BLENDOP_ADD] = SDL_GPU_BLENDOP_ADD,
 		[BLENDOP_SUB] = SDL_GPU_BLENDOP_SUBTRACT,
 		[BLENDOP_REV_SUB] = SDL_GPU_BLENDOP_REVERSE_SUBTRACT,
@@ -127,8 +127,8 @@ INLINE SDL_GpuBlendOp sdlgpu_blendop_ts2sdl(BlendOp op) {
 	return mapping[idx];
 }
 
-INLINE SDL_GpuBlendFactor sdlgpu_blendfactor_ts2sdl(BlendFactor f) {
-	static const SDL_GpuBlendFactor mapping[] = {
+INLINE SDL_GPUBlendFactor sdlgpu_blendfactor_ts2sdl(BlendFactor f) {
+	static const SDL_GPUBlendFactor mapping[] = {
 		[BLENDFACTOR_ZERO] = SDL_GPU_BLENDFACTOR_ZERO,
 		[BLENDFACTOR_ONE] = SDL_GPU_BLENDFACTOR_ONE,
 		[BLENDFACTOR_SRC_COLOR] = SDL_GPU_BLENDFACTOR_SRC_COLOR,
@@ -152,8 +152,8 @@ INLINE SDL_GpuBlendFactor sdlgpu_blendfactor_ts2sdl(BlendFactor f) {
 	return mapping[idx];
 }
 
-INLINE SDL_GpuCompareOp sdlgpu_cmpop_ts2sdl(DepthTestFunc f) {
-	static const SDL_GpuCompareOp mapping[] = {
+INLINE SDL_GPUCompareOp sdlgpu_cmpop_ts2sdl(DepthTestFunc f) {
+	static const SDL_GPUCompareOp mapping[] = {
 		[DEPTH_ALWAYS] = SDL_GPU_COMPAREOP_ALWAYS,
 		[DEPTH_EQUAL] = SDL_GPU_COMPAREOP_EQUAL,
 		[DEPTH_GEQUAL] = SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,
@@ -170,10 +170,10 @@ INLINE SDL_GpuCompareOp sdlgpu_cmpop_ts2sdl(DepthTestFunc f) {
 }
 
 void sdlgpu_renew_swapchain_texture(void);
-SDL_GpuTexture *sdlgpu_get_swapchain_texture(void);
+SDL_GPUTexture *sdlgpu_get_swapchain_texture(void);
 
-SDL_GpuRenderPass *sdlgpu_begin_or_resume_render_pass(RenderPassOutputs *outputs);
-SDL_GpuCopyPass *sdlgpu_begin_or_resume_copy_pass(CommandBufferID cbuf_id);
+SDL_GPURenderPass *sdlgpu_begin_or_resume_render_pass(RenderPassOutputs *outputs);
+SDL_GPUCopyPass *sdlgpu_begin_or_resume_copy_pass(CommandBufferID cbuf_id);
 void sdlgpu_stop_current_pass(CommandBufferID cbuf_id);
 
-void sdlgpu_cmdbuf_debug(SDL_GpuCommandBuffer *cbuf, const char *format, ...);
+void sdlgpu_cmdbuf_debug(SDL_GPUCommandBuffer *cbuf, const char *format, ...);

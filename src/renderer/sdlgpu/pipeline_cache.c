@@ -33,7 +33,7 @@ static bool pkeys_eq(const PipelineCacheKey *restrict a, const PipelineCacheKey 
 
 #define HT_SUFFIX                      pcache
 #define HT_KEY_TYPE                    PipelineCacheKey
-#define HT_VALUE_TYPE                  SDL_GpuGraphicsPipeline *
+#define HT_VALUE_TYPE                  SDL_GPUGraphicsPipeline *
 #define HT_FUNC_HASH_KEY(key)          pkey_hash(&(key))
 #define HT_FUNC_KEYS_EQUAL(key1, key2) pkeys_eq(&(key1), &(key2))
 #define HT_KEY_FMT                     PRIx32
@@ -56,7 +56,7 @@ void sdlgpu_pipecache_wipe(void) {
 	ht_pcache_iter_t iter;
 	ht_pcache_iter_begin(&pcache.cache, &iter);
 	for(;iter.has_data; ht_pcache_iter_next(&iter)) {
-		SDL_GpuReleaseGraphicsPipeline(sdlgpu.device, iter.value);
+		SDL_ReleaseGPUGraphicsPipeline(sdlgpu.device, iter.value);
 	}
 	ht_pcache_iter_end(&iter);
 
@@ -105,7 +105,7 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 	return k;
 }
 
-static void dump_vertex_input_state(SDL_GpuVertexInputState *st) {
+static void dump_vertex_input_state(SDL_GPUVertexInputState *st) {
 	log_debug(" *** BINDINGS:");
 	for(uint i = 0; i < st->vertexBindingCount; ++i) {
 			log_debug("[%u] binding:   %u", i, st->vertexBindings[i].binding);
@@ -124,7 +124,7 @@ static void dump_vertex_input_state(SDL_GpuVertexInputState *st) {
 	}
 }
 
-static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineDescription *restrict pd) {
+static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineDescription *restrict pd) {
 	auto v_shader = pd->shader_program->stages.vertex;
 	auto f_shader = pd->shader_program->stages.fragment;
 
@@ -132,9 +132,9 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 
 	dump_vertex_input_state(&pd->vertex_array->vertex_input_state);
 
-	SDL_GpuColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
+	SDL_GPUColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
 
-	SDL_GpuGraphicsPipelineCreateInfo pci = {
+	SDL_GPUGraphicsPipelineCreateInfo pci = {
 		.vertexShader = v_shader->shader,
 		.fragmentShader = f_shader->shader,
 		.vertexInputState = pd->vertex_array->vertex_input_state,
@@ -166,7 +166,7 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 		},
 	};
 
-	SDL_GpuColorAttachmentBlendState blend = {
+	SDL_GPUColorAttachmentBlendState blend = {
 		.colorWriteMask = 0xF,
 		.blendEnable = sdlgpu.st.blend != BLEND_NONE,
 		.alphaBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
@@ -178,24 +178,24 @@ static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 	};
 
 	for(int i = 0; i < pd->num_outputs; ++i) {
-		color_attachment_descriptions[i] = (SDL_GpuColorAttachmentDescription) {
+		color_attachment_descriptions[i] = (SDL_GPUColorAttachmentDescription) {
 			.format = pd->outputs[i].format,
 			.blendState = blend,
 		};
 	}
 
-	auto r = SDL_GpuCreateGraphicsPipeline(sdlgpu.device, &pci);
+	auto r = SDL_CreateGPUGraphicsPipeline(sdlgpu.device, &pci);
 	log_debug("END CREATE PIPELINE = %p", r);
 	return r;
 }
 
-static SDL_GpuGraphicsPipeline *sdlgpu_pipecache_create_pipeline_callback(ht_pcache_value_t v) {
+static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline_callback(ht_pcache_value_t v) {
 	return sdlgpu_pipecache_create_pipeline((PipelineDescription*)v);
 }
 
-SDL_GpuGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd) {
+SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd) {
 	auto key = sdlgpu_pipecache_construct_key(pd);
-	SDL_GpuGraphicsPipeline *result = NULL;
+	SDL_GPUGraphicsPipeline *result = NULL;
 
 	bool attr_unused created = ht_pcache_try_set(
 		&pcache.cache, key, (ht_pcache_value_t)pd, sdlgpu_pipecache_create_pipeline_callback, &result);

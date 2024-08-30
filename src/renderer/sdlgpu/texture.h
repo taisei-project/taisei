@@ -18,7 +18,7 @@ typedef struct TextureSlice {
 } TextureSlice;
 
 typedef struct TextureLoadState {
-	SDL_GpuLoadOp op;
+	SDL_GPULoadOp op;
 	union {
 		Color color;
 		float depth;
@@ -26,10 +26,10 @@ typedef struct TextureLoadState {
 } TextureLoadState;
 
 struct Texture {
-	SDL_GpuTexture *gpu_texture;
-	SDL_GpuSampler *sampler;
+	SDL_GPUTexture *gpu_texture;
+	SDL_GPUSampler *sampler;
 	TextureParams params;
-	SDL_GpuTextureFormat gpu_format;
+	SDL_GPUTextureFormat gpu_format;
 	SDL_AtomicInt refs;
 	TextureLoadState load;
 	bool sampler_is_outdated;
@@ -59,8 +59,8 @@ bool sdlgpu_texture_sampler_compatible(Texture *tex, UniformType sampler_type) a
 bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
 bool sdlgpu_texture_transfer(Texture *dst, Texture *src);
 
-SDL_GpuCopyPass *sdlgpu_texture_copy(
-	SDL_GpuCopyPass *copy_pass,
+SDL_GPUCopyPass *sdlgpu_texture_copy(
+	SDL_GPUCopyPass *copy_pass,
 	TextureSlice *dst,
 	TextureSlice *src,
 	bool cycle);
