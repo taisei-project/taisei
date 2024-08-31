@@ -116,7 +116,7 @@ void gl33_framebuffer_finalize_read_requests(void) {
 	gl33_framebuffer_process_read_requests();
 
 	for(int i = 0; i < ARRAY_SIZE(read_requests); ++i) {
-		auto rq = read_requests + 1;
+		auto rq = read_requests + i;
 		sync_read_request(rq, UINT64_MAX);
 
 		if(rq->sync) {
