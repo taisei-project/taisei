@@ -563,8 +563,9 @@ void sdlgpu_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *im
 }
 
 void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image) {
-	bool covers_whole =
-		x == 0 && y == 0 && image->width >= tex->params.width && image->height >= tex->params.height;
+	uint tex_w, tex_h;
+	sdlgpu_texture_get_size(tex, mipmap, &tex_w, &tex_h);
+	bool covers_whole = x == 0 && y == 0 && image->width >= tex_w && image->height >= tex_h;
 
 	log_debug("Target: %p [%s] x:%d y:%d w:%d h:%d%s", tex, tex->debug_label, x, y, image->width, image->height, covers_whole ? " (whole coverage)" : "");
 
@@ -599,9 +600,6 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 	}
 
 	SDL_GPUCopyPass *copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
-
-	uint tex_h;
-	sdlgpu_texture_get_size(tex, mipmap, NULL, &tex_h);
 
 	SDL_UploadToGPUTexture(copy_pass,
 		&(SDL_GPUTextureTransferInfo) {
