@@ -15,7 +15,7 @@ void main(void) {
 	vec4 bg = texture(tex_bg, ((uv - 0.5) * vec2(r, 1)) + 0.5);
 	vec4 cl0 = texture(tex_clouds, uv + vec2(0.004 * sin(4 * time), 0.35 * time));
 	vec4 cl1 = texture(tex_clouds, uv + vec2(0.004 * cos(3 * time), -0.5 * time));
-	vec4 sw = texture(tex_swarm, uv + vec2(0, -0.75 * time));
+	vec4 sw = vec4(vec3(texture(tex_swarm, uv + vec2(0, -0.75 * time)).r), 1);
 
 	vec4 c0 = bg;
 	vec4 c1 = clamp(cl0 - c0, 0, 1);
