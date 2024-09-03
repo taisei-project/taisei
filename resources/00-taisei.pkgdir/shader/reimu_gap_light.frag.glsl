@@ -32,19 +32,19 @@ void main(void) {
 	float l = 1.0;
 	float o = 0.123 * texCoord.x;
 
-	vec4 layer0 = texture(tex, texCoord + vec2(0, 0.23134 * time)) * vec4(hsv2rgb(vec3(time + (texCoord.y + 1*o), s, l)), 1);
+	vec3 layer0 = texture(tex, texCoord + vec2(0, 0.23134 * time)).r * hsv2rgb(vec3(time + (texCoord.y + 1*o), s, l));
 	layer0 *= pow(0.5 + 0.5 * wave(3215*pi + 0.9314*texCoord.y - time * 0.46), 1.0);
 
-	vec4 layer1 = texture(tex, texCoord + vec2(0, 0.32155 * time)) * vec4(hsv2rgb(vec3(time - (texCoord.y + 2*o), s, l)), 1);
+	vec3 layer1 = texture(tex, texCoord + vec2(0, 0.32155 * time)).r * hsv2rgb(vec3(time - (texCoord.y + 2*o), s, l));
 	layer1 *= pow(0.5 + 0.5 * wave(7234*pi + 0.9612*texCoord.y + time * 0.64), 1.0);
 
-	vec4 layer2 = texture(tex, texCoord - vec2(0, 0.30133 * time)) * vec4(hsv2rgb(vec3(time + (texCoord.y + 3*o), s, l)), 1);
+	vec3 layer2 = texture(tex, texCoord - vec2(0, 0.30133 * time)).r * hsv2rgb(vec3(time + (texCoord.y + 3*o), s, l));
 	layer2 *= pow(0.5 + 0.5 * wave(4312*pi + 0.9195*texCoord.y + time * 0.42), 1.0);
 
-	vec4 layer3 = texture(tex, texCoord - vec2(0, 0.26424 * time)) * vec4(hsv2rgb(vec3(time - (texCoord.y + 4*o), s, l)), 1);
+	vec3 layer3 = texture(tex, texCoord - vec2(0, 0.26424 * time)).r * hsv2rgb(vec3(time - (texCoord.y + 4*o), s, l));
 	layer3 *= pow(0.5 + 0.5 * wave(2642*pi + 0.9195*texCoord.y + time * 0.60), 1.0);
 
 	float mask = light_mask(texCoord);
-	fragColor = (layer0 + layer1 + layer2 + layer3) * mask * strength * (1.5 + 0.25 * sin(time));
+	fragColor = vec4(layer0 + layer1 + layer2 + layer3, 4) * mask * strength * (1.5 + 0.25 * sin(time));
 	fragColor.a = 0;
 }
