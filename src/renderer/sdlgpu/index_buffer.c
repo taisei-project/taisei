@@ -12,7 +12,7 @@ IndexBuffer *sdlgpu_index_buffer_create(uint index_size, size_t max_elements) {
 	assert(index_size == 2 || index_size == 4);
 
 	size_t capacity = max_elements * index_size;
-	auto ibuf = (IndexBuffer*)sdlgpu_buffer_create(SDL_GPU_BUFFERUSAGE_INDEX_BIT, sizeof(IndexBuffer));
+	auto ibuf = (IndexBuffer*)sdlgpu_buffer_create(SDL_GPU_BUFFERUSAGE_INDEX, sizeof(IndexBuffer));
 	cachedbuf_resize(&ibuf->cbuf.cachedbuf, capacity);
 	ibuf->index_size = index_size;
 

@@ -9,7 +9,7 @@
 #include "vertex_buffer.h"
 
 VertexBuffer *sdlgpu_vertex_buffer_create(size_t capacity, void *data) {
-	auto vbuf = (VertexBuffer*)sdlgpu_buffer_create(SDL_GPU_BUFFERUSAGE_VERTEX_BIT, sizeof(VertexBuffer));
+	auto vbuf = (VertexBuffer*)sdlgpu_buffer_create(SDL_GPU_BUFFERUSAGE_VERTEX, sizeof(VertexBuffer));
 	cachedbuf_resize(&vbuf->cbuf.cachedbuf, capacity);
 
 	if(data) {

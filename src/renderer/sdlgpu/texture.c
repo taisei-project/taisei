@@ -45,11 +45,11 @@ static SDL_GPUTextureFormat sdlgpu_texfmt_ts2sdl(TextureType t) {
 		case TEX_TYPE_DEPTH_32_FLOAT:				return SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
 		case TEX_TYPE_COMPRESSED_ETC1_RGB:			return SDL_GPU_TEXTUREFORMAT_INVALID;
 		case TEX_TYPE_COMPRESSED_ETC2_RGBA:			return SDL_GPU_TEXTUREFORMAT_INVALID;
-		case TEX_TYPE_COMPRESSED_BC1_RGB:			return SDL_GPU_TEXTUREFORMAT_BC1_UNORM;
-		case TEX_TYPE_COMPRESSED_BC3_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC3_UNORM;
+		case TEX_TYPE_COMPRESSED_BC1_RGB:			return SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM;
+		case TEX_TYPE_COMPRESSED_BC3_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM;
 		case TEX_TYPE_COMPRESSED_BC4_R:				return SDL_GPU_TEXTUREFORMAT_INVALID;
 		case TEX_TYPE_COMPRESSED_BC5_RG:			return SDL_GPU_TEXTUREFORMAT_INVALID;
-		case TEX_TYPE_COMPRESSED_BC7_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC7_UNORM;
+		case TEX_TYPE_COMPRESSED_BC7_RGBA:			return SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM;
 		case TEX_TYPE_COMPRESSED_PVRTC1_4_RGB:		return SDL_GPU_TEXTUREFORMAT_INVALID;
 		case TEX_TYPE_COMPRESSED_PVRTC1_4_RGBA:		return SDL_GPU_TEXTUREFORMAT_INVALID;
 		case TEX_TYPE_COMPRESSED_ASTC_4x4_RGBA:		return SDL_GPU_TEXTUREFORMAT_INVALID;
@@ -73,17 +73,17 @@ static SDL_GPUTextureFormat sdlgpu_texfmt_ts2sdl_checksupport(TextureType t) {
 		return fmt;
 	}
 
-	SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+	SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
 	if(TEX_TYPE_IS_DEPTH(t)) {
-		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
+		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
 	} else {
-		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 	}
 
 	// FIXME query support for cubemaps separately?
 
-	if(SDL_SupportsGPUTextureFormat(sdlgpu.device, fmt, SDL_GPU_TEXTURETYPE_2D, usage)) {
+	if(SDL_GPUTextureSupportsFormat(sdlgpu.device, fmt, SDL_GPU_TEXTURETYPE_2D, usage)) {
 		return fmt;
 	}
 
@@ -94,8 +94,8 @@ static SDL_GPUTextureFormat sdlgpu_texfmt_to_srgb(SDL_GPUTextureFormat fmt) {
 	switch(fmt) {
 		case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM: return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
 		case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM: return SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB;
-		case SDL_GPU_TEXTUREFORMAT_BC3_UNORM:      return SDL_GPU_TEXTUREFORMAT_BC3_UNORM_SRGB;
-		case SDL_GPU_TEXTUREFORMAT_BC7_UNORM:      return SDL_GPU_TEXTUREFORMAT_BC7_UNORM_SRGB;
+		case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM: return SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB;
+		case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM: return SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB;
 		default: return SDL_GPU_TEXTUREFORMAT_INVALID;
 	}
 }
@@ -122,11 +122,11 @@ static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 			return PIXMAP_FORMAT_R8;
 		case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
 			return PIXMAP_FORMAT_R8;
-		case SDL_GPU_TEXTUREFORMAT_BC1_UNORM:
+		case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
 			return PIXMAP_FORMAT_BC1_RGB;
-		case SDL_GPU_TEXTUREFORMAT_BC3_UNORM:
+		case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
 			return PIXMAP_FORMAT_BC3_RGBA;
-		case SDL_GPU_TEXTUREFORMAT_BC7_UNORM:
+		case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
 			return PIXMAP_FORMAT_BC7_RGBA;
 		case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
 			return PIXMAP_FORMAT_RG8;
@@ -160,9 +160,9 @@ static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 			return PIXMAP_FORMAT_RGBA8;
 		case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
 			return PIXMAP_FORMAT_RGBA8;  // FIXME can't represent swizzled formats yet!
-		case SDL_GPU_TEXTUREFORMAT_BC3_UNORM_SRGB:
+		case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
 			return PIXMAP_FORMAT_BC3_RGBA;
-		case SDL_GPU_TEXTUREFORMAT_BC7_UNORM_SRGB:
+		case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
 			return PIXMAP_FORMAT_BC7_RGBA;
 		case SDL_GPU_TEXTUREFORMAT_D16_UNORM:
 			return PIXMAP_FORMAT_R16;
@@ -174,7 +174,7 @@ static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 		case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
 		case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
 		case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
-		case SDL_GPU_TEXTUREFORMAT_BC2_UNORM:
+		case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
 		case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
 		case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
 		case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
@@ -430,13 +430,13 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 	}
 
 	SDL_GPUTextureType type = sdlgpu_type_ts2sdl(tex->params.class);
-	SDL_GPUTextureUsageFlagBits usage = SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT;
+	SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
 	if(is_depth_format(tex_fmt)) {
-		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET_BIT;
-	} else if(SDL_SupportsGPUTextureFormat(sdlgpu.device, tex_fmt, type, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT)) {
+		usage |= SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+	} else if(SDL_GPUTextureSupportsFormat(sdlgpu.device, tex_fmt, type, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
 		// FIXME: we don't know whether we're going to need to render to this texture or not
-		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET_BIT;
+		usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
 	}
 
 
@@ -594,7 +594,7 @@ void sdlgpu_texture_prepare(Texture *tex) {
 	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
 		log_debug("Generating mipmaps for %p (%s)", tex, tex->debug_label);
 		sdlgpu_stop_current_pass(CBUF_DRAW);
-		SDL_GenerateGPUMipmaps(sdlgpu.frame.cbuf, tex->gpu_texture);
+		SDL_GenerateMipmapsForGPUTexture(sdlgpu.frame.cbuf, tex->gpu_texture);
 		tex->mipmaps_outdated = false;
 	}
 }

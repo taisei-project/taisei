@@ -224,15 +224,15 @@ static void sdlgpu_submit_frame(void) {
 		sdlgpu_cmdbuf_debug(sdlgpu.frame.command_buffers[i], "Submit frame %u", sdlgpu.frame.counter);
 	}
 
-	SDL_SubmitGPU(sdlgpu.frame.upload_cbuf);
+	SDL_SubmitGPUCommandBuffer(sdlgpu.frame.upload_cbuf);
 	sdlgpu.frame.upload_cbuf = NULL;
 
 	if(LIKELY(sdlgpu.frame.fence)) {
-		SDL_WaitGPUForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
+		SDL_WaitForGPUFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
 		SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.frame.fence);
 	}
 
-	sdlgpu.frame.fence = SDL_SubmitGPUAndAcquireFence(sdlgpu.frame.cbuf);
+	sdlgpu.frame.fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.cbuf);
 	sdlgpu.frame.cbuf = NULL;
 	sdlgpu.frame.swapchain.tex = NULL;
 
@@ -317,7 +317,7 @@ static void sdlgpu_shutdown(void) {
 	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_UPLOAD]);
 
 	if(sdlgpu.frame.fence) {
-		SDL_WaitGPUForFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
+		SDL_WaitForGPUFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
 		SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.frame.fence);
 	}
 
@@ -326,7 +326,7 @@ static void sdlgpu_shutdown(void) {
 	}
 
 	sdlgpu_pipecache_deinit();
-	SDL_UnclaimGPUWindow(sdlgpu.device, sdlgpu.window);
+	SDL_ReleaseWindowFromGPUDevice(sdlgpu.device, sdlgpu.window);
 	SDL_DestroyGPUDevice(sdlgpu.device);
 	sdlgpu.device = NULL;
 	strbuf_free(&sdlgpu.debug_buf);
@@ -337,7 +337,7 @@ static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, 
 
 	sdlgpu.window = SDL_CreateWindow(title, w, h, flags);
 
-	if(sdlgpu.window && !SDL_ClaimGPUWindow(sdlgpu.device, sdlgpu.window)) {
+	if(sdlgpu.window && !SDL_ClaimWindowForGPUDevice(sdlgpu.device, sdlgpu.window)) {
 		log_sdl_error(LOG_FATAL, "SDL_ClaimGPUWindow");
 	}
 
@@ -352,7 +352,7 @@ static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, 
 
 static void sdlgpu_unclaim_window(SDL_Window *window) {
 	sdlgpu_submit_frame();
-	SDL_UnclaimGPUWindow(sdlgpu.device, window);
+	SDL_ReleaseWindowFromGPUDevice(sdlgpu.device, window);
 	sdlgpu.window = NULL;
 }
 
@@ -363,10 +363,10 @@ static void sdlgpu_vsync(VsyncMode mode) {
 		case VSYNC_NONE:
 			present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
 
-			if(!SDL_SupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
+			if(!SDL_WindowSupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
 				present_mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
 
-				if(!SDL_SupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
+				if(!SDL_WindowSupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
 					present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 				}
 			}
