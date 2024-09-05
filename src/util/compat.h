@@ -52,10 +52,10 @@
 
 	// Make sure we get the "unicode" (actually UTF-16) versions of win32 APIs; it defaults to legacy crippled ones.
 	#ifndef UNICODE
-		#define UNICODE
+		#define UNICODE 1
 	#endif
 	#ifndef _UNICODE
-		#define _UNICODE
+		#define _UNICODE 1
 	#endif
 
 	// Ask windows.h to include a little bit less of the stupid crap we'll never use.
