@@ -95,7 +95,7 @@ static char *vfs_syspath_repr(VFSNode *node) {
 }
 
 static char *vfs_syspath_syspath(VFSNode *node) {
-	char *p = strdup(VFS_NODE_CAST(VFSSysPathNode, node)->path);
+	char *p = mem_strdup(VFS_NODE_CAST(VFSSysPathNode, node)->path);
 	vfs_syspath_normalize_inplace(p);
 	return p;
 }
@@ -186,5 +186,5 @@ static VFSNode *vfs_syspath_create_internal(char *path) {
 }
 
 VFSNode *vfs_syspath_create(const char *path) {
-	return vfs_syspath_create_internal(strdup(path));
+	return vfs_syspath_create_internal(mem_strdup(path));
 }

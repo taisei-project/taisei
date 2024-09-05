@@ -21,7 +21,7 @@
 #define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   "p"
@@ -41,7 +41,7 @@
 #define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   "p"
@@ -62,7 +62,7 @@
 #define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   PRIi64
@@ -81,7 +81,7 @@
 #define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   PRIi64
@@ -233,7 +233,7 @@
 #define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   "s"

@@ -220,7 +220,7 @@ static void credits_add(char *data, int time) {
 	for(c = data; *c; ++c) {
 		if(*c == '\n') {
 			buf[i] = 0;
-			e->data[l] = strdup(buf);
+			e->data[l] = mem_strdup(buf);
 			i = 0;
 			++l;
 		} else {
@@ -229,7 +229,7 @@ static void credits_add(char *data, int time) {
 	}
 
 	buf[i] = 0;
-	e->data[l] = strdup(buf);
+	e->data[l] = mem_strdup(buf);
 	credits.end += time;
 }
 

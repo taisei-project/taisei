@@ -25,13 +25,6 @@
 #undef strlcpy
 #define strlcpy SDL_strlcpy
 
-#undef strdup
-#define strdup _ts_strdup
-INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
-	size_t sz = strlen(str) + 1;
-	return memcpy(mem_alloc(sz), str, sz);
-}
-
 #ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 #undef strtok_r
 #define strtok_r _ts_strtok_r

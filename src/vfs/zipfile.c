@@ -228,7 +228,7 @@ const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tl
 			// strip the trailing slash
 
 			mem_free(idata->allocated);
-			idata->allocated = strdup(p);
+			idata->allocated = mem_strdup(p);
 			*strchr(idata->allocated, '/') = 0;
 			r = idata->allocated;
 		} else {

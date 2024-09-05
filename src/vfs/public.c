@@ -281,7 +281,7 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
 			continue;
 		}
 
-		dynarray_append(&results, strdup(e));
+		dynarray_append(&results, mem_strdup(e));
 	}
 
 	vfs_dir_close(dir);

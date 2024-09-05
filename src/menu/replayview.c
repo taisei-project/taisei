@@ -400,7 +400,7 @@ static int fill_replayview_menu(MenuData *m) {
 
 		auto ictx = ALLOC(ReplayviewItemContext, {
 			.replay = rpy,
-			.replayname = strdup(filename),
+			.replayname = mem_strdup(filename),
 		});
 
 		add_menu_entry(m, " ", replayview_run, ictx)->transition = /*rpy->numstages < 2 ? TransFadeBlack :*/ NULL;

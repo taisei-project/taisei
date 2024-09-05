@@ -31,8 +31,8 @@ static void add_stage(
 		.type = type,
 		.spell = spell,
 		.difficulty = diff,
-		.title = title ? strdup(title) : NULL,
-		.subtitle = subtitle ? strdup(subtitle) : NULL,
+		.title = title ? mem_strdup(title) : NULL,
+		.subtitle = subtitle ? mem_strdup(subtitle) : NULL,
 	});
 }
 

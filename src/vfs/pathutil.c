@@ -61,7 +61,7 @@ char *vfs_path_normalize(const char *path, char *out) {
 }
 
 char *vfs_path_normalize_alloc(const char *path) {
-	return vfs_path_normalize(path, strdup(path));
+	return vfs_path_normalize(path, mem_strdup(path));
 }
 
 char *vfs_path_normalize_inplace(char *path) {
@@ -145,5 +145,5 @@ char *vfs_syspath_normalize_inplace(char *path) {
 char *vfs_syspath_join_alloc(const char *parent, const char *child) {
 	char buf[strlen(parent) + strlen(child) + 2];
 	vfs_syspath_join(buf, sizeof(buf), parent, child);
-	return strdup(buf);
+	return mem_strdup(buf);
 }

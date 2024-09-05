@@ -110,7 +110,7 @@ ShaderObject *gl33_shader_object_compile(ShaderSource *source) {
 
 		for(uint i = 0; i < nattribs; ++i) {
 			GLSLAttribute *a = source->meta.glsl.attributes + i;
-			shobj->attribs[i].name = strdup(a->name);
+			shobj->attribs[i].name = mem_strdup(a->name);
 			shobj->attribs[i].location = a->location;
 		}
 	} else {

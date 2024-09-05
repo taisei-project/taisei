@@ -43,7 +43,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	auto state = ALLOC(struct sprite_load_state, { .spr = spr });
 
 	if(texture_res_handler.procs.check(st->path)) {
-		state->texture_name = strdup(st->name);
+		state->texture_name = mem_strdup(st->name);
 		res_load_dependency(st, RES_TEXTURE, state->texture_name);
 		res_load_continue_after_dependencies(st, load_sprite_stage2, state);
 		return;
@@ -88,7 +88,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	}
 
 	if(!state->texture_name) {
-		state->texture_name = strdup(st->name);
+		state->texture_name = mem_strdup(st->name);
 		log_info("%s: inferred texture name from sprite name", state->texture_name);
 	}
 

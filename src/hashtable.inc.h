@@ -157,7 +157,7 @@
  *
  * Example:
  *
- *        #define HT_FUNC_COPY_KEY(dst, src) (*(dst) = strdup(src))
+ *        #define HT_FUNC_COPY_KEY(dst, src) (*(dst) = mem_strdup(src))
  */
 #ifndef HT_FUNC_COPY_KEY
 	#define HT_FUNC_COPY_KEY(dst, src) (*(dst) = (src))
