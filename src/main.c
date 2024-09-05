@@ -41,6 +41,9 @@
 #include <png.h>
 #include <zlib.h>
 
+#undef UNICODE
+#include <SDL3/SDL_main.h>
+
 static bool watchdog_handler(SDL_Event *evt, void *arg) {
 	assert(evt->type == MAKE_TAISEI_EVENT(TE_WATCHDOG));
 	config_reset();
