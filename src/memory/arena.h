@@ -63,6 +63,25 @@ void *marena_alloc_aligned(MemArena *arena, size_t size, size_t alignment)
 	attr_returns_allocated
 	attr_nonnull_all;
 
+bool marena_free(MemArena *restrict arena, void *restrict p, size_t old_size);
+
+#define marena_assert_free(arena, p, old_size) ({ \
+	bool _freed = marena_free(arena, p, old_size); \
+	assert(_freed); \
+	(void)0; \
+})
+
+void *marena_realloc(MemArena *restrict arena, void *restrict p, size_t old_size, size_t new_size)
+	attr_alloc_size(4)
+	attr_nonnull(1)
+	attr_returns_allocated;
+
+void *marena_realloc_aligned(MemArena *restrict arena, void *restrict p, size_t old_size, size_t new_size, size_t align)
+	attr_alloc_size(4)
+	attr_alloc_align(5)
+	attr_nonnull(1)
+	attr_returns_allocated;
+
 INLINE void *marena_memdup(MemArena *arena, const void *buf, size_t size) {
 	return memcpy(marena_alloc(arena, size), buf, size);
 }
