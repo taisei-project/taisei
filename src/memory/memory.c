@@ -62,7 +62,7 @@ void *mem_realloc(void *ptr, size_t size) {
 	}
 
 	if(size == 0) {
-		libc_free(ptr);
+		mem_free(ptr);
 		return ptr;
 	}
 
