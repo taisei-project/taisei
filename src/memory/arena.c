@@ -54,7 +54,7 @@ static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
 
 	for(;;) {
 		auto available = page->size - page_ofs;
-		alignofs = align - ((uintptr_t)(page->data + page_ofs) & (align - 1));
+		alignofs = (align - (uintptr_t)(page->data + page_ofs)) & (align - 1);
 		required = alignofs + size;
 
 		if(available < required) {
