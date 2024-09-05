@@ -195,7 +195,7 @@ char *pixmap_source_path(const char *prefix, const char *path) {
 	strcpy(base_path + strlen(prefix), path);
 
 	if(pixmap_check_filename(base_path) && vfs_query(base_path).exists) {
-		return strdup(base_path);
+		return mem_strdup(base_path);
 	}
 
 	char *dot = strrchr(base_path, '.');

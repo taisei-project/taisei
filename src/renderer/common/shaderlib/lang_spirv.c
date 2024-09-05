@@ -218,7 +218,7 @@ static spvc_result write_glsl_attribs(spvc_compiler compiler, ShaderSource *out)
 
 		log_debug("[%i] %s\t\tid=%i\t\tbase_type_id=%i\t\ttype_id=%i\t\tlocation=%i", i, res->name, res->id, res->base_type_id, res->type_id, location);
 
-		attrs[i].name = strdup(res->name);
+		attrs[i].name = mem_strdup(res->name);
 		attrs[i].location = location;
 	}
 
@@ -284,7 +284,7 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 
 	assume(code != NULL);
 
-	out->content = strdup(code);
+	out->content = mem_strdup(code);
 	out->content_size = strlen(code) + 1;
 	out->stage = in->stage;
 	out->lang = *options->lang;

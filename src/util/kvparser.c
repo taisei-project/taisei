@@ -87,7 +87,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 
 static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 	ht_str2ptr_t *ht = data;
-	ht_set(ht, key, strdup(val));
+	ht_set(ht, key, mem_strdup(val));
 	return true;
 }
 

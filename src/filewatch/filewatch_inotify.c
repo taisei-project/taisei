@@ -156,7 +156,7 @@ static DirWatch *dirwatch_get(const char *path, bool create) {
 	}
 
 	dw = ALLOC(typeof(*dw));
-	dw->path = strdup(path);
+	dw->path = mem_strdup(path);
 	dw->wd = wd;
 
 	WDRecord *wdrec = NOT_NULL(wdrecord_get(wd, true));
@@ -355,7 +355,7 @@ FileWatch *filewatch_watch(const char *syspath) {
 
 	auto fw = list_push(&dw->filewatch_list, ALLOC(FileWatch, {
 		.dw = dw,
-		.filename = strdup(filename),
+		.filename = mem_strdup(filename),
 	}));
 
 	SDL_UnlockMutex(FW.modify_mtx);

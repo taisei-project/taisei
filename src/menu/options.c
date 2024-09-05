@@ -313,7 +313,7 @@ static int bind_addvalue(OptionBinding *b, char *val) {
 	}
 
 	b->values = mem_realloc(b->values, (1 + b->valrange_max) * sizeof(char*));
-	b->values[b->valrange_max] = strdup(val);
+	b->values[b->valrange_max] = mem_strdup(val);
 	return b->valrange_max;
 }
 
@@ -965,7 +965,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 	m->end = destroy_options_menu_gamepad;
 
 	OptionsMenuContext *ctx = m->context;
-	ctx->data = strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
+	ctx->data = mem_strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
 	ctx->draw_overlay = draw_gamepad_options_overlay;
 	ctx->gamepad_testmode.allowed = true;
 

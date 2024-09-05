@@ -573,7 +573,7 @@ static void register_watched_path(InternalResource *ires, const char *vfspath, F
 		free_slot = dynarray_append(&ires->watched_paths, {});
 	}
 
-	free_slot->vfs_path = strdup(vfspath);
+	free_slot->vfs_path = mem_strdup(vfspath);
 	free_slot->watch = w;
 
 done:
@@ -816,7 +816,7 @@ struct valfunc_arg {
 static void *valfunc_begin_load_resource(void *varg) {
 	struct valfunc_arg *arg = varg;
 	auto ires = ires_alloc(arg->type);
-	ires->name = strdup(NOT_NULL(arg->name));
+	ires->name = mem_strdup(NOT_NULL(arg->name));
 	ires->refcount.value = 1;
 	return ires;
 }
@@ -1702,7 +1702,7 @@ void res_util_strip_ext(char *path) {
 char *res_util_basename(const char *prefix, const char *path) {
 	assert(strstartswith(path, prefix));
 
-	char *out = strdup(path + strlen(prefix));
+	char *out = mem_strdup(path + strlen(prefix));
 	res_util_strip_ext(out);
 
 	return out;

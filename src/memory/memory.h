@@ -56,6 +56,12 @@ void *mem_dup(const void *src, size_t size)
 
 #define memdup mem_dup
 
+INLINE attr_returns_allocated attr_nonnull(1)
+char *mem_strdup(const char *str) {
+	size_t sz = strlen(str) + 1;
+	return memcpy(mem_alloc(sz), str, sz);
+}
+
 /*
  * This macro transparently handles allocation of both normal and over-aligned types.
  * The allocation must be free'd with mem_free().

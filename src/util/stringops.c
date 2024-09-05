@@ -51,7 +51,7 @@ bool strstartswith_any(const char *s, const char **earray) {
 
 void stralloc(char **dest, const char *src) {
 	mem_free(*dest);
-	*dest = src ? strdup(src) : NULL;
+	*dest = src ? mem_strdup(src) : NULL;
 }
 
 char* strjoin(const char *first, ...) {
@@ -124,7 +124,7 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
 		char str[sz_allocated];
 
 		if(strftime(str, sz_allocated, fmt, timeinfo)) {
-			return strdup(str);
+			return mem_strdup(str);
 		}
 
 		sz_allocated *= 2;
@@ -133,7 +133,7 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
 
 char* strappend(char **dst, const char *src) {
 	if(!*dst) {
-		return *dst = strdup(src);
+		return *dst = mem_strdup(src);
 	}
 
 	*dst = mem_realloc(*dst, strlen(*dst) + strlen(src) + 1);

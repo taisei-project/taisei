@@ -771,7 +771,7 @@ static char *copy_pattern(const char *p) {
 		return NULL;
 	}
 
-	return strdup(orig);
+	return mem_strdup(orig);
 }
 
 void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc) {

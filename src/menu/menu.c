@@ -22,7 +22,7 @@ MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, v
 		.action = action,
 		.arg = arg,
 		.transition = menu->transition,
-		.name = name ? strdup(name) : NULL,
+		.name = name ? mem_strdup(name) : NULL,
 	});
 }
 

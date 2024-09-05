@@ -96,4 +96,8 @@ INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
 attr_deprecated("Use the memory.h API instead")
 void *realloc(void *ptr, size_t size);
 
+#undef strdup
+attr_deprecated("Use mem_strdup from memory.h instead")
+char *strdup(const char *s);
+
 PRAGMA(GCC diagnostic pop)

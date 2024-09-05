@@ -669,7 +669,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			return;
 		}
 	} else {
-		ld->src_paths.main = strdup(st->path);
+		ld->src_paths.main = mem_strdup(st->path);
 	}
 
 
