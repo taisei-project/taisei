@@ -45,10 +45,15 @@ static void _arena_delete_page(MemArena *arena, MemArenaPage *page) {
 	_arena_dealloc_page(page);
 }
 
-static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
+INLINE MemArenaPage *_arena_active_page(MemArena *arena) {
 	auto page = NOT_NULL(arena->pages.last);
 	assume(page->arena == arena);
 	assume(page->next == NULL);
+	return page;
+}
+
+static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
+	auto page = _arena_active_page(arena);
 	auto page_ofs = arena->page_offset;
 	size_t required, alignofs;
 
@@ -73,6 +78,46 @@ static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
 	assert(arena->page_offset <= page->size);
 	assert(((uintptr_t)p & (align - 1)) == 0);
 	return p;
+}
+
+static bool _arena_free(MemArena *arena, void *p, size_t old_size) {
+	auto page = _arena_active_page(arena);
+
+	if(page->data + arena->page_offset - old_size == p) {
+		assert(arena->page_offset >= old_size);
+		arena->page_offset -= old_size;
+		arena->total_used -= old_size;
+		return true;
+	}
+
+	return false;
+}
+
+static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t new_size, size_t align) {
+	assert(((uintptr_t)p & (align - 1)) == 0);
+
+	if(_arena_free(arena, p, old_size)) {
+		void *new_p = _arena_alloc(arena, new_size, align);
+
+		if(p != new_p) {
+			// If free succeeded and old_size >= new_size, alloc will never make a new page
+			assert(old_size < new_size);
+			memcpy(new_p, p, old_size);
+		}
+
+		return new_p;
+	}
+
+	// Couldn't free: the allocation isn't at the tip of the page.
+	// If we aren't growing it, just leave it alone.
+	if(old_size >= new_size) {
+		return p;
+	}
+
+	void *new_p = _arena_alloc(arena, new_size, align);
+	memcpy(new_p, p, old_size);
+
+	return new_p;
 }
 
 void marena_init(MemArena *arena, size_t min_size) {
@@ -128,4 +173,23 @@ void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
 	}
 
 	return _arena_alloc(arena, size, align);
+}
+
+bool marena_free(MemArena *restrict arena, void *restrict p, size_t old_size) {
+	return _arena_free(arena, p, old_size);
+}
+
+void *marena_realloc(MemArena *restrict arena, void *restrict p, size_t old_size, size_t new_size) {
+	return _arena_realloc(arena, p, old_size, new_size, alignof(max_align_t));
+}
+
+void *marena_realloc_aligned(MemArena *restrict arena, void *restrict p, size_t old_size, size_t new_size, size_t align) {
+	assume(align > 0);
+	assume(!(align & (align - 1)));
+
+	if(align < alignof(max_align_t)) {
+		align = alignof(max_align_t);
+	}
+
+	return _arena_realloc(arena, p, old_size, new_size, align);
 }
