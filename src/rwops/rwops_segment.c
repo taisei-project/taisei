@@ -8,6 +8,7 @@
 
 #include "rwops_segment.h"
 #include "log.h"
+#include "util/miscmath.h"
 
 typedef struct Segment {
 	SDL_RWops *wrapped;
