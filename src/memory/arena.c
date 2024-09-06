@@ -193,3 +193,35 @@ void *marena_realloc_aligned(MemArena *restrict arena, void *restrict p, size_t 
 
 	return _arena_realloc(arena, p, old_size, new_size, align);
 }
+
+MemArenaSnapshot marena_snapshot(MemArena *arena) {
+	return (MemArenaSnapshot) {
+		.page = _arena_active_page(arena),
+		.page_offset = arena->page_offset,
+	};
+}
+
+bool marena_rollback(MemArena *restrict arena, const MemArenaSnapshot *restrict snapshot) {
+	auto active_page = _arena_active_page(arena);
+
+	if(active_page == snapshot->page) {
+		if(UNLIKELY(snapshot->page_offset > arena->page_offset)) {
+			return false;
+		}
+
+		size_t mem_diff = arena->page_offset - snapshot->page_offset;
+		arena->page_offset = snapshot->page_offset;
+		assert(arena->total_used >= mem_diff);
+		arena->total_used -= mem_diff;
+		return true;
+	}
+
+	// New page(s) have been allocated after the snapshot was taken.
+	// We won't try to undo that, but we can at least reset the active page.
+
+	assert(arena->total_used >= arena->page_offset);
+	arena->total_used -= arena->page_offset;
+	arena->page_offset = 0;
+
+	return false;
+}
