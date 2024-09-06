@@ -29,7 +29,7 @@ static void _arena_dealloc_page(MemArenaPage *p) {
 
 static MemArenaPage *_arena_new_page(MemArena *arena, size_t min_size) {
 	auto alloc_size = topow2_u64(min_size + sizeof(MemArenaPage));
-	alloc_size = max(min_size, ARENA_MIN_ALLOC);
+	alloc_size = max(alloc_size, ARENA_MIN_ALLOC);
 	auto page_size = alloc_size - sizeof(MemArenaPage);
 	MemArenaPage *p = _arena_alloc_page(alloc_size);
 	p->size = page_size;
