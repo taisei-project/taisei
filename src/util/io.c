@@ -10,6 +10,7 @@
 
 #include "assert.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_autobuf.h"
 #include "stringops.h"
 #include "vfs/public.h"
@@ -144,15 +145,30 @@ char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
 }
 
 size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) {
+	auto scratch = acquire_scratch_arena();
+
 	va_list args;
 	va_start(args, fmt);
-	char *str = vstrfmt(fmt, args);
+	size_t ret = SDL_RWvprintf_arena(rwops, scratch, fmt, args);
 	va_end(args);
 
-	size_t ret = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
-		SDL_WriteIO(rwops, str, strlen(str));
-	mem_free(str);
+	release_scratch_arena(scratch);
+	return ret;
+}
 
+size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	size_t ret = SDL_RWvprintf_arena(rwops, scratch, fmt, args);
+	va_end(args);
+	return ret;
+}
+
+size_t SDL_RWvprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, va_list args) {
+	auto snapshot = marena_snapshot(scratch);
+	char *str = vstrfmt_arena(scratch, fmt, args);
+	size_t ret = SDL_WriteIO(rwops, str, strlen(str));
+	marena_rollback(scratch, &snapshot);
 	return ret;
 }
 
