@@ -4,4 +4,5 @@ memory_src = files(
     'arena.c',
     'memory.c',
     'mempool.c',
+    'scratch.c',
 )
