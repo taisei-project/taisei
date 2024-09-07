@@ -13,6 +13,7 @@
 #include "sdlgpu.h"
 
 #define UNIFORM_BLOCK_NAME "gl_DefaultUniformBlock"
+#define UNIFORM_BLOCK_ALT_NAME "_RESERVED_IDENTIFIER_FIXUP_gl_DefaultUniformBlock"
 
 INLINE SDL_GPUShaderStage shader_stage_ts2sdl(ShaderStage stage) {
 	switch(stage) {
@@ -202,13 +203,13 @@ static void sdlgpu_shader_object_init_uniforms(ShaderObject *shobj, const Shader
 			continue;
 		}
 
-		if(strcmp(UNIFORM_BLOCK_NAME, ubo->name)) {
+		if(strcmp(UNIFORM_BLOCK_NAME, ubo->name) && strcmp(UNIFORM_BLOCK_ALT_NAME, ubo->name)) {
 			log_debug("Uniform block %s (set=%u, binding=%u) ignored (wrong name, need " UNIFORM_BLOCK_NAME ")",
 					  ubo->name, ubo->set, ubo->binding);
 			continue;
 		}
 
-		log_debug("Found " UNIFORM_BLOCK_NAME " (set=%u, binding=%u), %u bytes", ubo->set, ubo->binding, ubo->size);
+		log_debug("Found %s (set=%u, binding=%u), %u bytes", ubo->name, ubo->set, ubo->binding, ubo->size);
 		shobj->uniform_buffer.size = ubo->size;
 		shobj->uniform_buffer.data = mem_alloc(ubo->size);
 		shobj->uniform_buffer.binding = ubo->binding;
@@ -310,7 +311,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	shobj->shader = SDL_CreateGPUShader(sdlgpu.device, &(SDL_GPUShaderCreateInfo) {
 		.stage = shader_stage_ts2sdl(source->stage),
 		.code = (uint8_t*)source->content,
-		.codeSize = source->content_size - 1,  // content always contains an extra NULL byte
+		.codeSize = source->content_size,
 		.format = shader_format_ts2sdlgpu(source->lang.lang),
 
 		// FIXME
