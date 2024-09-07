@@ -53,6 +53,54 @@ char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) {
 	return buf;
 }
 
+char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) {
+	size_t chunk_size = 64;
+	size_t buf_size = chunk_size;
+	char *buf = marena_alloc(arena, buf_size);
+	uint32_t pos = 0;
+
+	while(true) {
+		uint8_t c;
+		bool ok = SDL_ReadU8(io, &c);
+
+		if(!ok) {
+			if(SDL_GetIOStatus(io) != SDL_IO_STATUS_EOF) {
+				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			}
+
+			break;
+		}
+
+		if(c == 0) {
+			break;
+		}
+
+		buf[pos++] = (char)c;
+
+		if(c == '\n') {
+			break;
+		}
+
+		if(pos == buf_size) {
+			buf_size += 1;
+			buf = marena_realloc(arena, buf, buf_size - 1, buf_size);
+		}
+	}
+
+	if(pos == buf_size) {
+		buf_size += 1;
+		buf = marena_realloc(arena, buf, buf_size - 1, buf_size);
+	}
+
+	buf[pos] = 0;
+
+	if(out_buf_size) {
+		*out_buf_size = buf_size;
+	}
+
+	return buf;
+}
+
 char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
 	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
 	assert(end >= ptr);

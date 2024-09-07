@@ -9,11 +9,14 @@
 #pragma once
 #include "taisei.h"
 
+#include "memory/arena.h"
+
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
 char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) attr_nonnull_all;
 char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) attr_nonnull_all;
+char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) attr_nonnull(1, 2);
 size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) attr_printf(2, 3) attr_nonnull_all;
 void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) attr_nonnull_all;
 void SDL_RWsync(SDL_IOStream *rwops);
