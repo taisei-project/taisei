@@ -9,10 +9,11 @@
 #pragma once
 #include "taisei.h"
 
+#include "memory/arena.h"
+#include "systime.h"
+
 #include <time.h>
 #include <SDL.h>
-
-#include "systime.h"
 
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF
@@ -55,6 +56,8 @@ void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
 char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated;
 char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
+char* vstrfmt_arena(MemArena *arena, const char *fmt, va_list args) attr_returns_allocated;
+char* strfmt_arena(MemArena *arena, const char *fmt, ...) attr_printf(2, 3) attr_returns_allocated;
 char* strappend(char **dst, const char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);
