@@ -678,18 +678,11 @@ bool sdlgpu_texture_type_query(
 		return false;
 	}
 
-	PixmapFormat pixfmt = sdlgpu_texfmt_to_pixfmt(format);
-
-	if(pixfmt == 0) {
-		// FIXME: supported but can't upload or download, what to do here?
-		return false;
-	}
-
 	if(!result) {
 		return true;
 	}
 
-	result->optimal_pixmap_format = pixfmt;
+	result->optimal_pixmap_format = sdlgpu_texfmt_to_pixfmt(format);
 	result->optimal_pixmap_origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 
 	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
