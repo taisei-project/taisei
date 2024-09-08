@@ -301,6 +301,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 
 	auto shobj = ALLOC(ShaderObject, {
 		.stage = source->stage,
+		.used_input_locations_map = source->reflection->used_input_locations_map,
 		.refs.value = 1,
 	});
 

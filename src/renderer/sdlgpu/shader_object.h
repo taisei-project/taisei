@@ -45,6 +45,7 @@ struct ShaderObject {
 	ht_str2ptr_t uniforms;
 	ShaderObjectUniform *magic_unfiroms[NUM_MAGIC_UNIFORMS];
 	Texture **sampler_bindings;
+	uint64_t used_input_locations_map;
 	uint num_sampler_bindings;
 
 	ShaderStage stage;
