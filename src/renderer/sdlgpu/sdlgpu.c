@@ -289,15 +289,31 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 }
 
 static void sdlgpu_init(void) {
-	bool debug = env_get("TAISEI_SDLGPU_DEBUG", false);
 	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV;
 
 	if(dxbc_init_compiler()) {
 		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
 	}
 
+	SDL_PropertiesID props = SDL_CreateProperties();
+
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOL,
+		env_get("TAISEI_SDLGPU_DEBUG", false));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOL,
+		env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOL,
+		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_SPIRV));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOL,
+		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_DXBC));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOL,
+		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_DXIL));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOL,
+		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_MSL));
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOL,
+		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_METALLIB));
+
 	sdlgpu = (SDLGPUGlobal) {
-		.device = SDL_CreateGPUDevice(shader_formats, debug, NULL),
+		.device = SDL_CreateGPUDeviceWithProperties(props),
 	};
 
 	if(!sdlgpu.device) {
