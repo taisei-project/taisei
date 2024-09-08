@@ -16,6 +16,7 @@
 #define MEMALIGN_METHOD_C11   0
 #define MEMALIGN_METHOD_POSIX 1
 #define MEMALIGN_METHOD_WIN32 2
+#define MEMALIGN_METHOD_YOLO  3
 
 #if defined(TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN)
 	#define MEMALIGN_METHOD MEMALIGN_METHOD_POSIX
@@ -25,6 +26,11 @@
 	#define MEMALIGN_METHOD MEMALIGN_METHOD_WIN32
 #else
 	#error No usable aligned malloc implementation
+#endif
+
+#if MEMALIGN_METHOD == MEMALIGN_METHOD_WIN32
+#undef MEMALIGN_METHOD
+#define MEMALIGN_METHOD MEMALIGN_METHOD_YOLO
 #endif
 
 void mem_free(void *ptr) {
@@ -94,6 +100,8 @@ void *mem_alloc_aligned(size_t size, size_t alignment) {
 	void *p = NOT_NULL(_aligned_malloc(size, alignment));
 	memset(p, 0, size);
 	return p;
+#elif MEMALIGN_METHOD == MEMALIGN_METHOD_YOLO
+	return mem_alloc(size);
 #else
 	#error No usable aligned malloc implementation
 #endif
