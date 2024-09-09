@@ -583,22 +583,14 @@ static void sdlgpu_draw_generic(
 	}
 
 	FloatRect *vp = sdlgpu_framebuffer_viewport_pointer(sdlgpu.st.framebuffer);
-
-	SDL_GPUViewport gpu_vp = (SDL_GPUViewport) {
+	SDL_SetGPUViewport(pass, &(SDL_GPUViewport) {
 		.x = vp->x,
 		.y = vp->y,
 		.h = vp->h,
 		.w = vp->w,
 		.minDepth = 0 ,
 		.maxDepth = 1,
-	};
-
-	if(sdlgpu.st.framebuffer != NULL) {
-		gpu_vp.y += gpu_vp.h;
-		gpu_vp.h = -gpu_vp.h;
-	}
-
-	SDL_SetGPUViewport(pass, &gpu_vp);
+	});
 
 	mat4 proj;
 	mat4 clip_conversion = {
@@ -607,6 +599,11 @@ static void sdlgpu_draw_generic(
 		{ 0.0f, 0.0f, 0.5f, 0.0f },
 		{ 0.0f, 0.0f, 0.5f, 1.0f },
 	};
+
+	if(sdlgpu.st.framebuffer != NULL) {
+		clip_conversion[1][1] = -1.0f;
+	}
+
 	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
 
 	sdlgpu_set_magic_uniforms(v_shader, vp, proj);
