@@ -12,12 +12,21 @@
 #include "common/matstack.h"
 #include "common/sprite_batch_internal.h"
 #include "common/state.h"
+
 #include "coroutine/coroutine.h"
+#include "hirestime.h"
 #include "resource/resource.h"
 #include "resource/texture.h"
+#include "util/env.h"
 #include "util/glm.h"
 
 #define B _r_backend.funcs
+
+#ifdef DEBUG
+	#define LOG_FPS_DEFAULT true
+#else
+	#define LOG_FPS_DEFAULT false
+#endif
 
 static struct {
 	ResourceGroup rg;
@@ -25,6 +34,9 @@ static struct {
 		ShaderProgram *standard;
 		ShaderProgram *standardnotex;
 	} progs;
+
+	uint64_t frames;
+	hrtime_t begin_time;
 } R;
 
 void r_init(void) {
@@ -72,6 +84,15 @@ void r_release_resources(void) {
 }
 
 void r_shutdown(void) {
+	if(env_get("TAISEI_RENDERER_LOG_FPS", LOG_FPS_DEFAULT)) {
+		hrtime_t end = time_get();
+		hrtime_t delta = end - R.begin_time;
+
+		uint64_t ms = delta / (HRTIME_RESOLUTION / 1000);
+		double seconds = ms / 1000.0;
+		log_info("%zu frames in %.02f sec ~= %.02f FPS", R.frames, seconds, R.frames / seconds);
+	}
+
 	_r_state_shutdown();
 	B.shutdown();
 }
@@ -828,6 +849,10 @@ VsyncMode r_vsync_current(void) {
 }
 
 void r_begin_frame(void) {
+	if(R.frames == 0) {
+		R.begin_time = time_get();
+	}
+
 	if(B.begin_frame) {
 		B.begin_frame();
 	}
@@ -837,6 +862,8 @@ void r_swap(SDL_Window *window) {
 	coroutines_draw_stats();
 	_r_sprite_batch_end_frame();
 	B.swap(window);
+
+	R.frames++;
 }
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this
