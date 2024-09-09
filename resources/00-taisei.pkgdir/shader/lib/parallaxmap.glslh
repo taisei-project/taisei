@@ -28,7 +28,8 @@ vec2 parallaxOcclusionMap(sampler2D depthMap, float depthScale, vec2 texCoord, v
 
 	float prevDepth = currentDepthMapValue;
 
-	while(currentLayerDepth < currentDepthMapValue) {
+	int i = 0;
+	while(currentLayerDepth < currentDepthMapValue && i < int(PARALLAX_MAX_LAYERS)) {
 		prevDepth = currentDepthMapValue;
 		// shift texture coordinates along direction of P
 		currentTexCoords -= deltaTexCoords;
@@ -36,6 +37,7 @@ vec2 parallaxOcclusionMap(sampler2D depthMap, float depthScale, vec2 texCoord, v
 		currentDepthMapValue = texture(depthMap, currentTexCoords).r;
 		// get depth of next layer
 		currentLayerDepth += layerDepth;
+		++i;
 	}
 
 	// get texture coordinates before collision (reverse operations)
