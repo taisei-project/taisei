@@ -11,8 +11,10 @@
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
 #include "../glcommon/vtable.h"
-#include "angle_egl.h"
 #include "util/env.h"
+
+#define SDL_USE_BUILTIN_OPENGL_DEFINITIONS
+#include <SDL3/SDL_egl.h>
 
 #ifdef _WIN32
 	// Enable WebGL compatibility mode on Windows, because cubemaps are broken in the D3D11 backend
@@ -22,12 +24,24 @@
 	#define ANGLE_WEBGL_DEFAULT false
 #endif
 
+#ifndef EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE
+#define EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE 0x33ac
+#endif
+
+#ifndef EGL_EXTENSIONS_ENABLED_ANGLE
+#define EGL_EXTENSIONS_ENABLED_ANGLE 0x345f
+#endif
+
 attr_unused
-static SDL_GLContext gles_create_context_webgl(SDL_Window *window) {
-	int major, minor;
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-	return gles_create_context_angle(window, major, minor, true);
+static SDL_EGLint *gles_angle_egl_context_attrib_callback(
+	void *userdata, SDL_EGLDisplay display, SDL_EGLConfig config
+) {
+	SDL_EGLint a[] = {
+		EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE, EGL_TRUE,
+		EGL_EXTENSIONS_ENABLED_ANGLE, EGL_TRUE,
+		EGL_NONE,
+	};
+	return memcpy(SDL_malloc(sizeof(a)), a, sizeof(a));
 }
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
@@ -55,14 +69,17 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	#endif
 
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
-
-	if(env_get("TAISEI_ANGLE_WEBGL", ANGLE_WEBGL_DEFAULT)) {
-		GLVT_OF(*gles_backend).create_context = gles_create_context_webgl;
-	}
 #endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);
 	glcommon_setup_attributes(SDL_GL_CONTEXT_PROFILE_ES, major, minor, 0);
+
+#ifdef TAISEI_BUILDCONF_HAVE_ANGLE
+	if(env_get("TAISEI_ANGLE_WEBGL", ANGLE_WEBGL_DEFAULT)) {
+		SDL_EGL_SetAttributeCallbacks(NULL, NULL, gles_angle_egl_context_attrib_callback, NULL);
+	}
+#endif
+
 	glcommon_load_library();
 }
 
