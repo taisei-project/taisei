@@ -207,7 +207,6 @@ static void ensure_command_buffers(void) {
 
 static void sdlgpu_begin_frame(void) {
 	finish_all_passes();
-	++sdlgpu.frame.counter;
 
 	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.frame.command_buffers); ++i) {
 		ensure_command_buffer(i);
@@ -227,18 +226,27 @@ static void sdlgpu_submit_frame(void) {
 		sdlgpu_cmdbuf_debug(sdlgpu.frame.command_buffers[i], "Submit frame %u", sdlgpu.frame.counter);
 	}
 
-	SDL_SubmitGPUCommandBuffer(sdlgpu.frame.upload_cbuf);
-	sdlgpu.frame.upload_cbuf = NULL;
+	uint frame_slot = sdlgpu.frame.counter % MAX_FRAMES_IN_FLIGHT;
 
-	if(LIKELY(sdlgpu.frame.fence)) {
-		SDL_WaitForGPUFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
-		SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.frame.fence);
+	if(sdlgpu.fences[frame_slot].group[0]) {
+		SDL_WaitForGPUFences(sdlgpu.device, true, sdlgpu.fences[frame_slot].group, NUM_CBUFS);
+
+		for(uint i = 0; i < NUM_CBUFS; ++i) {
+			SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.fences[frame_slot].group[i]);
+		}
 	}
 
-	sdlgpu.frame.fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.cbuf);
+	SDL_GPUFence *upload_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.upload_cbuf);
+	sdlgpu.frame.upload_cbuf = NULL;
+	SDL_GPUFence *draw_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.cbuf);
 	sdlgpu.frame.cbuf = NULL;
+
+	sdlgpu.fences[frame_slot].group[CBUF_DRAW] = draw_fence;
+	sdlgpu.fences[frame_slot].group[CBUF_UPLOAD] = upload_fence;
+
 	sdlgpu.frame.swapchain.tex = NULL;
 
+	++sdlgpu.frame.counter;
 	ensure_command_buffers();
 }
 
@@ -346,9 +354,11 @@ static void sdlgpu_shutdown(void) {
 	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_DRAW]);
 	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_UPLOAD]);
 
-	if(sdlgpu.frame.fence) {
-		SDL_WaitForGPUFences(sdlgpu.device, false, &sdlgpu.frame.fence, 1);
-		SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.frame.fence);
+	for(uint i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		for(uint j = 0; j < NUM_CBUFS; ++j) {
+			SDL_WaitForGPUFences(sdlgpu.device, false, &sdlgpu.fences[i].group[j], 1);
+			SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.fences[i].group[j]);
+		}
 	}
 
 	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.null_textures); ++i) {

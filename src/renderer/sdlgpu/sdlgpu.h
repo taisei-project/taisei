@@ -18,6 +18,8 @@
 
 #include <SDL3/SDL_gpu.h>
 
+#define MAX_FRAMES_IN_FLIGHT 3
+
 typedef uint16_t sdlgpu_id_t;
 
 typedef enum CommandBufferID {
@@ -41,7 +43,6 @@ typedef struct SDLGPUGlobal {
 			};
 			SDL_GPUCommandBuffer *command_buffers[NUM_CBUFS];
 		};
-		SDL_GPUFence *fence;
 
 		struct {
 			SDL_GPUTexture *tex;
@@ -54,6 +55,10 @@ typedef struct SDLGPUGlobal {
 
 		uint counter;
 	} frame;
+
+	struct {
+		SDL_GPUFence *group[NUM_CBUFS];
+	} fences[MAX_FRAMES_IN_FLIGHT];
 
 	struct {
 		ShaderProgram *shader;
