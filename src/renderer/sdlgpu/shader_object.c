@@ -48,6 +48,7 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 
 	if(transpile_opts) {
 		transpile_opts->compile.target = lang_spirv.spirv.target;
+		transpile_opts->compile.optimization_level = SPIRV_OPTIMIZE_NONE;
 		transpile_opts->decompile.lang = want_lang;
 		transpile_opts->decompile.reflect = true;
 	}

@@ -138,6 +138,7 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 
 	log_debug("BEGIN CREATE PIPELINE");
 
+#ifdef FILTER_VERTEX_INPUT
 	const SDL_GPUVertexInputState *specified_vertex_inputs = &pd->vertex_array->vertex_input_state;
 	SDL_GPUVertexAttribute attribs[specified_vertex_inputs->vertexAttributeCount ?: 1];
 	SDL_GPUVertexInputState active_vertex_inputs = {
@@ -154,13 +155,18 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 	}
 
 	dump_vertex_input_state(&active_vertex_inputs);
+#endif
 
 	SDL_GPUColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
 
 	SDL_GPUGraphicsPipelineCreateInfo pci = {
 		.vertexShader = v_shader->shader,
 		.fragmentShader = f_shader->shader,
+		#ifdef FILTER_VERTEX_INPUT
 		.vertexInputState = active_vertex_inputs,
+		#else
+		.vertexInputState = pd->vertex_array->vertex_input_state,
+		#endif
 		.primitiveType = sdlgpu_primitive_ts2sdl(pd->primitive),
 		.rasterizerState = {
 			.cullMode = sdlgpu.st.caps & r_capability_bit(RCAP_CULL_FACE)
