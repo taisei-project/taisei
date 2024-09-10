@@ -80,3 +80,4 @@ INLINE void sdlgpu_texture_decref(Texture *tex) {
 }
 
 void sdlgpu_texture_init_type_remap_table(void);
+PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt);

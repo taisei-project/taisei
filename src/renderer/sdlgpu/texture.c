@@ -108,7 +108,7 @@ static TextureType sdlgpu_remap_texture_type(TextureType tt) {
 	return tt;
 }
 
-static PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
+PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 	switch(fmt) {
 		case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
 			return PIXMAP_FORMAT_RGBA8;
