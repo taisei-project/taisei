@@ -289,6 +289,7 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 }
 
 static void sdlgpu_init(void) {
+	bool debug = env_get("TAISEI_SDLGPU_DEBUG", false);
 	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV;
 
 	if(dxbc_init_compiler()) {
@@ -296,7 +297,7 @@ static void sdlgpu_init(void) {
 	}
 
 	sdlgpu = (SDLGPUGlobal) {
-		.device = SDL_CreateGPUDevice(shader_formats, true, NULL),
+		.device = SDL_CreateGPUDevice(shader_formats, debug, NULL),
 	};
 
 	if(!sdlgpu.device) {
