@@ -548,7 +548,7 @@ CullFaceMode r_cull_current(void);
 void r_depth_func(DepthTestFunc func);
 DepthTestFunc r_depth_func_current(void);
 
-bool r_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) attr_nonnull(1);
+bool r_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts) attr_nonnull(1);
 
 ShaderObject* r_shader_object_compile(ShaderSource *source) attr_nonnull(1);
 void r_shader_object_destroy(ShaderObject *shobj) attr_nonnull(1);

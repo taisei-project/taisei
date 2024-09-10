@@ -118,6 +118,13 @@ option(
 )
 
 option(
+    'shader_transpiler_dxbc',
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Enable compilation of shaders into DXBC bytecode; required for the D3D11 backend of SDL_GPU'
+)
+
+option(
     'validate_glsl',
     type : 'feature',
     deprecated : {'true' : 'enabled', 'false' : 'disabled'},

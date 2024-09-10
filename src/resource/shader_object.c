@@ -18,6 +18,7 @@ struct shobj_type {
 };
 
 struct shobj_load_data {
+	MemArena arena;
 	ShaderSource source;
 };
 
@@ -76,6 +77,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 	}
 
 	auto ldata = ALLOC(struct shobj_load_data);
+	marena_init(&ldata->arena, 0);
 
 	char backend_macro[32] = "BACKEND_";
 	{
@@ -102,7 +104,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 				.file_open_callback_userdata = st,
 			};
 
-			if(!glsl_load_source(st->path, &ldata->source, &opts)) {
+			if(!glsl_load_source(st->path, &ldata->source, &ldata->arena, &opts)) {
 				goto fail;
 			}
 
@@ -112,31 +114,31 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 		default: UNREACHABLE;
 	}
 
-	ShaderLangInfo altlang = { SHLANG_INVALID };
+	SPIRVTranspileOptions transpile_opts = {
+		.compile = {
+			.optimization_level = SPIRV_OPTIMIZE_PERFORMANCE,
+			.filename = st->path,
+		},
+	};
 
-	if(!r_shader_language_supported(&ldata->source.lang, &altlang)) {
-		if(altlang.lang == SHLANG_INVALID) {
+	if(!r_shader_language_supported(&ldata->source.lang, &transpile_opts)) {
+		if(!transpile_opts.decompile.lang) {
 			log_error("%s: shading language not supported by backend", st->path);
 			goto fail;
 		}
 
 		log_warn("%s: shading language not supported by backend, attempting to translate", st->path);
 
-		assert(r_shader_language_supported(&altlang, NULL));
+		assert(r_shader_language_supported(transpile_opts.decompile.lang, NULL));
 
 		ShaderSource newsrc;
-		bool result = spirv_transpile(&ldata->source, &newsrc, &(SPIRVTranspileOptions) {
-			.lang = &altlang,
-			.optimization_level = SPIRV_OPTIMIZE_PERFORMANCE,
-			.filename = st->path,
-		});
+		bool result = spirv_transpile(&ldata->source, &newsrc, &ldata->arena, &transpile_opts);
 
 		if(!result) {
 			log_error("%s: translation failed", st->path);
 			goto fail;
 		}
 
-		shader_free_source(&ldata->source);
 		ldata->source = newsrc;
 	}
 
@@ -144,7 +146,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 	return;
 
 fail:
-	shader_free_source(&ldata->source);
+	marena_deinit(&ldata->arena);
 	mem_free(ldata);
 	res_load_failed(st);
 }
@@ -153,7 +155,7 @@ static void load_shader_object_stage2(ResourceLoadState *st) {
 	struct shobj_load_data *ldata = NOT_NULL(st->opaque);
 
 	ShaderObject *shobj = r_shader_object_compile(&ldata->source);
-	shader_free_source(&ldata->source);
+	marena_deinit(&ldata->arena);
 	mem_free(ldata);
 
 	if(shobj) {

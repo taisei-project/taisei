@@ -57,8 +57,8 @@ typedef struct ShaderBlock {
 	const char *name;
 	uint set;
 	uint binding;
-	uint num_fields;
 	uint size;
+	uint num_fields;
 	ShaderStructField *fields;
 } ShaderBlock;
 
@@ -71,11 +71,15 @@ typedef enum ShaderSamplerDimension {
 	SHADER_SAMPLER_DIM_BUFFER,
 } ShaderSamplerDimension;
 
+typedef uint16_t ShaderSamplerTypeFlags;
+
+#define SHADER_SAMPLER_DEPTH              (ShaderSamplerTypeFlags)(1 << 0)
+#define SHADER_SAMPLER_ARRAYED            (ShaderSamplerTypeFlags)(1 << 1)
+#define SHADER_SAMPLER_MULTISAMPLED       (ShaderSamplerTypeFlags)(1 << 2)
+
 typedef struct ShaderSamplerType {
 	ShaderSamplerDimension dim : 16;
-	bool is_depth : 1;
-	bool is_arrayed : 1;
-	bool is_multisampled : 1;
+	ShaderSamplerTypeFlags flags;
 } ShaderSamplerType;
 
 typedef struct ShaderSampler {
@@ -86,12 +90,21 @@ typedef struct ShaderSampler {
 	uint array_size;
 } ShaderSampler;
 
-typedef struct ShaderReflection {
-	uint num_uniform_buffers;
-	ShaderBlock *uniform_buffers;
+typedef struct ShaderInput {
+	const char *name;
+	// ShaderDataType type;
+	uint location;
+	uint num_locations_consumed;
+} ShaderInput;
 
-	uint num_samplers;
+typedef struct ShaderReflection {
+	ShaderBlock *uniform_buffers;
 	ShaderSampler *samplers;
+	ShaderInput *inputs;
+	uint64_t used_input_locations_map;
+	uint num_uniform_buffers;
+	uint num_samplers;
+	uint num_inputs;
 } ShaderReflection;
 
 uint shader_basetype_size(ShaderBaseType base_type);
@@ -115,3 +128,7 @@ uint shader_type_unpack_from_bytes(
 	uint dst_size, void *dst);
 
 ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena);
+
+bool shader_reflection_serialize(const ShaderReflection *reflect, SDL_IOStream *output);
+bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemArena *arena, SDL_IOStream *input);
+void shader_reflection_logdump(const ShaderReflection *reflect);

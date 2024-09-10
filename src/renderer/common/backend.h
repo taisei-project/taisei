@@ -44,7 +44,7 @@ typedef struct RendererFuncs {
 	void (*depth_func)(DepthTestFunc depth_func);
 	DepthTestFunc (*depth_func_current)(void);
 
-	bool (*shader_language_supported)(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+	bool (*shader_language_supported)(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts);
 
 	ShaderObject* (*shader_object_compile)(ShaderSource *source);
 	void (*shader_object_destroy)(ShaderObject *shobj);

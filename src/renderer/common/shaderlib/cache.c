@@ -8,6 +8,7 @@
 
 #include "shaderlib.h"
 #include "cache.h"
+#include "reflect.h"
 
 #include "log.h"
 #include "util/sha256.h"
@@ -16,7 +17,7 @@
 #include "rwops/rwops_zstd.h"
 #include "vfs/public.h"
 
-#define CACHE_VERSION 6
+#define CACHE_VERSION 7
 #define CRC_INIT 0
 
 #define MAX_CONTENT_SIZE          (1024 * 1024)
@@ -93,14 +94,32 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			break;
 		}
 
+		case SHLANG_HLSL: {
+			SDL_WriteU8(dest, src->lang.hlsl.shader_model);
+			break;
+		}
+
+		case SHLANG_DXBC: {
+			SDL_WriteU8(dest, src->lang.dxbc.shader_model);
+			break;
+		}
+
+		case SHLANG_MSL: {
+			break;
+		}
+
 		default: {
-			log_error("Unhandled shading language id=%u", src->lang.lang);
+			log_error("Unhandled shading language %s", shader_lang_name(src->lang.lang));
 			goto fail;
 		}
 	}
 
 	if(src->content_size > MAX_CONTENT_SIZE) {
 		log_error("Content is too large (%zu)", src->content_size);
+		goto fail;
+	}
+
+	if(!shader_reflection_serialize(src->reflection, dest)) {
 		goto fail;
 	}
 
@@ -137,7 +156,7 @@ fail:
 #define READU16LE(_file) READ(_file, SDL_ReadU16LE, uint16_t)
 #define READU32LE(_file) READ(_file, SDL_ReadU32LE, uint32_t)
 
-static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src) {
+static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src, MemArena *arena) {
 	uint32_t crc = CRC_INIT;
 	SDL_IOStream *s = SDL_RWWrapCRC32(stream, &crc, false);
 
@@ -173,19 +192,42 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src)
 			break;
 		}
 
+		case SHLANG_HLSL: {
+			out_src->lang.hlsl.shader_model = READU8(s);
+			break;
+		}
+
+		case SHLANG_DXBC: {
+			out_src->lang.dxbc.shader_model = READU8(s);
+			break;
+		}
+
+		case SHLANG_MSL: {
+			break;
+		}
+
 		default: {
-			log_error("Unhandled shading language id=%u", out_src->lang.lang);
+			log_error("Unhandled shading language %s", shader_lang_name(out_src->lang.lang));
 			goto fail;
 		}
 	}
 
-	out_src->content_size = READU32LE(s);
-	out_src->content = mem_alloc(out_src->content_size);
+	auto arena_snap = marena_snapshot(arena);
 
-	if(!SDL_ReadIO(s, out_src->content, out_src->content_size)) {
+	if(!shader_reflection_deserialize(&out_src->reflection, arena, s)) {
+		goto fail;
+	}
+
+	uint32_t content_size = READU32LE(s);
+	char *content = marena_alloc(arena, content_size);
+
+	if(!SDL_ReadIO(s, content, content_size)) {
 		log_sdl_error(LOG_ERROR, "SDL_ReadIO");
 		goto fail;
 	}
+
+	out_src->content_size = content_size;
+	out_src->content = content;
 
 	uint32_t file_crc = READU32LE(stream);
 
@@ -198,12 +240,12 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src)
 	return true;
 
 fail:
-	shader_free_source(out_src);
+	marena_rollback(arena, &arena_snap);
 	SDL_CloseIO(s);
 	return false;
 }
 
-bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
+bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, MemArena *arena) {
 	char path[256];
 	snprintf(path, sizeof(path), "cache/shaders/%s/%s", hash, key);
 
@@ -214,10 +256,10 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 	}
 
 	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, true));
-	bool result = shader_cache_load_entry(stream, entry);
+	bool result = shader_cache_load_entry(stream, entry, arena);
 	SDL_CloseIO(stream);
 
-	log_debug("Retrieved %s/%s from cache", hash, key);
+	log_debug("%s %s/%s from cache", result ? "Retrieved " : "Failed to retrieve",  hash, key);
 	return result;
 }
 
