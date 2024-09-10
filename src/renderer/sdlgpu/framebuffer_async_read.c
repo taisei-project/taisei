@@ -131,7 +131,7 @@ void sdlgpu_framebuffer_read_async(
 	if(rq->transfer.buffer_size < required_buffer_size) {
 		SDL_ReleaseGPUTransferBuffer(sdlgpu.device, rq->transfer.buffer);
 		rq->transfer.buffer = SDL_CreateGPUTransferBuffer(sdlgpu.device, &(SDL_GPUTransferBufferCreateInfo) {
-			.sizeInBytes = required_buffer_size,
+			.size = required_buffer_size,
 			.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
 		});
 		rq->transfer.buffer_size = required_buffer_size;
@@ -142,16 +142,16 @@ void sdlgpu_framebuffer_read_async(
 	SDL_DownloadFromGPUTexture(copy_pass,
 		&(SDL_GPUTextureRegion) {
 			.texture = src.texture->gpu_texture,
-			.mipLevel = src.miplevel,
+			.mip_level = src.miplevel,
 			.x = region.x,
 			.y = region.y,
 			.w = region.w,
 			.h = region.h,
 			.d = 1,
 		}, &(SDL_GPUTextureTransferInfo) {
-			.transferBuffer = rq->transfer.buffer,
-			.imageHeight = region.h,
-			.imagePitch = region.w,
+			.transfer_buffer = rq->transfer.buffer,
+			.rows_per_layer = region.h,
+			.pixels_per_row = region.w,
 		});
 	SDL_EndGPUCopyPass(copy_pass);
 	RQ_FENCE(rq) = SDL_SubmitGPUCommandBufferAndAcquireFence(cbuf);

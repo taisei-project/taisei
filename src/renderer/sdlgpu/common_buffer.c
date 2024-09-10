@@ -61,13 +61,13 @@ static bool sdlgpu_buffer_resize_gpubuf(CommonBuffer *cbuf) {
 	}
 
 	cbuf->gpubuf = SDL_CreateGPUBuffer(sdlgpu.device, &(SDL_GPUBufferCreateInfo) {
-		.usageFlags = cbuf->usage,
-		.sizeInBytes = cbuf->cachedbuf.size,
+		.usage = cbuf->usage,
+		.size = cbuf->cachedbuf.size,
 	});
 
 	cbuf->transferbuf = SDL_CreateGPUTransferBuffer(sdlgpu.device, &(SDL_GPUTransferBufferCreateInfo) {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.sizeInBytes = cbuf->cachedbuf.size,
+		.size = cbuf->cachedbuf.size,
 	});
 
 	cbuf->commited_size = cbuf->cachedbuf.size;
@@ -102,7 +102,7 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 	auto copypass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
 
 	SDL_UploadToGPUBuffer(copypass, &(SDL_GPUTransferBufferLocation) {
-		.transferBuffer = cbuf->transferbuf,
+		.transfer_buffer = cbuf->transferbuf,
 		.offset = update.offset,
 	}, &(SDL_GPUBufferRegion) {
 		.buffer = cbuf->gpubuf,

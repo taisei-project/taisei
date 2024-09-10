@@ -36,8 +36,8 @@ static bool renderpass_outputs_compatible(const RenderPassOutputs *current, cons
 	if(new->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID) {
 		if(
 			current->depth_stencil.texture != new->depth_stencil.texture ||
-			new->depth_stencil.loadOp == SDL_GPU_LOADOP_CLEAR ||
-			new->depth_stencil.stencilLoadOp == SDL_GPU_LOADOP_CLEAR
+			new->depth_stencil.load_op == SDL_GPU_LOADOP_CLEAR ||
+			new->depth_stencil.stencil_load_op == SDL_GPU_LOADOP_CLEAR
 		) {
 			return false;
 		}
@@ -45,10 +45,10 @@ static bool renderpass_outputs_compatible(const RenderPassOutputs *current, cons
 
 	for(uint i = 0; i < current->num_color_attachments; ++i) {
 		if(
-			new->color[i].loadOp == SDL_GPU_LOADOP_CLEAR ||
+			new->color[i].load_op == SDL_GPU_LOADOP_CLEAR ||
 			current->color[i].texture != new->color[i].texture ||
-			current->color[i].mipLevel != new->color[i].mipLevel ||
-			current->color[i].layerOrDepthPlane != new->color[i].layerOrDepthPlane
+			current->color[i].mip_level != new->color[i].mip_level ||
+			current->color[i].layer_or_depth_plane != new->color[i].layer_or_depth_plane
 		) {
 			return false;
 		}
@@ -564,7 +564,7 @@ static void sdlgpu_draw_generic(
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
 
-	SDL_GPUBufferBinding vbuf_bindings[varr->vertex_input_state.vertexBindingCount];
+	SDL_GPUBufferBinding vbuf_bindings[varr->vertex_input_state.num_vertex_bindings];
 
 	for(uint i = 0; i < ARRAY_SIZE(vbuf_bindings); ++i) {
 		uint slot = varr->binding_to_attachment_map[i];
@@ -598,8 +598,8 @@ static void sdlgpu_draw_generic(
 		.y = vp->y,
 		.h = vp->h,
 		.w = vp->w,
-		.minDepth = 0 ,
-		.maxDepth = 1,
+		.min_depth = 0 ,
+		.max_depth = 1,
 	});
 
 	mat4 proj;

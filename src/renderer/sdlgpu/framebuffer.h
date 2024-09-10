@@ -28,9 +28,9 @@ typedef struct DefaultFramebufferState {
 } DefaultFramebufferState;
 
 typedef struct RenderPassOutputs {
-	SDL_GPUColorAttachmentInfo color[FRAMEBUFFER_MAX_OUTPUTS];
+	SDL_GPUColorTargetInfo color[FRAMEBUFFER_MAX_OUTPUTS];
 	SDL_GPUTextureFormat color_formats[FRAMEBUFFER_MAX_OUTPUTS];
-	SDL_GPUDepthStencilAttachmentInfo depth_stencil;
+	SDL_GPUDepthStencilTargetInfo depth_stencil;
 	SDL_GPUTextureFormat depth_format;
 	uint num_color_attachments;
 } RenderPassOutputs;

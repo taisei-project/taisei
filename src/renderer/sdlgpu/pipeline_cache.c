@@ -107,20 +107,20 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 
 static void dump_vertex_input_state(SDL_GPUVertexInputState *st) {
 	log_debug(" *** BINDINGS:");
-	for(uint i = 0; i < st->vertexBindingCount; ++i) {
-			log_debug("[%u] binding:   %u", i, st->vertexBindings[i].binding);
-			log_debug("[%u] stride:    %u", i, st->vertexBindings[i].stride);
-			log_debug("[%u] inputRate: %u", i, st->vertexBindings[i].inputRate);
-			log_debug("[%u] stepRate:  %u", i, st->vertexBindings[i].instanceStepRate);
+	for(uint i = 0; i < st->num_vertex_bindings; ++i) {
+			log_debug("[%u] binding:   %u", i, st->vertex_bindings[i].binding);
+			log_debug("[%u] stride:    %u", i, st->vertex_bindings[i].stride);
+			log_debug("[%u] input_rate: %u", i, st->vertex_bindings[i].input_rate);
+			log_debug("[%u] stepRate:  %u", i, st->vertex_bindings[i].instance_step_rate);
 			// log_debug("[%u] attachment map: %u", i, varr->binding_to_attachment_map[i]);
 	}
 
 	log_debug(" *** ATTRIBS:");
-	for(uint i = 0; i < st->vertexAttributeCount; ++i) {
-			log_debug("[%u] location:  %u", i, st->vertexAttributes[i].location);
-			log_debug("[%u] binding:   %u", i, st->vertexAttributes[i].binding);
-			log_debug("[%u] format:    %u", i, st->vertexAttributes[i].format);
-			log_debug("[%u] offset:    %u", i, st->vertexAttributes[i].offset);
+	for(uint i = 0; i < st->num_vertex_attributes; ++i) {
+			log_debug("[%u] location:  %u", i, st->vertex_attributes[i].location);
+			log_debug("[%u] binding:   %u", i, st->vertex_attributes[i].binding);
+			log_debug("[%u] format:    %u", i, st->vertex_attributes[i].format);
+			log_debug("[%u] offset:    %u", i, st->vertex_attributes[i].offset);
 	}
 }
 
@@ -140,76 +140,76 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 
 #ifdef FILTER_VERTEX_INPUT
 	const SDL_GPUVertexInputState *specified_vertex_inputs = &pd->vertex_array->vertex_input_state;
-	SDL_GPUVertexAttribute attribs[specified_vertex_inputs->vertexAttributeCount ?: 1];
+	SDL_GPUVertexAttribute attribs[specified_vertex_inputs->num_vertex_attributes ?: 1];
 	SDL_GPUVertexInputState active_vertex_inputs = {
-		.vertexBindings = specified_vertex_inputs->vertexBindings,
-		.vertexBindingCount = specified_vertex_inputs->vertexBindingCount,
-		.vertexAttributes = attribs,
+		.vertex_bindings = specified_vertex_inputs->vertex_bindings,
+		.num_vertex_bindings = specified_vertex_inputs->num_vertex_bindings,
+		.vertex_attributes = attribs,
 	};
 
-	for(uint i = 0; i < specified_vertex_inputs->vertexAttributeCount; ++i) {
-		const SDL_GPUVertexAttribute *a = &specified_vertex_inputs->vertexAttributes[i];
+	for(uint i = 0; i < specified_vertex_inputs->num_vertex_attributes; ++i) {
+		const SDL_GPUVertexAttribute *a = &specified_vertex_inputs->vertex_attributes[i];
 		if(v_shader->used_input_locations_map & (1ull << a->location)) {
-			attribs[active_vertex_inputs.vertexAttributeCount++] = *a;
+			attribs[active_vertex_inputs.num_vertex_attributes++] = *a;
 		}
 	}
 
 	dump_vertex_input_state(&active_vertex_inputs);
 #endif
 
-	SDL_GPUColorAttachmentDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
+	SDL_GPUColorTargetDescription color_attachment_descriptions[FRAMEBUFFER_MAX_OUTPUTS] = {};
 
 	SDL_GPUGraphicsPipelineCreateInfo pci = {
-		.vertexShader = v_shader->shader,
-		.fragmentShader = f_shader->shader,
+		.vertex_shader = v_shader->shader,
+		.fragment_shader = f_shader->shader,
 		#ifdef FILTER_VERTEX_INPUT
-		.vertexInputState = active_vertex_inputs,
+		.vertex_input_state = active_vertex_inputs,
 		#else
-		.vertexInputState = pd->vertex_array->vertex_input_state,
+		.vertex_input_state = pd->vertex_array->vertex_input_state,
 		#endif
-		.primitiveType = sdlgpu_primitive_ts2sdl(pd->primitive),
-		.rasterizerState = {
-			.cullMode = sdlgpu.st.caps & r_capability_bit(RCAP_CULL_FACE)
+		.primitive_type = sdlgpu_primitive_ts2sdl(pd->primitive),
+		.rasterizer_state = {
+			.cull_mode = sdlgpu.st.caps & r_capability_bit(RCAP_CULL_FACE)
 				? sdlgpu_cullmode_ts2sdl(sdlgpu.st.cull)
 				: SDL_GPU_CULLMODE_NONE,
-			.fillMode = SDL_GPU_FILLMODE_FILL,
-			.frontFace = pd->front_face,
+			.fill_mode = SDL_GPU_FILLMODE_FILL,
+			.front_face = pd->front_face,
 		},
-		.multisampleState = {
-			.sampleMask = 0xFFFF,
+		.multisample_state = {
+			.sample_mask = 0xFFFF,
 		},
-		.depthStencilState = {
-			.depthTestEnable = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)),
-			.depthWriteEnable = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE)),
-			.stencilTestEnable = false,
-			.writeMask = 0x0,
-			.compareOp = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)
+		.depth_stencil_state = {
+			.enable_depth_test = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)),
+			.enable_depth_write = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE)),
+			.enable_stencil_test = false,
+			.write_mask = 0x0,
+			.compare_op = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)
 				? sdlgpu_cmpop_ts2sdl(sdlgpu.st.depth_func)
 				: SDL_GPU_COMPAREOP_ALWAYS,
 		},
-		.attachmentInfo = {
-			.colorAttachmentDescriptions = color_attachment_descriptions,
-			.colorAttachmentCount = pd->num_outputs,
-			.hasDepthStencilAttachment = pd->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID,
-			.depthStencilFormat = pd->depth_format,
+		.target_info = {
+			.color_target_descriptions = color_attachment_descriptions,
+			.num_color_targets = pd->num_outputs,
+			.has_depth_stencil_target = pd->depth_format != SDL_GPU_TEXTUREFORMAT_INVALID,
+			.depth_stencil_format = pd->depth_format,
 		},
 	};
 
-	SDL_GPUColorAttachmentBlendState blend = {
-		.colorWriteMask = 0xF,
-		.blendEnable = sdlgpu.st.blend != BLEND_NONE,
-		.alphaBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
-		.colorBlendOp = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_COLOR_OP)),
-		.srcColorBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
-		.srcAlphaBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
-		.dstColorBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
-		.dstAlphaBlendFactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
+	SDL_GPUColorTargetBlendState blend = {
+		.color_write_mask = 0xF,
+		.enable_blend = sdlgpu.st.blend != BLEND_NONE,
+		.alpha_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
+		.color_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_COLOR_OP)),
+		.src_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
+		.src_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
+		.dst_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
+		.dst_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
 	};
 
 	for(int i = 0; i < pd->num_outputs; ++i) {
-		color_attachment_descriptions[i] = (SDL_GPUColorAttachmentDescription) {
+		color_attachment_descriptions[i] = (SDL_GPUColorTargetDescription) {
 			.format = pd->outputs[i].format,
-			.blendState = blend,
+			.blend_state = blend,
 		};
 	}
 

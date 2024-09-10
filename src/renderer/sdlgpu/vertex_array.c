@@ -93,8 +93,8 @@ void sdlgpu_vertex_array_set_debug_label(VertexArray *varr, const char *label) {
 void sdlgpu_vertex_array_destroy(VertexArray *varr) {
 	sdlgpu_pipecache_unref_vertex_array(varr->layout_id);
 	dynarray_free_data(&varr->attachments);
-	mem_free((void*)varr->vertex_input_state.vertexAttributes);
-	mem_free((void*)varr->vertex_input_state.vertexBindings);
+	mem_free((void*)varr->vertex_input_state.vertex_attributes);
+	mem_free((void*)varr->vertex_input_state.vertex_bindings);
 	mem_free(varr->binding_to_attachment_map);
 	mem_free(varr);
 }
@@ -127,10 +127,10 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 			// Temporarily store taisei-side buffer attachment index here.
 			// We need this to figure out which bindings are identical.
 			// Later we will create a map of SDLGPU buffer indices to taisei ones and rewrite this.
-			.binding = attribs[i].attachment,
-			.inputRate = attribs[i].spec.divisor ? SDL_GPU_VERTEXINPUTRATE_INSTANCE : SDL_GPU_VERTEXINPUTRATE_VERTEX,
-			.instanceStepRate = attribs[i].spec.divisor,
-			.stride = attribs[i].stride,
+			.index = attribs[i].attachment,
+			.input_rate = attribs[i].spec.divisor ? SDL_GPU_VERTEXINPUTRATE_INSTANCE : SDL_GPU_VERTEXINPUTRATE_VERTEX,
+			.instance_step_rate = attribs[i].spec.divisor,
+			.pitch = attribs[i].stride,
 		};
 
 		uint binding_idx = num_sdl_bindings;
@@ -148,7 +148,7 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 		}
 
 		sdl_attribs[i] = (SDL_GPUVertexAttribute) {
-			.binding = binding_idx,
+			.binding_index = binding_idx,
 			.format = vertex_elem_format(attribs[i].spec.type, attribs[i].spec.coversion, attribs[i].spec.elements),
 			.location = i,
 			.offset = attribs[i].offset,
@@ -160,20 +160,20 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 		varr->binding_to_attachment_map, num_sdl_bindings * sizeof(*varr->binding_to_attachment_map));
 
 	for(uint i = 0; i < num_sdl_bindings; ++i) {
-		varr->binding_to_attachment_map[i] = sdl_bindings[i].binding;
-		sdl_bindings[i].binding = i;
+		varr->binding_to_attachment_map[i] = sdl_bindings[i].index;
+		sdl_bindings[i].index = i;
 	}
 
-	varr->vertex_input_state.vertexAttributes = mem_realloc(
-		(void*)varr->vertex_input_state.vertexAttributes, sizeof(sdl_attribs));
-	memcpy((void*)varr->vertex_input_state.vertexAttributes, sdl_attribs, sizeof(sdl_attribs));
-	varr->vertex_input_state.vertexAttributeCount = nattribs;
+	varr->vertex_input_state.vertex_attributes = mem_realloc(
+		(void*)varr->vertex_input_state.vertex_attributes, sizeof(sdl_attribs));
+	memcpy((void*)varr->vertex_input_state.vertex_attributes, sdl_attribs, sizeof(sdl_attribs));
+	varr->vertex_input_state.num_vertex_attributes = nattribs;
 
 	size_t sizeof_bindings = num_sdl_bindings * sizeof(*sdl_bindings);
-	varr->vertex_input_state.vertexBindings = mem_realloc(
-		(void*)varr->vertex_input_state.vertexBindings, sizeof_bindings);
-	memcpy((void*)varr->vertex_input_state.vertexBindings, sdl_bindings, sizeof_bindings);
-	varr->vertex_input_state.vertexBindingCount = num_sdl_bindings;
+	varr->vertex_input_state.vertex_bindings = mem_realloc(
+		(void*)varr->vertex_input_state.vertex_bindings, sizeof_bindings);
+	memcpy((void*)varr->vertex_input_state.vertex_bindings, sdl_bindings, sizeof_bindings);
+	varr->vertex_input_state.num_vertex_bindings = num_sdl_bindings;
 
 	if(varr->layout_id) {
 		sdlgpu_pipecache_unref_vertex_array(varr->layout_id);

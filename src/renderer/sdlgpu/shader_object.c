@@ -313,15 +313,15 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	shobj->shader = SDL_CreateGPUShader(sdlgpu.device, &(SDL_GPUShaderCreateInfo) {
 		.stage = shader_stage_ts2sdl(source->stage),
 		.code = (uint8_t*)source->content,
-		.codeSize = source->content_size,
+		.code_size = source->content_size,
 		.format = shader_format_ts2sdlgpu(source->lang.lang),
 
 		// FIXME
-		.entryPointName = "main",
-		.samplerCount = num_samplers,
-		.storageTextureCount = 0,
-		.storageBufferCount = 0,
-		.uniformBufferCount = num_uniform_buffers,
+		.entrypoint = "main",
+		.num_samplers = num_samplers,
+		.num_storage_textures = 0,
+		.num_storage_buffers = 0,
+		.num_uniform_buffers = num_uniform_buffers,
 	});
 
 	if(UNLIKELY(!shobj->shader)) {

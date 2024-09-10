@@ -355,19 +355,19 @@ void sdlgpu_texture_update_sampler(Texture *tex) {
 	auto p = &tex->params;
 
 	tex->sampler = SDL_CreateGPUSampler(sdlgpu.device, &(SDL_GPUSamplerCreateInfo) {
-		.minFilter = sdlgpu_filter_ts2sdl(p->filter.min),
-		.magFilter = sdlgpu_filter_ts2sdl(p->filter.mag),
-		.mipmapMode = sdlgpu_mipmode_ts2sdl(p->filter.min),
-		.addressModeU = sdlgpu_addrmode_ts2sdl(p->wrap.s),
-		.addressModeV = sdlgpu_addrmode_ts2sdl(p->wrap.t),
-		.addressModeW = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
-		.mipLodBias = 0,
-		.anisotropyEnable = p->anisotropy > 1,
-		.maxAnisotropy = p->anisotropy,
-		.compareEnable = 0,
-		.compareOp = 0,
-		.minLod = 0,
-		.maxLod = p->mipmaps,
+		.min_filter = sdlgpu_filter_ts2sdl(p->filter.min),
+		.mag_filter = sdlgpu_filter_ts2sdl(p->filter.mag),
+		.mipmap_mode = sdlgpu_mipmode_ts2sdl(p->filter.min),
+		.address_mode_u = sdlgpu_addrmode_ts2sdl(p->wrap.s),
+		.address_mode_v = sdlgpu_addrmode_ts2sdl(p->wrap.t),
+		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.mip_lod_bias = 0,
+		.enable_anisotropy = p->anisotropy > 1,
+		.max_anisotropy = p->anisotropy,
+		.enable_compare = 0,
+		.compare_op = 0,
+		.min_lod = 0,
+		.max_lod = p->mipmaps,
 	});
 
 	tex->sampler_is_outdated = false;
@@ -480,9 +480,9 @@ Texture *sdlgpu_texture_create(const TextureParams *params) {
 		.format = tex_fmt,
 		.width = tex->params.width,
 		.height = tex->params.height,
-		.layerCountOrDepth = tex->params.layers,
-		.levelCount = tex->params.mipmaps,
-		.usageFlags = usage,
+		.layer_count_or_depth = tex->params.layers,
+		.num_levels = tex->params.mipmaps,
+		.usage = usage,
 	});
 
 	if(UNLIKELY(!tex->gpu_texture)) {
@@ -572,7 +572,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 	// TODO persistent transfer buffer for streamed textures
 	SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(sdlgpu.device, &(SDL_GPUTransferBufferCreateInfo) {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.sizeInBytes = image->data_size,
+		.size = image->data_size,
 	});
 
 	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, tbuf, SDL_FALSE);
@@ -584,13 +584,13 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 	if(!covers_whole && tex->load.op == SDL_GPU_LOADOP_CLEAR) {
 		sdlgpu_stop_current_pass(CBUF_UPLOAD);
 		SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.upload_cbuf,
-			&(SDL_GPUColorAttachmentInfo) {
-				.clearColor = tex->load.clear.color.sdl_fcolor,
-				.loadOp = SDL_GPU_LOADOP_CLEAR,
-				.storeOp = SDL_GPU_STOREOP_STORE,
+			&(SDL_GPUColorTargetInfo) {
+				.clear_color = tex->load.clear.color.sdl_fcolor,
+				.load_op = SDL_GPU_LOADOP_CLEAR,
+				.store_op = SDL_GPU_STOREOP_STORE,
 				.texture = tex->gpu_texture,
-				.mipLevel = mipmap,
-				.layerOrDepthPlane = layer,
+				.mip_level = mipmap,
+				.layer_or_depth_plane = layer,
 				.cycle = cycle,
 			}, 1, NULL));
 	}
@@ -603,7 +603,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 
 	SDL_UploadToGPUTexture(copy_pass,
 		&(SDL_GPUTextureTransferInfo) {
-			.transferBuffer = tbuf,
+			.transfer_buffer = tbuf,
 		},
 		&(SDL_GPUTextureRegion) {
 			.texture = tex->gpu_texture,
@@ -613,7 +613,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 			.h = image->height,
 			.d = 1,
 			.layer = layer,
-			.mipLevel = mipmap,
+			.mip_level = mipmap,
 		},
 		covers_whole && cycle);
 
@@ -743,11 +743,11 @@ SDL_GPUCopyPass *sdlgpu_texture_copy(
 	SDL_CopyGPUTextureToTexture(copy_pass,
 		&(SDL_GPUTextureLocation) {
 			.texture = src->texture->gpu_texture,
-			.mipLevel = src->mip_level,
+			.mip_level = src->mip_level,
 			.layer = 0,
 		}, &(SDL_GPUTextureLocation) {
 			.texture = dst->texture->gpu_texture,
-			.mipLevel = dst->mip_level,
+			.mip_level = dst->mip_level,
 			.layer = 0,
 		}, dw, dh, dst->texture->params.layers, cycle);
 

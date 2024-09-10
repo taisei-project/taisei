@@ -227,12 +227,12 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 		fb_depth_attachment->texture &&
 		fb_depth_attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR
 	) {
-		outputs.depth_stencil = (SDL_GPUDepthStencilAttachmentInfo) {
-			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
-			.loadOp = SDL_GPU_LOADOP_CLEAR,
-			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
-			.storeOp = SDL_GPU_STOREOP_STORE,
-			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
+		outputs.depth_stencil = (SDL_GPUDepthStencilTargetInfo) {
+			.clear_depth = fb_depth_attachment->texture->load.clear.depth,
+			.load_op = SDL_GPU_LOADOP_CLEAR,
+			.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE,
+			.store_op = SDL_GPU_STOREOP_STORE,
+			.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE,
 			.texture = fb_depth_attachment->texture->gpu_texture,
 			.cycle = true,   // FIXME add a client hint for cycling?
 		};
@@ -247,13 +247,13 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 			framebuffer->attachments[i].texture &&
 			framebuffer->attachments[i].texture->load.op == SDL_GPU_LOADOP_CLEAR
 		) {
-			outputs.color[outputs.num_color_attachments++] = (SDL_GPUColorAttachmentInfo) {
-				.clearColor = framebuffer->attachments[i].texture->load.clear.color.sdl_fcolor,
-				.loadOp = SDL_GPU_LOADOP_CLEAR,
-				.storeOp = SDL_GPU_STOREOP_STORE,
+			outputs.color[outputs.num_color_attachments++] = (SDL_GPUColorTargetInfo) {
+				.clear_color = framebuffer->attachments[i].texture->load.clear.color.sdl_fcolor,
+				.load_op = SDL_GPU_LOADOP_CLEAR,
+				.store_op = SDL_GPU_STOREOP_STORE,
 				.texture = framebuffer->attachments[i].texture->gpu_texture,
-				.mipLevel = framebuffer->attachments[i].mip_level,
-				.layerOrDepthPlane = 0,
+				.mip_level = framebuffer->attachments[i].mip_level,
+				.layer_or_depth_plane = 0,
 				.cycle = true,   // FIXME add a client hint for cycling?
 			};
 
@@ -273,11 +273,11 @@ void sdlgpu_framebuffer_flush(Framebuffer *framebuffer, uint32_t attachment_mask
 static void sdlgpu_framebuffer_setup_outputs_default_framebuffer(RenderPassOutputs *outputs) {
 	SDL_GPUTexture *swapchain_tex = sdlgpu.frame.swapchain.tex;
 
-	outputs->color[0] = (SDL_GPUColorAttachmentInfo) {
+	outputs->color[0] = (SDL_GPUColorTargetInfo) {
 		.texture = swapchain_tex,
-		.clearColor = sdlgpu.st.default_framebuffer.color.clear.color.sdl_fcolor,
-		.loadOp = sdlgpu.st.default_framebuffer.color.op,
-		.storeOp = swapchain_tex ? SDL_GPU_STOREOP_STORE : SDL_GPU_STOREOP_DONT_CARE,
+		.clear_color = sdlgpu.st.default_framebuffer.color.clear.color.sdl_fcolor,
+		.load_op = sdlgpu.st.default_framebuffer.color.op,
+		.store_op = swapchain_tex ? SDL_GPU_STOREOP_STORE : SDL_GPU_STOREOP_DONT_CARE,
 	};
 
 	outputs->color_formats[0] = sdlgpu.frame.swapchain.fmt;
@@ -300,12 +300,12 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 
 	if(fb_depth_attachment->texture) {
 		outputs->depth_format = fb_depth_attachment->texture->gpu_format;
-		outputs->depth_stencil = (SDL_GPUDepthStencilAttachmentInfo) {
-			.depthStencilClearValue.depth = fb_depth_attachment->texture->load.clear.depth,
-			.loadOp = fb_depth_attachment->texture->load.op,
-			.stencilLoadOp = SDL_GPU_LOADOP_DONT_CARE,
-			.storeOp = SDL_GPU_STOREOP_STORE,
-			.stencilStoreOp = SDL_GPU_STOREOP_DONT_CARE,
+		outputs->depth_stencil = (SDL_GPUDepthStencilTargetInfo) {
+			.clear_depth = fb_depth_attachment->texture->load.clear.depth,
+			.load_op = fb_depth_attachment->texture->load.op,
+			.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE,
+			.store_op = SDL_GPU_STOREOP_STORE,
+			.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE,
 			.texture = fb_depth_attachment->texture->gpu_texture,
 			// FIXME add a client hint for cycling?
 			.cycle = fb_depth_attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR,
@@ -336,13 +336,13 @@ void sdlgpu_framebuffer_setup_outputs(Framebuffer *framebuffer, RenderPassOutput
 		}
 
 		uint a = outputs->num_color_attachments++;
-		outputs->color[a] = (SDL_GPUColorAttachmentInfo) {
-			.clearColor = attachment->texture->load.clear.color.sdl_fcolor,
-			.loadOp = attachment->texture->load.op,
-			.storeOp = SDL_GPU_STOREOP_STORE,
+		outputs->color[a] = (SDL_GPUColorTargetInfo) {
+			.clear_color = attachment->texture->load.clear.color.sdl_fcolor,
+			.load_op = attachment->texture->load.op,
+			.store_op = SDL_GPU_STOREOP_STORE,
 			.texture = attachment->texture->gpu_texture,
-			.mipLevel = attachment->mip_level,
-			.layerOrDepthPlane = 0,
+			.mip_level = attachment->mip_level,
+			.layer_or_depth_plane = 0,
 			// FIXME add a client hint for cycling?
 			.cycle = attachment->texture->load.op == SDL_GPU_LOADOP_CLEAR,
 		};
