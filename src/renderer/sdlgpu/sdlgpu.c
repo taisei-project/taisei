@@ -9,6 +9,7 @@
 #include "sdlgpu.h"
 
 #include "framebuffer.h"
+#include "framebuffer_async_read.h"
 #include "index_buffer.h"
 #include "shader_object.h"
 #include "shader_program.h"
@@ -744,6 +745,7 @@ RendererBackend _r_backend_sdlgpu = {
 		.framebuffer_viewport = sdlgpu_framebuffer_viewport,
 		.framebuffer_viewport_current = sdlgpu_framebuffer_viewport_current,
 		.framebuffer_query_attachment = sdlgpu_framebuffer_query_attachment,
+		.framebuffer_read_async = sdlgpu_framebuffer_read_async,
 		.index_buffer_add_indices = sdlgpu_index_buffer_add_indices,
 		.index_buffer_create = sdlgpu_index_buffer_create,
 		.index_buffer_destroy = sdlgpu_index_buffer_destroy,

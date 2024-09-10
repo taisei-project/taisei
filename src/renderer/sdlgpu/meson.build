@@ -1,6 +1,7 @@
 
 r_sdlgpu_src = files(
     'common_buffer.c',
+    'framebuffer_async_read.c',
     'framebuffer.c',
     'index_buffer.c',
     'pipeline_cache.c',
