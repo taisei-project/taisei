@@ -37,4 +37,3 @@ struct ShaderSource {
 
 void shader_free_source(ShaderSource *src);
 bool shader_lang_supports_uniform_locations(const ShaderLangInfo *lang) attr_nonnull(1);
-bool shader_lang_supports_attribute_locations(const ShaderLangInfo *lang) attr_nonnull(1);

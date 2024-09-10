@@ -480,12 +480,6 @@ ShaderProgram *gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[n
 	for(int i = 0; i < num_objects; ++i) {
 		ShaderObject *shobj = shobjs[i];
 		glAttachShader(prog->gl_handle, shobj->gl_handle);
-
-		for(int a = 0; a < shobj->num_attribs; ++a) {
-			GLSLAttribute *attr = shobj->attribs + a;
-			log_debug("Binding attribute %s to location %i", attr->name, attr->location);
-			glBindAttribLocation(prog->gl_handle, attr->location, attr->name);
-		}
 	}
 
 	glLinkProgram(prog->gl_handle);

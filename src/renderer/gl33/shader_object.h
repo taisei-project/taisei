@@ -18,8 +18,6 @@ struct ShaderObject {
 	GLuint gl_handle;
 	ShaderStage stage;
 	char debug_label[R_DEBUG_LABEL_SIZE];
-	uint num_attribs;
-	GLSLAttribute *attribs;
 };
 
 bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
