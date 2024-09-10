@@ -37,7 +37,7 @@ static CullFaceMode null_cull_current(void) { return CULL_BACK; }
 static void null_depth_func(DepthTestFunc func) { }
 static DepthTestFunc null_depth_func_current(void) { return DEPTH_LESS; }
 
-static bool null_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) { return true; }
+static bool null_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts) { return true; }
 
 static ShaderObject* null_shader_object_compile(ShaderSource *source) { return (void*)&placeholder; }
 static void null_shader_object_destroy(ShaderObject *shobj) { }

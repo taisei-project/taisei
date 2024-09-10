@@ -11,6 +11,8 @@
 
 #include "defs.h"
 
+#include "memory/arena.h"
+
 typedef enum SPIRVTarget {
 	SPIRV_TARGET_OPENGL_450,
 	SPIRV_TARGET_VULKAN_10,
@@ -42,18 +44,41 @@ typedef struct SPIRVCompileOptions {
 
 typedef struct SPIRVDecompileOptions {
 	const ShaderLangInfo *lang;
-	bool vulkan_semantics;
+	bool reflect;
+
+	union {
+		struct {
+			bool vulkan_semantics;
+		} glsl;
+	};
 } SPIRVDecompileOptions;
 
 typedef struct SPIRVTranspileOptions {
-	const ShaderLangInfo *lang;
-	SPIRVOptimizationLevel optimization_level;
-	const char *filename;
+	SPIRVCompileOptions compile;
+	SPIRVDecompileOptions decompile;
 } SPIRVTranspileOptions;
 
 void spirv_init_compiler(void);
 void spirv_shutdown_compiler(void);
 
-bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) attr_nonnull(1, 2, 3);
-bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) attr_nonnull(1, 2, 3);
-bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) attr_nonnull(1, 2, 3);
+bool spirv_transpile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVTranspileOptions *options
+) attr_nonnull(1, 2, 3);
+
+bool spirv_compile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVCompileOptions *options,
+	bool reflect
+) attr_nonnull(1, 2, 3);
+
+bool spirv_decompile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVDecompileOptions *options
+) attr_nonnull(1, 2, 3);

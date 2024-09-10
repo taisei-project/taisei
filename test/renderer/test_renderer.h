@@ -4,6 +4,7 @@
 #include "config.h"
 #include "events.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "resource/iqm_loader/iqm_loader.h"
 #include "rwops/rwops_stdiofp.h"
@@ -45,8 +46,8 @@ static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src)
 	// TODO: This is mostly copypasted from resource/shader_object; add a generic API for this
 
 	ShaderSource s = {
-		.content = (char*)src,
-		.content_size = strlen(src),
+		.content = src,
+		.content_size = strlen(src) + 1,
 		.stage = stage,
 		.lang = {
 			.lang = SHLANG_GLSL,
@@ -54,24 +55,27 @@ static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src)
 		},
 	};
 
-	ShaderLangInfo altlang = { SHLANG_INVALID };
+	auto scratch = acquire_scratch_arena();
 
-	if(!r_shader_language_supported(&s.lang, &altlang)) {
-		if(altlang.lang == SHLANG_INVALID) {
+	SPIRVTranspileOptions transpile_opts = {
+		.compile = {
+			.optimization_level = SPIRV_OPTIMIZE_NONE,
+			.filename = "<embedded>",
+		},
+	};
+
+	if(!r_shader_language_supported(&s.lang, &transpile_opts)) {
+		if(!transpile_opts.decompile.lang) {
 			log_fatal("Shading language not supported by backend");
 		}
 
 		log_warn("Shading language not supported by backend, attempting to translate");
-		assert(r_shader_language_supported(&altlang, NULL));
+		assert(r_shader_language_supported(transpile_opts.decompile.lang, NULL));
 
 		spirv_init_compiler();
 
 		ShaderSource newsrc;
-		bool result = spirv_transpile(&s, &newsrc, &(SPIRVTranspileOptions) {
-			.lang = &altlang,
-			.optimization_level = SPIRV_OPTIMIZE_NONE,
-			.filename = "<embedded>",
-		});
+		bool result = spirv_transpile(&s, &newsrc, scratch, &transpile_opts);
 
 		if(!result) {
 			log_fatal("Shader translation failed");
@@ -86,10 +90,7 @@ static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src)
 		log_fatal("Failed to compile shader");
 	}
 
-	if(s.content != src) {
-		shader_free_source(&s);
-	}
-
+	release_scratch_arena(scratch);
 	return obj;
 }
 

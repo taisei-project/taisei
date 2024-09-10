@@ -20,7 +20,7 @@ struct ShaderObject {
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
-bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+bool gl33_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts);
 
 ShaderObject *gl33_shader_object_compile(ShaderSource *source);
 void gl33_shader_object_destroy(ShaderObject *shobj);

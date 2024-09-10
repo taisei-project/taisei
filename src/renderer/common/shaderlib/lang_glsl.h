@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "defs.h"
+#include "memory/arena.h"
 
 #include <SDL3/SDL_iostream.h>
 
@@ -43,7 +44,7 @@ typedef struct GLSLSourceOptions {
 	void *file_open_callback_userdata;
 } GLSLSourceOptions;
 
-bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
+bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
 char *glsl_parse_version(const char *str, GLSLVersion *out_version) attr_nonnull(1, 2);
 int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version) attr_nonnull(1);
 bool glsl_version_supports_instanced_rendering(GLSLVersion v);

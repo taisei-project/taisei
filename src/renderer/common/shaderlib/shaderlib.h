@@ -13,6 +13,8 @@
 
 #include "lang_glsl.h"
 #include "lang_spirv.h"
+#include "lang_hlsl.h"
+#include "lang_dxbc.h"
 
 struct ShaderLangInfo {
 	ShaderLanguage lang;
@@ -20,20 +22,20 @@ struct ShaderLangInfo {
 	union {
 		ShaderLangInfoGLSL glsl;
 		ShaderLangInfoSPIRV spirv;
+		ShaderLangInfoHLSL hlsl;
+		ShaderLangInfoDXBC dxbc;
 	};
 };
 
-union ShaderSourceMeta {
-	ShaderSourceMetaGLSL glsl;
-};
-
 struct ShaderSource {
-	char *content;
+	const char *content;
+	const ShaderReflection *reflection;
+	const char *entrypoint;
 	size_t content_size;
 	ShaderLangInfo lang;
-	ShaderSourceMeta meta;
 	ShaderStage stage;
 };
 
-void shader_free_source(ShaderSource *src);
 bool shader_lang_supports_uniform_locations(const ShaderLangInfo *lang) attr_nonnull(1);
+
+const char *shader_lang_name(ShaderLanguage lang);

@@ -7,16 +7,19 @@
  */
 
 #include "lang_spirv_private.h"
+#include "lang_dxbc.h"
 #include "shaderlib.h"
 #include "cache.h"
 
 #include "log.h"
+#include "memory/scratch.h"
 #include "util.h"
 #include "util/stringops.h"
 
 typedef struct CacheEntryMetadata {
 	ShaderLangInfo lang;
 	ShaderStage stage;
+	bool reflection;
 
 	union {
 		struct {
@@ -25,6 +28,13 @@ typedef struct CacheEntryMetadata {
 
 		struct {
 		} glsl;
+
+		struct {
+		} hlsl;
+
+		struct {
+			const DXBCCompileOptions *compile_options;
+		} dxbc;
 	};
 } CacheEntryMetadata;
 
@@ -33,6 +43,7 @@ static size_t shader_cache_serialize_entry_metadata_glsl(
 ) {
 	uint8_t data[] = {
 		meta->stage,
+		meta->reflection,
 		meta->lang.glsl.version.version / 10,
 		meta->lang.glsl.version.profile,
 	};
@@ -47,9 +58,51 @@ static size_t shader_cache_serialize_entry_metadata_spirv(
 ) {
 	uint8_t data[] = {
 		meta->stage,
+		meta->reflection,
 		meta->lang.spirv.target,
 		meta->spirv.compile_options->optimization_level,
 		meta->spirv.compile_options->flags,
+	};
+
+	assume(sizeof(data) <= size);
+	memcpy(buf, data, sizeof(data));
+	return sizeof(data);
+}
+
+static size_t shader_cache_serialize_entry_metadata_hlsl(
+	const CacheEntryMetadata *meta, size_t size, uint8_t buf[size]
+) {
+	uint8_t data[] = {
+		meta->stage,
+		meta->reflection,
+		meta->lang.hlsl.shader_model,
+	};
+
+	assume(sizeof(data) <= size);
+	memcpy(buf, data, sizeof(data));
+	return sizeof(data);
+}
+
+static size_t shader_cache_serialize_entry_metadata_dxbc(
+	const CacheEntryMetadata *meta, size_t size, uint8_t buf[size]
+) {
+	uint8_t data[] = {
+		meta->stage,
+		meta->reflection,
+		meta->lang.dxbc.shader_model,
+	};
+
+	assume(sizeof(data) <= size);
+	memcpy(buf, data, sizeof(data));
+	return sizeof(data);
+}
+
+static size_t shader_cache_serialize_entry_metadata_msl(
+	const CacheEntryMetadata *meta, size_t size, uint8_t buf[size]
+) {
+	uint8_t data[] = {
+		meta->stage,
+		meta->reflection,
 	};
 
 	assume(sizeof(data) <= size);
@@ -68,8 +121,17 @@ static size_t shader_cache_serialize_entry_metadata(
 		case SHLANG_SPIRV:
 			return shader_cache_serialize_entry_metadata_spirv(meta, size, buf);
 
+		case SHLANG_HLSL:
+			return shader_cache_serialize_entry_metadata_hlsl(meta, size, buf);
+
+		case SHLANG_DXBC:
+			return shader_cache_serialize_entry_metadata_dxbc(meta, size, buf);
+
+		case SHLANG_MSL:
+			return shader_cache_serialize_entry_metadata_msl(meta, size, buf);
+
 		default:
-			log_error("Unknown shading language %u", meta->lang.lang);
+			log_error("Unhandled shading language %s", shader_lang_name(meta->lang.lang));
 			return 0;
 	}
 }
@@ -89,6 +151,9 @@ static bool shader_cache_entry_name(
 	const char *const prefixmap[] = {
 		[SHLANG_GLSL - SHLANG_FIRST] = "glsl_",
 		[SHLANG_SPIRV - SHLANG_FIRST] = "spirv_",
+		[SHLANG_HLSL - SHLANG_FIRST] = "hlsl_",
+		[SHLANG_DXBC - SHLANG_FIRST] = "dxbc_",
+		[SHLANG_MSL - SHLANG_FIRST] = "msl_",
 	};
 
 	uint idx = meta->lang.lang - SHLANG_FIRST;
@@ -111,7 +176,13 @@ static bool shader_cache_entry_name(
 	return true;
 }
 
-bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
+bool spirv_compile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVCompileOptions *options,
+	bool reflect
+) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
 	ShaderLangInfo target_lang = { 0 };
@@ -120,6 +191,7 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 
 	CacheEntryMetadata m = {
 		.stage = in->stage,
+		.reflection = reflect,
 		.lang = {
 			.lang = SHLANG_SPIRV,
 			.spirv.target = options->target,
@@ -130,14 +202,16 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 	};
 
 	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
-		return _spirv_compile(in, out, options);
+		return _spirv_compile(in, out, arena, options);
 	}
 
 	if(!shader_cache_hash(in, options->macros, sizeof(hash), hash)) {
-		return _spirv_compile(in, out, options);
+		return _spirv_compile(in, out, arena, options);
 	}
 
-	if(shader_cache_get(hash, name, out)) {
+	auto arena_snap = marena_snapshot(arena);
+
+	if(shader_cache_get(hash, name, out, arena)) {
 		if(
 			!memcmp(&target_lang, &out->lang, sizeof(ShaderLangInfo)) &&
 			out->stage == in->stage
@@ -146,17 +220,26 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 		}
 
 		log_warn("Invalid cache entry ignored");
+		marena_rollback(arena, &arena_snap);
 	}
 
-	if(_spirv_compile(in, out, options)) {
+	if(_spirv_compile(in, out, arena, options)) {
+		if(reflect) {
+			if(!(out->reflection = _spirv_reflect(out, arena))) {
+				marena_rollback(arena, &arena_snap);
+				return false;
+			}
+		}
+
 		shader_cache_set(hash, name, out);
 		return true;
 	}
 
+	marena_rollback(arena, &arena_snap);
 	return false;
 }
 
-bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
+bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena, const SPIRVDecompileOptions *options) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
 	CacheEntryMetadata m = {
@@ -165,16 +248,17 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecom
 	};
 
 	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
-		return _spirv_decompile(in, out, options);
+		return _spirv_decompile(in, out, arena, options);
 	}
 
 	if(!shader_cache_hash(in, NULL, sizeof(hash), hash)) {
-		return _spirv_decompile(in, out, options);
+		return _spirv_decompile(in, out, arena, options);
 	}
 
+	auto arena_snap = marena_snapshot(arena);
 	bool result;
 
-	if((result = shader_cache_get(hash, name, out))) {
+	if((result = shader_cache_get(hash, name, out, arena))) {
 		if(
 			!memcmp(options->lang, &out->lang, sizeof(ShaderLangInfo)) &&
 			out->stage == in->stage
@@ -183,26 +267,42 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecom
 		}
 
 		log_warn("Invalid cache entry ignored");
+		marena_rollback(arena, &arena_snap);
 	}
 
-	if((result = _spirv_decompile(in, out, options))) {
+	if((result = _spirv_decompile(in, out, arena, options))) {
 		shader_cache_set(hash, name, out);
 	}
 
 	return result;
 }
 
-bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) {
-	ShaderSource spirv = { 0 };
+bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena, const SPIRVTranspileOptions *options) {
+	ShaderSource transient_src = { 0 };
 	bool result;
 
 	ShaderSource _in = *in;
 	in = &_in;
 
+	SPIRVCompileOptions compile_opts = options->compile;
+	SPIRVDecompileOptions decompile_opts = options->decompile;
+	ShaderLangInfo decompile_lang = *decompile_opts.lang;
+	decompile_opts.lang = &decompile_lang;
+
+	bool compile_dxbc = false;
+
+	if(decompile_lang.lang == SHLANG_DXBC) {
+		decompile_lang.lang = SHLANG_HLSL;
+		decompile_lang.hlsl.shader_model = options->decompile.lang->dxbc.shader_model;
+		compile_dxbc = true;
+	}
+
+	bool reflect_on_compile = options->decompile.reflect && decompile_lang.lang == SHLANG_SPIRV;
+
 	if(
-		!shader_lang_supports_uniform_locations(&_in.lang) &&
+		_in.lang.lang == SHLANG_GLSL &&
+		!shader_lang_supports_uniform_locations(&_in.lang)
 		// shader_lang_supports_uniform_locations(options->lang) &&
-		_in.lang.lang == SHLANG_GLSL
 	) {
 		// HACK: This is annoying... shaderc/glslang does not support GL_ARB_explicit_uniform_location
 		// for some reason. Until there's a better solution, we'll try to compile the shader using a
@@ -215,10 +315,10 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 		}
 	}
 
-	char macro_buf[32];
+	char macro_buf[128];
 	char *macro_buf_p = macro_buf;
 	char *macro_buf_end = macro_buf + ARRAY_SIZE(macro_buf);
-	ShaderMacro macros[16];
+	ShaderMacro macros[32];
 	int i = 0;
 
 	#define ADD_MACRO(...) do { \
@@ -243,15 +343,24 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 
 	ADD_MACRO_DYNAMIC("LANG_GLSL", "%d", SHLANG_GLSL);
 	ADD_MACRO_DYNAMIC("LANG_SPIRV", "%d", SHLANG_SPIRV);
-	ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_LANG", "%d", options->lang->lang);
+	ADD_MACRO_DYNAMIC("LANG_HLSL", "%d", SHLANG_HLSL);
+	ADD_MACRO_DYNAMIC("LANG_DXBC", "%d", SHLANG_DXBC);
+	ADD_MACRO_DYNAMIC("LANG_MSL", "%d", SHLANG_MSL);
+	ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_LANG", "%d", decompile_lang.lang);
 
-	switch(options->lang->lang) {
+	switch(decompile_lang.lang) {
 		case SHLANG_GLSL:
-			ADD_MACRO_BOOL("TRANSPILE_TARGET_GLSL_ES", options->lang->glsl.version.profile == GLSL_PROFILE_ES);
-			ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_GLSL_VERSION", "%d", options->lang->glsl.version.version);
+			ADD_MACRO_BOOL("TRANSPILE_TARGET_GLSL_ES", decompile_lang.glsl.version.profile == GLSL_PROFILE_ES);
+			ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_GLSL_VERSION", "%d", decompile_lang.glsl.version.version);
+			break;
+
+		case SHLANG_HLSL:
+			ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_HLSL_SHADER_MODEL", "%d", decompile_lang.hlsl.shader_model);
+			ADD_MACRO_BOOL("TRANSPILE_TARGET_HLSL_FOR_DXBC", compile_dxbc);
 			break;
 
 		case SHLANG_SPIRV:
+		case SHLANG_MSL:
 			break;
 
 		default: UNREACHABLE;
@@ -259,60 +368,69 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 
 	ADD_MACRO(NULL);
 
-	SPIRVTarget target = SPIRV_TARGET_OPENGL_450;
+	compile_opts.macros = macros;
 
-	if(options->lang->lang == SHLANG_SPIRV) {
-		target = options->lang->spirv.target;
+	if(decompile_lang.lang == SHLANG_SPIRV) {
+		compile_opts.target = options->decompile.lang->spirv.target;
 	}
 
-	uint cflags = 0;
 	// Preserve names of declarations.
 	// This can be vital for shader interface matching.
-	cflags |= SPIRV_CFLAG_DEBUG_INFO;
+	compile_opts.flags |= SPIRV_CFLAG_DEBUG_INFO;
 
-	if(target != SPIRV_TARGET_OPENGL_450) {
-		cflags |= SPIRV_CFLAG_VULKAN_RELAXED;
+	if(compile_opts.target != SPIRV_TARGET_OPENGL_450) {
+		compile_opts.flags |= SPIRV_CFLAG_VULKAN_RELAXED;
 	}
 
-	result = spirv_compile(in, &spirv, &(SPIRVCompileOptions) {
-		.target = target,
-		.optimization_level = options->optimization_level,
-		.filename = options->filename,
-		.macros = macros,
-		.flags = cflags,
-	});
+	result = spirv_compile(in, &transient_src, arena, &compile_opts, reflect_on_compile);
 
-	if(result) {
-		if(options->lang->lang == SHLANG_SPIRV) {
-			*out = spirv;
+	if(!result) {
+		return false;
+	}
+
+	if(decompile_lang.lang == SHLANG_SPIRV) {
+		assert(!decompile_opts.reflect || transient_src.reflection);
+		*out = transient_src;
 
 #ifdef DEBUG
-			ShaderSource decomp = {};
-			spirv_decompile(out, &decomp, &(SPIRVDecompileOptions) {
-				.lang = &(ShaderLangInfo) {
-					.lang = SHLANG_GLSL,
-					.glsl.version.version = 460,
-					.glsl.version.profile = GLSL_PROFILE_CORE,
-				},
-				.vulkan_semantics = (target != SPIRV_TARGET_OPENGL_450),
-			});
+		auto scratch = acquire_scratch_arena();
+		ShaderSource decomp = {};
+		spirv_decompile(out, &decomp, scratch, &(SPIRVDecompileOptions) {
+			.lang = &(ShaderLangInfo) {
+				.lang = SHLANG_GLSL,
+				.glsl.version.version = 460,
+				.glsl.version.profile = GLSL_PROFILE_CORE,
+			},
+			.glsl.vulkan_semantics = (compile_opts.target != SPIRV_TARGET_OPENGL_450),
+		});
 
-			log_debug("Decompiled source:\n%s\n\n ", decomp.content);
-			mem_free(decomp.content);
+		log_debug("Decompiled source:\n%s\n\n ", decomp.content);
+		release_scratch_arena(scratch);
 #endif
 
-			return result;
-		}
+		return result;
+	}
 
-		result = spirv_decompile(&spirv, out, &(SPIRVDecompileOptions) {
-			.lang = options->lang,
+	result = spirv_decompile(&transient_src, out, arena, &decompile_opts);
+
+	if(!result) {
+		return false;
+	}
+
+	log_debug("%s: translated code:\n%s", compile_opts.filename, out->content);
+
+	if(compile_dxbc) {
+		assert(out->lang.lang == SHLANG_HLSL);
+		result = dxbc_compile(out, &transient_src, arena, &(DXBCCompileOptions) {
+			.entrypoint = "main",
 		});
 
 		if(result) {
-			log_debug("%s: translated code:\n%s", options->filename, out->content);
+			transient_src.reflection = out->reflection;
+			*out = transient_src;
+			assert(out->lang.dxbc.shader_model == options->decompile.lang->dxbc.shader_model);
 		}
 	}
 
-	mem_free(spirv.content);
 	return result;
 }

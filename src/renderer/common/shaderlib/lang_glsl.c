@@ -10,7 +10,8 @@
 #include "shaderlib.h"
 
 #include "log.h"
-#include "rwops/rwops_autobuf.h"
+#include "memory/scratch.h"
+#include "rwops/rwops_arena.h"
 #include "util/io.h"
 #include "util/stringops.h"
 #include "vfs/pathutil.h"
@@ -27,9 +28,9 @@ typedef struct GLSLParseState {
 	const GLSLSourceOptions *options;
 	ShaderSource *src;
 	SDL_IOStream *dest;
+	MemArena *scratch;
+	RWArenaState stream_state;
 	bool version_defined;
-	char *linebuf;
-	size_t linebuf_size;
 } GLSLParseState;
 
 typedef struct GLSLFileParseState {
@@ -175,8 +176,13 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 	++fstate->lineno;
 	glsl_write_lineno(fstate);
 
-	while(SDL_RWgets_realloc(stream, &fstate->global->linebuf, &fstate->global->linebuf_size)) {
-		char *p = fstate->global->linebuf;
+	auto scratch = fstate->global->scratch;
+	auto scratch_snap = marena_snapshot(scratch);
+
+	char *line;
+
+	while(*(line = SDL_RWgets_arena(stream, scratch, NULL))) {
+		char *p = line;
 		skip_space(&p);
 
 		if(check_directive(p, INCLUDE_DIRECTIVE)) {
@@ -261,50 +267,48 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				return false;
 			}
 
-			SDL_WriteIO(dest, fstate->global->linebuf,
-				    strlen(fstate->global->linebuf));
+			SDL_WriteIO(dest, line, strlen(line));
 		}
 
 		fstate->lineno++;
+
 		glsl_write_lineno(fstate);
+		marena_rollback(scratch, &scratch_snap);
 	}
 
 	SDL_CloseIO(stream);
 	return true;
 }
 
-bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) {
-	void *bufdata_ptr;
-	SDL_IOStream *out_buf = SDL_RWAutoBuffer(&bufdata_ptr, 1024);
-	assert(out_buf != NULL);
-
+bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, const GLSLSourceOptions *options) {
 	memset(out, 0, sizeof(*out));
 	out->lang.lang = SHLANG_GLSL;
 	out->lang.glsl.version = options->version;
 	out->stage = options->stage;
+	out->entrypoint = "main";
 
 	GLSLParseState pstate = { 0 };
-	pstate.dest = out_buf;
+	pstate.dest = NOT_NULL(SDL_RWArena(arena, 1024, &pstate.stream_state));
 	pstate.src = out;
 	pstate.options = options;
-	pstate.linebuf_size = 128;
-	pstate.linebuf = mem_alloc(pstate.linebuf_size);
+	pstate.scratch = acquire_scratch_arena();
 
 	GLSLFileParseState fstate = { 0 };
 	fstate.global = &pstate;
 	fstate.path = path;
 
 	bool result = glsl_process_file(&fstate);
-	mem_free(pstate.linebuf);
+	release_scratch_arena(pstate.scratch);
 
 	if(result) {
-		SDL_WriteU8(out_buf, 0);
-		out->content_size = strlen(bufdata_ptr) + 1;
-		out->content = mem_alloc(out->content_size);
-		memcpy(out->content, bufdata_ptr, out->content_size);
+		SDL_WriteU8(pstate.dest, 0);
+		out->content = pstate.stream_state.buffer;
+		out->content_size = pstate.stream_state.io_offset;
+		// log_debug("*****\n%s\n*****", out->content);
+		assert(strlen(out->content) == out->content_size - 1);
 	}
 
-	SDL_CloseIO(out_buf);
+	SDL_CloseIO(pstate.dest);
 	return result;
 }
 

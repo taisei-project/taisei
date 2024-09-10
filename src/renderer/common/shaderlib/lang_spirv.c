@@ -11,11 +11,22 @@
 #include "reflect.h"
 
 #include "log.h"
-#include "renderer/api.h"
 #include "util.h"
 
 #include <shaderc/shaderc.h>
 #include <spirv_cross_c.h>
+
+typedef struct SPIRVReflectContext {
+	MemArena *arena;
+	ShaderReflection *reflection;
+	struct {
+		spvc_context ctx;
+		spvc_compiler compiler;
+		spvc_resources res;
+	} spvc;
+} SPIRVReflectContext;
+
+static spvc_result _spirv_reflect_all(SPIRVReflectContext *rctx);
 
 static shaderc_compiler_t spirv_compiler;
 
@@ -80,7 +91,12 @@ void spirv_shutdown_compiler(void) {
 	}
 }
 
-bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
+bool _spirv_compile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVCompileOptions *options
+) {
 	if(in->lang.lang != SHLANG_GLSL) {
 		log_error("Unsupported source language");
 		return false;
@@ -200,33 +216,46 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 
 	size_t data_len = shaderc_result_get_length(result);
 	const char *data = shaderc_result_get_bytes(result);
-
-	memset(out, 0, sizeof(*out));
-	out->stage = in->stage;
-	out->lang.lang = SHLANG_SPIRV;
-	out->lang.spirv.target = options->target;
-	out->content_size = data_len + 1;
-	out->content = mem_alloc(out->content_size);
-	memcpy(out->content, data, data_len);
+	char *data_copy = marena_memdup(arena, data, data_len);
 	shaderc_result_release(result);
+
+	*out = (ShaderSource) {
+		.stage = in->stage,
+		.lang.lang = SHLANG_SPIRV,
+		.lang.spirv.target = options->target,
+		.content_size = data_len,
+		.content = data_copy,
+		.entrypoint = marena_strdup(arena, in->entrypoint),
+	};
 
 	return true;
 }
 
 #define SPVCCALL(c) do if((spvc_return_code = (c)) != SPVC_SUCCESS) { goto spvc_error; } while(0)
 
-bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
-	if(in->lang.lang != SHLANG_SPIRV) {
+bool _spirv_decompile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVDecompileOptions *options
+) {
+	if(UNLIKELY(in->lang.lang != SHLANG_SPIRV)) {
 		log_error("Source is not a SPIR-V binary");
 		return false;
 	}
 
-	if(options->lang->lang != SHLANG_GLSL) {
-		log_error("Target language is not supported");
-		return false;
+	spvc_backend backend;
+
+	switch(options->lang->lang) {
+		case SHLANG_GLSL:      backend = SPVC_BACKEND_GLSL; break;
+		case SHLANG_HLSL:      backend = SPVC_BACKEND_HLSL; break;
+		case SHLANG_MSL:       backend = SPVC_BACKEND_MSL;  break;
+		default:
+			log_error("Can't decompile SPIR-V into %s", shader_lang_name(options->lang->lang));
+			return false;
 	}
 
-	size_t spirv_size = (in->content_size - 1) / sizeof(uint32_t);
+	size_t spirv_size = in->content_size / sizeof(uint32_t);
 	const uint32_t *spirv = (uint32_t*)(void*)in->content;
 
 	spvc_result spvc_return_code = SPVC_SUCCESS;
@@ -242,45 +271,100 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 		return false;
 	}
 
-	memset(out, 0, sizeof(*out));
+	auto arena_snap = marena_snapshot(arena);
 
 	SPVCCALL(spvc_context_parse_spirv(context, spirv, spirv_size, &ir));
-	SPVCCALL(spvc_context_create_compiler(context, SPVC_BACKEND_GLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
-
-	if(!glsl_version_supports_instanced_rendering(options->lang->glsl.version)) {
-		SPVCCALL(spvc_compiler_add_header_line(compiler,
-			"#ifdef GL_ARB_draw_instanced\n"
-			"#extension GL_ARB_draw_instanced : enable\n"
-			"#endif\n"
-
-			"#ifdef GL_EXT_frag_depth\n"
-			"#extension GL_EXT_frag_depth : enable\n"
-			"#define gl_FragDepth gl_FragDepthEXT\n"
-			"#endif\n"
-		));
-	}
+	SPVCCALL(spvc_context_create_compiler(context, backend, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
 
 	SPVCCALL(spvc_compiler_create_compiler_options(compiler, &spvc_options));
-	SPVCCALL(spvc_compiler_options_set_uint(spvc_options, SPVC_COMPILER_OPTION_GLSL_VERSION, options->lang->glsl.version.version));
-	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_ES, options->lang->glsl.version.profile == GLSL_PROFILE_ES));
-	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION, false));
-	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_VULKAN_SEMANTICS, options->vulkan_semantics));
+
+	if(backend == SPVC_BACKEND_GLSL) {
+		if(!glsl_version_supports_instanced_rendering(options->lang->glsl.version)) {
+			SPVCCALL(spvc_compiler_add_header_line(compiler,
+				"#ifdef GL_ARB_draw_instanced\n"
+				"#extension GL_ARB_draw_instanced : enable\n"
+				"#endif\n"
+
+				"#ifdef GL_EXT_frag_depth\n"
+				"#extension GL_EXT_frag_depth : enable\n"
+				"#define gl_FragDepth gl_FragDepthEXT\n"
+				"#endif\n"
+			));
+		}
+
+		SPVCCALL(spvc_compiler_options_set_uint(
+			spvc_options, SPVC_COMPILER_OPTION_GLSL_VERSION, options->lang->glsl.version.version));
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_GLSL_ES, options->lang->glsl.version.profile == GLSL_PROFILE_ES));
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION, false));
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_GLSL_VULKAN_SEMANTICS, options->glsl.vulkan_semantics));
+	} else if(backend == SPVC_BACKEND_HLSL) {
+		SPVCCALL(spvc_compiler_options_set_uint(
+			spvc_options, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL, options->lang->hlsl.shader_model));
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_HLSL_NONWRITABLE_UAV_TEXTURE_AS_SRV, true));
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_HLSL_FLATTEN_MATRIX_VERTEX_INPUT_SEMANTICS, true));
+	} else if(backend == SPVC_BACKEND_MSL) {
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_MSL_ENABLE_DECORATION_BINDING, true));
+	} else {
+		UNREACHABLE;
+	}
+
 	SPVCCALL(spvc_compiler_install_compiler_options(compiler, spvc_options));
 	SPVCCALL(spvc_compiler_compile(compiler, &code));
-
 	assume(code != NULL);
 
-	out->content = mem_strdup(code);
-	out->content_size = strlen(code) + 1;
-	out->stage = in->stage;
-	out->lang = *options->lang;
+	size_t code_size = strlen(code) + 1;
+
+	const spvc_entry_point *entry_points;
+	size_t num_entry_points;
+
+	SPVCCALL(spvc_compiler_get_entry_points(compiler, &entry_points, &num_entry_points));
+
+	if(num_entry_points != 1) {
+		log_error("Shader has %u entry points, 1 expected", (uint)num_entry_points);
+		goto error;
+	}
+
+	const char *entrypoint = spvc_compiler_get_cleansed_entry_point_name(
+		compiler, entry_points[0].name, entry_points[0].execution_model);
+
+	*out = (ShaderSource) {
+		.content = marena_memdup(arena, code, code_size),
+		.content_size = code_size,
+		.entrypoint = marena_strdup(arena, entrypoint),
+		.stage = in->stage,
+		.lang = *options->lang,
+	};
+
+	if(options->reflect) {
+		SPIRVReflectContext rctx = {
+			.arena = arena,
+			.reflection = ARENA_ALLOC(arena, typeof(*rctx.reflection), {}),
+			.spvc = {
+				.compiler = compiler,
+				.ctx = context,
+			},
+		};
+
+		SPVCCALL(spvc_compiler_create_shader_resources(rctx.spvc.compiler, &rctx.spvc.res));
+		SPVCCALL(_spirv_reflect_all(&rctx));
+
+		out->reflection = rctx.reflection;
+	}
 
 	spvc_context_destroy(context);
 	return true;
 
 spvc_error:
 	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(context));
+error:
 	spvc_context_destroy(context);
+	marena_rollback(arena, &arena_snap);
 	return false;
 }
 
@@ -303,16 +387,6 @@ static uint spvc_compiler_get_decoration_fallback(
 
 	return spvc_compiler_get_decoration(comp, id, dec);
 }
-
-typedef struct SPIRVReflectContext {
-	MemArena *arena;
-	ShaderReflection *reflection;
-	struct {
-		spvc_context ctx;
-		spvc_compiler compiler;
-		spvc_resources res;
-	} spvc;
-} SPIRVReflectContext;
 
 static uint get_collapsed_array_dimensions(spvc_type type) {
 	uint dims = spvc_type_get_num_array_dimensions(type);
@@ -418,11 +492,14 @@ static ShaderSamplerDimension sampler_dim_from_spv_dim(SpvDim dim) {
 }
 
 static ShaderSamplerType sampler_type_from_spvc_type(spvc_type type) {
+	ShaderSamplerTypeFlags flags = 0;
+	flags |= spvc_type_get_image_is_depth(type)     ? SHADER_SAMPLER_DEPTH : 0;
+	flags |= spvc_type_get_image_arrayed(type)      ? SHADER_SAMPLER_ARRAYED : 0;
+	flags |= spvc_type_get_image_multisampled(type) ? SHADER_SAMPLER_MULTISAMPLED : 0;
+
 	return (ShaderSamplerType) {
 		.dim = sampler_dim_from_spv_dim(spvc_type_get_image_dimension(type)),
-		.is_arrayed = spvc_type_get_image_arrayed(type),
-		.is_depth = spvc_type_get_image_is_depth(type),
-		.is_multisampled = spvc_type_get_image_multisampled(type),
+		.flags = flags,
 	};
 }
 
@@ -455,6 +532,40 @@ spvc_error:
 	return spvc_return_code;
 }
 
+static bool _spirv_reflect_inputs(SPIRVReflectContext *rctx) {
+	spvc_result spvc_return_code = SPVC_SUCCESS;
+	auto reflection = rctx->reflection;
+	const spvc_reflected_resource *res_list;
+	size_t res_size;
+
+	SPVCCALL(spvc_resources_get_resource_list_for_type(
+		rctx->spvc.res, SPVC_RESOURCE_TYPE_STAGE_INPUT, &res_list, &res_size));
+
+	reflection->num_inputs = res_size;
+	reflection->inputs = ARENA_ALLOC_ARRAY(rctx->arena, res_size, typeof(*reflection->inputs));
+
+	reflection->used_input_locations_map = 0;
+
+	for(uint i = 0; i < res_size; ++i) {
+		auto res = &res_list[i];
+		auto type = spvc_compiler_get_type_handle(rctx->spvc.compiler, res->type_id);
+
+		uint loc = spvc_compiler_get_decoration_fallback(rctx->spvc.compiler, res->id, SpvDecorationLocation, 0);
+		uint uses_locs = spvc_type_get_columns(type) ?: 1;  // FIXME not sure if this is always correct
+
+		reflection->used_input_locations_map |= ((1ull << (loc + uses_locs)) - 1ull) & ~((1ull << loc) - 1ull);
+
+		reflection->inputs[i] = (ShaderInput) {
+			.name = marena_strdup(rctx->arena, res->name),
+			.location = loc,
+			.num_locations_consumed = uses_locs,
+		};
+	}
+
+spvc_error:
+	return spvc_return_code;
+}
+
 ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
 	spvc_result spvc_return_code = SPVC_SUCCESS;
 
@@ -473,7 +584,7 @@ ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
 
 	rctx.reflection = ARENA_ALLOC(arena, typeof(*rctx.reflection), {});
 
-	size_t spirv_size = (src->content_size - 1) / sizeof(uint32_t);
+	size_t spirv_size = src->content_size / sizeof(uint32_t);
 	const uint32_t *spirv = (uint32_t*)(void*)src->content;
 
 	SPVCCALL(spvc_context_parse_spirv(rctx.spvc.ctx, spirv, spirv_size, &ir));
@@ -481,8 +592,7 @@ ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
 		rctx.spvc.ctx, SPVC_BACKEND_NONE, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &rctx.spvc.compiler));
 	SPVCCALL(spvc_compiler_create_shader_resources(rctx.spvc.compiler, &rctx.spvc.res));
 
-	SPVCCALL(_spirv_reflect_ubos(&rctx));
-	SPVCCALL(_spirv_reflect_samplers(&rctx));
+	SPVCCALL(_spirv_reflect_all(&rctx));
 
 	spvc_context_destroy(rctx.spvc.ctx);
 	return rctx.reflection;
@@ -491,4 +601,15 @@ spvc_error:
 	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(rctx.spvc.ctx));
 	spvc_context_destroy(rctx.spvc.ctx);
 	return NULL;
+}
+
+static spvc_result _spirv_reflect_all(SPIRVReflectContext *rctx) {
+	spvc_result spvc_return_code = SPVC_SUCCESS;
+
+	SPVCCALL(_spirv_reflect_ubos(rctx));
+	SPVCCALL(_spirv_reflect_samplers(rctx));
+	SPVCCALL(_spirv_reflect_inputs(rctx));
+
+spvc_error:
+	return spvc_return_code;
 }
