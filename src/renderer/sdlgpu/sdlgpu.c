@@ -19,6 +19,8 @@
 #include "pipeline_cache.h"
 
 #include "../common/matstack.h"
+#include "../common/shaderlib/lang_dxbc.h"
+#include "util/env.h"
 
 SDLGPUGlobal sdlgpu;
 
@@ -287,12 +289,22 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 }
 
 static void sdlgpu_init(void) {
+	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV;
+
+	if(dxbc_init_compiler()) {
+		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
+	}
+
 	sdlgpu = (SDLGPUGlobal) {
-		.device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL),
+		.device = SDL_CreateGPUDevice(shader_formats, true, NULL),
 	};
 
 	if(!sdlgpu.device) {
 		log_sdl_error(LOG_FATAL, "SDL_CreateGPUDevice");
+	}
+
+	if(SDL_GetGPUDriver(sdlgpu.device) != SDL_GPU_DRIVER_D3D11) {
+		dxbc_shutdown_compiler();
 	}
 
 	sdlgpu.st.blend = BLEND_NONE;
@@ -331,6 +343,7 @@ static void sdlgpu_shutdown(void) {
 	SDL_DestroyGPUDevice(sdlgpu.device);
 	sdlgpu.device = NULL;
 	strbuf_free(&sdlgpu.debug_buf);
+	dxbc_shutdown_compiler();
 }
 
 static SDL_Window *sdlgpu_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {

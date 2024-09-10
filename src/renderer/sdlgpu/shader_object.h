@@ -52,7 +52,7 @@ struct ShaderObject {
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
-bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
+bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts);
 
 ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source);
 void sdlgpu_shader_object_destroy(ShaderObject *shobj);

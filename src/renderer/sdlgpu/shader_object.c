@@ -22,16 +22,33 @@ INLINE SDL_GPUShaderStage shader_stage_ts2sdl(ShaderStage stage) {
 	}
 }
 
-bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
-	if(lang->lang == SHLANG_SPIRV) {
+bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts) {
+	const ShaderLangInfo *want_lang = NULL;
+
+	static const ShaderLangInfo lang_spirv = {
+		.lang = SHLANG_SPIRV,
+		.spirv.target = SPIRV_TARGET_VULKAN_10,
+	};
+
+	static const ShaderLangInfo lang_dxbc = {
+		.lang = SHLANG_DXBC,
+		.dxbc.shader_model = 50,
+	};
+
+	switch(SDL_GetGPUDriver(sdlgpu.device)) {
+		case SDL_GPU_DRIVER_VULKAN:       want_lang = &lang_spirv; break;
+		case SDL_GPU_DRIVER_D3D11:        want_lang = &lang_dxbc; break;
+		default: break;
+	}
+
+	if(want_lang && lang->lang == want_lang->lang) {
 		return true;
 	}
 
-	if(out_alternative) {
-		*out_alternative = (ShaderLangInfo) {
-			.lang = SHLANG_SPIRV,
-			.spirv.target = SPIRV_TARGET_VULKAN_10,
-		};
+	if(transpile_opts) {
+		transpile_opts->compile.target = lang_spirv.spirv.target;
+		transpile_opts->decompile.lang = want_lang;
+		transpile_opts->decompile.reflect = true;
 	}
 
 	return false;
@@ -111,7 +128,7 @@ static void sdlgpu_shader_object_add_buffer_backed_uniform(
 static UniformType sampler_type_to_uniform_type(const ShaderSamplerType *stype) {
 	// The API only supports basic 2D and cubemap samplers for now
 
-	if(stype->is_arrayed || stype->is_depth || stype->is_multisampled) {
+	if(stype->flags & (SHADER_SAMPLER_DEPTH | SHADER_SAMPLER_ARRAYED | SHADER_SAMPLER_MULTISAMPLED)) {
 		return UNIFORM_UNKNOWN;
 	}
 
@@ -260,20 +277,24 @@ static void sdlgpu_shader_object_free_suballocations(ShaderObject *shobj) {
 	mem_free(shobj->uniform_buffer.data);
 }
 
+static SDL_GPUShaderFormat shader_format_ts2sdlgpu(ShaderLanguage shlang) {
+	switch(shlang) {
+		case SHLANG_SPIRV: return SDL_GPU_SHADERFORMAT_SPIRV;
+		case SHLANG_DXBC: return SDL_GPU_SHADERFORMAT_DXBC;
+		default: UNREACHABLE;
+	}
+}
+
 ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	if(UNLIKELY(!sdlgpu_shader_language_supported(&source->lang, NULL))) {
 		log_error("Shading language not supported");
 		return NULL;
 	}
 
-	MemArena reflect_arena;
-	marena_init(&reflect_arena, 1 << 14);
-
-	auto reflection = shader_source_reflect(source, &reflect_arena);
+	auto reflection = source->reflection;
 
 	if(!reflection) {
-		log_error("Shader reflection failed");
-		marena_deinit(&reflect_arena);
+		log_error("Shader has no reflection data");
 		return NULL;
 	}
 
@@ -285,13 +306,12 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 	sdlgpu_shader_object_init_uniforms(shobj, reflection);
 	uint num_samplers = shobj->num_sampler_bindings;
 	uint num_uniform_buffers = reflection->num_uniform_buffers;
-	marena_deinit(&reflect_arena);
 
 	shobj->shader = SDL_CreateGPUShader(sdlgpu.device, &(SDL_GPUShaderCreateInfo) {
 		.stage = shader_stage_ts2sdl(source->stage),
 		.code = (uint8_t*)source->content,
 		.codeSize = source->content_size - 1,  // content always contains an extra NULL byte
-		.format = SDL_GPU_SHADERFORMAT_SPIRV,
+		.format = shader_format_ts2sdlgpu(source->lang.lang),
 
 		// FIXME
 		.entryPointName = "main",
