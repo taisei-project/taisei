@@ -195,37 +195,6 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 
 #define SPVCCALL(c) do if((spvc_return_code = (c)) != SPVC_SUCCESS) { goto spvc_error; } while(0)
 
-static spvc_result write_glsl_attribs(spvc_compiler compiler, ShaderSource *out) {
-	spvc_result spvc_return_code = SPVC_SUCCESS;
-
-	spvc_resources resources;
-	const spvc_reflected_resource *inputs;
-	size_t num_inputs;
-
-	SPVCCALL(spvc_compiler_create_shader_resources(compiler, &resources));
-	SPVCCALL(spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT, &inputs, &num_inputs));
-
-	log_debug("%zu stage inputs", num_inputs);
-
-	// caller is expected to clean this up in case of error
-	auto attrs = ALLOC_ARRAY(num_inputs, GLSLAttribute);
-	out->meta.glsl.attributes = attrs;
-	out->meta.glsl.num_attributes = num_inputs;
-
-	for(uint i = 0; i < num_inputs; ++i) {
-		const spvc_reflected_resource *res = inputs + i;
-		uint location = spvc_compiler_get_decoration(compiler, res->id, SpvDecorationLocation);
-
-		log_debug("[%i] %s\t\tid=%i\t\tbase_type_id=%i\t\ttype_id=%i\t\tlocation=%i", i, res->name, res->id, res->base_type_id, res->type_id, location);
-
-		attrs[i].name = mem_strdup(res->name);
-		attrs[i].location = location;
-	}
-
-spvc_error:
-	return spvc_return_code;
-}
-
 bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
 	if(in->lang.lang != SHLANG_SPIRV) {
 		log_error("Source is not a SPIR-V binary");
@@ -257,10 +226,6 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 
 	SPVCCALL(spvc_context_parse_spirv(context, spirv, spirv_size, &ir));
 	SPVCCALL(spvc_context_create_compiler(context, SPVC_BACKEND_GLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
-
-	if(in->stage == SHADER_STAGE_VERTEX && !shader_lang_supports_attribute_locations(options->lang)) {
-		SPVCCALL(write_glsl_attribs(compiler, out));
-	}
 
 	if(!glsl_version_supports_instanced_rendering(options->lang->glsl.version)) {
 		SPVCCALL(spvc_compiler_add_header_line(compiler,
@@ -294,7 +259,6 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 
 spvc_error:
 	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(context));
-	glsl_free_source(out);
 	spvc_context_destroy(context);
 	return false;
 }
