@@ -20,7 +20,6 @@
 #define CRC_INIT 0
 
 #define MAX_CONTENT_SIZE          (1024 * 1024)
-#define MAX_GLSL_ATTRIBS          255
 #define MAX_GLSL_MACROS           255
 #define MAX_GLSL_MACRO_NAME_LEN   255
 #define MAX_GLSL_MACRO_VALUE_LEN  255
@@ -87,27 +86,8 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			SDL_WriteU16LE(dest, src->lang.glsl.version.version);
 			SDL_WriteU8(dest, src->lang.glsl.version.profile);
 
-			if(src->meta.glsl.num_attributes > MAX_GLSL_ATTRIBS) {
-				log_error("Too many attributes (%i)", src->meta.glsl.num_attributes);
-				goto fail;
-			}
-
-			SDL_WriteU8(dest, src->meta.glsl.num_attributes);
-
-			for(uint i = 0; i < src->meta.glsl.num_attributes; ++i) {
-				SDL_WriteU32LE(dest, src->meta.glsl.attributes[i].location);
-
-				size_t len = strlen(src->meta.glsl.attributes[i].name);
-
-				if(len > 255) {
-					log_error("Attribute name is too long (%zu): %s", len, src->meta.glsl.attributes[i].name);
-					goto fail;
-				}
-
-				SDL_WriteU8(dest, len);
-				SDL_WriteIO(dest, src->meta.glsl.attributes[i].name,
-					    len);
-			}
+			// TODO remove this (legacy attrib info)
+			SDL_WriteU8(dest, 0);
 			break;
 		}
 
@@ -160,8 +140,7 @@ fail:
 #define READU16LE(_file) READ(_file, SDL_ReadU16LE, uint16_t)
 #define READU32LE(_file) READ(_file, SDL_ReadU32LE, uint32_t)
 
-static bool shader_cache_load_entry(SDL_IOStream *stream,
-				    ShaderSource *out_src) {
+static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src) {
 	uint32_t crc = CRC_INIT;
 	SDL_IOStream *s = SDL_RWWrapCRC32(stream, &crc, false);
 
@@ -190,20 +169,20 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 			out_src->lang.glsl.version.version = READU16LE(s);
 			out_src->lang.glsl.version.profile = READU8(s);
 
+			// TODO remove this
 			uint nattrs = READU8(s);
 
 			if(nattrs > 0) {
-				out_src->meta.glsl.num_attributes = nattrs;
-				out_src->meta.glsl.attributes = ALLOC_ARRAY(nattrs, typeof(*out_src->meta.glsl.attributes));
+				log_warn("Ignoring legacy attribute info stored in cached shader");
 
 				for(uint i = 0; i < nattrs; ++i) {
-					GLSLAttribute *attr = out_src->meta.glsl.attributes + i;
-					attr->location = READU32LE(s);
+					(void)READU32LE(s);
 					uint len = READU8(s);
-					attr->name = mem_alloc(len + 1);
-					SDL_ReadIO(s, attr->name, len);
+					char discard[len + 1];
+					SDL_ReadIO(s, discard, len);
 				}
 			}
+
 			break;
 		}
 

@@ -372,17 +372,6 @@ char *glsl_parse_version(const char *str, GLSLVersion *out_version) {
 	return p;
 }
 
-void glsl_free_source(ShaderSource *src) {
-	ShaderSourceMetaGLSL *m = &src->meta.glsl;
-
-	for(uint i = 0; i < m->num_attributes; ++i) {
-		mem_free(m->attributes[i].name);
-	}
-
-	mem_free(m->attributes);
-	m->attributes = NULL;
-}
-
 bool glsl_version_supports_instanced_rendering(GLSLVersion v) {
 	if(v.profile == GLSL_PROFILE_ES) {
 		return v.version >= 300;
