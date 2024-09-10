@@ -206,7 +206,7 @@ opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
 
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
-dep_sdl3        = dependency('sdl3',           version : '>=3.1.0', required : true)
+# dep_sdl3        = dependency('sdl3',           version : '>=3.1.0', required : true)
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
 dep_zlib        = dependency('zlib',                                required : true)
@@ -224,6 +224,23 @@ dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 sub_glad = subproject('glad')
 dep_glad_gl = sub_glad.get_variable('glad_gl_dep')
 dep_glad_egl = sub_glad.get_variable('glad_egl_dep')
+
+cmake = import('cmake')
+sdl3_options = cmake.subproject_options()
+sdl3_options.add_cmake_defines({
+    'SDL_DISABLE_INSTALL': true,
+    'SDL_DISABLE_UNINSTALL': true,
+    'SDL_RENDER': false,
+    'SDL_POWER': false,
+    'SDL_HAPTIC': false,
+    'SDL_SENSOR': false,
+    'SDL_EXAMPLES': false,
+    'SDL_TESTS': false,
+    'SDL_SHARED': false,
+    'SDL_STATIC': true,
+})
+sdl3_subproject = cmake.subproject('sdl3', options : sdl3_options)
+dep_sdl3 = sdl3_subproject.dependency('SDL3-static')
 
 taisei_deps = [
     dep_basisu_transcoder,
