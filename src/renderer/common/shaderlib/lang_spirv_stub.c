@@ -14,12 +14,22 @@
 void spirv_init_compiler(void) { }
 void spirv_shutdown_compiler(void) { }
 
-bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
+bool _spirv_compile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVCompileOptions *options
+) {
 	log_error("Compiled without SPIR-V support");
 	return false;
 }
 
-bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
+bool _spirv_decompile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVDecompileOptions *options
+)  {
 	log_error("Compiled without SPIR-V support");
 	return false;
 }

@@ -11,7 +11,7 @@
 #include "../glcommon/debug.h"
 #include "../glcommon/shaders.h"
 
-bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
+bool gl33_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts) {
 	if(glcommon_shader_lang_table.data) {
 		dynarray_foreach_elem(&glcommon_shader_lang_table, ShaderLangInfo *l, {
 			if(!memcmp(l, lang, sizeof(*l))) {
@@ -19,8 +19,9 @@ bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *
 			}
 		});
 
-		if(out_alternative) {
-			*out_alternative = dynarray_get(&glcommon_shader_lang_table, 0);
+		if(transpile_opts) {
+			transpile_opts->compile.target = SPIRV_TARGET_OPENGL_450;
+			transpile_opts->decompile.lang = &dynarray_get(&glcommon_shader_lang_table, 0);
 		}
 
 		return false;
@@ -30,10 +31,16 @@ bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *
 
 	bool supported = lang->lang == SHLANG_GLSL;
 
-	if(!supported && out_alternative) {
-		out_alternative->lang = SHLANG_GLSL;
-		out_alternative->glsl.version.version = 330;
-		out_alternative->glsl.version.profile = GLSL_PROFILE_CORE;
+	if(!supported && transpile_opts) {
+		static const ShaderLangInfo fallback_info = {
+			.lang = SHLANG_GLSL,
+			.glsl.version = {
+				.version = 330,
+				GLSL_PROFILE_CORE,
+			}
+		};
+		transpile_opts->compile.target = SPIRV_TARGET_OPENGL_450;
+		transpile_opts->decompile.lang = &fallback_info;
 	}
 
 	return supported;

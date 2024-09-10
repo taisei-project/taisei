@@ -336,8 +336,8 @@ DepthTestFunc r_depth_func_current(void) {
 	return B.depth_func_current();
 }
 
-bool r_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
-	return B.shader_language_supported(lang, out_alternative);
+bool r_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspileOptions *transpile_opts) {
+	return B.shader_language_supported(lang, transpile_opts);
 }
 
 ShaderObject* r_shader_object_compile(ShaderSource *source) {

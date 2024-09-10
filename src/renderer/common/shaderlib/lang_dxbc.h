@@ -9,23 +9,24 @@
 #pragma once
 #include "taisei.h"
 
-#include "lang_spirv.h"
-#include "reflect.h"
+#include "defs.h"
 
 #include "memory/arena.h"
 
-bool _spirv_compile(
+typedef struct ShaderLangInfoDXBC {
+	uint shader_model;
+} ShaderLangInfoDXBC;
+
+typedef struct DXBCCompileOptions {
+	const char *entrypoint;
+} DXBCCompileOptions;
+
+bool dxbc_init_compiler(void);
+void dxbc_shutdown_compiler(void);
+
+bool dxbc_compile(
 	const ShaderSource *in,
 	ShaderSource *out,
 	MemArena *arena,
-	const SPIRVCompileOptions *options
+	const DXBCCompileOptions *options
 ) attr_nonnull(1, 2, 3);
-
-bool _spirv_decompile(
-	const ShaderSource *in,
-	ShaderSource *out,
-	MemArena *arena,
-	const SPIRVDecompileOptions *options
-) attr_nonnull(1, 2, 3);
-
-ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) attr_nonnull(1, 2);

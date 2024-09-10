@@ -240,15 +240,15 @@ static void shader_sampler_dump_string(ShaderSampler *sampler, StringBuffer *buf
 
 	strbuf_cat(buf, dim_str);
 
-	if(sampler->type.is_multisampled) {
+	if(sampler->type.flags & SHADER_SAMPLER_MULTISAMPLED) {
 		strbuf_cat(buf, "MS");
 	}
 
-	if(sampler->type.is_arrayed) {
+	if(sampler->type.flags & SHADER_SAMPLER_ARRAYED) {
 		strbuf_cat(buf, "Array");
 	}
 
-	if(sampler->type.is_depth) {
+	if(sampler->type.flags & SHADER_SAMPLER_DEPTH) {
 		strbuf_cat(buf, "Shadow");
 	}
 
@@ -259,29 +259,13 @@ static void shader_sampler_dump_string(ShaderSampler *sampler, StringBuffer *buf
 	}
 }
 
-ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena) {
-	ShaderReflection *r = NULL;
-
-	switch(src->lang.lang) {
-		case SHLANG_SPIRV:
-			r = _spirv_reflect(src, arena);
-			break;
-
-		default:
-			log_error("Reflection not supported for this language");
-			return NULL;
-	}
-
-	if(UNLIKELY(!r)) {
-		return NULL;
-	}
-
+void shader_reflection_logdump(const ShaderReflection *reflect) {
 	StringBuffer buf = {};
 
-	log_debug("%u uniform buffers", r->num_uniform_buffers);
+	log_debug("%u uniform buffers", reflect->num_uniform_buffers);
 
-	for(uint i = 0; i < r->num_uniform_buffers; ++i) {
-		auto ubuf = &r->uniform_buffers[i];
+	for(uint i = 0; i < reflect->num_uniform_buffers; ++i) {
+		auto ubuf = &reflect->uniform_buffers[i];
 
 		log_debug("Uniform buffer #%d (set=%d, binding=%d): %s (%d bytes)",
 				  i, ubuf->set, ubuf->binding, ubuf->name, ubuf->size);
@@ -294,10 +278,10 @@ ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena
 		}
 	}
 
-	log_debug("%u samplers", r->num_samplers);
+	log_debug("%u samplers", reflect->num_samplers);
 
-	for(uint i = 0; i < r->num_samplers; ++i) {
-		auto sampler = &r->samplers[i];
+	for(uint i = 0; i < reflect->num_samplers; ++i) {
+		auto sampler = &reflect->samplers[i];
 
 		strbuf_clear(&buf);
 		shader_sampler_dump_string(sampler, &buf);
@@ -306,6 +290,327 @@ ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena
 				  i, sampler->set, sampler->binding, buf.start);
 	}
 
+	log_debug("%u inputs", reflect->num_inputs);
+
+	for(uint i = 0; i < reflect->num_inputs; ++i) {
+		attr_unused auto input = &reflect->inputs[i];
+		log_debug("Input #%d: (location = %d, consumes = %d) %s",
+			      i, input->location, input->num_locations_consumed, input->name);
+	}
+
+	log_debug("Used input locations map: 0b%llb", (unsigned long long)reflect->used_input_locations_map);
+
 	strbuf_free(&buf);
+}
+
+ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena) {
+	ShaderReflection *r = NULL;
+
+	switch(src->lang.lang) {
+		case SHLANG_SPIRV:
+			r = _spirv_reflect(src, arena);
+			break;
+
+		default:
+			log_error("Reflection not supported for %s", shader_lang_name(src->lang.lang));
+			return NULL;
+	}
+
+	if(UNLIKELY(!r)) {
+		return NULL;
+	}
+
 	return r;
+}
+
+#define REFLECT_SERIALIZE_VERSION 1
+
+#define CHECK_LIMIT(_value, _limit, _name) ({ \
+	if((_value) > (_limit)) { \
+		log_error("Too many " _name ": %u >= %u", (_value), (_limit)); \
+		goto fail; \
+	} \
+	(void)0; \
+})
+
+#define MAX_UNIFORM_BUFFERS 16
+#define MAX_SAMPLERS 64
+#define MAX_INPUTS 64
+#define MAX_BLOCK_FIELDS 128
+
+static bool write_string(const char *s, SDL_IOStream *dest) {
+	size_t len = strlen(s);
+
+	if(len > 255) {
+		log_error("String is too long (%zu bytes)", len);
+		return false;
+	}
+
+	SDL_WriteU8(dest, len & 0xff);
+	SDL_WriteIO(dest, s, len);
+
+	return true;
+}
+
+static char *read_string(MemArena *arena, SDL_IOStream *src) {
+	uint8_t len = 0;
+	SDL_ReadU8(src, &len);
+	char *buf = marena_alloc(arena, len + 1);
+	SDL_ReadIO(src, buf, len);
+	buf[len] = 0;
+	return buf;
+}
+
+static bool write_shader_data_type(const ShaderDataType *type, SDL_IOStream *output) {
+	SDL_WriteU16LE(output, type->base_type);
+	SDL_WriteU32LE(output, type->vector_size);
+	SDL_WriteU32LE(output, type->array_size);
+	SDL_WriteU32LE(output, type->array_stride);
+	SDL_WriteU32LE(output, type->matrix_columns);
+	SDL_WriteU32LE(output, type->matrix_stride);
+	return true;
+}
+
+static bool read_shader_data_type(ShaderDataType *type, SDL_IOStream *input) {
+	uint16_t base_type;
+	SDL_ReadU16LE(input, &base_type); type->base_type = base_type;
+	SDL_ReadU32LE(input, &type->vector_size);
+	SDL_ReadU32LE(input, &type->array_size);
+	SDL_ReadU32LE(input, &type->array_stride);
+	SDL_ReadU32LE(input, &type->matrix_columns);
+	SDL_ReadU32LE(input, &type->matrix_stride);
+	return true;
+}
+
+static bool write_shader_struct_field(const ShaderStructField *field, SDL_IOStream *output) {
+	if(!write_string(field->name, output)) {
+		return false;
+	}
+
+	SDL_WriteU32LE(output, field->offset);
+
+	return write_shader_data_type(&field->type, output);
+}
+
+static bool read_shader_struct_field(ShaderStructField *field, MemArena *arena, SDL_IOStream *input) {
+	if(!(field->name = read_string(arena, input))) {
+		return false;
+	}
+
+	SDL_ReadU32LE(input, &field->offset);
+
+	return read_shader_data_type(&field->type, input);
+}
+
+static bool write_shader_block(const ShaderBlock *block, SDL_IOStream *output) {
+	if(!write_string(block->name, output)) {
+		return false;
+	}
+
+	SDL_WriteU32LE(output, block->set);
+	SDL_WriteU32LE(output, block->binding);
+	SDL_WriteU32LE(output, block->size);
+	SDL_WriteU32LE(output, block->num_fields);
+	CHECK_LIMIT(block->num_fields, MAX_BLOCK_FIELDS, "block fields");
+
+	for(uint i = 0; i < block->num_fields; ++i) {
+		if(!write_shader_struct_field(block->fields + i, output)) {
+			return false;
+		}
+	}
+
+	return true;
+
+fail:
+	return false;
+}
+
+static bool read_shader_block(ShaderBlock *block, MemArena *arena, SDL_IOStream *input) {
+	if(!(block->name = read_string(arena, input))) {
+		return false;
+	}
+
+	SDL_ReadU32LE(input, &block->set);
+	SDL_ReadU32LE(input, &block->binding);
+	SDL_ReadU32LE(input, &block->size);
+	SDL_ReadU32LE(input, &block->num_fields);
+	CHECK_LIMIT(block->num_fields, MAX_BLOCK_FIELDS, "block fields");
+	block->fields = ARENA_ALLOC_ARRAY(arena, block->num_fields, typeof(*block->fields));
+
+	for(uint i = 0; i < block->num_fields; ++i) {
+		if(!read_shader_struct_field(block->fields + i, arena, input)) {
+			return false;
+		}
+	}
+
+	return true;
+
+fail:
+	return false;
+}
+
+static bool write_shader_sampler_type(const ShaderSamplerType *sampler_type, SDL_IOStream *output) {
+	SDL_WriteU16LE(output, sampler_type->dim);
+	SDL_WriteU16LE(output, sampler_type->flags);
+	return true;
+}
+
+static bool read_shader_sampler_type(ShaderSamplerType *sampler_type, SDL_IOStream *input) {
+	uint16_t dim;
+	SDL_ReadU16LE(input, &dim); sampler_type->dim = dim;
+	SDL_ReadU16LE(input, &sampler_type->flags);
+	return true;
+}
+
+static bool write_shader_sampler(const ShaderSampler *sampler, SDL_IOStream *output) {
+	if(!write_string(sampler->name, output)) {
+		return false;
+	}
+
+	if(!write_shader_sampler_type(&sampler->type, output)) {
+		return false;
+	}
+
+	SDL_WriteU32LE(output, sampler->set);
+	SDL_WriteU32LE(output, sampler->binding);
+	SDL_WriteU32LE(output, sampler->array_size);
+
+	return true;
+}
+
+static bool read_shader_sampler(ShaderSampler *sampler, MemArena *arena, SDL_IOStream *input) {
+	if(!(sampler->name = read_string(arena, input))) {
+		return false;
+	}
+
+	if(!read_shader_sampler_type(&sampler->type, input)) {
+		return false;
+	}
+
+	SDL_ReadU32LE(input, &sampler->set);
+	SDL_ReadU32LE(input, &sampler->binding);
+	SDL_ReadU32LE(input, &sampler->array_size);
+
+	return true;
+}
+
+static bool write_shader_input(const ShaderInput *shinput, SDL_IOStream *output) {
+	if(!write_string(shinput->name, output)) {
+		return false;
+	}
+
+	SDL_WriteU32LE(output, shinput->location);
+	SDL_WriteU32LE(output, shinput->num_locations_consumed);
+
+	return true;
+}
+
+static bool read_shader_input(ShaderInput *shinput, MemArena *arena, SDL_IOStream *input) {
+	if(!(shinput->name = read_string(arena, input))) {
+		return false;
+	}
+
+	SDL_ReadU32LE(input, &shinput->location);
+	SDL_ReadU32LE(input, &shinput->num_locations_consumed);
+
+	return true;
+}
+
+bool shader_reflection_serialize(const ShaderReflection *r, SDL_IOStream *output) {
+	if(!r) {
+		SDL_WriteU16LE(output, 0);
+		return true;
+	}
+
+	SDL_WriteU16LE(output, REFLECT_SERIALIZE_VERSION);
+
+	SDL_WriteU32LE(output, r->num_uniform_buffers);
+	CHECK_LIMIT(r->num_uniform_buffers, MAX_UNIFORM_BUFFERS, "uniform buffers");
+
+	for(uint i = 0; i < r->num_uniform_buffers; ++i) {
+		if(!write_shader_block(r->uniform_buffers + i, output)) {
+			return false;
+		}
+	}
+
+	SDL_WriteU32LE(output, r->num_samplers);
+	CHECK_LIMIT(r->num_samplers, MAX_SAMPLERS, "samplers");
+
+	for(uint i = 0; i < r->num_samplers; ++i) {
+		if(!write_shader_sampler(r->samplers + i, output)) {
+			return false;
+		}
+	}
+
+	SDL_WriteU32LE(output, r->num_inputs);
+	CHECK_LIMIT(r->num_inputs, MAX_INPUTS, "inputs");
+	SDL_WriteU64LE(output, r->used_input_locations_map);
+
+	for(uint i = 0; i < r->num_inputs; ++i) {
+		if(!write_shader_input(r->inputs + i, output)) {
+			return false;
+		}
+	}
+
+	return true;
+
+fail:
+	return false;
+}
+
+bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemArena *arena, SDL_IOStream *input) {
+	uint16_t version = 0xffff;
+
+	SDL_ReadU16LE(input, &version);
+
+	if(version == 0) {
+		*out_reflect = NULL;
+		return true;
+	}
+
+	if(version != REFLECT_SERIALIZE_VERSION) {
+		log_error("Can't handle reflection format version %u", version);
+		return false;
+	}
+
+	auto arena_snap = marena_snapshot(arena);
+	auto r = ARENA_ALLOC(arena, ShaderReflection, {});
+
+	SDL_ReadU32LE(input, &r->num_uniform_buffers);
+	CHECK_LIMIT(r->num_uniform_buffers, MAX_UNIFORM_BUFFERS, "uniform buffers");
+	r->uniform_buffers = ARENA_ALLOC_ARRAY(arena, r->num_uniform_buffers, typeof(*r->uniform_buffers));
+
+	for(uint i = 0; i < r->num_uniform_buffers; ++i) {
+		if(!read_shader_block(r->uniform_buffers + i, arena, input)) {
+			goto fail;
+		}
+	}
+
+	SDL_ReadU32LE(input, &r->num_samplers);
+	CHECK_LIMIT(r->num_samplers, MAX_SAMPLERS, "samplers");
+	r->samplers = ARENA_ALLOC_ARRAY(arena, r->num_samplers, typeof(*r->samplers));
+
+	for(uint i = 0; i < r->num_samplers; ++i) {
+		if(!read_shader_sampler(r->samplers + i, arena, input)) {
+			goto fail;
+		}
+	}
+
+	SDL_ReadU32LE(input, &r->num_inputs);
+	CHECK_LIMIT(r->num_inputs, MAX_INPUTS, "inputs");
+	r->inputs = ARENA_ALLOC_ARRAY(arena, r->num_inputs, typeof(*r->inputs));
+	SDL_ReadU64LE(input, &r->used_input_locations_map);
+
+	for(uint i = 0; i < r->num_inputs; ++i) {
+		if(!read_shader_input(r->inputs + i, arena, input)) {
+			goto fail;
+		}
+	}
+
+	*out_reflect = r;
+	return true;
+
+fail:
+	marena_rollback(arena, &arena_snap);
+	return NULL;
 }
