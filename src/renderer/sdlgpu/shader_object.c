@@ -36,9 +36,14 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 		.dxbc.shader_model = 50,
 	};
 
+	static const ShaderLangInfo lang_msl = {
+		.lang = SHLANG_MSL,
+	};
+
 	switch(SDL_GetGPUDriver(sdlgpu.device)) {
 		case SDL_GPU_DRIVER_VULKAN:       want_lang = &lang_spirv; break;
 		case SDL_GPU_DRIVER_D3D11:        want_lang = &lang_dxbc; break;
+		case SDL_GPU_DRIVER_METAL:        want_lang = &lang_msl; break;
 		default: break;
 	}
 

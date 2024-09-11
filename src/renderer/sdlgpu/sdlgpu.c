@@ -297,7 +297,7 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 }
 
 static void sdlgpu_init(void) {
-	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV;
+	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_MSL;
 
 	if(dxbc_init_compiler()) {
 		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
