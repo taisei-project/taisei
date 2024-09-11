@@ -12,25 +12,23 @@
 #include "sdlgpu.h"
 
 enum {
-	PIPECACHE_KEY_TEXFMT_BITS = 6,
+	PIPECACHE_KEY_TEXFMT_BITS = 7,
 	PIPECACHE_FMT_MASK = (1 << PIPECACHE_KEY_TEXFMT_BITS) - 1,
 };
 
 typedef struct PipelineCacheKey {
 	uint32_t blend : 28;      // enum: BlendMode
-	uint32_t attachment_formats : (FRAMEBUFFER_MAX_OUTPUTS * PIPECACHE_KEY_TEXFMT_BITS);
-	uint32_t depth_format : PIPECACHE_KEY_TEXFMT_BITS;
-	sdlgpu_id_t shader_program;
-	sdlgpu_id_t vertex_array;
-	uint8_t primitive : 4;    // enum: Primitive
 	uint8_t cull_mode : 2;    // enum: CullFaceMode; 0 = disabled
-	uint8_t depth_func : 7;   // enum: DepthTestFunc
 	uint8_t depth_test : 1;
 	uint8_t depth_write : 1;
 	uint8_t front_face_ccw : 1;
+	uint8_t primitive : 3;    // enum: Primitive
+	uint32_t attachment_formats : (FRAMEBUFFER_MAX_OUTPUTS * PIPECACHE_KEY_TEXFMT_BITS);
+	uint32_t depth_format : PIPECACHE_KEY_TEXFMT_BITS;
+	uint8_t depth_func : 3;   // enum: DepthTestFunc
+	sdlgpu_id_t shader_program;
+	sdlgpu_id_t vertex_array;
 } PipelineCacheKey;
-
-static_assert((((uint)SDL_GPU_TEXTUREFORMAT_INVALID) & PIPECACHE_FMT_MASK) == PIPECACHE_FMT_MASK);
 
 typedef struct PipelineDescription {
 	ShaderProgram *shader_program;
@@ -44,7 +42,7 @@ typedef struct PipelineDescription {
 
 	uint num_outputs;
 	struct {
-		SDL_GPUTextureFormat format;  // must be PIPECACHE_FMT_MASK for unused outputs
+		SDL_GPUTextureFormat format;
 	} outputs[FRAMEBUFFER_MAX_OUTPUTS];
 	SDL_GPUTextureFormat depth_format;
 } PipelineDescription;

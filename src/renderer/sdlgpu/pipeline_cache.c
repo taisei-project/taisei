@@ -81,30 +81,19 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 	k.depth_format = pd->depth_format & PIPECACHE_FMT_MASK;
 	k.front_face_ccw = (pd->front_face == SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE);
 
-	if(pd->depth_format == SDL_GPU_TEXTUREFORMAT_INVALID) {
-		assert(k.depth_format == PIPECACHE_FMT_MASK);
-	} else {
-		assert(k.depth_format == pd->depth_format);
-	}
-
+	assert(k.depth_format == pd->depth_format);
 	assert(k.cull_mode || !enable_cull_face);
 
 	for(uint i = 0; i < ARRAY_SIZE(pd->outputs); ++i) {
 		uint fmt = pd->outputs[i].format;
 		assert(fmt == (fmt & PIPECACHE_FMT_MASK));
-
-		if(i < pd->num_outputs) {
-			assert(fmt != PIPECACHE_FMT_MASK);
-		} else {
-			assert(fmt == PIPECACHE_FMT_MASK);
-		}
-
 		k.attachment_formats |= (fmt << (i * PIPECACHE_KEY_TEXFMT_BITS));
 	}
 
 	return k;
 }
 
+attr_unused
 static void dump_vertex_input_state(SDL_GPUVertexInputState *st) {
 	log_debug(" *** BINDINGS:");
 	for(uint i = 0; i < st->num_vertex_bindings; ++i) {

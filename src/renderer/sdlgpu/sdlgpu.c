@@ -546,18 +546,10 @@ static void sdlgpu_draw_generic(
 		pd.depth_func = DEPTH_ALWAYS;
 	}
 
-	{
-		assert(outputs.num_color_attachments <= ARRAY_SIZE(pd.outputs));
+	assert(outputs.num_color_attachments <= ARRAY_SIZE(pd.outputs));
 
-		uint i;
-
-		for(i = 0; i < outputs.num_color_attachments; ++i) {
-			pd.outputs[i].format = outputs.color_formats[i];
-		}
-
-		for(; i < ARRAY_SIZE(pd.outputs); ++i) {
-			pd.outputs[i].format = PIPECACHE_FMT_MASK;
-		}
+	for(uint i = 0; i < outputs.num_color_attachments; ++i) {
+		pd.outputs[i].format = outputs.color_formats[i];
 	}
 
 	auto active_program = sdlgpu.st.shader;
