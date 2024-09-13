@@ -327,6 +327,8 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 	ADD_MACRO_DYNAMIC("LANG_GLSL", "%d", SHLANG_GLSL);
 	ADD_MACRO_DYNAMIC("LANG_SPIRV", "%d", SHLANG_SPIRV);
 	ADD_MACRO_DYNAMIC("LANG_HLSL", "%d", SHLANG_HLSL);
+	ADD_MACRO_DYNAMIC("LANG_DXBC", "%d", SHLANG_DXBC);
+	ADD_MACRO_DYNAMIC("LANG_MSL", "%d", SHLANG_MSL);
 	ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_LANG", "%d", decompile_lang.lang);
 
 	switch(decompile_lang.lang) {
@@ -341,6 +343,7 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 			break;
 
 		case SHLANG_SPIRV:
+		case SHLANG_MSL:
 			break;
 
 		default: UNREACHABLE;

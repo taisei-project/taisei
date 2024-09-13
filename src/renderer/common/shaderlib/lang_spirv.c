@@ -307,6 +307,9 @@ bool _spirv_decompile(
 		SPVCCALL(spvc_compiler_options_set_bool(
 			spvc_options, SPVC_COMPILER_OPTION_HLSL_FLATTEN_MATRIX_VERTEX_INPUT_SEMANTICS, true));
 	} else if(backend == SPVC_BACKEND_MSL) {
+		SPVCCALL(spvc_compiler_options_set_bool(
+			spvc_options, SPVC_COMPILER_OPTION_MSL_ENABLE_DECORATION_BINDING, true));
+	} else {
 		UNREACHABLE;
 	}
 
