@@ -118,8 +118,8 @@ IndexBuffer *sdlgpu_vertex_array_get_index_attachment(VertexArray *varr) {
 }
 
 void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
-	SDL_GPUVertexAttribute sdl_attribs[nattribs] = {};
-	SDL_GPUVertexBinding sdl_bindings[nattribs] = {};
+	SDL_GPUVertexAttribute sdl_attribs[nattribs];
+	SDL_GPUVertexBinding sdl_bindings[nattribs];
 	uint num_sdl_bindings = 0;
 
 	for(uint i = 0; i < nattribs; ++i) {
