@@ -158,8 +158,8 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 		#endif
 		.primitive_type = sdlgpu_primitive_ts2sdl(pd->primitive),
 		.rasterizer_state = {
-			.cull_mode = sdlgpu.st.caps & r_capability_bit(RCAP_CULL_FACE)
-				? sdlgpu_cullmode_ts2sdl(sdlgpu.st.cull)
+			.cull_mode = pd->cap_bits & r_capability_bit(RCAP_CULL_FACE)
+				? sdlgpu_cullmode_ts2sdl(pd->cull_mode)
 				: SDL_GPU_CULLMODE_NONE,
 			.fill_mode = SDL_GPU_FILLMODE_FILL,
 			.front_face = pd->front_face,
@@ -168,12 +168,12 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 			.sample_mask = 0xFFFF,
 		},
 		.depth_stencil_state = {
-			.enable_depth_test = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)),
-			.enable_depth_write = (bool)(sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_WRITE)),
+			.enable_depth_test = (bool)(pd->cap_bits & r_capability_bit(RCAP_DEPTH_TEST)),
+			.enable_depth_write = (bool)(pd->cap_bits & r_capability_bit(RCAP_DEPTH_WRITE)),
 			.enable_stencil_test = false,
 			.write_mask = 0x0,
-			.compare_op = sdlgpu.st.caps & r_capability_bit(RCAP_DEPTH_TEST)
-				? sdlgpu_cmpop_ts2sdl(sdlgpu.st.depth_func)
+			.compare_op = pd->cap_bits & r_capability_bit(RCAP_DEPTH_TEST)
+				? sdlgpu_cmpop_ts2sdl(pd->depth_func)
 				: SDL_GPU_COMPAREOP_ALWAYS,
 		},
 		.target_info = {
@@ -186,13 +186,13 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 
 	SDL_GPUColorTargetBlendState blend = {
 		.color_write_mask = 0xF,
-		.enable_blend = sdlgpu.st.blend != BLEND_NONE,
-		.alpha_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_ALPHA_OP)),
-		.color_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_COLOR_OP)),
-		.src_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_COLOR)),
-		.src_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_SRC_ALPHA)),
-		.dst_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_COLOR)),
-		.dst_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(sdlgpu.st.blend, BLENDCOMP_DST_ALPHA)),
+		.enable_blend = pd->blend_mode != BLEND_NONE,
+		.alpha_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_ALPHA_OP)),
+		.color_blend_op = sdlgpu_blendop_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_COLOR_OP)),
+		.src_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_SRC_COLOR)),
+		.src_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_SRC_ALPHA)),
+		.dst_color_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_DST_COLOR)),
+		.dst_alpha_blendfactor = sdlgpu_blendfactor_ts2sdl(r_blend_component(pd->blend_mode, BLENDCOMP_DST_ALPHA)),
 	};
 
 	for(int i = 0; i < pd->num_outputs; ++i) {
