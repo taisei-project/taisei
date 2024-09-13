@@ -17,13 +17,14 @@
 #include "rwops/rwops_zstd.h"
 #include "vfs/public.h"
 
-#define CACHE_VERSION 7
+#define CACHE_VERSION 8
 #define CRC_INIT 0
 
 #define MAX_CONTENT_SIZE          (1024 * 1024)
 #define MAX_GLSL_MACROS           255
 #define MAX_GLSL_MACRO_NAME_LEN   255
 #define MAX_GLSL_MACRO_VALUE_LEN  255
+#define MAX_ENTRYPOINT_NAME_LEN   255
 
 static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const ShaderMacro *macros, size_t *out_size) {
 	uint8_t *buf, *result = NULL;
@@ -43,6 +44,16 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 	SDL_WriteU8(dest, CACHE_VERSION);
 	SDL_WriteU8(dest, src->stage);
 	SDL_WriteU8(dest, src->lang.lang);
+
+	size_t entrypoint_name_len = strlen(src->entrypoint);
+
+	if(entrypoint_name_len > MAX_ENTRYPOINT_NAME_LEN) {
+		log_error("Entry point name is too long (%zu): %s", entrypoint_name_len, src->entrypoint);
+		goto fail;
+	}
+
+	SDL_WriteU8(dest, entrypoint_name_len);
+	SDL_WriteIO(dest, src->entrypoint, entrypoint_name_len);
 
 	if(macros) {
 		uint num_macros = 0;
@@ -160,6 +171,8 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 	uint32_t crc = CRC_INIT;
 	SDL_IOStream *s = SDL_RWWrapCRC32(stream, &crc, false);
 
+	auto arena_snap = marena_snapshot(arena);
+
 	memset(out_src, 0, sizeof(*out_src));
 	out_src->content = NULL;
 
@@ -174,6 +187,17 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 
 	memset(&out_src->lang, 0, sizeof(out_src->lang));
 	out_src->lang.lang = READU8(s);
+
+	uint32_t entrypoint_len = READU8(s);
+	char *entrypoint = marena_alloc(arena, entrypoint_len + 1);
+	entrypoint[entrypoint_len] = 0;
+
+	if(SDL_ReadIO(s, entrypoint, entrypoint_len) != entrypoint_len) {
+		log_sdl_error(LOG_ERROR, "SDL_ReadIO");
+		goto fail;
+	}
+
+	out_src->entrypoint = entrypoint;
 
 	if(READU8(s) > 0) {
 		log_error("Cache entry contains macros, this is not implemented");
@@ -212,8 +236,6 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 		}
 	}
 
-	auto arena_snap = marena_snapshot(arena);
-
 	if(!shader_reflection_deserialize(&out_src->reflection, arena, s)) {
 		goto fail;
 	}
@@ -221,7 +243,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 	uint32_t content_size = READU32LE(s);
 	char *content = marena_alloc(arena, content_size);
 
-	if(!SDL_ReadIO(s, content, content_size)) {
+	if(SDL_ReadIO(s, content, content_size) != content_size) {
 		log_sdl_error(LOG_ERROR, "SDL_ReadIO");
 		goto fail;
 	}

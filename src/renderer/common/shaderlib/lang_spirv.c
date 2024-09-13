@@ -225,6 +225,7 @@ bool _spirv_compile(
 		.lang.spirv.target = options->target,
 		.content_size = data_len,
 		.content = data_copy,
+		.entrypoint = marena_strdup(arena, in->entrypoint),
 	};
 
 	return true;
@@ -277,7 +278,7 @@ bool _spirv_decompile(
 
 	SPVCCALL(spvc_compiler_create_compiler_options(compiler, &spvc_options));
 
-	if(backend == SPVC_BACKEND_GLSL)  {
+	if(backend == SPVC_BACKEND_GLSL) {
 		if(!glsl_version_supports_instanced_rendering(options->lang->glsl.version)) {
 			SPVCCALL(spvc_compiler_add_header_line(compiler,
 				"#ifdef GL_ARB_draw_instanced\n"
@@ -319,9 +320,23 @@ bool _spirv_decompile(
 
 	size_t code_size = strlen(code) + 1;
 
+	const spvc_entry_point *entry_points;
+	size_t num_entry_points;
+
+	SPVCCALL(spvc_compiler_get_entry_points(compiler, &entry_points, &num_entry_points));
+
+	if(num_entry_points != 1) {
+		log_error("Shader has %u entry points, 1 expected", (uint)num_entry_points);
+		goto error;
+	}
+
+	const char *entrypoint = spvc_compiler_get_cleansed_entry_point_name(
+		compiler, entry_points[0].name, entry_points[0].execution_model);
+
 	*out = (ShaderSource) {
 		.content = marena_memdup(arena, code, code_size),
 		.content_size = code_size,
+		.entrypoint = marena_strdup(arena, entrypoint),
 		.stage = in->stage,
 		.lang = *options->lang,
 	};
@@ -347,6 +362,7 @@ bool _spirv_decompile(
 
 spvc_error:
 	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(context));
+error:
 	spvc_context_destroy(context);
 	marena_rollback(arena, &arena_snap);
 	return false;

@@ -30,6 +30,7 @@ struct ShaderLangInfo {
 struct ShaderSource {
 	const char *content;
 	const ShaderReflection *reflection;
+	const char *entrypoint;
 	size_t content_size;
 	ShaderLangInfo lang;
 	ShaderStage stage;

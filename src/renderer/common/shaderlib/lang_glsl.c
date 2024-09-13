@@ -285,6 +285,7 @@ bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, cons
 	out->lang.lang = SHLANG_GLSL;
 	out->lang.glsl.version = options->version;
 	out->stage = options->stage;
+	out->entrypoint = "main";
 
 	GLSLParseState pstate = { 0 };
 	pstate.dest = NOT_NULL(SDL_RWArena(arena, 1024, &pstate.stream_state));

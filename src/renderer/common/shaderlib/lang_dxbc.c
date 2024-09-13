@@ -152,13 +152,15 @@ bool dxbc_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, co
 	ID3DBlob *blob = NULL;
     ID3DBlob *error_blob = NULL;
 
+	const char *entrypoint = options->entrypoint ?: in->entrypoint;
+
     HRESULT ret = compiler->D3DCompile(
         in->content,
         in->content_size - 1,
         NULL,
         NULL,
         NULL,
-        options->entrypoint,
+        entrypoint,
         profile,
         0,
         0,
@@ -190,6 +192,7 @@ bool dxbc_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, co
 		.stage = in->stage,
 		.content = marena_memdup(arena, content, content_size),
 		.content_size = content_size,
+		.entrypoint = marena_strdup(arena, entrypoint),
 	};
 
 	blob->lpVtbl->Release(blob);
