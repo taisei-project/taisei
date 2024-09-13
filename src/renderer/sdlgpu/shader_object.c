@@ -40,14 +40,19 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 		.lang = SHLANG_MSL,
 	};
 
-	switch(SDL_GetGPUDriver(sdlgpu.device)) {
-		case SDL_GPU_DRIVER_VULKAN:       want_lang = &lang_spirv; break;
-		case SDL_GPU_DRIVER_D3D11:        want_lang = &lang_dxbc; break;
-		case SDL_GPU_DRIVER_METAL:        want_lang = &lang_msl; break;
-		default: break;
+	SDL_GPUShaderFormat formats = SDL_GetGPUShaderFormats(sdlgpu.device);
+
+	if(formats & SDL_GPU_SHADERFORMAT_SPIRV) {
+		want_lang = &lang_spirv;
+	} else if(formats & SDL_GPU_SHADERFORMAT_DXBC) {
+		want_lang = &lang_dxbc;
+	} else if(formats & SDL_GPU_SHADERFORMAT_MSL) {
+		want_lang = &lang_msl;
+	} else {
+		UNREACHABLE;
 	}
 
-	if(want_lang && lang->lang == want_lang->lang) {
+	if(lang->lang == want_lang->lang) {
 		return true;
 	}
 

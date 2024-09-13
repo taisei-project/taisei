@@ -328,7 +328,7 @@ static void sdlgpu_init(void) {
 		log_sdl_error(LOG_FATAL, "SDL_CreateGPUDevice");
 	}
 
-	if(SDL_GetGPUDriver(sdlgpu.device) != SDL_GPU_DRIVER_D3D11) {
+	if(!(SDL_GetGPUShaderFormats(sdlgpu.device) & SDL_GPU_SHADERFORMAT_DXBC)) {
 		dxbc_shutdown_compiler();
 	}
 
@@ -554,7 +554,7 @@ static void sdlgpu_draw_generic(
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
 
-	SDL_GPUBufferBinding vbuf_bindings[varr->vertex_input_state.num_vertex_bindings];
+	SDL_GPUBufferBinding vbuf_bindings[varr->vertex_input_state.num_vertex_buffers];
 
 	for(uint i = 0; i < ARRAY_SIZE(vbuf_bindings); ++i) {
 		uint slot = varr->binding_to_attachment_map[i];
