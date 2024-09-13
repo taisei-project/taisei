@@ -288,6 +288,7 @@ static SDL_GPUShaderFormat shader_format_ts2sdlgpu(ShaderLanguage shlang) {
 	switch(shlang) {
 		case SHLANG_SPIRV: return SDL_GPU_SHADERFORMAT_SPIRV;
 		case SHLANG_DXBC: return SDL_GPU_SHADERFORMAT_DXBC;
+		case SHLANG_MSL: return SDL_GPU_SHADERFORMAT_MSL;
 		default: UNREACHABLE;
 	}
 }
@@ -320,9 +321,7 @@ ShaderObject *sdlgpu_shader_object_compile(ShaderSource *source) {
 		.code = (uint8_t*)source->content,
 		.code_size = source->content_size,
 		.format = shader_format_ts2sdlgpu(source->lang.lang),
-
-		// FIXME
-		.entrypoint = "main",
+		.entrypoint = source->entrypoint,
 		.num_samplers = num_samplers,
 		.num_storage_textures = 0,
 		.num_storage_buffers = 0,
