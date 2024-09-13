@@ -74,17 +74,17 @@ typedef void D3D_SHADER_MACRO; /* hack, unused */
 typedef void ID3DInclude;      /* hack, unused */
 
 typedef HRESULT(__stdcall *pfn_D3DCompile)(
-    LPCVOID pSrcData,
-    SIZE_T SrcDataSize,
-    LPCSTR pSourceName,
-    const D3D_SHADER_MACRO *pDefines,
-    ID3DInclude *pInclude,
-    LPCSTR pEntrypoint,
-    LPCSTR pTarget,
-    UINT Flags1,
-    UINT Flags2,
-    ID3DBlob **ppCode,
-    ID3DBlob **ppErrorMsgs);
+	LPCVOID pSrcData,
+	SIZE_T SrcDataSize,
+	LPCSTR pSourceName,
+	const D3D_SHADER_MACRO *pDefines,
+	ID3DInclude *pInclude,
+	LPCSTR pEntrypoint,
+	LPCSTR pTarget,
+	UINT Flags1,
+	UINT Flags2,
+	ID3DBlob **ppCode,
+	ID3DBlob **ppErrorMsgs);
 
 typedef struct DXBCCompiler {
 	void *dll;
@@ -155,17 +155,17 @@ bool dxbc_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, co
 	const char *entrypoint = options->entrypoint ?: in->entrypoint;
 
     HRESULT ret = compiler->D3DCompile(
-        in->content,
-        in->content_size - 1,
-        NULL,
-        NULL,
-        NULL,
-        entrypoint,
-        profile,
-        0,
-        0,
-        &blob,
-        &error_blob);
+		in->content,
+		in->content_size - 1,
+		NULL,
+		NULL,
+		NULL,
+		entrypoint,
+		profile,
+		0,
+		0,
+		&blob,
+		&error_blob);
 
 	char *error_str = error_blob ? error_blob->lpVtbl->GetBufferPointer(error_blob) : NULL;
 
