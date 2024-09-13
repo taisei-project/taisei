@@ -93,26 +93,6 @@ static PipelineCacheKey sdlgpu_pipecache_construct_key(PipelineDescription *rest
 	return k;
 }
 
-attr_unused
-static void dump_vertex_input_state(SDL_GPUVertexInputState *st) {
-	log_debug(" *** BINDINGS:");
-	for(uint i = 0; i < st->num_vertex_bindings; ++i) {
-			log_debug("[%u] binding:   %u", i, st->vertex_bindings[i].binding);
-			log_debug("[%u] stride:    %u", i, st->vertex_bindings[i].stride);
-			log_debug("[%u] input_rate: %u", i, st->vertex_bindings[i].input_rate);
-			log_debug("[%u] stepRate:  %u", i, st->vertex_bindings[i].instance_step_rate);
-			// log_debug("[%u] attachment map: %u", i, varr->binding_to_attachment_map[i]);
-	}
-
-	log_debug(" *** ATTRIBS:");
-	for(uint i = 0; i < st->num_vertex_attributes; ++i) {
-			log_debug("[%u] location:  %u", i, st->vertex_attributes[i].location);
-			log_debug("[%u] binding:   %u", i, st->vertex_attributes[i].binding);
-			log_debug("[%u] format:    %u", i, st->vertex_attributes[i].format);
-			log_debug("[%u] offset:    %u", i, st->vertex_attributes[i].offset);
-	}
-}
-
 #define PIPECACHE_KEY_REPR_SIZE (sizeof(PipelineCacheKey) * 2 + 1)
 
 attr_unused
