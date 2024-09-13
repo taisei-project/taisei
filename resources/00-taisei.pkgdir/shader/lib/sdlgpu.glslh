@@ -23,4 +23,10 @@ void main() {
 
 #endif
 
+// HACK: These are identifiers used in some of our shaders that conflict with MSL post-translation.
+//       This really should be fixed in SPIRV-Cross.
+#define xor _reserved_id_fixup_xor
+#define dfdx _reserved_id_fixup_dfdx
+#define dfdy _reserved_id_fixup_dfdy
+
 #endif
