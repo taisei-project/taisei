@@ -539,11 +539,9 @@ static void sdlgpu_draw_generic(
 		pd.cull_mode = 0;
 	}
 
-	if(!have_depth) {
+	if(!have_depth || !(pd.cap_bits & r_capability_bit(RCAP_DEPTH_TEST))) {
 		pd.depth_func = DEPTH_ALWAYS;
 		pd.cap_bits &= ~(r_capability_bit(RCAP_DEPTH_TEST) | r_capability_bit(RCAP_DEPTH_WRITE));
-	} else if(!(pd.cap_bits & r_capability_bit(RCAP_DEPTH_TEST))) {
-		pd.depth_func = DEPTH_ALWAYS;
 	}
 
 	assert(outputs.num_color_attachments <= ARRAY_SIZE(pd.outputs));
