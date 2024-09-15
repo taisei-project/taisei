@@ -11,10 +11,16 @@
 #include "reflect.h"
 
 #include "log.h"
+#include "memory/scratch.h"
 #include "util.h"
 
-#include <shaderc/shaderc.h>
 #include <spirv_cross_c.h>
+
+DIAGNOSTIC(push)
+DIAGNOSTIC(ignored "-Wstrict-prototypes")
+#include <glslang/Include/glslang_c_interface.h>
+#include <glslang/Public/resource_limits_c.h>
+DIAGNOSTIC(pop)
 
 typedef struct SPIRVReflectContext {
 	MemArena *arena;
@@ -27,68 +33,107 @@ typedef struct SPIRVReflectContext {
 } SPIRVReflectContext;
 
 static spvc_result _spirv_reflect_all(SPIRVReflectContext *rctx);
+static bool compiler_initialized;
 
-static shaderc_compiler_t spirv_compiler;
-
-static inline shaderc_optimization_level resolve_opt_level(SPIRVOptimizationLevel lvl) {
-	switch(lvl) {
-		case SPIRV_OPTIMIZE_NONE:        return shaderc_optimization_level_zero;
-		case SPIRV_OPTIMIZE_SIZE:        return shaderc_optimization_level_size;
-		case SPIRV_OPTIMIZE_PERFORMANCE: return shaderc_optimization_level_performance;
-		default: UNREACHABLE;
-	}
-}
-
-static inline shaderc_profile resolve_glsl_profile(const GLSLVersion *v) {
+static inline glslang_profile_t resolve_glsl_profile(const GLSLVersion *v) {
 	switch(v->profile) {
-		case GLSL_PROFILE_COMPATIBILITY: return shaderc_profile_compatibility;
-		case GLSL_PROFILE_CORE:          return shaderc_profile_core;
-		case GLSL_PROFILE_ES:            return shaderc_profile_es;
-		case GLSL_PROFILE_NONE:          return shaderc_profile_none;
+		case GLSL_PROFILE_COMPATIBILITY: return GLSLANG_COMPATIBILITY_PROFILE;
+		case GLSL_PROFILE_CORE:          return GLSLANG_CORE_PROFILE;
+		case GLSL_PROFILE_ES:            return GLSLANG_ES_PROFILE;
+		case GLSL_PROFILE_NONE:          return GLSLANG_NO_PROFILE;
 		default: UNREACHABLE;
 	}
 }
 
-static inline shaderc_target_env resolve_env(SPIRVTarget target, uint32_t *out_version) {
+static inline glslang_client_t resolve_client(SPIRVTarget target) {
 	switch(target) {
-		case SPIRV_TARGET_OPENGL_450:
-			*out_version = shaderc_env_version_opengl_4_5;
-			return shaderc_target_env_opengl;
-
-		case SPIRV_TARGET_VULKAN_10:
-			*out_version = shaderc_env_version_vulkan_1_0;
-			return shaderc_target_env_vulkan;
-
-		case SPIRV_TARGET_VULKAN_11:
-			*out_version = shaderc_env_version_vulkan_1_1;
-			return shaderc_target_env_vulkan;
-
+		case SPIRV_TARGET_OPENGL_450: return GLSLANG_CLIENT_OPENGL;
+		case SPIRV_TARGET_VULKAN_10:  return GLSLANG_CLIENT_VULKAN;
+		case SPIRV_TARGET_VULKAN_11:  return GLSLANG_CLIENT_VULKAN;
 		default: UNREACHABLE;
 	}
 }
 
-static inline shaderc_shader_kind resolve_kind(ShaderStage stage) {
+static inline glslang_target_client_version_t resolve_client_version(SPIRVTarget target) {
+	switch(target) {
+		case SPIRV_TARGET_OPENGL_450: return GLSLANG_TARGET_OPENGL_450;
+		case SPIRV_TARGET_VULKAN_10:  return GLSLANG_TARGET_VULKAN_1_0;
+		case SPIRV_TARGET_VULKAN_11:  return GLSLANG_TARGET_VULKAN_1_1;
+		default: UNREACHABLE;
+	}
+}
+
+static inline glslang_stage_t resolve_stage(ShaderStage stage) {
 	switch(stage) {
-		case SHADER_STAGE_FRAGMENT: return shaderc_fragment_shader;
-		case SHADER_STAGE_VERTEX:   return shaderc_vertex_shader;
+		case SHADER_STAGE_FRAGMENT: return GLSLANG_STAGE_FRAGMENT;
+		case SHADER_STAGE_VERTEX:   return GLSLANG_STAGE_VERTEX;
 		default: UNREACHABLE;
 	}
 }
 
 void spirv_init_compiler(void) {
-	if(spirv_compiler == NULL) {
-		spirv_compiler = shaderc_compiler_initialize();
-		if(spirv_compiler == NULL) {
-			log_error("Failed to initialize the compiler");
-		}
+	if(!compiler_initialized) {
+		glslang_initialize_process();
+		compiler_initialized = true;
 	}
 }
 
 void spirv_shutdown_compiler(void) {
-	if(spirv_compiler != NULL) {
-		shaderc_compiler_release(spirv_compiler);
-		spirv_compiler = NULL;
+	if(compiler_initialized) {
+		glslang_finalize_process();
+		compiler_initialized = false;
 	}
+}
+
+static void print_shader_log_message(
+	MemArena *scratch,
+	const char *filename,
+	const char *prefix,
+	LogLevel level,
+	const char *msg
+) {
+	size_t msglen;
+
+	if(!msg || !(msglen = strlen(msg))) {
+		return;
+	}
+
+	auto snap = marena_snapshot(scratch);
+	char *buf = marena_memdup(scratch, msg, msglen + 1);
+
+	while(buf[msglen - 1] == '\n') {
+		buf[--msglen] = 0;
+
+		if(!msglen) {
+			marena_rollback(scratch, &snap);
+			return;
+		}
+	}
+
+	log_custom(level, "%s: %s:\n%s", filename, prefix, buf);
+	marena_rollback(scratch, &snap);
+}
+
+static void print_shader_log(glslang_shader_t *shader, LogLevel level, const SPIRVCompileOptions *options) {
+	auto scratch = acquire_scratch_arena();
+
+	print_shader_log_message(scratch, options->filename, "glslang shader log", level,
+		glslang_shader_get_info_log(shader));
+	print_shader_log_message(scratch, options->filename, "glslang shader debug log", level,
+		glslang_shader_get_info_debug_log(shader));
+
+	release_scratch_arena(scratch);
+}
+
+static void print_program_log(glslang_program_t *prog, LogLevel level, const SPIRVCompileOptions *options) {
+	auto scratch = acquire_scratch_arena();
+
+	print_shader_log_message(scratch, options->filename, "glslang program log", level,
+		glslang_program_get_info_log(prog));
+	print_shader_log_message(scratch, options->filename, "glslang program debug log", level,
+		glslang_program_get_info_debug_log(prog));
+
+	release_scratch_arena(scratch);
 }
 
 bool _spirv_compile(
@@ -102,131 +147,137 @@ bool _spirv_compile(
 		return false;
 	}
 
-	if(spirv_compiler == NULL) {
+	if(!compiler_initialized) {
 		log_error("Compiler is not initialized");
 		return false;
 	}
 
-	shaderc_compile_options_t opts = shaderc_compile_options_initialize();
+	auto input = (glslang_input_t) {
+		.language = GLSLANG_SOURCE_GLSL,
+		.stage = resolve_stage(in->stage),
+		.client = resolve_client(options->target),
+		.client_version = resolve_client_version(options->target),
+		.target_language = GLSLANG_TARGET_SPV,
+		.target_language_version = GLSLANG_TARGET_SPV_1_0,
+		.default_version = in->lang.glsl.version.version,
+		.default_profile = resolve_glsl_profile(&in->lang.glsl.version),
+		.force_default_version_and_profile = true,
+		.messages = GLSLANG_MSG_ENHANCED,
+		.resource = glslang_default_resource(),
+		.code = in->content,
+	};
 
-	if(opts == NULL) {
-		log_error("Failed to initialize compiler options");
-		return false;
-	}
-
-	shaderc_compile_options_set_source_language(opts, shaderc_source_language_glsl);
-	shaderc_compile_options_set_optimization_level(opts, resolve_opt_level(options->optimization_level));
-	shaderc_compile_options_set_forced_version_profile(opts, in->lang.glsl.version.version, resolve_glsl_profile(&in->lang.glsl.version));
-	// shaderc_compile_options_set_auto_map_locations(opts, true);
-
-	uint32_t env_version;
-	shaderc_target_env env = resolve_env(options->target, &env_version);
-	shaderc_compile_options_set_target_env(opts, env, env_version);
+	glslang_messages_t spirv_messages = GLSLANG_MSG_ENHANCED | GLSLANG_MSG_SPV_RULES_BIT;
 
 	if(options->flags & SPIRV_CFLAG_DEBUG_INFO) {
-		shaderc_compile_options_set_generate_debug_info(opts);
+		spirv_messages |= GLSLANG_MSG_DEBUG_INFO_BIT;
 	}
 
-	if(env == shaderc_target_env_vulkan && (options->flags & SPIRV_CFLAG_VULKAN_RELAXED)) {
+	if(input.client == GLSLANG_CLIENT_VULKAN) {
+		spirv_messages |= GLSLANG_MSG_VULKAN_RULES_BIT;
+	}
+
+	glslang_shader_t *shader = glslang_shader_create(&input);
+	glslang_shader_options_t shader_opts = GLSLANG_SHADER_DEFAULT_BIT;
+
+	if(input.client == GLSLANG_CLIENT_VULKAN && (options->flags & SPIRV_CFLAG_VULKAN_RELAXED)) {
+		shader_opts |= GLSLANG_SHADER_VULKAN_RULES_RELAXED | GLSLANG_SHADER_AUTO_MAP_BINDINGS;
+
 		// FIXME: these are hardcoded for SDLGPU requirements.
-		// We should expose these in SPIRVCompileOptions and move shader translation logic into the backends.
-
-		shaderc_compile_options_set_vulkan_rules_relaxed(opts, true);
-		shaderc_compile_options_set_auto_bind_uniforms(opts, true);
-
 		if(in->stage == SHADER_STAGE_VERTEX) {
-			shaderc_compile_options_set_default_uniform_block_set_and_binding(opts, 1, 0);
+			glslang_shader_set_default_uniform_block_set_and_binding(shader, 1, 0);
 		} else {
-			shaderc_compile_options_set_binding_descriptor_set(opts, 2);
-			shaderc_compile_options_set_default_uniform_block_set_and_binding(opts, 3, 0);
+			glslang_shader_set_resource_set_binding(shader, (const char*[]) { "2" }, 1);
+			glslang_shader_set_default_uniform_block_set_and_binding(shader, 3, 0);
 		}
-
-		// Required to eliminate unused samplers (FIXME: filter these out during reflection if possible?)
-		shaderc_compile_options_set_optimization_level(opts, SPIRV_OPTIMIZE_PERFORMANCE);
 	}
+
+	StringBuffer macros_buf = {};
 
 	if(options->macros) {
 		for(ShaderMacro *m = options->macros; m->name; ++m) {
-			shaderc_compile_options_add_macro_definition(opts, m->name, strlen(m->name), m->value, strlen(m->value));
+			strbuf_printf(&macros_buf, "#define %s %s\n", m->name, m->value);
 		}
+
+		glslang_shader_set_preamble(shader, macros_buf.start);
 	}
 
-	const char *filename = options->filename ? options->filename : "<main>";
+	glslang_shader_set_options(shader, shader_opts);
+	glslang_shader_set_glsl_version(shader, in->lang.glsl.version.version);
 
-	shaderc_compilation_result_t result = shaderc_compile_into_spv(
-		spirv_compiler,
-		in->content,
-		in->content_size - 1,
-		resolve_kind(in->stage),
-		filename,
-		"main",
-		opts
-	);
+	bool ok = glslang_shader_preprocess(shader, &input);
 
-	shaderc_compile_options_release(opts);
-
-	if(result == NULL) {
-		log_error("Failed to allocate compilation result");
+	if(!ok) {
+		print_shader_log(shader, LOG_ERROR, options);
+		log_error("%s: glslang_shader_preprocess() failed", options->filename);
+		glslang_shader_delete(shader);
 		return false;
 	}
 
-	shaderc_compilation_status status = shaderc_result_get_compilation_status(result);
+	ok = glslang_shader_parse(shader, &input);
+	strbuf_free(&macros_buf);
 
-	switch(status) {
-		case shaderc_compilation_status_compilation_error:
-			log_error("Compilation failed: errors in the shader");
-			break;
-
-		case shaderc_compilation_status_internal_error:
-			log_error("Compilation failed: internal compiler error");
-			break;
-
-		case shaderc_compilation_status_invalid_assembly:
-			log_error("Compilation failed: invalid assembly");
-			break;
-
-		case shaderc_compilation_status_invalid_stage:
-			log_error("Compilation failed: invalid shader stage");
-			break;
-
-		case shaderc_compilation_status_null_result_object:
-			UNREACHABLE;
-
-		case shaderc_compilation_status_success:
-			break;
-
-		default:
-			log_error("Compilation failed: unknown error");
-			break;
-	}
-
-	const char *err_str = shaderc_result_get_error_message(result);
-
-	if(err_str != NULL && *err_str) {
-		size_t num_warnings = shaderc_result_get_num_warnings(result);
-		size_t num_errors = shaderc_result_get_num_errors(result);
-		LogLevel lvl = status == shaderc_compilation_status_success ? LOG_WARN : LOG_ERROR;
-		log_custom(lvl, "%s: %zu warnings, %zu errors:\n\n%s", filename, num_warnings, num_errors, err_str);
-	}
-
-	if(status != shaderc_compilation_status_success) {
-		shaderc_result_release(result);
+	if(!ok) {
+		print_shader_log(shader, LOG_ERROR, options);
+		log_error("%s: glslang_shader_parse() failed", options->filename);
+		glslang_shader_delete(shader);
 		return false;
 	}
 
-	size_t data_len = shaderc_result_get_length(result);
-	const char *data = shaderc_result_get_bytes(result);
-	char *data_copy = marena_memdup(arena, data, data_len);
-	shaderc_result_release(result);
+	print_shader_log(shader, LOG_WARN, options);
+
+	glslang_program_t *prog = glslang_program_create();
+	glslang_program_add_shader(prog, shader);
+	ok = glslang_program_link(prog, spirv_messages);
+
+	if(!ok) {
+		print_program_log(prog, LOG_ERROR, options);
+		log_error("%s: glslang_program_link() failed", options->filename);
+		glslang_program_delete(prog);
+		glslang_shader_delete(shader);
+		return false;
+	}
+
+	ok = glslang_program_map_io(prog);
+
+	if(!ok) {
+		print_program_log(prog, LOG_ERROR, options);
+		log_error("%s: glslang_program_map_io() failed", options->filename);
+		glslang_program_delete(prog);
+		glslang_shader_delete(shader);
+		return false;
+	}
+
+	print_program_log(prog, LOG_WARN, options);
+
+	glslang_program_SPIRV_generate_with_options(prog, input.stage, &(glslang_spv_options_t) {
+		.generate_debug_info = (options->flags & SPIRV_CFLAG_DEBUG_INFO),
+		.optimize_size = options->optimization_level != SPIRV_OPTIMIZE_NONE,
+		// .validate = true,
+	});
+
+	auto scratch = acquire_scratch_arena();
+	print_shader_log_message(scratch, options->filename, "glslang SPIR-V generation log", LOG_WARN,
+		glslang_program_SPIRV_get_messages(prog));
+	release_scratch_arena(scratch);
+
+	uint32_t spirv_words = glslang_program_SPIRV_get_size(prog);
+	auto spirv = ARENA_ALLOC_ARRAY(arena, spirv_words, uint32_t);
+	glslang_program_SPIRV_get(prog, spirv);
 
 	*out = (ShaderSource) {
-		.stage = in->stage,
-		.lang.lang = SHLANG_SPIRV,
-		.lang.spirv.target = options->target,
-		.content_size = data_len,
-		.content = data_copy,
+		.content = (const char*)spirv,
+		.content_size = spirv_words * sizeof(uint32_t),
 		.entrypoint = marena_strdup(arena, in->entrypoint),
+		.lang = {
+			.lang = SHLANG_SPIRV,
+			.spirv.target = options->target,
+		},
+		.stage = in->stage,
 	};
+
+	glslang_shader_delete(shader);
+	glslang_program_delete(prog);
 
 	return true;
 }

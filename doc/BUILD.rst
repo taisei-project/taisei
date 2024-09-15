@@ -59,7 +59,7 @@ Optional
 ''''''''
 
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
--  libshaderc (for OpenGL ES backends)
+-  libglslang (for OpenGL ES backends)
 -  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
    flaky/non-existent OpenGL support, such as Windows)
 -  GameMode headers (Linux only; for automatic
@@ -526,7 +526,7 @@ Shader Transpiler (``-Dshader_transpiler``)
 For using OpenGL ES, the shader transpiler is necessary for converting Taisei's
 shaders to a format usable by that driver.
 
-Requires ``shaderc`` and ``SPIRV-cross``.
+Requires ``glslang`` and ``SPIRV-cross``.
 
 Note that for Emscripten and Switch platforms, the translation is performed offline,
 and this option is not available.
