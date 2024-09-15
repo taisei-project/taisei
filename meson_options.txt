@@ -114,7 +114,7 @@ option(
     'shader_transpiler',
     type : 'feature',
     deprecated : {'true' : 'enabled', 'false' : 'disabled'},
-    description : 'Enable shader trans-compilation (requires shaderc)'
+    description : 'Enable shader trans-compilation (requires glslang)'
 )
 
 option(
@@ -203,7 +203,7 @@ option(
     'force_vendored_shader_tools',
     type : 'boolean',
     value : false,
-    description : 'Build shaderc and spirv-cross CLI tools from subprojects even if system versions exist'
+    description : 'Build glslang and spirv-cross CLI tools from subprojects even if system versions exist'
 )
 
 option(

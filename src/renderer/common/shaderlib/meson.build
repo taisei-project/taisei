@@ -15,8 +15,11 @@ r_shaderlib_libdeps = []
 opt_shader_transpiler = get_option('shader_transpiler').disable_auto_if(transpile_glsl)
 
 dep_spvc = dependency('spirv-cross-c-shared', required : opt_shader_transpiler)
-dep_shaderc = dependency('shaderc', required : opt_shader_transpiler)
-shader_transpiler_enabled = dep_spvc.found() and dep_shaderc.found()
+dep_glslang = dependency('glslang',
+    required : opt_shader_transpiler,
+    fallback : ['glslang', 'glslang_dep'],
+    modules : ['glslang::glslang', 'glslang::glslang-default-resource-limits'])
+shader_transpiler_enabled = dep_spvc.found() and dep_glslang.found()
 
 opt_shader_transpiler_dxbc = (get_option('shader_transpiler_dxbc').
     disable_auto_if(host_machine.system() != 'windows').
@@ -25,7 +28,7 @@ opt_shader_transpiler_dxbc = (get_option('shader_transpiler_dxbc').
 
 if shader_transpiler_enabled
     r_shaderlib_src += files('lang_spirv.c')
-    r_shaderlib_libdeps += [dep_shaderc, dep_spvc]
+    r_shaderlib_libdeps += [dep_glslang, dep_spvc]
 else
     r_shaderlib_src += files('lang_spirv_stub.c')
 endif
