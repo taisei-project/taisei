@@ -98,11 +98,11 @@ static int ent_cmp(const void *ptr1, const void *ptr2) {
 	const EntityInterface *ent1 = *(const EntityInterface**)ptr1;
 	const EntityInterface *ent2 = *(const EntityInterface**)ptr2;
 
-	int r = (ent1->draw_layer > ent2->draw_layer) - (ent1->draw_layer < ent2->draw_layer);
+	int r = (int)ent1->draw_layer - (int)ent2->draw_layer;
 
 	if(r == 0) {
 		// Same layer? Put whatever spawned later on top, then.
-		r = (ent1->spawn_id > ent2->spawn_id) - (ent1->spawn_id < ent2->spawn_id);
+		r = (int)ent1->spawn_id - (int)ent2->spawn_id;
 	}
 
 	return r;
