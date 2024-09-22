@@ -465,8 +465,8 @@ typedef struct SpriteRotationParams {
 } SpriteRotationParams;
 
 typedef struct SpriteFlipParams {
-	unsigned char x : 1;
-	unsigned char y : 1;
+	bool x;
+	bool y;
 } SpriteFlipParams;
 
 typedef struct SpriteParams {
