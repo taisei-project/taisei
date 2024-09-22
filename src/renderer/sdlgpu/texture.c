@@ -575,7 +575,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 		.size = image->data_size,
 	});
 
-	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, tbuf, SDL_FALSE);
+	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, tbuf, false);
 	memcpy(mapped, image->data.untyped, image->data_size);
 	SDL_UnmapGPUTransferBuffer(sdlgpu.device, tbuf);
 

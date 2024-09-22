@@ -95,7 +95,7 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 		return;
 	}
 
-	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, cbuf->transferbuf, SDL_TRUE);
+	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, cbuf->transferbuf, true);
 	memcpy(mapped + update.offset, update.data, update.size);
 	SDL_UnmapGPUTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 
