@@ -215,7 +215,7 @@ void draw_char_menu(MenuData *menu) {
 		SpriteParams portrait_params = {
 			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
 			.sprite_ptr = spr,
-			.shader = "sprite_default",
+			.shader_ptr = res_shader("sprite_default"),
 			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
 			// .flip.x = true,
 		};
@@ -237,7 +237,7 @@ void draw_char_menu(MenuData *menu) {
 		text_draw(name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.font = "big",
-			.shader = "text_default",
+			.shader_ptr = res_shader("text_default"),
 			.color = RGBA(o, o, o, o),
 		});
 
@@ -252,7 +252,7 @@ void draw_char_menu(MenuData *menu) {
 		text_draw(title, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 20*(1-o), 30 },
-			.shader = "text_default",
+			.shader_ptr = res_shader("text_default"),
 			.color = RGBA(o, o, o, o),
 		});
 
@@ -298,7 +298,7 @@ void draw_char_menu(MenuData *menu) {
 		text_draw(buf, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, y},
-			.shader = "text_default",
+			.shader_ptr = res_shader("text_default"),
 		});
 
 		if(shot == current_subshot) {
@@ -306,7 +306,7 @@ void draw_char_menu(MenuData *menu) {
 			text_draw_wrapped(mode->description, DESCRIPTION_WIDTH, &(TextParams) {
 				.align = ALIGN_CENTER,
 				.pos = { 0, y + 30 },
-				.shader = "text_default",
+				.shader_ptr = res_shader("text_default"),
 			});
 		}
 	}
@@ -318,14 +318,14 @@ void draw_char_menu(MenuData *menu) {
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "menu/arrow",
+		.sprite_ptr = res_sprite("menu/arrow"),
 		.pos = { 30, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },
 	});
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "menu/arrow",
+		.sprite_ptr = res_sprite("menu/arrow"),
 		.pos = { 30 + 340, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },

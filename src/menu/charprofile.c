@@ -222,7 +222,7 @@ static void charprofile_draw(MenuData *m) {
 	SpriteParams portrait_params = {
 		.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
 		.sprite_ptr = spr,
-		.shader = "sprite_default",
+		.shader_ptr = res_shader("sprite_default"),
 		.color = color,
 	};
 
@@ -235,7 +235,7 @@ static void charprofile_draw(MenuData *m) {
 			.align = ALIGN_LEFT,
 			.pos = { 25, 570 },
 			.font = "standard",
-			.shader = "text_default",
+			.shader_ptr = res_shader("text_default"),
 			.color = RGBA(0.9, 0.9, 0.9, 0.9),
 		});
 	}
@@ -253,7 +253,7 @@ static void charprofile_draw(MenuData *m) {
 	text_draw(profiles[selected].fullname, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.font = "big",
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(o, o, o, o),
 	});
 	r_mat_mv_pop();
@@ -267,7 +267,7 @@ static void charprofile_draw(MenuData *m) {
 	text_draw(profiles[selected].title, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.pos = { 20*(1-o), 30 },
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(o, o, o, o),
 	});
 	r_mat_mv_pop();
@@ -276,7 +276,7 @@ static void charprofile_draw(MenuData *m) {
 		.align = ALIGN_LEFT,
 		.pos = { -175, 120 },
 		.font = "small",
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(o, o, o, o),
 	});
 	r_mat_mv_pop();
@@ -285,14 +285,14 @@ static void charprofile_draw(MenuData *m) {
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "menu/arrow",
+		.sprite_ptr = res_sprite("menu/arrow"),
 		.pos = { 30, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },
 	});
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "menu/arrow",
+		.sprite_ptr = res_sprite("menu/arrow"),
 		.pos = { 30 + 340, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },

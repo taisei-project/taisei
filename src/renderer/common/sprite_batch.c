@@ -259,12 +259,8 @@ INLINE void _r_sprite_batch_process_params(
 	SpriteStateParams *restrict state_params,
 	Sprite *restrict *sprite
 ) {
-	assert(!(sprite_params->shader && sprite_params->shader_ptr));
-	assert(!(sprite_params->sprite && sprite_params->sprite_ptr));
-
-	if((*sprite = sprite_params->sprite_ptr) == NULL) {
-		*sprite = res_sprite(NOT_NULL(sprite_params->sprite));
-	}
+	assert(sprite_params->sprite_ptr != NULL);
+	*sprite = sprite_params->sprite_ptr;
 
 	state_params->primary_texture = (*sprite)->tex;
 	memcpy(&state_params->aux_textures, &sprite_params->aux_textures, sizeof(sprite_params->aux_textures));
@@ -275,11 +271,7 @@ INLINE void _r_sprite_batch_process_params(
 	}
 
 	if((state_params->shader = sprite_params->shader_ptr) == NULL) {
-		if(sprite_params->shader != NULL) {
-			state_params->shader = res_shader(sprite_params->shader);
-		} else {
-			state_params->shader = r_shader_current();
-		}
+		state_params->shader = r_shader_current();
 	}
 }
 

@@ -155,7 +155,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 		r_mat_mv_rotate(acos(p[2]), -p[1], p[0], 0);
 		r_mat_mv_scale(3e-4, 3e-4, 3e-4);
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = "part/smoothdot",
+			.sprite_ptr = res_sprite("part/smoothdot"),
 			.color = RGBA_MUL_ALPHA(1, 1, 1, sqrt(p[2])),
 		});
 		r_mat_mv_pop();

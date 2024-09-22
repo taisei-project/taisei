@@ -164,9 +164,9 @@ void draw_main_menu(MenuData *menu) {
 	float rotfac = (1 - pow(menu_fade(menu), 2.0));
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "menu/logo",
+		.sprite_ptr = res_sprite("menu/logo"),
+		.shader_ptr = res_shader("sprite_default"),
 		.pos = { SCREEN_W/2, SCREEN_H/2 },
-		.shader = "sprite_default",
 		.rotation.vector = { 0, -1, 0 },
 		.rotation.angle = max(0, M_PI/1.5 - min(M_PI/1.5, rot) * rotfac),
 		.color = color_mul_scalar(RGBA(1, 1, 1, 1), min(1, rot) * rotfac),
@@ -220,7 +220,7 @@ void draw_main_menu(MenuData *menu) {
 			continue;
 
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = "part/petal",
+			.sprite_ptr = res_sprite("part/petal"),
 			.color = RGBA(1, 1, 1, 0),
 			.pos = { posx, posy },
 			.scale.both = 0.2,
@@ -237,7 +237,7 @@ void draw_main_menu(MenuData *menu) {
 		.align = ALIGN_RIGHT,
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(1, 1, 1, 1),
 	});
 
@@ -256,7 +256,7 @@ void draw_loading_screen(void) {
 		.align = ALIGN_CENTER,
 		.pos = { SCREEN_W/2, SCREEN_H-20 },
 		.font = "standard",
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(0.35, 0.35, 0.35, 0.35),
 	});
 

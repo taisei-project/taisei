@@ -89,7 +89,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
 		float scale = 0.5 + e->drawdata;
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = difficulty_sprite_name(D_Easy + i),
+			.sprite_ptr = res_sprite(difficulty_sprite_name(D_Easy + i)),
 			.pos = { 0, 240 * tanh(0.7 * (i - menu->drawdata[0])) },
 			.color = RGBA(scale, scale, scale, scale),
 			.scale.both = scale,

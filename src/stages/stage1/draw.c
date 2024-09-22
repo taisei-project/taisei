@@ -198,7 +198,7 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_mat_mv_scale(3.5*2, 2*1.5, 1);
 	r_mat_mv_rotate(global.frames * spin + M_PI * 2 * sin(pos[1]*321.23), 0, 0, 1);
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "stage1/fog",
+		.sprite_ptr = res_sprite("stage1/fog"),
 		.color = RGBA(0.6 * o, 0.7 * o, 0.8 * o, o * 0.5),
 	});
 	r_mat_mv_pop();
@@ -260,7 +260,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 	r_mat_tex_translate(tile, 0, 0);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = &spr,
-		.shader = "sprite_default",
+		.shader_ptr = res_shader("sprite_default"),
 		.flip.x = floathash(pos[1] * 231544.213) & 1,
 		.flip.y = floathash(pos[1] * 941233.513) & 1,
 		.color = RGBA(0.5*a, 0.4*a, 0.5*a, 0.5*a),
@@ -316,7 +316,7 @@ static void stage1_snow_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0] + 2200 * sawtooth(h1), pos[1] + 10 * sawtooth(h2), 1200 - 1200 * height);
 	r_mat_mv_rotate(M_PI/2, -1, 0, 0);
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "part/smoothdot",
+		.sprite_ptr = res_sprite("part/smoothdot"),
 		.color = RGBA(o, o, o, 0),
 	});
 	r_mat_mv_pop();

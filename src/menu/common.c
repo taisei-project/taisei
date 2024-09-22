@@ -220,7 +220,7 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = bg,
 		.color = RGBA(0, 0, 0, 0.5 * (1 - transition.fade)),
-		.shader = "sprite_default",
+		.shader_ptr = res_shader("sprite_default"),
 	});
 	r_mat_mv_pop();
 }
@@ -231,7 +231,7 @@ void draw_menu_title(MenuData *m, const char *title) {
 		.align = ALIGN_RIGHT,
 		.font = "big",
 		.color = RGB(1, 1, 1),
-		.shader = "text_default",
+		.shader_ptr = res_shader("text_default"),
 	});
 }
 
