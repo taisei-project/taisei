@@ -49,6 +49,7 @@ static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src)
 		.content = src,
 		.content_size = strlen(src) + 1,
 		.stage = stage,
+		.entrypoint = "main",
 		.lang = {
 			.lang = SHLANG_GLSL,
 			.glsl.version = { 330, GLSL_PROFILE_CORE }
