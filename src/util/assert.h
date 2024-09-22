@@ -52,7 +52,6 @@ void _ts_assert_fail(
 		if(UNLIKELY(!(cond))) { \
 			_ts_assert_fail(#cond, msg, __func__, _TAISEI_SRC_FILE, __LINE__, uselog); \
 			TRAP(); \
-			__builtin_unreachable(); \
 		} \
 	})
 	#define _assume(cond, msg, uselog) _assert(cond, msg, uselog)
