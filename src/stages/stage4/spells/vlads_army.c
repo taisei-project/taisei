@@ -21,10 +21,10 @@ static void kurumi_extra_shield_draw(Enemy *e, EnemyDrawParams p) {
 			1 + (1 - h), 0.3 + 0.7 * h, 0.2 + 0.8 * h,
 			1 + 1 - h
 		),
-		.sprite = "enemy/swirl",
+		.sprite_ptr = res_sprite("enemy/swirl"),
 		.pos.as_cmplx = p.pos,
 		.rotation.angle = p.time * -10 * DEG2RAD,
-		.shader = "sprite_negative",
+		.shader_ptr = res_shader("sprite_negative"),
 	});
 }
 
@@ -178,7 +178,7 @@ TASK(kurumi_vladsarmy_drainer, { BoxedBoss boss; BoxedEnemy enemy; }) {
 			.func = kurumi_extra_drainer_draw,
 			.args[0].as_ptr = &state,
 		},
-		.shader = "sprite_default",
+		.shader_ptr = res_shader("sprite_default"),
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
 		.layer = LAYER_BOSS - 1,
 	));

@@ -454,7 +454,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = yukkuri_spr,
 				.pos.y = -60 * elevation * fadein + halfheight * squeeze,
-				.shader = "sprite_default",
+				.shader_ptr = res_shader("sprite_default"),
 				.scale.x = 1.0 - squeeze,
 				.scale.y = 1.0 + squeeze,
 			});

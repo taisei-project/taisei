@@ -441,7 +441,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float opacity = opacity_noplr * b->hud.plrproximity_opacity;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "spell",
+		.sprite_ptr = res_sprite("spell"),
 		.pos = { (VIEWPORT_W - 128), y_offset * (1 - pow(1 - f2, 5)) + VIEWPORT_H * pow(1 - f2, 2) },
 		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
@@ -687,7 +687,7 @@ void draw_boss_background(Boss *boss) {
 
 	r_mat_mv_scale(f, f, 1);
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "boss_circle",
+		.sprite_ptr = res_sprite("boss_circle"),
 		.color = RGBA(1, 1, 1, 0),
 	});
 	r_mat_mv_pop();

@@ -17,18 +17,17 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 	sp.pos.y = VIEWPORT_H/2;
 	sp.scale.both = 0.6;
 	sp.shader_ptr = res_shader("sprite_default");
+	sp.sprite_ptr = res_sprite("stage2/spellbg1");
 	sp.blend = BLEND_PREMUL_ALPHA;
-	sp.sprite = "stage2/spellbg1";
 	r_draw_sprite(&sp);
 	sp.scale.both = 1;
 	sp.blend = BLEND_MOD;
-	sp.sprite = "stage2/spellbg2";
+	sp.sprite_ptr = res_sprite("stage2/spellbg2");
 	sp.rotation = (SpriteRotationParams) { .angle = time * 5 * DEG2RAD, .vector = { 0, 0, 1 } };
 	r_draw_sprite(&sp);
 
 	Animation *fireani = res_anim("fire");
 	sp.sprite_ptr = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames);
-	sp.sprite = NULL;
 	sp.pos.x = re(h->pos);
 	sp.pos.y = im(h->pos);
 	sp.scale.both = 1;

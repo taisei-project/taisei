@@ -537,8 +537,8 @@ static void draw_spellbg(int t) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "boss_spellcircle0",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("boss_spellcircle0"),
+		.shader_ptr = res_shader("sprite_default"),
 		.pos = { re(b->pos), im(b->pos) },
 		.rotation.angle = global.frames * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
@@ -1740,10 +1740,10 @@ void stage_draw_hud(void) {
 
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = difficulty_sprite_name(global.diff),
+		.sprite_ptr = res_sprite(difficulty_sprite_name(global.diff)),
 		.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 400 },
 		.scale.both = 0.6,
-		.shader = "sprite_default",
+		.shader_ptr = res_shader("sprite_default"),
 	});
 
 	// Power/Item/Voltage icons
@@ -1752,41 +1752,41 @@ void stage_draw_hud(void) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
-		.sprite = "item/power",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/power"),
+		.shader_ptr = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.power },
-		.sprite = "item/power",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/power"),
+		.shader_ptr = res_shader("sprite_default"),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.value + 2 },
-		.sprite = "item/point",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/point"),
+		.shader_ptr = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.value },
-		.sprite = "item/point",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/point"),
+		.shader_ptr = res_shader("sprite_default"),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.voltage + 2 },
-		.sprite = "item/voltage",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/voltage"),
+		.shader_ptr = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.voltage },
-		.sprite = "item/voltage",
-		.shader = "sprite_default",
+		.sprite_ptr = res_sprite("item/voltage"),
+		.shader_ptr = res_shader("sprite_default"),
 	});
 
 	r_mat_mv_pop();
@@ -1828,8 +1828,8 @@ void stage_draw_hud(void) {
 			red = 0;
 
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = "boss_indicator",
-			.shader = "sprite_default",
+			.sprite_ptr = res_sprite("boss_indicator"),
+			.shader_ptr = res_shader("sprite_default"),
 			.pos = { VIEWPORT_X+re(global.boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
 		});
@@ -1874,7 +1874,7 @@ void stage_draw_hud(void) {
 		text_draw("Demo", &(TextParams) {
 			.align = ALIGN_CENTER,
 			.font = "big",
-			.shader = "text_demo",
+			.shader_ptr = res_shader("text_demo"),
 			.shader_params = &(ShaderCustomParams) { global.frames / 60.0f },
 			.pos.as_cmplx = pos,
 		});

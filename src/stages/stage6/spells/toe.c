@@ -19,7 +19,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 		.pos = { VIEWPORT_W / 2.0, VIEWPORT_H / 2.0 },
 		.scale.both = 0.75 + 0.0005 * t,
 		.rotation.angle = t * 0.1 * DEG2RAD,
-		.sprite = "stage6/spellbg_toe",
+		.sprite_ptr = res_sprite("stage6/spellbg_toe"),
 		.color = RGB(0.6, 0.6, 0.6),
 	});
 
@@ -56,7 +56,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 		SpriteParams sp = {
 			.color = &color,
-			.sprite = texname,
+			.sprite_ptr = res_sprite(texname),
 			.pos = {
 				VIEWPORT_W / 2.0 + positions[i][0] + cos(wobble + i) * wobble,
 				VIEWPORT_H / 2.0 - 150 + positions[i][1] + sin(i + wobble) * wobble,

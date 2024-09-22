@@ -18,13 +18,13 @@ TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 static void amulet_draw(Enemy *e, EnemyDrawParams p) {
 	r_draw_sprite(&(SpriteParams) {
 		.color = RGBA(2, 1, 1, 0),
-		.sprite = "fairy_circle_big",
+		.sprite_ptr = res_sprite("fairy_circle_big"),
 		.pos.as_cmplx = p.pos,
 		.rotation.angle = p.time * 5 * DEG2RAD,
 	});
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "enemy/swirl",
+		.sprite_ptr = res_sprite("enemy/swirl"),
 		.pos.as_cmplx = p.pos,
 		.rotation.angle = p.time * -10 * DEG2RAD,
 	});

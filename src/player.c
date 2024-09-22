@@ -263,7 +263,7 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	if(plr->focus_circle_alpha) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite = "fairy_circle",
+			.sprite_ptr = res_sprite("fairy_circle"),
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
 			.pos = { re(plr->pos), im(plr->pos) },

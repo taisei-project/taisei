@@ -89,7 +89,7 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	sp.pos.x = spr_w * 0.5f - s_base->padding.offset.x;
 	sp.pos.y = spr_h * 0.5f - s_base->padding.offset.y;
 	sp.color = RGBA(1, 1, 1, 1);
-	sp.shader_ptr = res_shader("sprite_default"),
+	sp.shader_ptr = res_shader("sprite_default");
 	r_draw_sprite(&sp);
 	sp.blend = BLEND_PREMUL_ALPHA;
 	sp.sprite_ptr = s_face;
