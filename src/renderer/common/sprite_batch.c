@@ -183,9 +183,9 @@ void r_flush_sprites(void) {
 static void _r_sprite_batch_compute_attribs(
 	const Sprite *restrict spr,
 	const SpriteParams *restrict params,
-	SpriteInstanceAttribs *out_attribs
+	SpriteInstanceAttribs *restrict out_attribs
 ) {
-	SpriteInstanceAttribs attribs;
+	SpriteInstanceAttribs attribs = { };
 	r_mat_mv_current(attribs.mv_transform);
 	r_mat_tex_current(attribs.tex_transform);
 
@@ -196,32 +196,40 @@ static void _r_sprite_batch_compute_attribs(
 	FloatExtent imgdims = spr->extent;
 	imgdims.as_cmplx -= spr->padding.extent.as_cmplx;
 
-	if(params->pos.x || params->pos.y) {
-		glm_translate(attribs.mv_transform, (vec3) { params->pos.x, params->pos.y });
-	}
+	glm_translate_x(attribs.mv_transform, params->pos.x);
+	glm_translate_y(attribs.mv_transform, params->pos.y);
 
-	if(params->rotation.angle) {
+	if(params->rotation.angle)
+	{
 		float *rvec = (float*)params->rotation.vector;
 
-		if(rvec[0] == 0 && rvec[1] == 0 && rvec[2] == 0) {
-			glm_rotate(attribs.mv_transform, params->rotation.angle, (vec3) { 0, 0, 1 });
+		if(LIKELY(rvec[0] == 0 && rvec[1] == 0 && (rvec[2] == 0 || rvec[2] == 1))) {
+			glm_rotate_z(attribs.mv_transform, params->rotation.angle, attribs.mv_transform);
 		} else {
 			glm_rotate(attribs.mv_transform, params->rotation.angle, rvec);
 		}
 	}
 
-	glm_scale(attribs.mv_transform, (vec3) { scale_x * imgdims.w, scale_y * imgdims.h, 1 });
-
 	if(ofs.x || ofs.y) {
-		if(params->flip.x) {
-			ofs.x *= -1;
+		glm_vec4_scale(attribs.mv_transform[0], scale_x, attribs.mv_transform[0]);
+		glm_vec4_scale(attribs.mv_transform[1], scale_y, attribs.mv_transform[1]);
+
+		if(UNLIKELY(params->flip.x)) {
+			ofs.x = -ofs.x;
 		}
 
-		if(params->flip.y) {
-			ofs.y *= -1;
+		if(UNLIKELY(params->flip.y)) {
+			ofs.y = -ofs.y;
 		}
 
-		glm_translate(attribs.mv_transform, (vec3) { ofs.x / imgdims.w, ofs.y / imgdims.h });
+		glm_translate_x(attribs.mv_transform, ofs.x);
+		glm_translate_y(attribs.mv_transform, ofs.y);
+
+		glm_vec4_scale(attribs.mv_transform[0], imgdims.w, attribs.mv_transform[0]);
+		glm_vec4_scale(attribs.mv_transform[1], imgdims.h, attribs.mv_transform[1]);
+	} else {
+		glm_vec4_scale(attribs.mv_transform[0], scale_x * imgdims.w, attribs.mv_transform[0]);
+		glm_vec4_scale(attribs.mv_transform[1], scale_y * imgdims.h, attribs.mv_transform[1]);
 	}
 
 	if(params->color == NULL) {
@@ -233,21 +241,19 @@ static void _r_sprite_batch_compute_attribs(
 
 	attribs.texrect = spr->tex_area;
 
-	if(params->flip.x) {
+	if(UNLIKELY(params->flip.x)) {
 		attribs.texrect.x += attribs.texrect.w;
-		attribs.texrect.w *= -1;
+		attribs.texrect.w = -attribs.texrect.w;
 	}
 
-	if(params->flip.y) {
+	if(UNLIKELY(params->flip.y)) {
 		attribs.texrect.y += attribs.texrect.h;
-		attribs.texrect.h *= -1;
+		attribs.texrect.h = -attribs.texrect.h;
 	}
 
 	attribs.sprite_size = spr->extent;
 
-	if(params->shader_params == NULL) {
-		memset(&attribs.custom, 0, sizeof(attribs.custom));
-	} else {
+	if(params->shader_params != NULL) {
 		attribs.custom = *params->shader_params;
 	}
 
