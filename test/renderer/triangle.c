@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
 	r_shader_ptr(prog);
 
 	while(!taisei_quit_requested()) {
+		r_begin_frame();
 		r_clear(BUFFER_COLOR, RGB(0, 0, 0), 1);
 		r_draw_model_ptr(&triangle, 1, 0);
 		events_poll(NULL, 0);

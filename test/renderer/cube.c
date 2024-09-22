@@ -76,6 +76,8 @@ int main(int argc, char **argv) {
 	float a = 0;
 
 	while(!taisei_quit_requested()) {
+		r_begin_frame();
+
 		r_mat_mv_push();
 		r_mat_mv_rotate(a, 0, 0, 1);
 		r_clear(BUFFER_COLOR, RGB(0, 0, 0), 1);
