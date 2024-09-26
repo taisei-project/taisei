@@ -72,7 +72,8 @@ bool spirv_compile(
 	const ShaderSource *in,
 	ShaderSource *out,
 	MemArena *arena,
-	const SPIRVCompileOptions *options
+	const SPIRVCompileOptions *options,
+	bool reflect
 ) attr_nonnull(1, 2, 3);
 
 bool spirv_decompile(

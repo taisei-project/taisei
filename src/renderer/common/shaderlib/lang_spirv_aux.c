@@ -176,7 +176,13 @@ static bool shader_cache_entry_name(
 	return true;
 }
 
-bool spirv_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, const SPIRVCompileOptions *options) {
+bool spirv_compile(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVCompileOptions *options,
+	bool reflect
+) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
 	ShaderLangInfo target_lang = { 0 };
@@ -185,6 +191,7 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, c
 
 	CacheEntryMetadata m = {
 		.stage = in->stage,
+		.reflection = reflect,
 		.lang = {
 			.lang = SHLANG_SPIRV,
 			.spirv.target = options->target,
@@ -217,10 +224,18 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, MemArena *arena, c
 	}
 
 	if(_spirv_compile(in, out, arena, options)) {
+		if(reflect) {
+			if(!(out->reflection = _spirv_reflect(out, arena))) {
+				marena_rollback(arena, &arena_snap);
+				return false;
+			}
+		}
+
 		shader_cache_set(hash, name, out);
 		return true;
 	}
 
+	marena_rollback(arena, &arena_snap);
 	return false;
 }
 
@@ -281,6 +296,8 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		decompile_lang.hlsl.shader_model = options->decompile.lang->dxbc.shader_model;
 		compile_dxbc = true;
 	}
+
+	bool reflect_on_compile = options->decompile.reflect && decompile_lang.lang == SHLANG_SPIRV;
 
 	if(
 		_in.lang.lang == SHLANG_GLSL &&
@@ -365,20 +382,14 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		compile_opts.flags |= SPIRV_CFLAG_VULKAN_RELAXED;
 	}
 
-	result = spirv_compile(in, &transient_src, arena, &compile_opts);
+	result = spirv_compile(in, &transient_src, arena, &compile_opts, reflect_on_compile);
 
 	if(!result) {
 		return false;
 	}
 
 	if(decompile_lang.lang == SHLANG_SPIRV) {
-		if(decompile_opts.reflect) {
-			transient_src.reflection = _spirv_reflect(&transient_src, arena);
-			if(!transient_src.reflection) {
-				return false;
-			}
-		}
-
+		assert(!decompile_opts.reflect || transient_src.reflection);
 		*out = transient_src;
 
 #ifdef DEBUG
