@@ -9,7 +9,6 @@
 #include "eventloop_private.h"
 
 #include "global.h"
-#include "thread.h"
 #include "util/env.h"
 
 void eventloop_run(void) {
@@ -23,7 +22,8 @@ void eventloop_run(void) {
 	evloop.frame_times.target = frame->frametime;
 	evloop.frame_times.start = time_get();
 	evloop.frame_times.next = evloop.frame_times.start + evloop.frame_times.target;
-	int32_t sleep = env_get("TAISEI_FRAMELIMITER_SLEEP", 3);
+	shrtime_t sleep_divisor = env_get("TAISEI_FRAMELIMITER_SLEEP", 3);
+	shrtime_t max_sleep = sleep_divisor > 0 ? (shrtime_t)evloop.frame_times.target / sleep_divisor : 0;
 	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", 1);
 	bool uncapped_rendering_env, uncapped_rendering;
 
@@ -120,18 +120,7 @@ begin_frame:
 			}
 		}
 
-		if(sleep > 0) {
-			// CAUTION: All of these casts are important!
-			while((shrtime_t)evloop.frame_times.next - (shrtime_t)time_get() > (shrtime_t)evloop.frame_times.target / sleep) {
-				uint32_t nap_multiplier = 1;
-				uint32_t nap_divisor = 3;
-				hrtime_t nap_raw = max(0, (shrtime_t)evloop.frame_times.next - (shrtime_t)time_get());
-				uint32_t nap_sdl = (nap_multiplier * nap_raw * 1000) / (HRTIME_RESOLUTION * nap_divisor);
-				nap_sdl = max(nap_sdl, 1);
-				SDL_Delay(nap_sdl);
-			}
-		}
-
+		SDL_DelayPrecise(clamp((shrtime_t)time_get() - (shrtime_t)evloop.frame_times.next, 0, max_sleep));
 		while(time_get() < evloop.frame_times.next);
 	}
 }
