@@ -325,6 +325,19 @@ ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena
 
 #define REFLECT_SERIALIZE_VERSION 1
 
+#define CHECK_LIMIT(_value, _limit, _name) ({ \
+	if((_value) > (_limit)) { \
+		log_error("Too many " _name ": %u >= %u", (_value), (_limit)); \
+		goto fail; \
+	} \
+	(void)0; \
+})
+
+#define MAX_UNIFORM_BUFFERS 16
+#define MAX_SAMPLERS 64
+#define MAX_INPUTS 64
+#define MAX_BLOCK_FIELDS 128
+
 static bool write_string(const char *s, SDL_IOStream *dest) {
 	size_t len = strlen(s);
 
@@ -398,6 +411,7 @@ static bool write_shader_block(const ShaderBlock *block, SDL_IOStream *output) {
 	SDL_WriteU32LE(output, block->binding);
 	SDL_WriteU32LE(output, block->size);
 	SDL_WriteU32LE(output, block->num_fields);
+	CHECK_LIMIT(block->num_fields, MAX_BLOCK_FIELDS, "block fields");
 
 	for(uint i = 0; i < block->num_fields; ++i) {
 		if(!write_shader_struct_field(block->fields + i, output)) {
@@ -406,6 +420,9 @@ static bool write_shader_block(const ShaderBlock *block, SDL_IOStream *output) {
 	}
 
 	return true;
+
+fail:
+	return false;
 }
 
 static bool read_shader_block(ShaderBlock *block, MemArena *arena, SDL_IOStream *input) {
@@ -417,6 +434,8 @@ static bool read_shader_block(ShaderBlock *block, MemArena *arena, SDL_IOStream 
 	SDL_ReadU32LE(input, &block->binding);
 	SDL_ReadU32LE(input, &block->size);
 	SDL_ReadU32LE(input, &block->num_fields);
+	CHECK_LIMIT(block->num_fields, MAX_BLOCK_FIELDS, "block fields");
+	block->fields = ARENA_ALLOC_ARRAY(arena, block->num_fields, typeof(*block->fields));
 
 	for(uint i = 0; i < block->num_fields; ++i) {
 		if(!read_shader_struct_field(block->fields + i, arena, input)) {
@@ -425,6 +444,9 @@ static bool read_shader_block(ShaderBlock *block, MemArena *arena, SDL_IOStream 
 	}
 
 	return true;
+
+fail:
+	return false;
 }
 
 static bool write_shader_sampler_type(const ShaderSamplerType *sampler_type, SDL_IOStream *output) {
@@ -502,11 +524,17 @@ bool shader_reflection_serialize(const ShaderReflection *r, SDL_IOStream *output
 
 	SDL_WriteU16LE(output, REFLECT_SERIALIZE_VERSION);
 
+	SDL_WriteU32LE(output, r->num_uniform_buffers);
+	CHECK_LIMIT(r->num_uniform_buffers, MAX_UNIFORM_BUFFERS, "uniform buffers");
+
 	for(uint i = 0; i < r->num_uniform_buffers; ++i) {
 		if(!write_shader_block(r->uniform_buffers + i, output)) {
 			return false;
 		}
 	}
+
+	SDL_WriteU32LE(output, r->num_samplers);
+	CHECK_LIMIT(r->num_samplers, MAX_SAMPLERS, "samplers");
 
 	for(uint i = 0; i < r->num_samplers; ++i) {
 		if(!write_shader_sampler(r->samplers + i, output)) {
@@ -515,6 +543,7 @@ bool shader_reflection_serialize(const ShaderReflection *r, SDL_IOStream *output
 	}
 
 	SDL_WriteU32LE(output, r->num_inputs);
+	CHECK_LIMIT(r->num_inputs, MAX_INPUTS, "inputs");
 	SDL_WriteU64LE(output, r->used_input_locations_map);
 
 	for(uint i = 0; i < r->num_inputs; ++i) {
@@ -524,6 +553,9 @@ bool shader_reflection_serialize(const ShaderReflection *r, SDL_IOStream *output
 	}
 
 	return true;
+
+fail:
+	return false;
 }
 
 bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemArena *arena, SDL_IOStream *input) {
@@ -545,6 +577,7 @@ bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemAren
 	auto r = ARENA_ALLOC(arena, ShaderReflection, {});
 
 	SDL_ReadU32LE(input, &r->num_uniform_buffers);
+	CHECK_LIMIT(r->num_uniform_buffers, MAX_UNIFORM_BUFFERS, "uniform buffers");
 	r->uniform_buffers = ARENA_ALLOC_ARRAY(arena, r->num_uniform_buffers, typeof(*r->uniform_buffers));
 
 	for(uint i = 0; i < r->num_uniform_buffers; ++i) {
@@ -554,6 +587,7 @@ bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemAren
 	}
 
 	SDL_ReadU32LE(input, &r->num_samplers);
+	CHECK_LIMIT(r->num_samplers, MAX_SAMPLERS, "samplers");
 	r->samplers = ARENA_ALLOC_ARRAY(arena, r->num_samplers, typeof(*r->samplers));
 
 	for(uint i = 0; i < r->num_samplers; ++i) {
@@ -563,6 +597,8 @@ bool shader_reflection_deserialize(const ShaderReflection **out_reflect, MemAren
 	}
 
 	SDL_ReadU32LE(input, &r->num_inputs);
+	CHECK_LIMIT(r->num_inputs, MAX_INPUTS, "inputs");
+	r->inputs = ARENA_ALLOC_ARRAY(arena, r->num_inputs, typeof(*r->inputs));
 	SDL_ReadU64LE(input, &r->used_input_locations_map);
 
 	for(uint i = 0; i < r->num_inputs; ++i) {
