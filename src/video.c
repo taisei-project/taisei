@@ -36,7 +36,6 @@ static struct {
 	VideoMode current;
 	VideoBackend backend;
 	double scaling_factor;
-	uint num_resize_events;
 
 	struct {
 		char *name_prefix;
@@ -275,7 +274,9 @@ static int video_compare_modes(const void *a, const void *b) {
 }
 
 static IntExtent video_get_screen_framebuffer_size(void) {
-	return r_framebuffer_get_size(NULL);
+	IntExtent s;
+	SDL_GetWindowSizeInPixels(video.window, &s.w, &s.h);
+	return s;
 }
 
 static FloatExtent video_get_viewport_size_for_framebuffer(IntExtent framebuffer_size) {
@@ -290,6 +291,34 @@ static FloatExtent video_get_viewport_size_for_framebuffer(IntExtent framebuffer
 	}
 
 	return (FloatExtent) { w, h };
+}
+
+static void video_get_viewport_for_framebuffer(FloatRect *vp, IntExtent framebuffer_size) {
+	vp->extent = video_get_viewport_size_for_framebuffer(framebuffer_size);
+	vp->x = (int)((framebuffer_size.w - vp->w) * 0.5);
+	vp->y = (int)((framebuffer_size.h - vp->h) * 0.5);
+}
+
+void video_get_viewport_size(float *width, float *height) {
+	IntExtent fb = video_get_screen_framebuffer_size();
+	FloatExtent vp = video_get_viewport_size_for_framebuffer(fb);
+
+	*width = vp.w;
+	*height = vp.h;
+}
+
+void video_get_viewport(FloatRect *vp) {
+	IntExtent fb = video_get_screen_framebuffer_size();
+	video_get_viewport_for_framebuffer(vp, fb);
+	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
+	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
+	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
+}
+
+static void video_set_viewport(void) {
+	FloatRect vp;
+	video_get_viewport(&vp);
+	r_framebuffer_viewport_rect(NULL, vp);
 }
 
 static IntExtent round_viewport_size(FloatExtent vp) {
@@ -400,8 +429,7 @@ static void video_update_mode_lists(void) {
 }
 
 static void video_update_scaling_factor(void) {
-	// NOTE: must query the main framebuffer explicitly here; postprocess buffers may have outdated information.
-	IntExtent main_fb = r_framebuffer_get_size(NULL);
+	IntExtent main_fb = video_get_screen_framebuffer_size();
 	assert(main_fb.w > 0);
 	double scaling_factor = (double)main_fb.w / video.current.width;
 
@@ -413,35 +441,6 @@ static void video_update_scaling_factor(void) {
 		IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
 		SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
 	}
-}
-
-void video_get_viewport_size(float *width, float *height) {
-	IntExtent fb = video_get_screen_framebuffer_size();
-	FloatExtent vp = video_get_viewport_size_for_framebuffer(fb);
-
-	*width = vp.w;
-	*height = vp.h;
-}
-
-void video_get_viewport(FloatRect *vp) {
-	IntExtent fb = video_get_screen_framebuffer_size();
-
-	// vp->extent aliases vp->w and vp->h; see util/geometry.h
-	vp->extent = video_get_viewport_size_for_framebuffer(fb);
-
-	vp->x = (int)((fb.w - vp->w) * 0.5);
-	vp->y = (int)((fb.h - vp->h) * 0.5);
-
-	// This function can also be changed to return a FloatRect instead
-	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
-	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
-	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
-}
-
-static void video_set_viewport(void) {
-	FloatRect vp;
-	video_get_viewport(&vp);
-	r_framebuffer_viewport_rect(NULL, vp);
 }
 
 static void video_update_vsync(void) {
@@ -462,10 +461,12 @@ static void video_update_mode_settings(void) {
 		SDL_ShowCursor();
 	}
 
-	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
-	video_set_viewport();
+
+	video_update_vsync();
 	video_update_scaling_factor();
+	video_set_viewport();
+
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
 }
 
@@ -484,7 +485,6 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 		r_unclaim_window(video.window);
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
-		video.num_resize_events = 0;
 	}
 
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
@@ -803,25 +803,6 @@ static void video_init_sdl(void) {
 	}
 }
 
-static void video_handle_resize(int w, int h) {
-	int minw, minh;
-	SDL_GetWindowMinimumSize(video.window, &minw, &minh);
-
-	if((w < minw || h < minh) && video.num_resize_events > 3) {
-		log_warn("Bad resize: %ix%i is too small!", w, h);
-		// FIXME: the video_new_window is actually a workaround for Wayland.
-		// I'm not sure if it's necessary for anything else.
-		video_new_window(video_current_display(), video.intended.width, video.intended.height, false, video_is_resizable());
-		return;
-	}
-
-	log_debug("%ix%i --> %ix%i", video.current.width, video.current.height, w, h);
-	video.current.width = w;
-	video.current.height = h;
-	video_update_mode_settings();
-	++video.num_resize_events;
-}
-
 static void video_update_displays(void) {
 	SDL_free(video.displays);
 
@@ -858,20 +839,8 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 static bool video_handle_event(SDL_Event *event, void *arg) {
 	switch(event->type) {
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
-			// It's followed by SDL_EVENT_WINDOW_RESIZED for external resizes (from the WM or the
-			// user). We only need to handle external resizes.
 			log_debug("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
-
-			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
-			// https://github.com/devkitPro/SDL/issues/31
-			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
-				video_handle_resize(event->window.data1, event->window.data2);
-			}
-			break;
-
-		case SDL_EVENT_WINDOW_RESIZED:
-			video_handle_resize(event->window.data1, event->window.data2);
+			video_update_mode_settings();
 			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
