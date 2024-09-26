@@ -22,7 +22,7 @@ void eventloop_run(void) {
 	evloop.frame_times.target = frame->frametime;
 	evloop.frame_times.start = time_get();
 	evloop.frame_times.next = evloop.frame_times.start + evloop.frame_times.target;
-	shrtime_t sleep_divisor = env_get("TAISEI_FRAMELIMITER_SLEEP", 3);
+	shrtime_t sleep_divisor = env_get("TAISEI_FRAMELIMITER_SLEEP", 1);
 	shrtime_t max_sleep = sleep_divisor > 0 ? (shrtime_t)evloop.frame_times.target / sleep_divisor : 0;
 	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", 1);
 	bool uncapped_rendering_env, uncapped_rendering;
