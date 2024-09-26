@@ -15,8 +15,8 @@ typedef int64_t shrtime_t;
 #define PRIdTIME PRId64
 #define HRTIME_C(value) UINT64_C(value)
 
-// picoseconds. like super duper accurate, man
-#define HRTIME_RESOLUTION HRTIME_C(1000000000000)
+#include <SDL3/SDL_timer.h>
+#define HRTIME_RESOLUTION SDL_NS_PER_SECOND
 
 void time_init(void);
 void time_shutdown(void);
