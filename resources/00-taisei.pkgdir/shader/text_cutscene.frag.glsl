@@ -12,7 +12,7 @@ void spriteMain(out vec4 fragColor) {
 	float o = customParams.r;
 	float xpos = 0.5 + texCoordOverlay.x;
 	float slide_factor = 8;
-	mask = 1.0 - smoothstep(slide_factor * o * o, slide_factor * o, mask + (slide_factor - 1.0) * xpos);
+	mask = 1.0 - smoothstep(slide_factor * o * o * 0.95, slide_factor * o, mask + (slide_factor - 1.0) * xpos);
 	mask = smoothstep(0.2, 0.8, mask);
 
 	vec3 outlines = texture(tex, texCoord).rgb;
