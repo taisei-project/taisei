@@ -20,6 +20,8 @@
 
 #include "../common/matstack.h"
 #include "../common/shaderlib/lang_dxbc.h"
+
+#include "memory/scratch.h"
 #include "util/env.h"
 
 SDLGPUGlobal sdlgpu;
@@ -116,8 +118,6 @@ void sdlgpu_stop_current_pass(CommandBufferID cbuf_id) {
 }
 
 void sdlgpu_renew_swapchain_texture(void) {
-	uint w, h;
-
 	if(sdlgpu.frame.swapchain.present_mode != sdlgpu.frame.swapchain.next_present_mode) {
 		if(SDL_SetGPUSwapchainParameters(
 			sdlgpu.device, sdlgpu.window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, sdlgpu.frame.swapchain.next_present_mode)
@@ -140,13 +140,27 @@ void sdlgpu_renew_swapchain_texture(void) {
 		}
 	}
 
-	if((sdlgpu.frame.swapchain.tex = SDL_AcquireGPUSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window, &w, &h))) {
-		sdlgpu.frame.swapchain.width = w;
-		sdlgpu.frame.swapchain.height = h;
-		sdlgpu.frame.swapchain.fmt = SDL_GetGPUSwapchainTextureFormat(sdlgpu.device, sdlgpu.window);
-		sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Acquired swapchan %ux%u, format=%u", w, h, sdlgpu.frame.swapchain.fmt);
+	if(SDL_AcquireGPUSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window, &sdlgpu.frame.swapchain.tex)) {
+		if(sdlgpu.frame.swapchain.tex) {
+			int w, h;
+			// TODO cache this on resize events in video.c
+			SDL_GetWindowSizeInPixels(sdlgpu.window, &w, &h);
+
+			sdlgpu.frame.swapchain.width = w;
+			sdlgpu.frame.swapchain.height = h;
+			sdlgpu.frame.swapchain.fmt = SDL_GetGPUSwapchainTextureFormat(sdlgpu.device, sdlgpu.window);
+
+			sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf,
+				"Acquired swapchan %ux%u, format=%u", w, h, sdlgpu.frame.swapchain.fmt);
+		} else {
+			sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Swapchain acquisition failed");
+		}
 	} else {
-		sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Swapchain acquisition failed");
+		auto scratch = acquire_scratch_arena();
+		auto error = marena_strdup(acquire_scratch_arena(), SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_AcquireGPUSwapchainTexture");
+		sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Swapchain acquisition failed: %s", error);
+		release_scratch_arena(scratch);
 	}
 }
 
@@ -175,6 +189,12 @@ void sdlgpu_cmdbuf_debug(SDL_GPUCommandBuffer *cbuf, const char *format, ...) {
 
 static SDL_GPUCommandBuffer *sdlgpu_acquire_command_buffer(CommandBufferID id) {
 	SDL_GPUCommandBuffer *cbuf = NOT_NULL(SDL_AcquireGPUCommandBuffer(sdlgpu.device));
+
+	if(UNLIKELY(!cbuf)) {
+		log_sdl_error(LOG_FATAL, "SDL_AcquireGPUCommandBuffer");
+		UNREACHABLE;
+	}
+
 	sdlgpu_cmdbuf_debug(cbuf, "Created %s command buffer", command_buffer_name(id));
 	return cbuf;
 }
@@ -229,7 +249,11 @@ static void sdlgpu_submit_frame(void) {
 	uint frame_slot = sdlgpu.frame.counter % MAX_FRAMES_IN_FLIGHT;
 
 	if(sdlgpu.fences[frame_slot].group[0]) {
-		SDL_WaitForGPUFences(sdlgpu.device, true, sdlgpu.fences[frame_slot].group, NUM_CBUFS);
+		bool ok = SDL_WaitForGPUFences(sdlgpu.device, true, sdlgpu.fences[frame_slot].group, NUM_CBUFS);
+
+		if(UNLIKELY(!ok)) {
+			log_sdl_error(LOG_ERROR, "SDL_WaitForGPUFences");
+		}
 
 		for(uint i = 0; i < NUM_CBUFS; ++i) {
 			SDL_ReleaseGPUFence(sdlgpu.device, sdlgpu.fences[frame_slot].group[i]);
@@ -238,8 +262,17 @@ static void sdlgpu_submit_frame(void) {
 
 	SDL_GPUFence *upload_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.upload_cbuf);
 	sdlgpu.frame.upload_cbuf = NULL;
+
+	if(UNLIKELY(!upload_fence)) {
+		log_sdl_error(LOG_ERROR, "SDL_SubmitGPUCommandBufferAndAcquireFence");
+	}
+
 	SDL_GPUFence *draw_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(sdlgpu.frame.cbuf);
 	sdlgpu.frame.cbuf = NULL;
+
+	if(UNLIKELY(!draw_fence)) {
+		log_sdl_error(LOG_ERROR, "SDL_SubmitGPUCommandBufferAndAcquireFence");
+	}
 
 	sdlgpu.fences[frame_slot].group[CBUF_DRAW] = draw_fence;
 	sdlgpu.fences[frame_slot].group[CBUF_UPLOAD] = upload_fence;
@@ -325,7 +358,7 @@ static void sdlgpu_init(void) {
 	};
 
 	if(!sdlgpu.device) {
-		log_sdl_error(LOG_FATAL, "SDL_CreateGPUDevice");
+		log_sdl_error(LOG_FATAL, "SDL_CreateGPUDeviceWithProperties");
 	}
 
 	if(!(SDL_GetGPUShaderFormats(sdlgpu.device) & SDL_GPU_SHADERFORMAT_DXBC)) {
@@ -550,6 +583,12 @@ static void sdlgpu_draw_generic(
 		pd.outputs[i].format = outputs.color_formats[i];
 	}
 
+	auto pipe = sdlgpu_pipecache_get(&pd);
+
+	if(UNLIKELY(!pipe)) {
+		return;
+	}
+
 	auto active_program = sdlgpu.st.shader;
 	auto v_shader = active_program->stages.vertex;
 	auto f_shader = active_program->stages.fragment;
@@ -609,7 +648,7 @@ static void sdlgpu_draw_generic(
 	sdlgpu_set_magic_uniforms(v_shader, vp, proj);
 	sdlgpu_set_magic_uniforms(f_shader, vp, proj);
 
-	SDL_BindGPUGraphicsPipeline(pass, sdlgpu_pipecache_get(&pd));
+	SDL_BindGPUGraphicsPipeline(pass, pipe);
 	SDL_BindGPUVertexBuffers(pass, 0, vbuf_bindings, ARRAY_SIZE(vbuf_bindings));
 
 	if(v_shader->uniform_buffer.data) {

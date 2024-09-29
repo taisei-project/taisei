@@ -198,6 +198,18 @@ PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 			return PIXMAP_FORMAT_RG16;
 		case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
 			return PIXMAP_FORMAT_RGBA16;
+		case SDL_GPU_TEXTUREFORMAT_R32_UINT:
+			return PIXMAP_FORMAT_R32;
+		case SDL_GPU_TEXTUREFORMAT_R32G32_UINT:
+			return PIXMAP_FORMAT_RG32;
+		case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+			return PIXMAP_FORMAT_RGBA32;
+		case SDL_GPU_TEXTUREFORMAT_R32_INT:
+			return PIXMAP_FORMAT_R32;
+		case SDL_GPU_TEXTUREFORMAT_R32G32_INT:
+			return PIXMAP_FORMAT_RG32;
+		case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+			return PIXMAP_FORMAT_RGBA32;
 
 		case SDL_GPU_TEXTUREFORMAT_INVALID:
 		case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
@@ -213,7 +225,6 @@ PixmapFormat sdlgpu_texfmt_to_pixfmt(SDL_GPUTextureFormat fmt) {
 		case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
 		case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT:
 			return 0;
-		break;
 	}
 
 	UNREACHABLE;
@@ -369,6 +380,10 @@ void sdlgpu_texture_update_sampler(Texture *tex) {
 		.min_lod = 0,
 		.max_lod = p->mipmaps,
 	});
+
+	if(UNLIKELY(!tex->sampler)) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateGPUSampler");
+	}
 
 	tex->sampler_is_outdated = false;
 }
@@ -575,7 +590,18 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 		.size = image->data_size,
 	});
 
+	if(UNLIKELY(!tbuf)) {
+		log_sdl_error(LOG_FATAL_IF_DEBUG, "SDL_CreateGPUTransferBuffer");
+		return;
+	}
+
 	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, tbuf, false);
+
+	if(UNLIKELY(!mapped)) {
+		log_sdl_error(LOG_FATAL_IF_DEBUG, "SDL_MapGPUTransferBuffer");
+		return;
+	}
+
 	memcpy(mapped, image->data.untyped, image->data_size);
 	SDL_UnmapGPUTransferBuffer(sdlgpu.device, tbuf);
 

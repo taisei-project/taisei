@@ -143,6 +143,7 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 				: SDL_GPU_CULLMODE_NONE,
 			.fill_mode = SDL_GPU_FILLMODE_FILL,
 			.front_face = pd->front_face,
+			.enable_depth_clip = true,
 		},
 		.multisample_state = {
 			.sample_mask = 0xFFFF,
@@ -183,6 +184,12 @@ static SDL_GPUGraphicsPipeline *sdlgpu_pipecache_create_pipeline(const PipelineD
 	}
 
 	auto r = SDL_CreateGPUGraphicsPipeline(sdlgpu.device, &pci);
+
+	if(!r) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateGPUGraphicsPipeline");
+		return NULL;
+	}
+
 	log_debug("END CREATE PIPELINE = %p", r);
 	return r;
 }
@@ -198,13 +205,17 @@ SDL_GPUGraphicsPipeline *sdlgpu_pipecache_get(PipelineDescription *pd) {
 	bool attr_unused created = ht_pcache_try_set(
 		&pcache.cache, key, (ht_pcache_value_t)pd, sdlgpu_pipecache_create_pipeline_callback, &result);
 
-#ifdef DEBUG
 	if(created) {
+		if(!result) {
+			ht_pcache_unset(&pcache.cache, key);
+		}
+
+#ifdef DEBUG
 		char pipe_repr[PIPECACHE_KEY_REPR_SIZE] = {};
 		sdlgpu_pipecache_key_repr(key, sizeof(pipe_repr), pipe_repr);
 		log_debug("Created pipeline %s (%u total pipelines cached)", pipe_repr, pcache.cache.num_elements_occupied);
-	}
 #endif
+	}
 
 	return NOT_NULL(result);
 }

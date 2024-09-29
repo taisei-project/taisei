@@ -65,10 +65,20 @@ static bool sdlgpu_buffer_resize_gpubuf(CommonBuffer *cbuf) {
 		.size = cbuf->cachedbuf.size,
 	});
 
+	if(UNLIKELY(!cbuf->gpubuf)) {
+		log_sdl_error(LOG_FATAL, "SDL_CreateGPUBuffer");
+		UNREACHABLE;
+	}
+
 	cbuf->transferbuf = SDL_CreateGPUTransferBuffer(sdlgpu.device, &(SDL_GPUTransferBufferCreateInfo) {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = cbuf->cachedbuf.size,
 	});
+
+	if(UNLIKELY(!cbuf->transferbuf)) {
+		log_sdl_error(LOG_FATAL, "SDL_CreateGPUTransferBuffer");
+		UNREACHABLE;
+	}
 
 	cbuf->commited_size = cbuf->cachedbuf.size;
 
@@ -96,6 +106,12 @@ void sdlgpu_buffer_flush(CommonBuffer *cbuf) {
 	}
 
 	uint8_t *mapped = SDL_MapGPUTransferBuffer(sdlgpu.device, cbuf->transferbuf, true);
+
+	if(UNLIKELY(!mapped)) {
+		log_sdl_error(LOG_FATAL_IF_DEBUG, "SDL_MapGPUTransferBuffer");
+		return;
+	}
+
 	memcpy(mapped + update.offset, update.data, update.size);
 	SDL_UnmapGPUTransferBuffer(sdlgpu.device, cbuf->transferbuf);
 

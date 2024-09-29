@@ -41,7 +41,10 @@ static void init_readback_system(void) {
 }
 
 static void sync_read_requests(bool all) {
-	SDL_WaitForGPUFences(sdlgpu.device, all, sys->fences, ARRAY_SIZE(sys->fences));
+	bool ok = SDL_WaitForGPUFences(sdlgpu.device, all, sys->fences, ARRAY_SIZE(sys->fences));
+	if(UNLIKELY(!ok)) {
+		log_sdl_error(LOG_ERROR, "SDL_WaitForGPUFences");
+	}
 }
 
 static bool ping_read_request(FramebufferReadRequest *rq) {
@@ -56,15 +59,22 @@ static bool ping_read_request(FramebufferReadRequest *rq) {
 	}
 
 	auto data_size = pixmap_data_size(rq->transfer.format, rq->transfer.width, rq->transfer.height);
-	rq->callback(&(Pixmap) {
-		.width = rq->transfer.width,
-		.height = rq->transfer.height,
-		.format = rq->transfer.format,
-		.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
-		.data_size = data_size,
-		.data.untyped = SDL_MapGPUTransferBuffer(sdlgpu.device, rq->transfer.buffer, false)
-	}, rq->userdata);
-	SDL_UnmapGPUTransferBuffer(sdlgpu.device, rq->transfer.buffer);
+	auto data = SDL_MapGPUTransferBuffer(sdlgpu.device, rq->transfer.buffer, false);
+
+	if(UNLIKELY(!data)) {
+		log_sdl_error(LOG_ERROR, "SDL_MapGPUTransferBuffer");
+		rq->callback(NULL, rq->userdata);
+	} else {
+		rq->callback(&(Pixmap) {
+			.width = rq->transfer.width,
+			.height = rq->transfer.height,
+			.format = rq->transfer.format,
+			.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
+			.data_size = data_size,
+			.data.untyped = data,
+		}, rq->userdata);
+		SDL_UnmapGPUTransferBuffer(sdlgpu.device, rq->transfer.buffer);
+	}
 
 	RQ_FENCE(rq) = NULL;
 	SDL_ReleaseGPUFence(sdlgpu.device, fence);
@@ -134,10 +144,24 @@ void sdlgpu_framebuffer_read_async(
 			.size = required_buffer_size,
 			.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
 		});
+
+		if(UNLIKELY(!rq->transfer.buffer)) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateGPUTransferBuffer");
+			callback(NULL, userdata);
+			return;
+		}
+
 		rq->transfer.buffer_size = required_buffer_size;
 	}
 
 	auto cbuf = SDL_AcquireGPUCommandBuffer(sdlgpu.device);
+
+	if(UNLIKELY(!cbuf)) {
+		log_sdl_error(LOG_FATAL, "SDL_AcquireGPUCommandBuffer");
+		callback(NULL, userdata);
+		return;
+	}
+
 	auto copy_pass = SDL_BeginGPUCopyPass(cbuf);
 	SDL_DownloadFromGPUTexture(copy_pass,
 		&(SDL_GPUTextureRegion) {
@@ -155,6 +179,11 @@ void sdlgpu_framebuffer_read_async(
 		});
 	SDL_EndGPUCopyPass(copy_pass);
 	RQ_FENCE(rq) = SDL_SubmitGPUCommandBufferAndAcquireFence(cbuf);
+
+	if(UNLIKELY(!RQ_FENCE(rq))) {
+		callback(NULL, userdata);
+		return;
+	}
 }
 
 void sdlgpu_framebuffer_process_read_requests(void) {
