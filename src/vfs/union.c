@@ -40,6 +40,7 @@ static VFSNode *vfs_union_locate(VFSNode *node, const char *path) {
 	}
 
 	VFSNode *dirs[unode->members.num_elements];
+	VFSNode **dirs_top = dirs + ARRAY_SIZE(dirs) - 1;
 	int num_dirs = 0;
 
 	dynarray_foreach_elem_reversed(&unode->members, VFSNode **member, {
@@ -57,7 +58,8 @@ static VFSNode *vfs_union_locate(VFSNode *node, const char *path) {
 		}
 
 		if(subinfo.is_dir) {
-			dirs[num_dirs++] = subnode;
+			dirs_top[-num_dirs] = subnode;
+			++num_dirs;
 		} else {
 			if(num_dirs == 0) {
 				return subnode;
@@ -73,11 +75,11 @@ static VFSNode *vfs_union_locate(VFSNode *node, const char *path) {
 	}
 
 	if(num_dirs == 1) {
-		return dirs[0];
+		return dirs_top[0];
 	}
 
 	auto subunion = VFS_ALLOC(VFSUnionNode);
-	dynarray_set_elements(&subunion->members, num_dirs, dirs);
+	dynarray_set_elements(&subunion->members, num_dirs, &dirs_top[1 - num_dirs]);
 	return &subunion->as_generic;
 }
 
