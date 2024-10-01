@@ -650,6 +650,25 @@ static void glcommon_ext_texture_format_fxt1(void) {
 	EXT_MISSING();
 }
 
+static void glcommon_ext_texture_storage(void) {
+	EXT_FLAG(texture_storage);
+
+	CHECK_CORE(GL_ATLEAST(4, 2));
+	CHECK_CORE(GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_ARB_texture_storage);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_invalidate_subdata(void) {
+	EXT_FLAG(invalidate_subdata);
+
+	CHECK_CORE(GL_ATLEAST(4, 3));
+	CHECK_EXT(GL_ARB_invalidate_subdata);
+
+	EXT_MISSING();
+}
+
 static const char *get_unmasked_property(GLenum prop, bool fallback) {
 	const char *val = NULL;
 
@@ -933,6 +952,7 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_float_blend();
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_internalformat_query2();
+	glcommon_ext_invalidate_subdata();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_seamless_cubemap();
 	glcommon_ext_texture_filter_anisotropic();
@@ -942,6 +962,7 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_texture_half_float_linear();
 	glcommon_ext_texture_norm16();
 	glcommon_ext_texture_rg();
+	glcommon_ext_texture_storage();
 	glcommon_ext_texture_swizzle();
 	glcommon_ext_vertex_array_object();
 	glcommon_ext_viewport_array();
