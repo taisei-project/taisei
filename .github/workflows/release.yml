@@ -43,7 +43,7 @@ on:
 env:
   REF: ${{ github.event.inputs.custom-ref || github.ref || 'master' }}
   MESON_VERSION: '0.63.3'
-  EM_VERSION: '3.1.51'
+  EM_VERSION: '3.1.68'
   PYTHON_VERSION: '3.11.8'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
