@@ -229,28 +229,29 @@ static void gl33_texture_set(Texture *tex, uint mipmap, uint layer, const Pixmap
 
 	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
 	GLenum ifmt = tex->fmt_info->internal_format;
+	GLenum xfmt = xfer->gl_format;
+	GLenum xtype = xfer->gl_type;
 
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
-		glCompressedTexImage2D(
+		glCompressedTexSubImage2D(
 			gl_target,
 			mipmap,
-			ifmt,
+			0,
+			0,
 			width,
 			height,
-			0,
+			ifmt,
 			image->data_size,
 			image_data
 		);
 	} else {
-		GLenum xfmt = xfer->gl_format;
-		GLenum xtype = xfer->gl_type;
-		glTexImage2D(
+		glTexSubImage2D(
 			gl_target,
 			mipmap,
-			tex->fmt_info->internal_format,
+			0,
+			0,
 			width,
 			height,
-			0,
 			xfmt,
 			xtype,
 			image_data
@@ -394,7 +395,9 @@ Texture *gl33_texture_create(const TextureParams *params) {
 	GLenum xfmt = xfer->gl_format;
 	GLenum xtype = xfer->gl_type;
 
-	for(uint i = 0; i < p->mipmaps; ++i) {
+	if(glext.texture_storage) {
+		glTexStorage2D(gl_target, p->mipmaps, ifmt, p->width, p->height);
+	} else for(uint i = 0; i < p->mipmaps; ++i) {
 		uint w, h;
 		gl33_texture_get_size(tex, i, &w, &h);
 
@@ -454,6 +457,25 @@ void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt)
 void gl33_texture_invalidate(Texture *tex) {
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		log_debug("TODO/FIXME: invalidate not implemented for compressed textures");
+		return;
+	}
+
+	if(glext.texture_storage) {
+		if(glext.invalidate_subdata) {
+#ifndef STATIC_GLES3
+			gl33_bind_texture(tex, 0, -1);
+			gl33_sync_texunit(tex->binding_unit, false, true);
+
+			for(uint i = 0; i < tex->params.mipmaps; ++i) {
+				glInvalidateTexImage(tex->bind_target, i);
+			}
+#else
+		UNREACHABLE;
+#endif
+		} else {
+			log_debug("TODO/FIXME: can't invalidate immutable texture without GL_ARB_invalidate_subdata!");
+		}
+
 		return;
 	}
 
