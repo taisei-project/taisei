@@ -2,7 +2,7 @@
 directory=libwebp
 url=https://github.com/taisei-project/libwebp.git
 push-url=git@github.com:taisei-project/libwebp.git
-revision=meson-1.3.2
+revision=meson-1.4.0
 
 [provide]
 libwebp=webpdecoder_dep
