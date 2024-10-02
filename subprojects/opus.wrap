@@ -2,7 +2,7 @@
 directory=opus
 url=https://github.com/taisei-project/opus.git
 push-url=git@github.com:taisei-project/opus.git
-revision=taisei-1.4
+revision=taisei-1.5.1
 
 [provide]
 opus=opus_dep
