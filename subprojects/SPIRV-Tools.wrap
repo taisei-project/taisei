@@ -2,4 +2,4 @@
 directory=SPIRV-Tools
 url=https://github.com/taisei-project/SPIRV-Tools.git
 push-url=git@github.com:taisei-project/SPIRV-Tools.git
-revision=meson-2023.2
+revision=meson-2024.3
