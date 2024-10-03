@@ -261,9 +261,14 @@ static void ent_draw_player(EntityInterface *ent) {
 		return;
 	}
 
+	ShaderCustomParams shader_params = { 1.0f };
+	ShaderProgram *shader = res_shader("sprite_particle");
+
 	if(plr->focus_circle_alpha) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = res_sprite("fairy_circle"),
+			.shader_ptr = shader,
+			.shader_params = &shader_params,
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
 			.pos = { re(plr->pos), im(plr->pos) },
@@ -281,6 +286,8 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
+		.shader_ptr = shader,
+		.shader_params = &shader_params,
 		.pos.as_cmplx = plr->pos,
 		.color = &c,
 	});
