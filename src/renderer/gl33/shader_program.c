@@ -223,6 +223,8 @@ static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 			GLuint preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
 			GLuint unit = gl33_bind_texture(tex, get_texture_target(tex, utype), preferred_unit);
 
+			assert(unit == preferred_unit);
+
 			if(unit != preferred_unit) {
 				gl33_update_uniform(uniform, i, 1, &unit);
 			}
@@ -375,19 +377,17 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		if(UNIFORM_TYPE_IS_SAMPLER(uni.type)) {
 			list_push(&sampler_uniforms, new_uni);
 
-			if(glext.issues.avoid_sampler_uniform_updates) {
-				// Bind each sampler to a different texturing unit.
-				// This way we can change textures by binding them to the right texturing units, and never update the shader's samplers again.
+			// Bind each sampler to a different texturing unit.
+			// This way we can change textures by binding them to the right texturing units, and never update the shader's samplers again.
 
-				int payload[new_uni->array_size];
-				assert(sizeof(payload) == new_uni->array_size * new_uni->elem_size);
+			int payload[new_uni->array_size];
+			assert(sizeof(payload) == new_uni->array_size * new_uni->elem_size);
 
-				for(int j = 0; j < ARRAY_SIZE(payload); ++j) {
-					payload[j] = sampler_binding++;
-				}
-
-				gl33_update_uniform(new_uni, 0, new_uni->array_size, payload);
+			for(int j = 0; j < ARRAY_SIZE(payload); ++j) {
+				payload[j] = sampler_binding++;
 			}
+
+			gl33_update_uniform(new_uni, 0, new_uni->array_size, payload);
 		}
 
 		if(magic_index != UMAGIC_INVALID) {

@@ -975,14 +975,12 @@ uint gl33_bind_texture(Texture *texture, GLuint lock_target, int preferred_unit)
 				(unit->pending != NULL || unit->locked_for_target != lock_target)
 			) {
 				// someone else already took this unit for rendering
-				unit = NULL;
+				log_fatal("BUG: can't bind %s to unit %i: unit already locked for rendering!",
+					texture->debug_label, preferred_unit);
 			}
 		}
 
-		if(unit == NULL) {
-			assert(!glext.issues.avoid_sampler_uniform_updates);
-			unit = gl33_get_free_texunit();
-		}
+		assume(unit != NULL);
 
 		if(unit->locked_for_target) {
 			gl33_relocate_texuint(unit);
@@ -996,7 +994,7 @@ uint gl33_bind_texture(Texture *texture, GLuint lock_target, int preferred_unit)
 
 	assert(!lock_target || lock_target == texture->bind_target);
 
-	if(glext.issues.avoid_sampler_uniform_updates && preferred_unit >= 0) {
+	if(preferred_unit >= 0) {
 		assert(preferred_unit < R.texunits.limit);
 		TextureUnit *u = &R.texunits.array[preferred_unit];
 

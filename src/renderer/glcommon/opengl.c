@@ -766,7 +766,6 @@ static void detect_broken_intel_driver(void) {
 
 static bool glcommon_check_workaround(const char *name, const char *envvar, const char *(*detect)(void)) {
 	int env_setting = env_get_int(envvar, -1);
-	glext.issues.avoid_sampler_uniform_updates = false;
 
 	if(env_setting > 0) {
 		log_warn("Enabled workaround `%s` (forced by environment)", name);
@@ -800,26 +799,6 @@ EM_JS(bool, webgl_is_mac, (void), {
 })
 #endif
 
-static const char *detect_slow_sampler_update(void) {
-#if defined(__MACOSX__) || defined(__EMSCRIPTEN__)
-	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
-	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
-
-	if(
-#if defined(__EMSCRIPTEN__)
-		webgl_is_mac() &&
-#endif
-		strstr(gl_renderer, "Radeon") && (                                  // This looks like an AMD Radeon card...
-			(strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) ||       // ...and AMD's official driver...
-			(strstr(gl_vendor, "Google") && strstr(gl_renderer, "OpenGL"))  // ...or ANGLE, backed by OpenGL.
-		)
-	) {
-		return "buggy AMD driver on macOS; see https://github.com/taisei-project/taisei/issues/182";
-	}
-#endif
-	return NULL;
-}
-
 static const char *detect_broken_norm16(void) {
 	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
 	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
@@ -832,12 +811,6 @@ static const char *detect_broken_norm16(void) {
 }
 
 static void glcommon_check_issues(void) {
-	glext.issues.avoid_sampler_uniform_updates = glcommon_check_workaround(
-		"avoid sampler uniform updates",
-		"TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES",
-		detect_slow_sampler_update
-	);
-
 	glext.issues.disable_norm16 = glcommon_check_workaround(
 		"disable normalized 16bpc pixel formats",
 		"TAISEI_GL_WORKAROUND_DISABLE_NORM16",
