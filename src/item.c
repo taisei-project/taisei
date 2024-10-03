@@ -92,6 +92,9 @@ static void ent_draw_item(EntityInterface *ent) {
 	const int indicator_display_y = 6;
 	float y = im(i->pos);
 
+	ShaderCustomParams shader_params = { 1.0f };
+	ShaderProgram *shader = res_shader("sprite_particle");
+
 	if(y < 0) {
 		Sprite *s = i->sprites.indicator;
 
@@ -99,6 +102,8 @@ static void ent_draw_item(EntityInterface *ent) {
 			float alpha = -tanhf(y * 0.1f) / (1 + 0.1 * fabsf(y));
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = s,
+				.shader_ptr = shader,
+				.shader_params = &shader_params,
 				.pos = { re(i->pos), indicator_display_y },
 				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 			});
@@ -114,6 +119,8 @@ static void ent_draw_item(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = i->sprites.pickup,
+		.shader_ptr = shader,
+		.shader_params = &shader_params,
 		.pos = { re(i->pos), y },
 		.color = c,
 	});
