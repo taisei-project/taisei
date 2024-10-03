@@ -685,6 +685,8 @@ void draw_boss_background(Boss *boss) {
 	r_mat_mv_scale(f, f, 1);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = res_sprite("boss_circle"),
+		.shader_ptr = res_shader("sprite_particle"),
+		.shader_params = &(ShaderCustomParams) { 1.0f },
 		.color = RGBA(1, 1, 1, 0),
 	});
 	r_mat_mv_pop();
@@ -714,6 +716,8 @@ static void ent_draw_boss(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
+		.shader_ptr = res_shader("sprite_particle"),
+		.shader_params = &(ShaderCustomParams) { 1.0f },
 		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
 		.color = c,
 	});
