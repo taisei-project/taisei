@@ -622,6 +622,7 @@ static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
+	r_disable(RCAP_CULL_FACE);
 
 	// if(player_is_powersurge_active(&global.plr)) {
 		r_state_push();
@@ -675,6 +676,7 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
+	r_disable(RCAP_CULL_FACE);
 
 	cmplx fpos = global.boss->pos;;
 	cmplx pos = fpos;
@@ -809,6 +811,7 @@ static void stage_render_bg(StageInfo *stage) {
 	if(should_draw_stage_bg()) {
 		r_mat_mv_push();
 		r_enable(RCAP_DEPTH_TEST);
+		r_enable(RCAP_CULL_FACE);
 		stage->procs->draw();
 		r_mat_mv_pop();
 		fbpair_swap(background);
@@ -816,6 +819,7 @@ static void stage_render_bg(StageInfo *stage) {
 
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_disable(RCAP_DEPTH_TEST);
+	r_disable(RCAP_CULL_FACE);
 
 	apply_bg_shaders(stage->procs->shader_rules, background);
 
