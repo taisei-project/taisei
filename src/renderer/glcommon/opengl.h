@@ -156,8 +156,7 @@ struct glext_s {
 	} version;
 
 	struct {
-		uchar avoid_sampler_uniform_updates : 1;
-		uchar disable_norm16 : 1;
+		bool disable_norm16 : 1;
 	} issues;
 
 	ext_flag_t clear_texture;
