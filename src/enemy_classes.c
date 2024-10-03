@@ -291,6 +291,8 @@ static void swirl_draw(Enemy *e, EnemyDrawParams p) {
 	r_draw_sprite(&(SpriteParams) {
 		.color = RGBA(o*b*b, o*b*b, o*b*b, o),
 		.sprite_ptr = vp->spr,
+		.shader_ptr = res_shader("sprite_particle"),
+		.shader_params = &(ShaderCustomParams) { 1.0f },
 		.pos.as_cmplx = visual_pos(&p, vp),
 		.rotation.angle = p.time * 10 * DEG2RAD,
 		.scale = { vp->scale, vp->scale },
