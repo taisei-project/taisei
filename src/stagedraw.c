@@ -876,20 +876,20 @@ static void stage_draw_objects(void) {
 
 void stage_draw_overlay(void) {
 	r_state_push();
-	r_shader("sprite_default");
 	r_blend(BLEND_PREMUL_ALPHA);
+	r_disable(RCAP_CULL_FACE);
 
 	if(global.boss) {
 		draw_boss_overlay(global.boss);
 	}
 
+	player_draw_overlay(&global.plr);
+
 	if(stagedraw.clear_screen.alpha > 0) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);
 	}
 
-	r_shader_standard();
 	stagetext_draw();
-	player_draw_overlay(&global.plr);
 	r_state_pop();
 }
 

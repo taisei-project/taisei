@@ -442,13 +442,11 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = res_sprite("spell"),
+		.shader_ptr = res_shader("sprite_default"),
 		.pos = { (VIEWPORT_W - 128), y_offset * (1 - pow(1 - f2, 5)) + VIEWPORT_H * pow(1 - f2, 2) },
 		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
 	});
-
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
-	r_disable(RCAP_CULL_FACE);
 
 	int delay = attacktype_start_delay(b->current->type);
 	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
@@ -472,8 +470,6 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	}
 
 	r_mat_mv_pop();
-
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
 
 	if(warn_progress < 1) {
 		draw_spell_warning(font, im(x0) - font_get_lineskip(font), warn_progress, opacity);
@@ -735,15 +731,9 @@ void draw_boss_fake_overlay(Boss *boss) {
 void draw_boss_overlay(Boss *boss) {
 	bool radial_style = healthbar_style_is_radial();
 
-	if(!radial_style) {
-		draw_linear_healthbar(boss);
-	}
-
 	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
 	if(o > 0) {
-		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, res_font("standard"), RGBA(o, o, o, o));
-
 		if(boss->current && ATTACK_IS_SPELL(boss->current->type)) {
 			int t_portrait, t_spell;
 			t_portrait = t_spell = global.frames - boss->current->starttime;
@@ -752,6 +742,8 @@ void draw_boss_overlay(Boss *boss) {
 			draw_spell_portrait(boss, t_portrait);
 			draw_spell_name(boss, t_spell, radial_style);
 		}
+
+		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, res_font("standard"), RGBA(o, o, o, o));
 
 		float remaining = boss->hud.attack_timer;
 		Color clr_int, clr_fract;
@@ -816,6 +808,10 @@ void draw_boss_overlay(Boss *boss) {
 		}
 
 		r_color4(1, 1, 1, 1);
+	}
+
+	if(!radial_style) {
+		draw_linear_healthbar(boss);
 	}
 }
 
