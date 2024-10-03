@@ -140,18 +140,14 @@ void sdlgpu_renew_swapchain_texture(void) {
 		}
 	}
 
-	if(SDL_AcquireGPUSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window, &sdlgpu.frame.swapchain.tex)) {
+	if(SDL_AcquireGPUSwapchainTexture(sdlgpu.frame.cbuf, sdlgpu.window,
+		&sdlgpu.frame.swapchain.tex, &sdlgpu.frame.swapchain.width, &sdlgpu.frame.swapchain.height)
+	) {
 		if(sdlgpu.frame.swapchain.tex) {
-			int w, h;
-			// TODO cache this on resize events in video.c
-			SDL_GetWindowSizeInPixels(sdlgpu.window, &w, &h);
-
-			sdlgpu.frame.swapchain.width = w;
-			sdlgpu.frame.swapchain.height = h;
 			sdlgpu.frame.swapchain.fmt = SDL_GetGPUSwapchainTextureFormat(sdlgpu.device, sdlgpu.window);
 
-			sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf,
-				"Acquired swapchan %ux%u, format=%u", w, h, sdlgpu.frame.swapchain.fmt);
+			sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Acquired swapchan %ux%u, format=%u",
+				sdlgpu.frame.swapchain.width, sdlgpu.frame.swapchain.height, sdlgpu.frame.swapchain.fmt);
 		} else {
 			sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Swapchain acquisition failed");
 		}
