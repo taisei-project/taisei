@@ -188,7 +188,7 @@ static void init_sdl(void) {
 	SDL_SetHintWithPriority(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0", SDL_HINT_OVERRIDE);
 #endif
 
-	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
+	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", SDL_LOG_PRIORITY_INFO);
 
 	if(sdl_logprio >= SDL_LOG_PRIORITY_VERBOSE) {
 		SDL_SetLogPriorities(sdl_logprio);
