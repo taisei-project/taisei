@@ -1376,8 +1376,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out
 	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_enable(RCAP_CULL_FACE);
-	r_cull(CULL_BACK);
+	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
 
 	r_mat_mv_push_identity();
