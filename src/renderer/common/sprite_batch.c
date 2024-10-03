@@ -158,7 +158,9 @@ void r_flush_sprites(void) {
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
 
 	for(uint i = 0; i < ARRAY_SIZE(tex_aux_names); ++i) {
-		r_uniform_sampler(tex_aux_names[i], _r_sprite_batch.aux_textures[i]);
+		if(_r_sprite_batch.aux_textures[i]) {
+			r_uniform_sampler(tex_aux_names[i], _r_sprite_batch.aux_textures[i]);
+		}
 	}
 
 	r_framebuffer(_r_sprite_batch.framebuffer);
