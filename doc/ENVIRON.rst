@@ -56,6 +56,22 @@ Virtual filesystem
    -  On **Linux**, **\*BSD**, and most other **Unix**-like systems,
       it's ``$XDG_DATA_HOME/taisei`` or ``$HOME/.local/share/taisei``.
 
+**TAISEI_CACHE_PATH**
+   | Default: unset
+
+   If set, overrides the default **cache directly** path. This is where
+   Taisei stores transcoded Basis Universal textures and translated shaders
+   to speed up future loading times.
+
+   -  On **Windows**, it's ``%LOCALAPPDATA%\taisei\cache``.
+   -  On **macOS**, it's ``$HOME/Library/Caches/taisei``.
+   -  On **Linux**, **\*BSD**, and most other **Unix**-like systems,
+      it's ``$XDG_CACHE_HOME/taisei`` or ``$HOME/.cache/taisei``.
+
+   It is safe to delete this directly; Taisei will rebuild the cache as it
+   loads resources. If you don't want Taisei to write a persistent cache,
+   you can set this to a non-writable directory.
+
 Resources
 ~~~~~~~~~
 
@@ -93,6 +109,38 @@ Resources
    If ``1``, Taisei will load all shader programs at startup. This is mainly
    useful for developers to quickly ensure that none of them fail to compile.
 
+**TAISEI_AGGRESSIVE_PRELOAD**
+   | Default: ``0``
+
+   If ``1``, Taisei will scan all available resources and try to load all of
+   them at startup. Implies ``TAISEI_NOUNLOAD=1``.
+
+**TAISEI_BASISU_FORCE_UNCOMPRESSED**
+   | Default: ``0``
+
+   If ``1``, Basis Universal-compressed textures will be decompressed on the
+   CPU and sent to the GPU in an uncompressed form. For debugging.
+
+**TAISEI_BASISU_MAX_MIP_LEVELS**
+   | Default: ``0``
+
+   If ``>0``, limits the amount of mipmap layers loaded from Basis Universal
+   textures. For debugging.
+
+**TAISEI_BASISU_MIP_BIAS**
+   | Default: ``0``
+
+   If ``>0``, makes Taisei load lower resolution versions of Basis Universal
+   textures that have mipmaps. Each level halves the resolution in each
+   dimension.
+
+**TAISEI_TASKMGR_NUM_THREADS**
+   | Default: ``0`` (auto-detect)
+
+   How many background worker threads to create for handling tasks such as
+   resource loading. If ``0``, this will default to double the amount of
+   logical CPU cores on the host machine.
+
 Video and OpenGL
 ~~~~~~~~~~~~~~~~
 
@@ -109,6 +157,18 @@ Video and OpenGL
    | **Deprecated**
 
    Use ``SDL_VIDEODRIVER`` instead.
+
+**TAISEI_VIDEO_RECREATE_ON_FULLSCREEN**
+   | Default: ``0``; ``1`` on X11
+
+   If ``1``, Taisei will re-create the window when switching between fullscreen
+   and windowed modes. Can be useful to work around some window manager bugs.
+
+**TAISEI_VIDEO_RECREATE_ON_RESIZE**
+   | Default: ``0``; ``1`` on X11 and Emscripten
+
+   If ``1``, Taisei will re-create the window when the window size is changed
+   in the settings. Can be useful to work around some window manager bugs.
 
 **TAISEI_RENDERER**
    | Default: ``gl33``
@@ -150,6 +210,36 @@ Video and OpenGL
    Mesa) provide their own mechanisms for controlling extensions. You most
    likely want to use that instead.
 
+**TAISEI_GL_WORKAROUND_DISABLE_NORM16**
+   | Default: unset
+
+   If ``1``, disables use of normalized 16 bit-per-channel textures in OpenGL.
+   May be useful to work around broken drivers. If unset (default), will try
+   to automatically disable them on drivers that are known to be problematic.
+   If ``0``, 16-bit textures will always be used when available.
+
+**TAISEI_GL33_CORE_PROFILE**
+   | Default: ``1``
+
+   If ``1``, try to create a Core profile context in the gl33 backend.
+   If ``0``, create a Compatibility profile context.
+
+**TAISEI_GL33_FORWARD_COMPATIBLE**
+   | Default: ``1``
+
+   If ``1``, try to create a forward-compatible context with some deprecated
+   OpenGL features disabled.
+
+**TAISEI_GL33_VERSION_MAJOR**
+   | Default: ``3``
+
+   Request an OpenGL context with this major version.
+
+**TAISEI_GL33_VERSION_MINOR**
+   | Default: ``3``
+
+   Request an OpenGL context with this minor version.
+
 **TAISEI_FRAMERATE_GRAPHS**
    | Default: ``0`` for release builds, ``1`` for debug builds
 
@@ -159,6 +249,27 @@ Video and OpenGL
    | Default: ``0``
 
    Displays some statistics about usage of in-game objects.
+
+**TAISEI_ANGLE_WEBGL**
+   | Default: ``0``; ``1`` on Windows
+
+   If ``1`` and the gles30 renderer backend has been configured to use ANGLE,
+   it will create a WebGL-compatible context. This is needed to work around
+   broken cubemaps in ANGLE's D3D11 backend.
+
+Audio
+~~~~~
+
+**TAISEI_AUDIO_BACKEND**
+   | Default: ``sdl``
+
+   Selects the audio playback backend to use. Currently available options are:
+
+      -  ``sdl``: the SDL2 audio subsystem, with a custom mixer
+      -  ``null``: no audio playback
+
+   Note that the actual subset of usable backends, as well as the default
+   choice, can be controlled by build options.
 
 Timing
 ~~~~~~
@@ -198,6 +309,79 @@ Timing
    cases. ``TAISEI_FRAMELIMITER_SLEEP``, ``TAISEI_FRAMELIMITER_COMPENSATE``,
    and the ``frameskip`` setting have no effect in this mode.
 
+Demo Playback
+~~~~~~~~~~~~~
+
+**TAISEI_DEMO_TIME**
+   | Default: ``3600`` (1 minute)
+
+   How much time (in frames) of user inactivity is required to begin playing
+   demo replays in the menu. If ``<=0``, demo playback will be disabled.
+
+
+**TAISEI_DEMO_INTER_TIME**
+   | Default: ``1800`` (30 seconds)
+
+   How much time (in frames) of user inactivity is required to advance to the
+   next demo in the sequence in between demo playback. This delay will be reset
+   back to ``TAISEI_DEMO_TIME`` on user activity.
+
+Kiosk Mode
+~~~~~~~~~~
+
+**TAISEI_KIOSK**
+   | Default: ``0``
+
+   If ``1``, run Taisei in "kiosk mode". This forces the game into fullscreen,
+   makes the window uncloseable, disables the "Quit" main menu option, and
+   enables a watchdog that resets the game back to the main menu and default
+   settings if there's no user activity for too long.
+
+   Useful for running a public "arcade cabinet" at events. You can customize
+   the game's default setting by placing a ``config.default`` file into one of
+   the resource search paths, e.g. ``$HOME/.local/share/taisei/resources``.
+   The format is the same as the ``config`` file created by Taisei in the
+   storage directly.
+
+**TAISEI_KIOSK_PREVENT_QUIT**
+   | Default: ``0``
+
+   If ``1``, allows users to quit the game in kiosk mode. Useful if you're
+   running a multi-game arcade cabinet setup.
+
+**TAISEI_KIOSK_TIMEOUT**
+   | Default: ``7200`` (2 minutes)
+
+   Timeout for the reset watchdog in kiosk mode (in frames).
+
+Frame Dump Mode
+~~~~~~~~~~~~~~~
+
+**TAISEI_FRAMEDUMP**
+   | Default: unset
+   | **Experimental**
+
+   If set, enables the framedump mode. In framedump mode, Taiseil will write
+   every rendered frame as a .png file into a directly specified by this variable.
+
+**TAISEI_FRAMEDUMP_SOURCE**
+   | Default: ``screen``
+
+   If set to ``screen``, the framedump mode will record the whole window, similar
+   to taking a screenshot. If set to ``viewport``, it will record only the contents
+   of the in-game viewport framebuffer, and will only be active while in-game. Note
+   that it is not the same as cropping a screenshot to the size of the viewport.
+   Some elements that are rendered on top of the viewport, such as dialogue portraits,
+   will not be captured.
+
+**TAISEI_FRAMEDUMP_COMPRESSION**
+   | Default: ``1``
+
+   Level of deflate compression to apply to dumped frames, in the 0-9 range. Lower
+   values will produce larger files that will encode faster. Larger values may create
+   a large backlog of frames to encode that will consume a lot of RAM, depending on
+   your CPU's capabilities.
+
 Miscellaneous
 ~~~~~~~~~~~~~
 
@@ -207,6 +391,13 @@ Miscellaneous
 
    If ``1``, enables automatic integration with Feral Interactive's GameMode
    daemon. Only meaningful for GameMode-enabled builds.
+
+**TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY**
+   | Default: ``300``
+
+   How frequently to write desync detection hashes into replays (every X frames).
+   Lowering this value results in larger replays with more accurate desync
+   detection. Intended for debugging desyncing replays with ``--rereplay``.
 
 Logging
 ~~~~~~~
@@ -283,6 +474,12 @@ The variables
    shutting down. This will make the game quit faster if log writing is
    slow, at the expense of log integrity. Ignored if ``TAISEI_LOG_ASYNC``
    is disabled.
+
+**TAISEI_SDL_LOG**
+   | Default: ``0``
+
+   If ``>0``, redirects SDL's log output into the Taisei log. The value
+   controls the minimum log priority; see ``SDL_log.h`` for details.
 
 Examples
 ^^^^^^^^
