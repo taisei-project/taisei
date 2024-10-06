@@ -199,7 +199,7 @@ jobs:
   macos-release-build-universal:
     name: macOS (Universal)
     if: ${{ (github.event.inputs.macos-x64-arm64 || 'true') == 'true' }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - name: Install Tools
       run: >
@@ -214,6 +214,8 @@ jobs:
         python-gnupg
         setuptools
         zstandard
+        --break-system-packages
+
       shell: bash
 
     - name: Import GPG Key
@@ -229,7 +231,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
-    - name: Checkout ANGLE DLLs
+    - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
@@ -306,7 +308,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
-    - name: Checkout ANGLE DLLs
+    - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
@@ -397,7 +399,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
-    - name: Checkout ANGLE DLLs
+    - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
