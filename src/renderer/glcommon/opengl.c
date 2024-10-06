@@ -180,20 +180,6 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 	log_warn("Extension not supported"); \
 } while(0)
 
-ext_flag_t glcommon_require_extension(const char *ext) {
-	ext_flag_t val = glcommon_check_extension(ext);
-
-	if(!val) {
-		if(env_get("TAISEI_GL_REQUIRE_EXTENSION_FATAL", 0)) {
-			log_fatal("Required extension %s is not available", ext);
-		}
-
-		log_error("Required extension %s is not available, expect crashes or rendering errors", ext);
-	}
-
-	return val;
-}
-
 static void glcommon_ext_debug_output(void) {
 	EXT_FLAG(debug_output);
 

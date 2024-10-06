@@ -143,7 +143,6 @@ void glcommon_load_functions(void);
 void glcommon_check_capabilities(void);
 void glcommon_unload_library(void);
 ext_flag_t glcommon_check_extension(const char *ext) attr_nonnull_all;
-ext_flag_t glcommon_require_extension(const char *ext) attr_nonnull_all;
 void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags);
 
 struct glext_s {
