@@ -399,7 +399,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	events_init();
 
 	if(global.is_kiosk_mode) {
-		watchdog_init(env_get("TAISEI_KIOSK_TIMEOUT", 60 * FPS));
+		watchdog_init(env_get("TAISEI_KIOSK_TIMEOUT", 120 * FPS));
 		events_register_handler(&(EventHandler) {
 			.priority = EPRIO_SYSTEM,
 			.event_type = MAKE_TAISEI_EVENT(TE_WATCHDOG),
