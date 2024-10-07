@@ -214,6 +214,8 @@ jobs:
         python-gnupg
         setuptools
         zstandard
+        --break-system-packages
+
       shell: bash
 
     - name: Import GPG Key
@@ -228,6 +230,12 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
+
+    - name: Checkout Compiled ANGLE Libraries
+      uses: actions/checkout@v4
+      with:
+        repository: taisei-project/angle-compiled
+        path: angle-compiled
 
     - name: Configure
       run: |
@@ -300,7 +308,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
-    - name: Checkout ANGLE DLLs
+    - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
@@ -391,7 +399,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
-    - name: Checkout ANGLE DLLs
+    - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
