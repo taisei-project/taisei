@@ -21,7 +21,7 @@
 #include "video.h"
 
 attr_nonnull_all
-static void do_save_replay(Replay *rpy) {
+void do_save_replay(Replay *rpy) {
 	char strtime[FILENAME_TIMESTAMP_MIN_BUF_SIZE], *name;
 	char prepr[16], drepr[16];
 

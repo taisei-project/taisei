@@ -116,6 +116,7 @@ MenuData* create_main_menu(void) {
 	ptrdiff_t stage_practice_idx, spell_practice_idx;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
+	add_menu_entry(m, "TF.DE Contest Mode", start_game_contest, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
 	stage_practice_entry = add_menu_entry(m, "Stage Practice", menu_action_enter_stagepractice, NULL);
 	stage_practice_idx = dynarray_indexof(&m->entries, stage_practice_entry);

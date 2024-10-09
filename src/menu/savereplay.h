@@ -14,3 +14,6 @@
 
 void ask_save_replay(Replay *rpy, CallChain next)
 	attr_nonnull(1);
+
+void do_save_replay(Replay *rpy)
+	attr_nonnull(1);

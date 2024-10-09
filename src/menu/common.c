@@ -32,6 +32,7 @@ typedef struct StartGameContext {
 	Replay replay;
 	Difficulty difficulty;
 	ResourceGroup rg;
+	bool contest_mode;
 } StartGameContext;
 
 static void start_game_do_pick_character(CallChainResult ccr);
@@ -72,6 +73,21 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 	}
 }
 
+void start_game_contest(MenuData *m, void *arg) {
+	auto ctx = ALLOC(StartGameContext);
+	res_group_init(&ctx->rg);
+
+	StageInfo *info = stageinfo_get_by_id(5);
+	global.is_practice_mode = false;
+	ctx->current_stage = info;
+	ctx->restart_stage = info;
+	ctx->difficulty = D_Normal;
+	ctx->contest_mode = true;
+
+	CallChain cc_pick_character = CALLCHAIN(start_game_do_pick_character, ctx);
+	run_call_chain(&cc_pick_character, NULL);
+}
+
 static void start_game_do_pick_character(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 	MenuData *prev_menu = ccr.result;
@@ -104,6 +120,11 @@ static void reset_game(StartGameContext *ctx) {
 		progress.game_settings.shotmode
 	);
 	global.diff = ctx->difficulty;
+
+	if(ctx->contest_mode) {
+		global.plr.lives = 6;
+		global.plr.power_stored = 400;
+	}
 
 	assert(global.plr.mode != NULL);
 }
@@ -156,7 +177,7 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 		} else {
 			CallChain cc;
 
-			if(global.gameover == GAMEOVER_WIN) {
+			if(global.gameover == GAMEOVER_WIN && !ctx->contest_mode) {
 				res_group_release(&ctx->rg);
 				res_purge();
 				credits_preload(&ctx->rg);
@@ -165,7 +186,12 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 				cc = CALLCHAIN(start_game_do_cleanup, ctx);
 			}
 
-			ask_save_replay(&ctx->replay, cc);
+			if(ctx->contest_mode) {
+				do_save_replay(&ctx->replay);
+				run_call_chain(&cc, NULL);
+			} else {
+				ask_save_replay(&ctx->replay, cc);
+			}
 		}
 	} else {
 		ask_save_replay(&ctx->replay, CALLCHAIN(start_game_do_cleanup, ctx));
