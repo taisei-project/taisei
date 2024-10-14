@@ -29,7 +29,7 @@ on:
 env:
   MESON_VERSION: '0.63.3'
   EM_VERSION: '3.1.68'
-  PYTHON_VERSION: '3.11.8'
+  PYTHON_VERSION: '3.11'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -102,9 +102,9 @@ jobs:
         if-no-files-found: warn
 
   macos-test-build:
-    name: macOS (x64)
+    name: macOS (ARM64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: macos-12
+    runs-on: macos-15
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -140,7 +140,7 @@ jobs:
         meson setup build/
         --native-file misc/ci/common-options.ini
         --native-file misc/ci/nofallback.ini
-        --native-file misc/ci/macos-x86_64-build-test-ci.ini
+        --native-file misc/ci/macos-aarch64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
     - name: Build

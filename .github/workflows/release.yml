@@ -44,7 +44,7 @@ env:
   REF: ${{ github.event.inputs.custom-ref || github.ref || 'master' }}
   MESON_VERSION: '0.63.3'
   EM_VERSION: '3.1.68'
-  PYTHON_VERSION: '3.11.8'
+  PYTHON_VERSION: '3.11'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -199,7 +199,7 @@ jobs:
   macos-release-build-universal:
     name: macOS (Universal)
     if: ${{ (github.event.inputs.macos-x64-arm64 || 'true') == 'true' }}
-    runs-on: macos-12
+    runs-on: macos-15
     steps:
     - name: Install Tools
       run: >
