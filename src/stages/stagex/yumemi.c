@@ -328,9 +328,7 @@ void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target) {
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
-	sp->sprite = NULL;
 	sp->sprite_ptr = res_sprite("dialog/yumemi_misc_code_mask");
-	sp->shader = NULL;
 	sp->shader_ptr = res_shader("sprite_yumemi_overlay");
 	sp->aux_textures[0] = res_texture("stagex/code");
 	sp->shader_params = &(ShaderCustomParams) {

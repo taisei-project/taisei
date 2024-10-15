@@ -15,7 +15,7 @@ void spriteMain(out vec4 fragColor) {
 	vec2 codeUV = texCoordRaw + mask.rb * (1 - mask.g) * 0.1;
 
 	vec4 code_params = vec4(code_aspect * vec2(1.5, 1), num_segs, inv_num_segs);
-	vec4 code = sample_code(tex_aux[0], code_params, codeUV + vec2(0.03, -0.05) * time);
+	vec4 code = sample_code(tex_aux0, code_params, codeUV + vec2(0.03, -0.05) * time);
 
 	float m = 0.5 + 0.5 * sin(time * 3.21 + codeUV.y * 96.31);
 	float ca = (1 - smoothstep(0.01, 0.2, mix(mask.b, mask.r, m)));
@@ -28,7 +28,7 @@ void spriteMain(out vec4 fragColor) {
 
 	fragColor = vec4(code.rgb + mask.rgb * code.a * 2, 0);
 
-	code = sample_code(tex_aux[0], code_params, codeUV + vec2(-0.0359, -0.04837) * time);
+	code = sample_code(tex_aux0, code_params, codeUV + vec2(-0.0359, -0.04837) * time);
 	fragColor.rgb += vec3(mask.rgb * code.a * 2);
 
 	fragColor *= color * mask.a;
