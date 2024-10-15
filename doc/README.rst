@@ -6,7 +6,7 @@ Here's a list of all the docs we have for working with Taisei.
 Gameplay & Troubleshooting
 --------------------------
 
-* `MANUAL.rst <./MANUAL.rst>`__ - the general game manual on how to play Taisei
+* `GAME.rst <./GAME.rst>`__ - the general game manual on how to play Taisei
 * `STORY.txt <./STORY.txt>`__ - the story of Taisei Project
 * `CONTROLLER.rst <./CONTROLLER.rst>`__ - how to use a controller with Taisei
 

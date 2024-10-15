@@ -41,7 +41,8 @@ There are a few ways to generate a custom mapping:
    but not open source.
 -  Finally, you can try to write a mapping by hand. You will probably have to
    refer to the SDL documentation. See `gamecontrollerdb.txt
-   <misc/gamecontrollerdb/gamecontrollerdb.txt>`__ for some more examples.
+   <https://github.com/taisei-project/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt>`__
+   for some more examples.
 
 Whether you use one of the above tools, or hand-roll one yourself, the mapping
 should look something like this:
