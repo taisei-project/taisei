@@ -27,12 +27,12 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *ani = res_anim("boss/wriggle");
 	AniSequence *seq = get_ani_sequence(ani, "fly");
  	r_draw_sprite(&(SpriteParams){
-	 	.shader = "sprite_default",
-	 	.pos.as_cmplx = p->pos,
-	 	.scale.as_cmplx = p->scale,
-	 	.sprite_ptr = animation_get_frame(ani, seq, global.frames),
-	 	.color = &p->color,
-	 	.rotation.angle = p->angle+M_PI/2,
+		.shader_ptr = res_shader("sprite_default"),
+		.pos.as_cmplx = p->pos,
+		.scale.as_cmplx = p->scale,
+		.sprite_ptr = animation_get_frame(ani, seq, global.frames),
+		.color = &p->color,
+		.rotation.angle = p->angle+M_PI/2,
  	});
 }
 
