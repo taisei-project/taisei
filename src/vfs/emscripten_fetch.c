@@ -13,6 +13,8 @@
 #include "rwops/rwops_dummy.h"
 
 #include <dirent.h>
+#include <emscripten/em_js.h>
+#include <emscripten/emscripten.h>
 #include <emscripten/fetch.h>
 #include <sys/stat.h>
 #include <unistd.h>

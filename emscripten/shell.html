@@ -5,6 +5,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico"/>
     <link rel="preload" href="taisei.wasm" as="fetch" crossorigin/>
     <title>Taisei Project — Web version (Experimental!)</title>
+    <script id="taisei-script" src="taisei.js" async></script>
     <style>
         body {
             background-image: url('background.webp');
@@ -211,6 +212,108 @@
         Powered by&nbsp;<a href="https://emscripten.org/">Emscripten</a>
     </div>
     <!--<script type="text/javascript" src="webgl-debug.js"></script>-->
-    {{{ SCRIPT }}}
+    <script type="application/javascript">
+        function E(id) { return document.getElementById(id); }
+
+        var statusElement = E('status');
+        var progressElement = E('progress');
+        var spinnerElement = E('spinner');
+        var canvasElement = E('canvas');
+        var canvasContainerElement = E('canvasContainer');
+        var logToggleElement = E('logToggle');
+        var logToggleContainerElement = E('logToggleContainer');
+        var logContainerElement = E('logContainer');
+        var logOutputElement = E('output');
+        var taiseiScriptElement = E('taisei-script');
+        var dlMessage = statusElement.innerText;
+        logToggleElement.checked = false;
+
+        var setStatus = (() => {
+            var ss = {};
+            return (text, force) => {
+                if (!text && !force) return;
+                if (!ss.last) ss.last = { time: Date.now(), text: '' };
+                if (text === ss.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - ss.last.time < 30) return; // if this is a progress update, skip it if too soon
+                ss.last.time = now;
+                ss.last.text = text;
+                if (m) {
+                    text = m[1];
+                    progressElement.value = parseInt(m[2])*100;
+                    progressElement.max = parseInt(m[4])*100;
+                    progressElement.hidden = false;
+                    spinnerElement.hidden = !canvasElement.hidden;
+                } else {
+                    progressElement.value = null;
+                    progressElement.max = null;
+                    progressElement.hidden = true;
+                    if (!text) spinnerElement.hidden = true;
+                }
+                statusElement.innerText = text.replace(/^Downloading(?: data)?\.\.\./, dlMessage).replace('...', '…');
+                console.log("[STATUS] " + statusElement.innerText);
+            };
+        })();
+
+        window.onerror = function(error) {
+            setStatus('Error: ' + error);
+        };
+
+        window['toggleLog'] = function toggleLog() {
+            logContainerElement.hidden = !logToggleElement.checked;
+            logOutputElement.scrollTop = logOutputElement.scrollHeight;
+        }
+
+        var glContext = canvasElement.getContext('webgl2', {
+            'alpha' : false,
+            'antialias' : false,
+            'depth' : false,
+            'powerPreference' : 'high-performance',
+            'premultipliedAlpha' : true,
+            'preserveDrawingBuffer' : false,
+            'stencil' : false,
+        });
+
+        if(!glContext) {
+            throw "Could not create a WebGL 2 context";
+        }
+
+        // glContext = WebGLDebugUtils.makeDebugContext(glContext);
+
+        canvasElement.addEventListener("webglcontextlost", function(e) {
+            alert('WebGL context lost. You will need to reload the page.');
+            e.preventDefault();
+        }, false);
+
+        logOutputElement.value = ''; // clear browser cache
+
+        var taisei;
+        taiseiScriptElement.addEventListener('load', async() => {
+            taisei = await createTaisei({
+                'canvas': canvasElement,
+                'preinitializedWebGLContext': glContext,
+                'onFirstFrame': function() {
+                    canvasContainerElement.hidden = false;
+                    logToggleContainerElement.style.display = "inline-block";
+                    setStatus('', true);
+                },
+                'print': function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                    logOutputElement.value += text + "\n";
+                    logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
+                },
+                'printErr': function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.error(text);
+                },
+                'setStatus': setStatus,
+            });
+
+            taisei.initFilesystem();
+            taisei.callMain();
+        });
+    </script>
 </body>
 </html>
