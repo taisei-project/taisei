@@ -75,8 +75,8 @@ involved to use but providing a few worthwhile advantages.
 Simple Movement
 ^^^^^^^^^^^^^^^
 
-Let's take a few concrete examples within Taisei's code. For let's look at a
-piece of movement code for a fairy:
+There are a few concrete examples within Taisei's code, so let's take a look at
+one: a piece of movement code for a fairy.
 
 .. code-block:: c
 
