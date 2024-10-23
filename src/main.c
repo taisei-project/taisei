@@ -242,6 +242,7 @@ typedef struct MainContext {
 	ResourceGroup rg;
 	int replay_idx;
 	uchar headless : 1;
+	uchar commit_persistent_data : 1;
 } MainContext;
 
 static void main_post_vfsinit(CallChainResult ccr);
@@ -478,6 +479,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 #endif
 
 	if(!progress_is_cutscene_unlocked(CUTSCENE_ID_INTRO) || ctx->cli.force_intro) {
+		ctx->commit_persistent_data = true;
 		cutscene_enter(cc_mainmenu, CUTSCENE_ID_INTRO);
 		eventloop_run();
 		return;
@@ -489,6 +491,11 @@ static void main_post_vfsinit(CallChainResult ccr) {
 
 static void main_mainmenu(CallChainResult ccr) {
 	MainContext *ctx = ccr.ctx;
+
+	if(ctx->commit_persistent_data) {
+		taisei_commit_persistent_data();
+	}
+
 	demoplayer_init();
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 }
