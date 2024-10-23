@@ -47,6 +47,7 @@
             color: #eeeeee;
             overflow: overlay;
             margin: 0px;
+            text-shadow: 2px 2px black;
         }
 
         div.emscripten {
@@ -62,32 +63,67 @@
         }
 
         div.header {
-            padding: 0px 16px;
+            padding: 10vh 24px;
             text-align: center;
         }
 
         div.footer {
             text-align: center;
             position: absolute;
-            bottom: 16px;
+            bottom: 0;
+            padding-bottom: 16px;
             width: 100%;
+            transition: all 0.25s ease-in-out;
         }
 
-        div.centered {
-            position: absolute;
-            bottom: 50%;
+        div.footer.backdrop {
+            background-color: #000000C0;
+        }
+
+        div.footer.hidden {
+            opacity: 0.0;
+            background-color: #00000000;
+        }
+
+        div.footer.hidden:hover {
+            opacity: 1.0;
+            background-color: #000000C0;
+        }
+
+        div#infoContainer {
+            position: fixed;
+            top: 50%;
             left: 0;
             right: 0;
-            transform: translateY(50%);
+            transform: translateY(-50%);
             background-color: #000000C0;
             padding: 16px 0px;
             z-index: 1;
+            transition: all 0.25s ease-in-out;
+        }
+
+        div#infoContainer.top {
+            top: 0%;
+            transform: translateY(0%);
+            background-color: #00000000;
+            opacity: 0.5;
+        }
+
+        div#infoContainer.top:hover {
+            top: 0%;
+            transform: translateY(0%);
+            background-color: #000000C0;
+            opacity: 1.0;
         }
 
         /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
         canvas.emscripten {
             border: 0px none;
             background-color: none;
+            position: fixed;
+            display: block;
+            width: 100vw;
+            height: 100vh;
         }
 
         #spinner {
@@ -105,10 +141,9 @@
         }
 
         #logToggleContainer {
-            display: /* inline-block */ none;
+            display: none;
             position: relative;
-            left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(25%);
             opacity: 0.5;
         }
 
@@ -184,18 +219,11 @@
     </style>
 </head>
 <body>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1 style="z-index: -10;"></canvas>
     <div class="header">
-        <h3>Note: this web port is experimental and may not perform as well as the original game, which you can&nbsp;<a href="https://taisei-project.org/download">download here</a>.</h3>
+        <h3 id="warning">WARNING: This game is not designed to run in a browser.<br/><a href="https://taisei-project.org/download">Download</a> the desktop version for a smoother experience.</h3>
     </div>
-    <div class="centered">
-        <div class="spinner" id="spinner"><img src="scythe.webp" class="spinner"/></div>
-        <div class="emscripten" id="status">Girls are now downloading, please wait warmly…</div>
-        <div class="emscripten">
-            <progress value="0" max="100" id="progress" ></progress>
-        </div>
-        <div class="emscripten_border" id="canvasContainer" hidden>
-            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-        </div>
+    <div id="infoContainer">
         <div id="logToggleContainer" hidden>
             <input type="checkbox" name="logToggle" id="logToggle" onclick="toggleLog()"/>
             <label for="logToggle"> Show log</label>
@@ -203,13 +231,18 @@
         <div id="logContainer" hidden>
             <textarea class="emscripten" id="output" rows="12" readonly></textarea>
         </div>
+        <div class="spinner" id="spinner"><img src="scythe.webp" class="spinner"/></div>
+        <div class="emscripten" id="status">Girls are now downloading, please wait warmly…</div>
+        <div class="emscripten">
+            <progress value="0" max="100" id="progress" ></progress>
+        </div>
     </div>
-    <div class="footer">
+    <div id="footer" class="footer">
         <a href="https://taisei-project.org/">Taisei Project</a>&nbsp;·&nbsp;
         <a href="https://taisei-project.org/code">Source code</a>&nbsp;·&nbsp;
         <a href="https://taisei-project.org/discord">Discord</a>
         <br/>
-        Powered by&nbsp;<a href="https://emscripten.org/">Emscripten</a>
+        Web port powered by&nbsp;<a href="https://emscripten.org/">Emscripten</a>
     </div>
     <!--<script type="text/javascript" src="webgl-debug.js"></script>-->
     <script type="application/javascript">
@@ -219,7 +252,8 @@
         var progressElement = E('progress');
         var spinnerElement = E('spinner');
         var canvasElement = E('canvas');
-        var canvasContainerElement = E('canvasContainer');
+        var infoContainerElement = E('infoContainer');
+        var footerElement = E('footer');
         var logToggleElement = E('logToggle');
         var logToggleContainerElement = E('logToggleContainer');
         var logContainerElement = E('logContainer');
@@ -231,15 +265,15 @@
         var setStatus = (() => {
             var ss = {};
             return (text, force) => {
-                if (!text && !force) return;
-                if (!ss.last) ss.last = { time: Date.now(), text: '' };
-                if (text === ss.last.text) return;
+                if(!text && !force) return;
+                if(!ss.last) ss.last = { time: Date.now(), text: '' };
+                if(text === ss.last.text) return;
                 var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
                 var now = Date.now();
-                if (m && now - ss.last.time < 30) return; // if this is a progress update, skip it if too soon
+                if(m && now - ss.last.time < 30) return; // if this is a progress update, skip it if too soon
                 ss.last.time = now;
                 ss.last.text = text;
-                if (m) {
+                if(m) {
                     text = m[1];
                     progressElement.value = parseInt(m[2])*100;
                     progressElement.max = parseInt(m[4])*100;
@@ -249,16 +283,14 @@
                     progressElement.value = null;
                     progressElement.max = null;
                     progressElement.hidden = true;
-                    if (!text) spinnerElement.hidden = true;
+                    if(!text) spinnerElement.hidden = true;
                 }
                 statusElement.innerText = text.replace(/^Downloading(?: data)?\.\.\./, dlMessage).replace('...', '…');
                 console.log("[STATUS] " + statusElement.innerText);
             };
         })();
 
-        window.onerror = function(error) {
-            setStatus('Error: ' + error);
-        };
+        window.onerror = error => setStatus('Error: ' + error);
 
         window['toggleLog'] = function toggleLog() {
             logContainerElement.hidden = !logToggleElement.checked;
@@ -266,13 +298,13 @@
         }
 
         var glContext = canvasElement.getContext('webgl2', {
-            'alpha' : false,
-            'antialias' : false,
-            'depth' : false,
-            'powerPreference' : 'high-performance',
-            'premultipliedAlpha' : true,
-            'preserveDrawingBuffer' : false,
-            'stencil' : false,
+            alpha : false,
+            antialias : false,
+            depth : false,
+            powerPreference : 'high-performance',
+            premultipliedAlpha : true,
+            preserveDrawingBuffer : false,
+            stencil : false,
         });
 
         if(!glContext) {
@@ -281,36 +313,53 @@
 
         // glContext = WebGLDebugUtils.makeDebugContext(glContext);
 
-        canvasElement.addEventListener("webglcontextlost", function(e) {
+        canvasElement.addEventListener("webglcontextlost", e => {
             alert('WebGL context lost. You will need to reload the page.');
             e.preventDefault();
         }, false);
 
+        document.addEventListener('keydown', function(event) {
+            if(event.key === 'F11' || event.key === 'F12') {
+                event.stopImmediatePropagation();
+            }
+        });
+
+        window.onresize = function() {
+            canvasElement.width = canvasElement.offsetWidth;
+            canvasElement.height = canvasElement.offsetHeight;
+        };
+
         logOutputElement.value = ''; // clear browser cache
 
-        var taisei;
-        taiseiScriptElement.addEventListener('load', async() => {
-            taisei = await createTaisei({
-                'canvas': canvasElement,
-                'preinitializedWebGLContext': glContext,
-                'onFirstFrame': function() {
-                    canvasContainerElement.hidden = false;
-                    logToggleContainerElement.style.display = "inline-block";
-                    setStatus('', true);
-                },
-                'print': function(text) {
-                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                    console.log(text);
-                    logOutputElement.value += text + "\n";
-                    logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
-                },
-                'printErr': function(text) {
-                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                    console.error(text);
-                },
-                'setStatus': setStatus,
-            });
+        var taisei = {
+            canvas: canvasElement,
+            preinitializedWebGLContext: glContext,
+            onFirstFrame: function() {
+                canvasElement.style.zIndex = "0";
+                logToggleContainerElement.style.display = "inline-block";
+                infoContainerElement.classList.add('top');
+                footerElement.insertBefore(E('warning'), footerElement.childNodes[0]);
+                footerElement.classList.add('backdrop');
+                setTimeout(function() {
+                    footerElement.classList.add('hidden');
+                }, 7000);
+                setStatus('', true);
+            },
+            print: function(text) {
+                if(arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.log(text);
+                logOutputElement.value += text + "\n";
+                logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
+            },
+            printErr: function(text) {
+                if(arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            setStatus: setStatus,
+        };
 
+        taiseiScriptElement.addEventListener('load', async () => {
+            await createTaisei(taisei);
             taisei.initFilesystem();
             taisei.callMain();
         });

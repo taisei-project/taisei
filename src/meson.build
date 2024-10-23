@@ -301,7 +301,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORT_NAME=createTaisei',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
-        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall","callMain"]',
+        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall","callMain","FS","ENV"]',
         '-s', 'FETCH_SUPPORT_INDEXEDDB=0',
         '-s', 'FETCH',
         '-s', 'FILESYSTEM=1',

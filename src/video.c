@@ -186,6 +186,12 @@ static VideoCapabilityState video_query_capability_switch(VideoCapability cap) {
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_ALWAYS_ENABLED;
+
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
 			return VIDEO_NEVER_AVAILABLE;
 
 		case VIDEO_CAP_VSYNC_ADAPTIVE:
@@ -498,12 +504,30 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 	video_new_window_internal(display, RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
 }
 
+static bool restrict_to_capability(bool enabled, VideoCapability cap) {
+	VideoCapabilityState capval = video_query_capability(cap);
+
+	switch(capval) {
+		case VIDEO_ALWAYS_ENABLED:
+			return true;
+
+		case VIDEO_NEVER_AVAILABLE:
+			return false;
+
+		default:
+			return enabled;
+	}
+}
+
 static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
 	uint32_t flags = SDL_WINDOW_ALLOW_HIGHDPI;
 
-	if(fs || video_query_capability(VIDEO_CAP_FULLSCREEN) == VIDEO_ALWAYS_ENABLED) {
+	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
+	resizable = restrict_to_capability(resizable, VIDEO_CAP_EXTERNAL_RESIZE);
+
+	if(fs) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	} else if(resizable && video.backend != VIDEO_BACKEND_EMSCRIPTEN) {
+	} else if(resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
@@ -538,7 +562,7 @@ INLINE bool should_recreate_on_size_change(void) {
 		/* Resize failures are impossible to detect under some WMs */
 		video.backend == VIDEO_BACKEND_X11 ||
 		/* Needed to work around various SDL bugs and/or HTML/DOM quirks */
-		video.backend == VIDEO_BACKEND_EMSCRIPTEN ||
+		// video.backend == VIDEO_BACKEND_EMSCRIPTEN ||
 	0);
 
 	return env_get("TAISEI_VIDEO_RECREATE_ON_RESIZE", defaultval);
@@ -553,20 +577,6 @@ INLINE bool should_recreate_on_fullscreen_change(void) {
 	return env_get("TAISEI_VIDEO_RECREATE_ON_FULLSCREEN", defaultval);
 }
 
-static bool restrict_to_capability(bool enabled, VideoCapability cap) {
-	VideoCapabilityState capval = video_query_capability(cap);
-
-	switch(capval) {
-		case VIDEO_ALWAYS_ENABLED:
-			return true;
-
-		case VIDEO_NEVER_AVAILABLE:
-			return false;
-
-		default:
-			return enabled;
-	}
-}
 
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
@@ -585,6 +595,14 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 		return;
 	}
 
+	if(
+		!restrict_to_capability(true, VIDEO_CAP_CHANGE_RESOLUTION) &&
+		video.current.width > 0 && video.current.height > 0
+	) {
+		w = video.current.width;
+		h = video.current.height;
+	}
+
 	bool display_changed = display != video_current_display();
 	bool size_changed = w != video.current.width || h != video.current.height;
 	bool fullscreen_changed = video_is_fullscreen() != fs;
@@ -599,7 +617,7 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 		return;
 	}
 
-	if(size_changed) {
+	if(size_changed && !fs) {
 		if(!fullscreen_changed && should_recreate_on_size_change()) {
 			video_new_window(display, w, h, fs, resizable);
 			return;
@@ -626,6 +644,10 @@ SDL_Window *video_get_window(void) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
+	if(video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_AVAILABLE) {
+		return;
+	}
+
 	video_set_mode(
 		SDL_GetWindowDisplayIndex(video.window),
 		video.intended.width,
