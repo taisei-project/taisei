@@ -285,7 +285,7 @@ if host_machine.system() == 'emscripten'
 
     em_debug = is_debug_build
     em_link_outputs = []
-    em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
+    em_link_output_suffixes = ['js', 'wasm']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
     em_common_args = []
     em_link_args = [
@@ -299,10 +299,11 @@ if host_machine.system() == 'emscripten'
         '-s', 'DYNAMIC_EXECUTION=0',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
+        '-s', 'EXPORT_NAME=createTaisei',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
-        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
-        '-s', 'FETCH',
+        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall","callMain"]',
         '-s', 'FETCH_SUPPORT_INDEXEDDB=0',
+        '-s', 'FETCH',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_ENABLE_GET_PROC_ADDRESS',
@@ -312,12 +313,12 @@ if host_machine.system() == 'emscripten'
         '-s', 'GL_SUPPORT_SIMPLE_ENABLE_EXTENSIONS=0',
         '-s', 'IGNORE_MISSING_MAIN=0',
         '-s', 'INITIAL_MEMORY=268435456',
+        '-s', 'INVOKE_RUN=0',
         '-s', 'LLD_REPORT_UNDEFINED',
         '-s', 'MAX_WEBGL_VERSION=2',
         '-s', 'MIN_WEBGL_VERSION=2',
-        '-s', 'MODULARIZE=0',
+        '-s', 'MODULARIZE=1',
         '-s', 'STACK_SIZE=1MB',
-        '-s', 'STRICT_JS=1',
         '-s', 'SUPPORT_BIG_ENDIAN=1',
         '-s', 'WASM=1',
         '-lGL',
@@ -386,12 +387,12 @@ if host_machine.system() == 'emscripten'
         link_whole : libtaisei,
     )
 
-    taisei_html = custom_target(em_link_outputs[0],
+    taisei_js = custom_target(em_link_outputs[0],
         command : [
             meson.get_compiler('cpp').cmd_array(),
             taisei,
             '--pre-js', em_preamble,
-            '--shell-file', em_shell,
+            '--post-js', em_postamble,
             get_option('c_args'),
             get_option('c_link_args'),
             em_common_args,
@@ -406,7 +407,7 @@ if host_machine.system() == 'emscripten'
         console : true,
     )
 
-    bindist_deps += taisei_html
+    bindist_deps += taisei_js
 elif host_machine.system() == 'nx'
     taisei_elf_name = '@0@.elf'.format(taisei_basename)
     taisei_elf = executable(taisei_elf_name, taisei_src, taisei_main_src, version_deps,
