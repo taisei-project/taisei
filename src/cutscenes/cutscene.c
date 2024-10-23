@@ -187,8 +187,12 @@ static bool cutscene_event(SDL_Event *evt, void *ctx) {
 		cutscene_advance(st);
 	}
 
-	if(evt->type == MAKE_TAISEI_EVENT(TE_MENU_ABORT) && st->interruptible) {
-		cutscene_interrupt(st);
+	if(evt->type == MAKE_TAISEI_EVENT(TE_MENU_ABORT)) {
+		if(st->interruptible) {
+			cutscene_interrupt(st);
+		} else {
+			cutscene_advance(st);
+		}
 	}
 
 	return false;
