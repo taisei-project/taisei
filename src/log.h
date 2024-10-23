@@ -142,7 +142,7 @@ void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc);
 bool log_add_filter_string(const char *fstr);
 void log_remove_filters(void);
 
-#if defined(DEBUG) && !defined(__EMSCRIPTEN__)
+#if defined(DEBUG)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
 #else
 	#define log_debug(...) ((void)0)
