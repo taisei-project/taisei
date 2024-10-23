@@ -155,7 +155,7 @@ fundamental things like
 
 
 You can use ``llvm-mingw`` too, or you can check if your distro has any
-``mingw64`` cross-compiler toolchains available as well. That's is just the one
+``mingw64`` cross-compiler toolchains available as well. That's just the one
 that works for us.
 
 Additionally, you can install `nsis <https://nsis.sourceforge.io/Main_Page>`__
@@ -166,9 +166,8 @@ On macOS, you're probably better off using Docker and the
 `Docker container <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that
 ``llvm-mingw`` provides, and installing ``nsis`` on top of it.
 
-Another options for Windows-based computers is leveraging Windows
-10's
-`Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
+Another option for Windows-based computers is leveraging Windows 10's
+`Windows Subsystem For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
 to cross-compile to Windows using their Ubuntu image. You can also potentially
 use a ``mingw64`` toolchain directly on Windows, however that isn't supported
 or recommended, as it's generally more trouble than its worth.
@@ -176,7 +175,7 @@ or recommended, as it's generally more trouble than its worth.
 Build Options
 -------------
 
-This is *not* an exhaustive list. You can see the full list of option using
+This is *not* an exhaustive list. You can see the full list of options using
 ``meson`` in the ``taisei`` directory.
 
 .. code:: sh
@@ -295,10 +294,10 @@ Requires ``vfs_zip`` to be enabled as well.
 ZIP Package Loading (``-Dvfs_zip``)
 """""""""""""""""""""""""""""""""""""
 
-* Default: ``auto```
+* Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-Controls whether or not Taisei can load game data (textures, shaders, etc) from
+Controls whether Taisei can load game data (textures, shaders, etc.) from
 ``.zip`` files. Requires ``libzip``.
 
 .. code:: sh
@@ -343,7 +342,7 @@ The name of this flag is opposite of what you'd expect. Think of it as "Not
 Debugging". It controls the ``NDEBUG`` declaration which is responsible for
 deactivating ``assert()`` macros.
 
-Setting to ``false`` will *enable* assertions (i.e: good for debugging).
+Setting to ``false`` will *enable* assertions (good for debugging).
 
 Keep ``true`` during release.
 
@@ -363,10 +362,10 @@ Strict Compiler Warnings (``-Dwerror``)
 This option forces stricter checks against Taisei's codebase to ensure code
 health, treating all ``Warnings`` as ``Errors`` in the code.
 
-It's highly recommended to **enable** (i.e: ``true``) this whenever developing
-for the engine. Sometimes, it's overly-pedantic, but much of the time, it
-provides useful advice. (For example, it can detect potential null-pointer
-exceptions that may not be obvious to the human eye.)
+It's highly recommended to **enable** this (i.e. set to ``true``) whenever
+developing for the engine. Sometimes it's overly pedantic, but much of the
+time it provides useful advice. For example, it can detect potential
+pointer exceptions that may not be obvious to the human eye.
 
 This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
 for more information.
@@ -515,8 +514,8 @@ The chosen backend must not be disabled.
    # for GL ES 3.0
    meson configure build/ -Dr_default=gles30
 
-You can switch the renderer using the ``--renderer`` flag on the ``taisei``
-binary. (i.e: ``taisei --renderer gles30``).
+You can switch the renderer using the ``--renderer`` flag with the ``taisei``
+binary, like this: ``taisei --renderer gles30``.
 
 Shader Transpiler (``-Dshader_transpiler``)
 '''''''''''''''''''''''''''''''''''''''''''
@@ -542,10 +541,9 @@ ANGLE
 Building ANGLE (Optional)
 '''''''''''''''''''''''''
 `ANGLE <https://github.com/google/angle>`__ is Google's graphics translation
-layer, intended for for Chromium. Taisei packages it with Windows builds to
+layer, intended for Chromium. Taisei packages it with Windows builds to
 workaround some bugs and performance issues with many Windows OpenGL drivers,
-and it can be optionally packaged as as an experimental Metal renderer for
-macOS.
+and it can be optionally packaged as an experimental Metal renderer for macOS.
 
 You need to read
 `this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and

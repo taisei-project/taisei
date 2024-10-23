@@ -8,8 +8,8 @@ The .ani file needs to specify the number of sprites using the ``@sprite_count``
 attribute. Then different animation sequences can be defined.
 
 Animation sequences are chains of sprites that can be replayed in-game. For
-example Cirno can either fly normally or flex while flying. In order for the
-game to understand which sprites need to be shown in what order and time delay
+example, Cirno can either fly normally or flex while flying. In order for the
+game to understand which sprites need to be shown in what order and time delay,
 you need to define a sequence for every action.
 
 To define the action *right* of the player flying to the left for example,
@@ -32,7 +32,8 @@ number like d5 in the example is a parameter:
 **m0,m1**
   set the absolute mirroring of the following frames.
 
-All parameters are persistent within one sequence spec until you change them.
+All parameters are persistent within one sequence specification until you change
+them.
 
 More examples:
 
