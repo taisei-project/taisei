@@ -131,6 +131,18 @@ cmplx cdir(double angle) {
 	#endif
 }
 
+cmplxf cdirf(float angle) {
+	// this is faster than cexp(I*angle)
+
+	#ifdef TAISEI_BUILDCONF_HAVE_SINCOSF
+	float s, c;
+	sincosf(angle, &s, &c);
+	return CMPLXF(c, s);
+	#else
+	return CMPLXF(cosf(angle), sinf(angle));
+	#endif
+}
+
 cmplx cwmul(cmplx c0, cmplx c1) {
 	return CMPLX(re(c0) * re(c1), im(c0) * im(c1));
 }
