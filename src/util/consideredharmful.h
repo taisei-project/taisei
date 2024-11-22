@@ -8,6 +8,7 @@
 
 #pragma once
 #include "taisei.h"
+#include "util/compat.h"
 
 #include <stdio.h>
 
@@ -24,17 +25,23 @@ PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
 // clang generates lots of these warnings with _FORTIFY_SOURCE
 PRAGMA(GCC diagnostic ignored "-Wignored-attributes")
 
+#ifdef __GLIBC__
+#define OVERLOADABLE __attribute__((overloadable))
+#else
+#define OVERLOADABLE
+#endif
+
 #undef fopen
 attr_deprecated("Use vfs_open or SDL_RWFromFile instead")
 FILE* fopen();
 
 #undef strncat
 attr_deprecated("This function likely doesn't do what you expect, use strlcat")
-char* strncat();
+char* OVERLOADABLE strncat();
 
 #undef strncpy
 attr_deprecated("This function likely doesn't do what you expect, use strlcpy")
-char* strncpy();
+char* OVERLOADABLE strncpy();
 
 #undef errx
 attr_deprecated("Use log_fatal instead")
