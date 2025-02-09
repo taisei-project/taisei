@@ -77,6 +77,11 @@ static GLenum sync_read_request(FramebufferReadRequest *rq, GLuint64 timeout) {
 			break;
 		case GL_TIMEOUT_EXPIRED:
 			break;
+		case GL_NONE:
+			log_warn("BUG: glClientWaitSync() returned GL_NONE?");
+			glDeleteSync(rq->sync);
+			rq->sync = NULL;
+			break;
 		default: UNREACHABLE;
 	}
 
