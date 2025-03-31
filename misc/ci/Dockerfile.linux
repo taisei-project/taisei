@@ -1,42 +1,80 @@
-FROM ubuntu:focal
+FROM opensuse/tumbleweed:latest
 
-LABEL maintainer="Alice D. <alice@starwitch.productions>"
+LABEL maintainer="Andrii Aleksieiev <akari@taisei-project.org>"
 
-ENV LANG C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LLVM_MINGW_VERSION=20250319
 
-RUN apt update && \
-	apt install -y -qq \
-	build-essential \
-	libsdl2-dev \
-	libogg-dev \
-	libopusfile-dev \
-	libpng-dev \
-	libzip-dev \
-	libx11-dev \
-	libwayland-dev \
-	python3-docutils \
-	libwebp-dev \
-	libfreetype6-dev \
-	python3-pip \
-	libzstd-dev \
-	git
+RUN zypper refresh
 
-RUN mkdir -p -m 755 /etc/apt/keyrings
-
-RUN wget https://cli.github.com/packages/githubcli-archive-keyring.gpg -O /etc/apt/keyrings/githubcli-archive-keyring.gpg
-
-RUN chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
-
-RUN apt-get update
-
-RUN apt-get install -y --no-install-recommends gh
-
-RUN apt-get clean -y
-
-RUN pip3 install \
-	meson==0.63.3 \
+RUN zypper --no-refresh -n install -y \
+	alsa-devel \
+	awk \
+	cglm-devel \
+	clang \
+	cmake-full \
+	dbus-1-devel \
+	freetype2-devel \
+	gcc \
+	gcc-c++ \
+	gh \
+	git \
+	glslang-devel \
+	ibus-devel \
+	libdecor-devel \
+	libdrm-devel \
+	libgamemode-devel \
+	libgbm-devel \
+	libogg-devel \
+	libopus-devel \
+	libpng16-devel \
+	libpulse-devel \
+	libusb-devel \
+	libX11-devel \
+	libXcursor-devel \
+	libXext-devel \
+	libXfixes-devel \
+	libXi-devel \
+	libxkbcommon-devel \
+	libXrandr-devel \
+	libXScrnSaver-devel \
+	libzip-devel \
+	libzstd-devel \
+	lld \
+	llvm \
+	make \
+	Mesa-devel \
+	Mesa-KHR-devel \
+	Mesa-libEGL-devel \
+	Mesa-libGL-devel \
+	Mesa-libGLESv2-devel \
+	Mesa-libGLESv3-devel \
+	meson \
 	ninja \
-	zstandard
+	opusfile-devel \
+	pipewire-devel \
+	pipewire-jack \
+	pipewire-libjack-0_3-devel \
+	python313-docutils \
+	python313-Pygments \
+	python313-python-gnupg \
+	python313-zstandard \
+	sdl2-compat-devel \
+	SDL3-devel \
+	shaderc \
+	shaderc-devel \
+	systemd-devel \
+	vulkan-devel \
+	wayland-devel \
+	wayland-protocols-devel \
+	zig \
+	zlib-ng-compat-devel \
+	zlib-ng-devel
+
+RUN zypper clean
+
+RUN cd /opt && \
+	curl -L https://github.com/mstorsjo/llvm-mingw/releases/download/20250319/llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-20.04-x86_64.tar.xz -o llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-20.04-x86_64.tar.xz && \
+	tar xf llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-20.04-x86_64.tar.xz && \
+	ln -s llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-20.04-x86_64 llvm-mingw && \
+	rm llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-20.04-x86_64.tar.xz
