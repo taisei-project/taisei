@@ -27,9 +27,9 @@ on:
       - "**.wrap"
 
 env:
-  MESON_VERSION: '0.63.3'
+  MESON_VERSION: '1.7.0'
   EM_VERSION: '3.1.68'
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.13'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -38,7 +38,8 @@ jobs:
   linux-test-build:
     name: Linux (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: taiseiproject/linux-toolkit:20250331
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -49,30 +50,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install Tools
-      run: >
-        sudo apt update || true # debian cache is not atomic and can sometimes fail
-
-        sudo apt install -y -qq
-        build-essential
-        libsdl2-dev
-        libogg-dev
-        libopusfile-dev
-        libpng-dev
-        libzip-dev
-        libx11-dev
-        libwayland-dev
-        python3-docutils
-        libwebp-dev
-        libfreetype6-dev
-        libzstd-dev
-        libssl-dev
-
-        pip install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
 
     - name: Configure
       run: >
@@ -166,7 +143,7 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20240304 # cross-compiler with mingw
+    container: taiseiproject/linux-toolkit:20250331
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -197,7 +174,8 @@ jobs:
   emscripten-test-build:
     name: "Emscripten"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: taiseiproject/linux-toolkit:20250331
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -209,26 +187,6 @@ jobs:
       run: |
         git config --add safe.directory $(pwd)
         git fetch --force --tags
-
-    - name: Install Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install Tools
-      run: >
-        sudo apt update || true
-
-        sudo apt install -y -qq
-        python3-docutils
-        python3-pip
-        git
-
-        pip install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-        python-gnupg # required as we call into gen-dist.py for Emscripten
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache

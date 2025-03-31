@@ -42,9 +42,9 @@ on:
 
 env:
   REF: ${{ github.event.inputs.custom-ref || github.ref || 'master' }}
-  MESON_VERSION: '0.63.3'
+  MESON_VERSION: '1.7.0'
   EM_VERSION: '3.1.68'
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.13'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -74,39 +74,9 @@ jobs:
   linux-release-build-x64:
     name: "Linux (x64/Source)"
     if: ${{ (github.event.inputs.linux-x64 || 'true') == 'true' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: taiseiproject/linux-toolkit:20250331
     steps:
-
-    - name: Install Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install Tools
-      run: >
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-
-        sudo apt update || true # debian cache is not atomic and can sometimes fail
-
-        sudo apt install -y -qq
-        build-essential
-        libsdl2-dev
-        libx11-dev
-        libwayland-dev
-        python3-docutils
-        gnupg
-        gcc-10
-        g++-10
-
-        sudo update-alternatives --install
-        /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave
-        /usr/bin/g++ g++ /usr/bin/g++-10
-
-        pip install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-        python-gnupg
 
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
@@ -131,6 +101,7 @@ jobs:
         meson setup build/linux
         --native-file misc/ci/common-options.ini
         --native-file misc/ci/forcefallback.ini
+        --native-file misc/ci/linux-zigcc.ini
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
         -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
@@ -293,7 +264,7 @@ jobs:
     name: Windows (x64)
     if: ${{ (github.event.inputs.windows-x64 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20240304
+    container: taiseiproject/linux-toolkit:20250331
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
@@ -384,7 +355,7 @@ jobs:
     name: Windows (x86)
     if: ${{ (github.event.inputs.windows-x86 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20240304
+    container: taiseiproject/linux-toolkit:20250331
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
@@ -474,29 +445,9 @@ jobs:
   emscripten-release-build:
     name: Emscripten
     if: ${{ (github.event.inputs.emscripten || 'true') == 'true' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: taiseiproject/linux-toolkit:20250331
     steps:
-    - name: Install Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install Tools
-      run: >
-        sudo apt update || true
-
-        sudo apt install -y -qq
-        python3-docutils
-        python3-pip
-        git
-        gnupg
-
-        pip install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-        python-gnupg
-
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
       with:
