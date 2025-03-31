@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cmd="$(basename ${BASH_SOURCE[0]})"
+exec /usr/bin/zig ${cmd##zig-} -target x86_64-linux-gnu.2.29 -idirafter /usr/include "$@"
+
