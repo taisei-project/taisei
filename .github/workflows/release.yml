@@ -92,6 +92,11 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
+
     - name: Configure
       run: >
         git config --global --add safe.directory $(pwd)
@@ -202,6 +207,11 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
+
     - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
@@ -278,6 +288,11 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
+
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
 
     - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
@@ -370,6 +385,11 @@ jobs:
         fetch-depth: 0
         ref: ${{ env.REF }}
 
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
+
     - name: Checkout Compiled ANGLE Libraries
       uses: actions/checkout@v4
       with:
@@ -460,6 +480,11 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
+
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
@@ -558,6 +583,11 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
+
+    - name: Download subprojects
+      run: |
+        meson subprojects download
+      shell: bash
 
     - name: Configure
       run: >
