@@ -1,5 +1,0 @@
-[wrap-git]
-directory=vorbis
-url=https://github.com/taisei-project/vorbis.git
-push-url=git@github.com:taisei-project/vorbis.git
-revision=meson-1.3.6
