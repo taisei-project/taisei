@@ -39,7 +39,7 @@ jobs:
     name: Linux (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250331
+    container: taiseiproject/linux-toolkit:20250404
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -143,7 +143,7 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250331
+    container: taiseiproject/linux-toolkit:20250404
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -175,7 +175,7 @@ jobs:
     name: "Emscripten"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250331
+    container: taiseiproject/linux-toolkit:20250404
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
