@@ -75,7 +75,7 @@ jobs:
     name: "Linux (x64/Source)"
     if: ${{ (github.event.inputs.linux-x64 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250404
+    container: taiseiproject/linux-toolkit:20250418
     steps:
 
     - name: Import GPG Key
@@ -274,7 +274,7 @@ jobs:
     name: Windows (x64)
     if: ${{ (github.event.inputs.windows-x64 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250404
+    container: taiseiproject/linux-toolkit:20250418
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
@@ -370,7 +370,7 @@ jobs:
     name: Windows (x86)
     if: ${{ (github.event.inputs.windows-x86 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250404
+    container: taiseiproject/linux-toolkit:20250418
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
@@ -466,7 +466,7 @@ jobs:
     name: Emscripten
     if: ${{ (github.event.inputs.emscripten || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/linux-toolkit:20250404
+    container: taiseiproject/linux-toolkit:20250418
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6
