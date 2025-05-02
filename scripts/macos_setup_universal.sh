@@ -15,6 +15,7 @@ meson setup \
 	-Dangle_libgles=$TAISEI_ROOT/angle-compiled/lib/macOS-universal-dylib/libGLESv2.dylib \
 	--cross-file "$TAISEI_ROOT/misc/ci/common-options.ini" \
 	--cross-file "$TAISEI_ROOT/misc/ci/forcefallback.ini" \
+	--cross-file "$TAISEI_ROOT/misc/ci/macos-ugly-sdl3-hack.ini" \
 	--cross-file "$TAISEI_ROOT/misc/ci/macos-x86_64-build-release.ini" \
 	--prefix "$MESON_BUILD_ROOT_MACOS_X64_COMPILED" \
 	"$MESON_BUILD_ROOT_MACOS_X64" \
@@ -25,6 +26,7 @@ meson setup \
 	-Dangle_libgles=$TAISEI_ROOT/angle-compiled/lib/macOS-universal-dylib/libGLESv2.dylib \
 	--native-file "$TAISEI_ROOT/misc/ci/common-options.ini" \
 	--native-file "$TAISEI_ROOT/misc/ci/forcefallback.ini" \
+	--native-file "$TAISEI_ROOT/misc/ci/macos-ugly-sdl3-hack.ini" \
 	--native-file "$TAISEI_ROOT/misc/ci/macos-aarch64-build-release.ini" \
 	--prefix "$MESON_BUILD_ROOT_MACOS_AARCH64_COMPILED" \
 	"$MESON_BUILD_ROOT_MACOS_AARCH64" \
