@@ -729,6 +729,7 @@ static void video_screenshot_free_task_data(void *arg) {
 static void video_take_screenshot_callback(const Pixmap *px, void *userdata) {
 	if(!px) {
 		log_error("Failed to capture image");
+		video_screenshot_free_task_data(userdata);
 		return;
 	}
 
@@ -742,6 +743,20 @@ static void video_take_screenshot_callback(const Pixmap *px, void *userdata) {
 		.userdata = userdata,
 		.userdata_free_callback = video_screenshot_free_task_data,
 	}));
+}
+
+static void video_read_framebuffer(
+	Framebuffer *fb,
+	FramebufferAttachment attachment,
+	void *data,
+	FramebufferReadAsyncCallback callback
+) {
+	if(!fb && !(r_features() & r_feature_bit(RFEAT_DEFAULT_FRAMEBUFFER_READBACK))) {
+		log_error("Renderer doesn't support reading from the default framebuffer");
+		callback(NULL, data);
+	} else {
+		r_framebuffer_read_viewport_async(fb, attachment, data, callback);
+	}
 }
 
 void video_take_screenshot(bool viewport_only) {
@@ -761,8 +776,7 @@ void video_take_screenshot(bool viewport_only) {
 		attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	}
 
-	r_framebuffer_read_viewport_async(
-		fb, attachment, tdata, video_take_screenshot_callback);
+	video_read_framebuffer(fb, attachment, tdata, video_take_screenshot_callback);
 }
 
 static void video_take_framedump(void) {
@@ -781,8 +795,7 @@ static void video_take_framedump(void) {
 	auto tdata = ALLOC(ScreenshotTaskData);
 	tdata->frame_num = video.framedump.frame_count++;
 
-	r_framebuffer_read_viewport_async(
-		fb, attachment, tdata, video_take_screenshot_callback);
+	video_read_framebuffer(fb, attachment, tdata, video_take_screenshot_callback);
 }
 
 bool video_is_resizable(void) {
