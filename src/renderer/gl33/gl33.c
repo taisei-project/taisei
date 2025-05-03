@@ -365,6 +365,7 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
+	R.features |= r_feature_bit(RFEAT_DEFAULT_FRAMEBUFFER_READBACK);
 
 	if(glext.clear_texture) {
 		_r_backend.funcs.texture_clear = gl44_texture_clear;
