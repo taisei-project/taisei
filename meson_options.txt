@@ -134,7 +134,7 @@ option(
 option(
     'r_default',
     type : 'combo',
-    choices : ['auto', 'gl33', 'gles30', 'null'],
+    choices : ['auto', 'gl33', 'gles30', 'sdlgpu', 'null'],
     description : 'Which rendering backend to use by default'
 )
 
