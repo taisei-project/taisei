@@ -90,7 +90,7 @@ void r_shutdown(void) {
 
 		uint64_t ms = delta / (HRTIME_RESOLUTION / 1000);
 		double seconds = ms / 1000.0;
-		log_info("%zu frames in %.02f sec ~= %.02f FPS", R.frames, seconds, R.frames / seconds);
+		log_info("%zu frames in %.02f sec ~= %.02f FPS", (size_t)R.frames, seconds, R.frames / seconds);
 	}
 
 	_r_state_shutdown();
