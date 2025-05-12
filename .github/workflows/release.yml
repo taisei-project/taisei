@@ -212,12 +212,6 @@ jobs:
         meson subprojects download
       shell: bash
 
-    - name: Checkout Compiled ANGLE Libraries
-      uses: actions/checkout@v4
-      with:
-        repository: taisei-project/angle-compiled
-        path: angle-compiled
-
     - name: Configure
       run: |
         git config --global --add safe.directory $(pwd)
@@ -294,12 +288,6 @@ jobs:
         meson subprojects download
       shell: bash
 
-    - name: Checkout Compiled ANGLE Libraries
-      uses: actions/checkout@v4
-      with:
-        repository: taisei-project/angle-compiled
-        path: angle-compiled
-
     - name: Configure
       run: >
         git config --global --add safe.directory $(pwd)
@@ -307,8 +295,6 @@ jobs:
         git fetch --force --tags
 
         meson setup build/windows
-        -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
         --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
@@ -390,12 +376,6 @@ jobs:
         meson subprojects download
       shell: bash
 
-    - name: Checkout Compiled ANGLE Libraries
-      uses: actions/checkout@v4
-      with:
-        repository: taisei-project/angle-compiled
-        path: angle-compiled
-
     - name: Configure
       run: >
         git config --global --add safe.directory $(pwd)
@@ -403,8 +383,6 @@ jobs:
         git fetch --force --tags
 
         meson setup build/windows
-        -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
         --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
