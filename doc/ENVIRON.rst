@@ -141,8 +141,8 @@ Resources
    resource loading. If ``0``, this will default to double the amount of
    logical CPU cores on the host machine.
 
-Video and OpenGL
-~~~~~~~~~~~~~~~~
+Display and rendering
+~~~~~~~~~~~~~~~~~~~~~
 
 **TAISEI_VIDEO_RECREATE_ON_FULLSCREEN**
    | Default: ``0``; ``1`` on X11
@@ -167,6 +167,19 @@ Video and OpenGL
 
    Note that the actual subset of usable backends, as well as the default
    choice, can be controlled by build options.
+
+**TAISEI_FRAMERATE_GRAPHS**
+   | Default: ``0`` for release builds, ``1`` for debug builds
+
+   If ``1``, framerate graphs will be drawn on the HUD.
+
+**TAISEI_OBJPOOL_STATS**
+   | Default: ``0``
+
+   Displays some statistics about usage of in-game objects.
+
+OpenGL and GLES renderers
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **TAISEI_LIBGL**
    | Default: unset
@@ -225,16 +238,6 @@ Video and OpenGL
    | Default: ``3``
 
    Request an OpenGL context with this minor version.
-
-**TAISEI_FRAMERATE_GRAPHS**
-   | Default: ``0`` for release builds, ``1`` for debug builds
-
-   If ``1``, framerate graphs will be drawn on the HUD.
-
-**TAISEI_OBJPOOL_STATS**
-   | Default: ``0``
-
-   Displays some statistics about usage of in-game objects.
 
 **TAISEI_ANGLE_WEBGL**
    | Default: ``0``; ``1`` on Windows
