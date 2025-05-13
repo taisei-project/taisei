@@ -34,5 +34,9 @@ foreach toggle : passthrough_toggles
     endif
 endforeach
 
+if host_machine.system() == 'emscripten'
+    sdl3_options.add_cmake_defines({ 'EMSCRIPTEN' : true })
+endif
+
 sdl3_subproject = cmake.subproject('sdl3', options : sdl3_options)
 sdl3_dep = sdl3_subproject.dependency('SDL3-static')
