@@ -144,20 +144,6 @@ Resources
 Video and OpenGL
 ~~~~~~~~~~~~~~~~
 
-**TAISEI_PREFER_SDL_VIDEODRIVERS**
-   | Default: ``wayland,mir,cocoa,windows,x11``
-
-   List of SDL video backends that Taisei will attempt to use, in the
-   specified order, before falling back to SDL's default. Entries may be
-   separated by spaces, commas, colons, and semicolons. This variable is
-   ignored if ``SDL_VIDEODRIVER`` is set.
-
-**TAISEI_VIDEO_DRIVER**
-   | Default: unset
-   | **Deprecated**
-
-   Use ``SDL_VIDEODRIVER`` instead.
-
 **TAISEI_VIDEO_RECREATE_ON_FULLSCREEN**
    | Default: ``0``; ``1`` on X11
 
