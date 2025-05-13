@@ -249,6 +249,32 @@ OpenGL and GLES renderers
    it will create a WebGL-compatible context. This is needed to work around
    broken cubemaps in ANGLE's D3D11 backend.
 
+SDLGPU renderer
+~~~~~~~~~~~~~~~
+
+**TAISEI_SDLGPU_DEBUG**
+   | Default: ``0``
+
+   If ``1``, create the GPU context in debug mode. This enables some extra
+   assertions in SDLGPU and a backend-specific debugging mechanism, if available
+   On Vulkan this enables validation layers.
+
+**TAISEI_SDLGPU_PREFER_LOWPOWER**
+   | Default: ``0``
+
+   If ``1``, prefer to select a low-power, efficient GPU for rendering when
+   multiple are available. Usually this would be the integrated GPU on a laptop
+   with both integrated and discrete graphics.
+
+**TAISEI_SDLGPU_FAUX_BACKBUFFER**
+   | Default: ``1``
+
+   If ``1``, render the backbuffer into a staging texture before copying it to
+   the swapchain at presentation. This is needed to emulate swapchain reads on
+   SDLGPU, where the swapchain is write-only. Disabling this option eliminates
+   the copy overhead, but breaks screenshots. If you don't need the built-in
+   screenshow functionality, it is safe to turn it off.
+
 Audio
 ~~~~~
 
