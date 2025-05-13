@@ -3,7 +3,7 @@ directory=sdl3
 method=cmake
 url=https://github.com/taisei-project/SDL.git
 push-url=git@github.com:taisei-project/SDL.git
-revision=taisei-3.2.8
+revision=taisei-3.2.12
 
 [provide]
 sdl3=SDL3_static_dep
