@@ -157,16 +157,19 @@ Display and rendering
    in the settings. Can be useful to work around some window manager bugs.
 
 **TAISEI_RENDERER**
-   | Default: ``gl33``
+   | Default: ``gl33`` (but see below)
 
    Selects the rendering backend to use. Currently available options are:
 
       -  ``gl33``: the OpenGL 3.3 Core renderer
       -  ``gles30``: the OpenGL ES 3.0 renderer
+      -  ``sdlgpu``: the SDL3 GPU API renderer
       -  ``null``: the no-op renderer (nothing is displayed)
 
    Note that the actual subset of usable backends, as well as the default
-   choice, can be controlled by build options.
+   choice, can be controlled by build options. The official releases of Taisei
+   for Windows and macOS override the default to ``sdlgpu`` for improved
+   compatibility.
 
 **TAISEI_FRAMERATE_GRAPHS**
    | Default: ``0`` for release builds, ``1`` for debug builds
