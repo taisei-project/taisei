@@ -34,7 +34,7 @@ on:
         default: true
         type: boolean
       switch:
-        default: true
+        default: false
         type: boolean
   schedule:
     # run every Wednesday at 8AM EST
@@ -545,7 +545,7 @@ jobs:
 
   switch-release-build:
     name: Switch (ARM64)
-    if: ${{ (github.event.inputs.switch || 'true') == 'true' }}
+    if: ${{ (github.event.inputs.switch || 'false') == 'true' }}
     runs-on: ubuntu-latest
     container: taiseiproject/switch-toolkit:20240305
     steps:
