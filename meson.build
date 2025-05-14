@@ -717,6 +717,7 @@ meson.add_devenv({
 summary({
     'System type' : systype,
     'Build type' : get_option('buildtype'),
+    'Memory allocator' : allocator,
     'Developer mode' : is_developer_build,
 }, section : 'Main', bool_yn : true)
 

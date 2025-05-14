@@ -1,0 +1,9 @@
+[wrap-git]
+directory=mimalloc
+method=cmake
+url=https://github.com/taisei-project/mimalloc.git
+push-url=git@github.com:taisei-project/mimalloc.git
+revision=taisei-3.0.3
+
+[provide]
+mimalloc=mimalloc_static_dep

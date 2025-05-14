@@ -1,5 +1,13 @@
 
 option(
+    'allocator',
+    type  : 'combo',
+    choices : ['libc', 'mimalloc', 'auto'],
+    value : 'auto',
+    description : 'Which memory allocator to use'
+)
+
+option(
     'developer',
     type : 'combo',
     choices : ['true', 'false', 'auto'],
