@@ -29,6 +29,8 @@
 #define FETCH_CONTENT_ID(_fetch) \
 	((_fetch)->url + sizeof(TAISEI_BUILDCONF_DATA_PATH))
 
+#define PROP_FETCHIO_POINTER "taisei.fetchio.ptr"
+
 typedef struct FetchFSContext {
 	VFSResIndexFSContext resindex_ctx;
 	ht_str2ptr_t requests;
@@ -126,11 +128,8 @@ static void fetch_wait(emscripten_fetch_t *fetch) {
 	}
 }
 
-static int fetch_rwops_close(SDL_IOStream *rw) {
-	// HACK: mega-jank, heavily relies on rwops_dummy implementation details
-	int r = SDL_CloseIO(rw->hidden.unknown.data1);
-	emscripten_fetch_close(rw->hidden.unknown.data2);
-	return r;
+static void fetch_io_cleanup(void *userdata, void *value) {
+	emscripten_fetch_close(value);
 }
 
 static SDL_IOStream *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char *content_id, VFSOpenMode mode) {
@@ -158,11 +157,10 @@ static SDL_IOStream *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const ch
 	}
 
 	SDL_IOStream *memrw = NOT_NULL(SDL_IOFromConstMem(fetch->data, fetch->numBytes));
-	SDL_IOStream *wraprw = SDL_RWWrapDummy(memrw, true);
-	wraprw->close = fetch_rwops_close;
-	wraprw->hidden.unknown.data2 = fetch;
+	SDL_SetPointerPropertyWithCleanup(SDL_GetIOProperties(memrw),
+		PROP_FETCHIO_POINTER, fetch, fetch_io_cleanup, NULL);
 
-	return wraprw;
+	return memrw;
 }
 
 static void vfs_fetch_free(VFSResIndexFSContext *resindex_ctx) {
