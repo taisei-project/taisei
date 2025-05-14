@@ -30,11 +30,11 @@ void vfs_sync_callback(bool is_load, char *error, CallChain *next) {
 	}
 
 	run_call_chain(next, error);
-	free(next);
+	mem_free(next);
 }
 
 void vfs_sync(VFSSyncMode mode, CallChain next) {
-	CallChain *cc = memdup(&next, sizeof(next));
+	CallChain *cc = mem_dup(&next, sizeof(next));
 	EM_ASM({
 		SyncFS($0, $1);
 	}, (mode == VFS_SYNC_LOAD), cc);
