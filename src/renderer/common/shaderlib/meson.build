@@ -1,7 +1,6 @@
 
 r_shaderlib_src = files(
     'cache.c',
-    'lang_dxbc.c',
     'lang_glsl.c',
     'lang_spirv_aux.c',
     'reflect.c',
