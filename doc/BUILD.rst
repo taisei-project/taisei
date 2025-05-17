@@ -365,7 +365,7 @@ health, treating all ``Warnings`` as ``Errors`` in the code.
 It's highly recommended to **enable** this (i.e. set to ``true``) whenever
 developing for the engine. Sometimes it's overly pedantic, but much of the
 time it provides useful advice. For example, it can detect potential
-pointer exceptions that may not be obvious to the human eye.
+null pointer dereferences that may not be obvious to the human eye.
 
 This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
 for more information.
