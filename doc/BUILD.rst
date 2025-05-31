@@ -237,7 +237,7 @@ instead relying on system libraries. Useful for CI.
    meson configure build/ --wrap-mode=nofallback
 
 Relative Directory Install (``-Dinstall_relocatable``)
-"""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
@@ -292,7 +292,7 @@ Requires ``vfs_zip`` to be enabled as well.
    meson configure build/ -Dpackage_data=disabled
 
 ZIP Package Loading (``-Dvfs_zip``)
-"""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""
 
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
@@ -392,7 +392,7 @@ Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
 
 
 Debugging With Sanitizers (``-Db_sanitize``)
-""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""
 
 This is useful for debugging memory management errors, leaks, and undefined behavior.
 However, there is some additional setup required to use it.
@@ -463,7 +463,7 @@ Rendering
 """""""""
 
 Backends (``-Dr_*``)
-''''''''''''''''''''''
+''''''''''''''''''''
 
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
