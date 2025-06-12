@@ -195,7 +195,7 @@ opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
     error_message : 'GameMode is Linux-specific')
 
 dep_freetype    = dependency('freetype2',                           required : true)
-dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
+dep_png         = dependency('libpng', 'libpng16', version : '>=1.5',   required : true)
 dep_sdl3        = dependency('sdl3',           version : '>=3.2.0', fallback : ['sdl3-cmake-wrapper', 'sdl3_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
