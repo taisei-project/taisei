@@ -47,11 +47,6 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Install Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
     - name: Configure
       run: >
         meson setup build/
