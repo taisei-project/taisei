@@ -247,6 +247,8 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		.lang = *options->lang,
 	};
 
+	assume(m.lang.lang != SHLANG_SPIRV);
+
 	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
 		return _spirv_decompile(in, out, arena, options);
 	}
