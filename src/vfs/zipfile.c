@@ -76,6 +76,10 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 			struct zip_source_args_seek *s;
 			s = ZIP_SOURCE_GET_ARGS(struct zip_source_args_seek, data, len, &tls->error);
 
+			if(UNLIKELY(!s)) {
+				return -1;
+			}
+
 			assume(tls->stream != NULL);
 			ret = SDL_SeekIO(tls->stream, s->offset, s->whence);
 
