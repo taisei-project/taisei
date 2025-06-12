@@ -74,11 +74,11 @@ bool spirv_compile(
 	MemArena *arena,
 	const SPIRVCompileOptions *options,
 	bool reflect
-) attr_nonnull(1, 2, 3);
+) attr_nonnull_all;
 
 bool spirv_decompile(
 	const ShaderSource *in,
 	ShaderSource *out,
 	MemArena *arena,
 	const SPIRVDecompileOptions *options
-) attr_nonnull(1, 2, 3);
+) attr_nonnull_all;
