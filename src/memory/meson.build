@@ -28,8 +28,4 @@ if allocator == 'mimalloc'
     endif
 endif
 
-if host_machine.system() == 'windows' and allocator == 'libc'
-    warning('The Windows libc allocator is broken and doesn\'t support overalignment; proceed at your own peril.')
-endif
-
 memory_src += files('backend_@0@.c'.format(allocator))
