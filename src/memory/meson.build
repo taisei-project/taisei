@@ -11,7 +11,7 @@ allocator = get_option('allocator')
 orig_allocator = allocator
 
 if allocator == 'auto'
-    if host_machine.system() == 'windows'
+    if host_machine.system() != 'emscripten'
         allocator = 'mimalloc'
     else
         allocator = 'libc'
