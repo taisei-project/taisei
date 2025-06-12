@@ -103,7 +103,7 @@ jobs:
         opusfile
         libvorbis
         webp
-        sdl2
+        sdl3
         ninja
 
         pip install
