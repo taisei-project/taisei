@@ -141,7 +141,7 @@ void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len) {
 	}
 }
 
-void sha256_final(SHA256State *ctx, sha256_byte_t hash[], size_t hashlen) {
+void sha256_final(SHA256State *ctx, sha256_byte_t hash[SHA256_BLOCK_SIZE], size_t hashlen) {
 	assert(hashlen >= SHA256_BLOCK_SIZE);
 
 	sha256_word_t i;
