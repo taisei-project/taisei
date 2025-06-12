@@ -33,3 +33,8 @@ bool _spirv_decompile(
 	log_error("Compiled without SPIR-V support");
 	return false;
 }
+
+ShaderReflection *_spirv_reflect(const ShaderSource *src, MemArena *arena) {
+	log_error("Compiled without SPIR-V support");
+	return NULL;
+}
