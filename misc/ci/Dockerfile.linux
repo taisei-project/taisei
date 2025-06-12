@@ -83,12 +83,3 @@ RUN mkdir /var/tmp/llvm-mingw && \
 	./build-all.sh --host-clang --disable-lldb /opt/llvm-mingw && \
 	cd && \
 	rm -rf /var/tmp/llvm-mingw
-
-# Temporary workarounds for CMake support bugs in Meson
-# See https://github.com/mesonbuild/meson/pull
-
-RUN zypper --no-refresh -n install -y patch && \
-	cd /usr/lib/python3.*/site-packages/mesonbuild && \
-	curl -L https://github.com/taisei-project/meson/commit/ab83f709b88d781f03a0773c2c4b3fb16814a52e.patch | patch -p2 && \
-	curl -L https://github.com/taisei-project/meson/commit/f18770cd090f5b22d3eb3ad1a6c7f9a3de1bfb2b.patch | patch -p2 && \
-	zypper --no-refresh -n remove patch && zypper clean
