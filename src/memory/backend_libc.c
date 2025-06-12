@@ -69,9 +69,10 @@ void *mem_realloc(void *ptr, size_t size) {
 	assert_nolog(size > 0);
 
 	if(size == 0) {
-		mem_free(ptr);
 		DIAGNOSTIC(push)
 		DIAGNOSTIC(ignored "-Wnonnull")
+		DIAGNOSTIC_GCC(ignored "-Wmismatched-dealloc")
+		mem_free(ptr);
 		return NULL;
 		DIAGNOSTIC(pop)
 	}
