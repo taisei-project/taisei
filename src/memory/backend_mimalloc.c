@@ -26,6 +26,7 @@ void *mem_alloc_array(size_t num_members, size_t size) {
 }
 
 void *mem_realloc(void *ptr, size_t size) {
+	assert_nolog(size > 0);
 	return mi_realloc(ptr, size);
 }
 

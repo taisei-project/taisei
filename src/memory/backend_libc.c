@@ -66,9 +66,14 @@ void *mem_realloc(void *ptr, size_t size) {
 		return mem_alloc(size);
 	}
 
+	assert_nolog(size > 0);
+
 	if(size == 0) {
 		mem_free(ptr);
-		return ptr;
+		DIAGNOSTIC(push)
+		DIAGNOSTIC(ignored "-Wnonnull")
+		return NULL;
+		DIAGNOSTIC(pop)
 	}
 
 #if MEMALIGN_METHOD == MEMALIGN_METHOD_WIN32
