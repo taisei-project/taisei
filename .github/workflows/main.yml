@@ -25,6 +25,7 @@ on:
       - "**.build"
       - "**.ini"
       - "**.wrap"
+  workflow_dispatch:
 
 env:
   MESON_VERSION: '1.7.0'
