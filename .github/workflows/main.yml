@@ -47,6 +47,10 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Mark Git Safe Directory
+      run: |
+        git config --global --add safe.directory $(pwd)
+
     - name: Configure
       run: >
         meson setup build/
@@ -83,6 +87,10 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+
+    - name: Mark Git Safe Directory
+      run: |
+        git config --global --add safe.directory $(pwd)
 
     - name: Install Python
       uses: actions/setup-python@v5
@@ -146,6 +154,10 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Mark Git Safe Directory
+      run: |
+        git config --global --add safe.directory $(pwd)
+
     - name: Configure Taisei (Meson)
       run: >
         meson setup build/
@@ -178,6 +190,10 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
+
+    - name: Mark Git Safe Directory
+      run: |
+        git config --global --add safe.directory $(pwd)
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
