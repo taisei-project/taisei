@@ -179,11 +179,6 @@ jobs:
         submodules: 'recursive'
         fetch-depth: 0
 
-    - name: Fetch Git Tags
-      run: |
-        git config --add safe.directory $(pwd)
-        git fetch --force --tags
-
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
       uses: actions/cache@v4
