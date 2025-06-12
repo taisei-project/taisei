@@ -178,8 +178,6 @@ static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priori
 }
 
 static void init_sdl(void) {
-	mem_install_sdl_callbacks();
-
 	if(!SDL_Init(SDL_INIT_EVENTS)) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 	}
@@ -306,6 +304,7 @@ int main(int argc, char **argv);
 attr_used
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
+	mem_install_sdl_callbacks();
 	thread_init();
 	coroutines_init();
 	init_log();
