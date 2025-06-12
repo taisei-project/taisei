@@ -96,7 +96,7 @@ void *mem_alloc_aligned(size_t size, size_t alignment) {
 #elif MEMALIGN_METHOD == MEMALIGN_METHOD_POSIX
 	void *p;
 	attr_unused int r = posix_memalign(&p, alignment, size);
-	assert(r == 0);
+	assume(r == 0);
 	assume(p != NULL);
 	memset(p, 0, size);
 	return p;
