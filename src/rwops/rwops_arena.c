@@ -43,6 +43,8 @@ static int64_t rwarena_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 		case SDL_IO_SEEK_END:
 			new_ofs = (int64_t)st->buffer_size + offset;
 			break;
+
+		default: UNREACHABLE;
 	}
 
 	new_ofs = clamp(new_ofs, 0, (int64_t)st->buffer_size);
