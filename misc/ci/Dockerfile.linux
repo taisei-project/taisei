@@ -31,6 +31,7 @@ RUN zypper --no-refresh -n install -y \
 	libpng16-devel \
 	libpulse-devel \
 	libusb-devel \
+	libwebp-devel \
 	libX11-devel \
 	libXcursor-devel \
 	libXext-devel \
