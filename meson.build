@@ -197,8 +197,7 @@ opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng', 'libpng16', version : '>=1.5',   required : true)
 dep_sdl3        = dependency('sdl3',           version : '>=3.2.0', fallback : ['sdl3-cmake-wrapper', 'sdl3_dep'])
-dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
-dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
+dep_webp        = dependency('libwebpdecoder', 'libwebp', version : '>=0.5',   required : true)
 dep_zlib        = dependency('zlib',                                required : true)
 dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : ['libzstd', 'libzstd_dep'])
 dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip, allow_fallback : true)
@@ -225,21 +224,12 @@ taisei_deps = [
     dep_m,
     dep_png,
     dep_sdl3,
+    dep_webp,
     dep_zip,
     dep_zlib,
     dep_zstd,
     # don't add glad here
 ]
-
-wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
-
-if dep_webpdecoder.found() and not wrap_mode_forcefallback
-    # distro libwebpdecoder
-    taisei_deps += dep_webpdecoder
-else
-    # either distro libwebp, or libwebpdecoder from subproject
-    taisei_deps += dep_webp
-endif
 
 if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
