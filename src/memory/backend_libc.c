@@ -27,7 +27,7 @@
 #endif
 
 #if MEMALIGN_METHOD == MEMALIGN_METHOD_WIN32
-	#warning Not using win32 _aligned_alloc because it's known to crash. Over-aligned allocations will NOT be supported! Please use a custom allocator like mimalloc.
+	#warning "Not using win32 _aligned_alloc because it's known to crash. Over-aligned allocations will NOT be supported! Please use a custom allocator like mimalloc."
 	#undef MEMALIGN_METHOD
 	#define MEMALIGN_METHOD MEMALIGN_METHOD_YOLO
 #endif
