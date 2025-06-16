@@ -54,6 +54,7 @@ RUN zypper --no-refresh -n install -y \
 	meson \
 	mingw32-cross-nsis \
 	ninja \
+	openssh-clients \
 	opusfile-devel \
 	pipewire-devel \
 	pipewire-jack \
