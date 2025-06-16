@@ -373,8 +373,10 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_HOST_ENT(ent_struct_type) \
 	ENT_CAST(cotask_host_entity(cotask_active_unsafe(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)
 
-#define TASK_HOST_EVENTS(events_array) \
-	cotask_host_events(cotask_active_unsafe(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
+#define TASK_HOST_EVENTS(events_array) ({ \
+	(events_array) = ((typeof(events_array)) {}); \
+	cotask_host_events(cotask_active_unsafe(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_)); \
+})
 
 #define YIELD                cotask_yield(NULL)
 #define WAIT(delay)          cotask_wait(delay)
