@@ -26,6 +26,11 @@ on:
       - "**.ini"
       - "**.wrap"
   workflow_dispatch:
+    inputs:
+      publish-emscripten-build:
+        type: boolean
+        default: false
+        description: "Publish emscripten test build"
 
 env:
   MESON_VERSION: '1.7.0'
@@ -185,6 +190,16 @@ jobs:
     runs-on: ubuntu-latest
     container: taiseiproject/linux-toolkit:20250612
     steps:
+    - name: Set up variables
+      id: set-vars
+      run: |
+        PUBLISH_INPUT="${{ github.event.inputs.publish-emscripten-build || 'auto' }}"
+        if [[ "$PUBLISH_INPUT" == "true" || ( "$PUBLISH_INPUT" == "auto" && "${{ github.ref }}" == "refs/heads/master" ) ]]; then
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
@@ -242,7 +257,7 @@ jobs:
 
     - name: Checkout taisei-web-test
       uses: actions/checkout@v4
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       with:
         repository: taisei-project/taisei-web-test
         ssh-key: ${{ secrets.WEB_SSH_DEPLOY_KEY }}
@@ -250,35 +265,35 @@ jobs:
         clean: false
 
     - name: Prepare taisei-web-test
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         rm -v taisei-web-test/data/*
 
     - name: Install Standard Version to taisei-web-test
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         meson install -C build --no-rebuild
 
     - name: Configure Developer Version
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         sed -i "s/^\(taisei_basename = \).*/\1'taisei-dev'/" src/meson.build   # I'm sorry
         meson setup --reconfigure $(pwd) build/ -Ddeveloper=true
 
     - name: Build Developer Version
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         meson compile -C build/ --verbose
 
     - name: Install Developer Version to taisei-web-test
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         meson install -C build --no-rebuild
 
     - name: Deploy to taisei-web-test
-      if: github.ref == 'refs/heads/master'
+      if: ${{ steps.set-vars.outputs.publish == 'true' }}
       run: |
         TAISEI_VERSION=$(scripts/version.py)
         cd taisei-web-test
