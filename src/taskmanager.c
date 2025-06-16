@@ -263,8 +263,8 @@ uint taskmgr_remaining(TaskManager *mgr) {
 
 static void taskmgr_finalize_and_wait(TaskManager *mgr, bool do_abort) {
 	log_debug(
-		"%08lx [%p] waiting for %u tasks (abort = %i)",
-		SDL_GetCurrentThreadID(),
+		"%08llx [%p] waiting for %u tasks (abort = %i)",
+		(unsigned long long)SDL_GetCurrentThreadID(),
 		(void*)mgr,
 		taskmgr_remaining(mgr),
 		do_abort
