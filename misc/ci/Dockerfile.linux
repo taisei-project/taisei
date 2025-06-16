@@ -3,7 +3,7 @@ FROM opensuse/tumbleweed:latest
 LABEL maintainer="Andrii Aleksieiev <akari@taisei-project.org>"
 
 ENV LANG=C.UTF-8
-ENV LLVM_MINGW_VERSION=20250402
+ENV LLVM_MINGW_VERSION=20250613
 
 RUN zypper -n addrepo -C https://download.opensuse.org/repositories/windows:mingw:win32/openSUSE_Tumbleweed/windows:mingw:win32.repo && \
 	zypper -n --gpg-auto-import-keys refresh
