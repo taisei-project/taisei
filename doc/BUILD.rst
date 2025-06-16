@@ -45,7 +45,7 @@ Required
 ''''''''
 
 -  OpenGL >= 3.3, or OpenGL ES >= 3.0
--  SDL2 >= 2.0.16
+-  SDL3 >= 3.2.0
 -  cglm >= 0.7.8
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
