@@ -58,8 +58,8 @@ Required
 Optional
 ''''''''
 
--  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
--  libglslang (for OpenGL ES backends)
+-  SPIRV-Cross >= 2019-03-22 (for OpenGL ES and SDL-GPU backends)
+-  libglslang (for OpenGL ES and SDL-GPU backends)
 -  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
    flaky/non-existent OpenGL support, such as Windows)
 -  GameMode headers (Linux only; for automatic
@@ -478,6 +478,8 @@ Enable or disable the various renderer backends for Taisei.
    meson configure build/ -Dr_gl33=enabled
    # for GL ES 3.0
    meson configure build/ -Dr_gles30=enabled
+   # for SDL-GPU (Vulkan, Metal, D3D12)
+   meson configure build/ -Dr_sdlgpu=enabled
    # No-op backend (nothing displayed).
    # Disabling this will break the replay-verification mode.
    meson configure build/ -Dr_null=enabled
@@ -523,8 +525,8 @@ Shader Transpiler (``-Dshader_transpiler``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-For using OpenGL ES, the shader transpiler is necessary for converting Taisei's
-shaders to a format usable by that driver.
+For using OpenGL ES or SDL-GPU, the shader transpiler is necessary for converting
+Taisei's shaders to a format usable by that driver.
 
 Requires ``glslang`` and ``SPIRV-cross``.
 
