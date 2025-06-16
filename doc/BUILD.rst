@@ -484,18 +484,6 @@ Enable or disable the various renderer backends for Taisei.
    # Disabling this will break the replay-verification mode.
    meson configure build/ -Dr_null=enabled
 
-**NOTE:** GL ES 2.0 is *not recommended* as it is unsupported and may
-not work correctly. However, if for some reason you still want to use it,
-it requires a few extensions to be present on your system to function
-correctly, most notably:
-
-- ``OES_depth_texture`` or ``GL_ANGLE_depth_texture``
-- ``OES_standard_derivatives``
-- ``OES_vertex_array_object``
-- ``EXT_frag_depth``
-- ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
-  ``NV_instanced_arrays``
-
 Default Renderer (``-Dr_default``)
 ''''''''''''''''''''''''''''''''''
 
