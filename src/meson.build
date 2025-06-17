@@ -7,6 +7,8 @@ version_deps += custom_target('version information',
     output : 'version_auto.c',
 )
 
+taisei_main_src = files('main.c')
+
 if host_machine.system() == 'windows'
     winmod = import('windows')
 
@@ -37,7 +39,7 @@ if host_machine.system() == 'windows'
         output : 'taisei.rc',
     )
 
-    version_deps += winmod.compile_resources(
+    taisei_main_src += winmod.compile_resources(
         rc_target,
         depend_files : files(
             'taisei.manifest',
@@ -100,8 +102,6 @@ taisei_src = files(
     'video_postprocess.c',
     'watchdog.c',
 )
-
-taisei_main_src = files('main.c')
 
 if is_developer_build
     taisei_src += files(
