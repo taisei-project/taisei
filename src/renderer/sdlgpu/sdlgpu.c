@@ -442,8 +442,6 @@ static void sdlgpu_shutdown(void) {
 
 	SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);
 
-	SDL_WaitForGPUIdle(sdlgpu.device);
-
 	sdlgpu_pipecache_deinit();
 	SDL_ReleaseWindowFromGPUDevice(sdlgpu.device, sdlgpu.window);
 	SDL_DestroyGPUDevice(sdlgpu.device);
