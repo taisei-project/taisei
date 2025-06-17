@@ -436,6 +436,8 @@ static void sdlgpu_shutdown(void) {
 		sdlgpu_texture_destroy(sdlgpu.null_textures[i]);
 	}
 
+	SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);
+
 	SDL_WaitForGPUIdle(sdlgpu.device);
 
 	sdlgpu_pipecache_deinit();
