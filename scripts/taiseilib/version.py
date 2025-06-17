@@ -12,7 +12,7 @@ class VersionFormatError(common.TaiseiError):
     pass
 
 
-VERSION_FALLBACK = 'v1.4.1'
+VERSION_FALLBACK = 'v1.4.3'
 OVERRIDE_FILE_NAME = '.VERSION'
 
 
