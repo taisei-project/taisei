@@ -14,90 +14,71 @@
 // XXX: this header trips some of these deprecation warnings; include it early as a workaround
 #include <SDL3/SDL_cpuinfo.h>
 
+#define HARMFUL_FUNC(func, msg) \
+    __typeof__(func) (func) __attribute__((deprecated(msg)))
+
 //
 // safeguards against some dangerous or otherwise undesirable practices
 //
 
 PRAGMA(GCC diagnostic push)
-PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
-
-// clang generates lots of these warnings with _FORTIFY_SOURCE
-PRAGMA(GCC diagnostic ignored "-Wignored-attributes")
 
 #undef fopen
-attr_deprecated("Use vfs_open or SDL_IOFromFile instead")
-FILE* fopen();
+HARMFUL_FUNC(fopen, "Use vfs_open or SDL_IOFromFile instead");
 
 #undef strncat
-attr_deprecated("This function likely doesn't do what you expect, use strlcat")
-char* strncat();
+HARMFUL_FUNC(strncat, "This function likely doesn't do what you expect, use strlcat");
 
 #undef strncpy
-attr_deprecated("This function likely doesn't do what you expect, use strlcpy")
-char* strncpy();
-
-#undef errx
-attr_deprecated("Use log_fatal instead")
-noreturn void errx(int, const char*, ...);
-
-#undef warnx
-attr_deprecated("Use log_warn instead")
-void warnx(const char*, ...);
+HARMFUL_FUNC(strncpy, "This function likely doesn't do what you expect, use strlcpy");
 
 #undef printf
-attr_deprecated("Use log_info instead")
-int printf(const char*, ...);
+HARMFUL_FUNC(printf, "Use log_info instead");
 
 #undef fprintf
-attr_deprecated("Use log_warn or log_error instead (or SDL_IOStream if you want to write to a file)")
-int fprintf(FILE*, const char*, ...);
+HARMFUL_FUNC(fprintf, "Use log_warn or log_error instead (or SDL_IOStream if you want to write to a file)");
 
 #undef strtok
-attr_deprecated("Use strtok_r instead")
-char* strtok();
+HARMFUL_FUNC(strtok, "Use strtok_r instead");
 
 #undef sprintf
-attr_deprecated("Use snprintf or strfmt instead")
-int sprintf(char *, const char*, ...);
+HARMFUL_FUNC(sprintf, "Use snprintf or strfmt instead");
 
+#ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #undef getenv
-attr_deprecated("Use env_get instead")
-char* getenv();
+HARMFUL_FUNC(getenv, "Use env_get instead");
 
 #undef setenv
-attr_deprecated("Use env_set instead")
-int setenv();
+HARMFUL_FUNC(setenv, "Use env_set instead");
+#endif
 
 #undef rand
-attr_deprecated("Use tsrand instead")
-int rand(void);
+HARMFUL_FUNC(rand, "Use the random.h API instead");
 
 #undef srand
-attr_deprecated("Use tsrand_seed instead")
-void srand(uint);
+HARMFUL_FUNC(srand, "Use the random.h API instead");
 
+// These wrappers are to be used in memory/backend_libc.c, or if using the libc allocator is specifically required.
 INLINE void *libc_malloc(size_t size) { return malloc(size); }
-#undef malloc
-attr_deprecated("Use the memory.h API instead")
-void *malloc(size_t size);
-
 INLINE void libc_free(void *ptr) { free(ptr); }
-#undef free
-attr_deprecated("Use the memory.h API instead, or libc_free if this is a foreign allocation")
-void free(void *ptr);
-
 INLINE void *libc_calloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
-#undef calloc
-attr_deprecated("Use the memory.h API instead")
-void *calloc(size_t nmemb, size_t size);
-
 INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
+
+#undef malloc
+HARMFUL_FUNC(malloc, "Use the memory.h API instead");
+
+#undef free
+HARMFUL_FUNC(free, "Use the memory.h API instead, or libc_free if this is a foreign allocation");
+
+#undef calloc
+HARMFUL_FUNC(calloc, "Use the memory.h API instead");
+
 #undef realloc
-attr_deprecated("Use the memory.h API instead")
-void *realloc(void *ptr, size_t size);
+HARMFUL_FUNC(realloc, "Use the memory.h API instead");
 
 #undef strdup
-attr_deprecated("Use mem_strdup from memory.h instead")
-char *strdup(const char *s);
+HARMFUL_FUNC(strdup, "Use mem_strdup from memory.h instead");
+
+#undef HARMFUL_FUNC
 
 PRAGMA(GCC diagnostic pop)
