@@ -28,7 +28,7 @@ on:
         default: true
         type: boolean
       windows-x86:
-        default: true
+        default: false
         type: boolean
       emscripten:
         default: true
@@ -354,7 +354,7 @@ jobs:
 
   windows-release-build-x86:
     name: Windows (x86)
-    if: ${{ (github.event.inputs.windows-x86 || 'true') == 'true' }}
+    if: ${{ (github.event.inputs.windows-x86 || 'false') == 'true' }}
     runs-on: ubuntu-latest
     container: taiseiproject/linux-toolkit:20250616
     steps:
