@@ -312,6 +312,7 @@ static void gameover_menu_result(CallChainResult ccr) {
 
 	switch(action) {
 		case GAMEOVERMENU_ACTION_QUIT:
+		case GAMEOVERMENU_ACTION_DEFAULT:
 			if(global.plr.stats.total.continues_used >= MAX_CONTINUES) {
 				global.gameover = GAMEOVER_DEFEAT;
 			} else {
