@@ -426,7 +426,11 @@ static void sdlgpu_post_init(void) {
 
 static void sdlgpu_shutdown(void) {
 	sdlgpu_framebuffer_finalize_read_requests();
-	sdlgpu_submit_frame();
+	finish_all_passes();
+
+	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.frame.command_buffers); ++i) {
+		SDL_CancelGPUCommandBuffer(sdlgpu.frame.command_buffers[i]);
+	}
 
 	assert(!sdlgpu.render_pass.pass);
 	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_DRAW]);
