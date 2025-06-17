@@ -202,6 +202,12 @@ static void init_sdl(void) {
 	v = SDL_GetVersion();
 	log_info("Using SDL %u.%u.%u",
 		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
+
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "Taisei Project");
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, TAISEI_VERSION);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "org.taisei_project.Taisei");
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://taisei-project.org/");
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 }
 
 static void log_lib_versions(void) {
