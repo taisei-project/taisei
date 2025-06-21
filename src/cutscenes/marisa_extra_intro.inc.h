@@ -11,13 +11,13 @@
 	{ "cutscenes/marisa_extra/01", {
 		T_PATCHOULI("I get such a nervous feeling around the newcomers…"),
 		T_MARISA("They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"),
-		T_PATCHOULI("Sure, but… you said you knew them, from another world?"),
+		T_PATCHOULI("Sure… so, you said you knew them, from another world?"),
 		T_MARISA("Well, another me knew another them in another world."),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/01", {
-		T_MARISA("Actually, I kinda saw every possible iteration of myself, spannin’ out over infinity, folding onto ourselves, kinda like a really incredible katana gettin’ forged. It was intense!"),
-		T_PATCHOULI("It’s just like you to accidentally see the Time Knife…"),
+		T_MARISA("Actually, I kinda saw every possible iteration of myself, spannin’ out over infinity, folding onto ourselves, kinda like a really incredible blade gettin’ forged. It was intense!"),
+		T_PATCHOULI("It’s just like you to accidentally see the Temporal Sabre…"),
 		T_MARISA("The what-now?"),
 		{ 0 },
 	}},
@@ -43,7 +43,7 @@
 	}},
 	{ "cutscenes/marisa_extra/01", {
 		T_REMILIA("Forgive the young witch, she’s such a spoil-sport at times."),
-		T_KURUMI("Mm, indeed~."),
+		T_KURUMI("Mm, indeed~"),
 		T_MARISA("Ugh, and after I said y’all were cool…"),
 		{ 0 },
 	}},
@@ -68,8 +68,8 @@
 	{ "cutscenes/marisa_extra/02", {
 		T_KURUMI("Y-you saw me back there, right?! You were there! I didn’t do anything!"),
 		T_MARISA("Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To keep the fairies out?"),
-		T_KURUMI("Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another opens'?"),
-		T_MARISA("What do ya mean?"),
+		T_KURUMI("Y-yeah! But…"),
+		T_MARISA("Hmm? What is it?"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/02", {
@@ -84,13 +84,13 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/02", {
-		T_KURUMI("But, uh, you know, there might be a really powerful enemy there now? So please be careful???"),
+		T_KURUMI("But, uh, you know, there might be a really powerful enemy there now? So be careful???"),
 		T_MARISA("Aw, are ya worried about me? That’s cute."),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/02", {
-		T_NARRATOR("Marisa grinned and magically summoned her broom, mounting it deftly, and shooting right out of an open window in a flash.\n"),
-		T_NARRATOR("Her sights were set on the Tower that loomed and rumbled on the top of Yōkai Mountain…"),
+		T_NARRATOR("Marisa grinned and summoned her broom, mounting it deftly, and sped right out of an open window in a flash.\n"),
+		T_NARRATOR("Her sights were set on the Tower, the omnious epicentre that loomed and rumbled on the top of Yōkai Mountain…"),
 		{ 0 },
 	}},
 	{ NULL }
