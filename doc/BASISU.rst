@@ -22,10 +22,10 @@ Taisei repository, including submodules, this can be done like so on Linux:
 
 .. code:: sh
 
-    cd subprojects/basis_universal
-    meson setup --buildtype=release -Db_lto=true -Dcpp_args=-march=native build
-    meson compile -C build basisu
-    ln -s $PWD/build/basisu ~/.local/bin
+   cd subprojects/basis_universal
+   meson setup --buildtype=release -Db_lto=true -Dcpp_args=-march=native build
+   meson compile -C build basisu
+   ln -s $PWD/build/basisu ~/.local/bin
 
 Verify that the encoder is working by running ``basisu``. It should print a long list of options. If the command is not
 found, make sure ``~/.local/bin`` is in your ``PATH``, or choose another directory that is.
@@ -48,7 +48,7 @@ The ``mkbasis`` wrapper script is what you'll actually use to create ``.basis`` 
 
 .. code:: sh
 
-    ln -s $PWD/scripts/mkbasis.py ~/.local/bin/mkbasis
+   ln -s $PWD/scripts/mkbasis.py ~/.local/bin/mkbasis
 
 Verify that it works by running ``mkbasis``.
 
@@ -59,59 +59,59 @@ Encode a **diffuse or ambient map** (sRGB data, decoded to linear when sampled i
 
 .. code:: sh
 
-    # Outputs to foo.basis
-    mkbasis foo.png
+   # Outputs to foo.basis
+   mkbasis foo.png
 
-    # Outputs to /path/to/bar.basis
-    mkbasis foo.png -o /path/to/bar.basis
+   # Outputs to /path/to/bar.basis
+   mkbasis foo.png -o /path/to/bar.basis
 
 Encode a **tangent-space normal map** (special case):
 
 .. code:: sh
 
-    mkbasis foo.png --normal
+   mkbasis foo.png --normal
 
 Encode a **roughness map** (single-channel linear data):
 
 .. code:: sh
 
-    mkbasis foo.png --channels=r --linear
-    # Equivalent to:
-    mkbasis foo.png --r --linear
+   mkbasis foo.png --channels=r --linear
+   # Equivalent to:
+   mkbasis foo.png --r --linear
 
 Encode **RGBA** color data and **pre-multiply alpha**:
 
 .. code:: sh
 
-    mkbasis foo.png --channels=rgba
-    # Equivalent to:
-    mkbasis foo.png --rgba
+   mkbasis foo.png --channels=rgba
+   # Equivalent to:
+   mkbasis foo.png --rgba
 
 Encode **Gray+Alpha** data and **pre-multiply alpha**:
 
 .. code:: sh
 
-    mkbasis foo.png --channels=gray-alpha
-    # Equivalent to:
-    mkbasis foo.png --gray-alpha
+   mkbasis foo.png --channels=gray-alpha
+   # Equivalent to:
+   mkbasis foo.png --gray-alpha
 
 Do **not** pre-multiply alpha:
 
 .. code:: sh
 
-    mkbasis foo.png --no-multiply-alpha
+   mkbasis foo.png --no-multiply-alpha
 
 Sacrifice quality to speed up the encoding process:
 
 .. code:: sh
 
-    mkbasis foo.png --fast
+   mkbasis foo.png --fast
 
 For a complete list of options and their default values, see
 
 .. code:: sh
 
-    mkbasis --help
+   mkbasis --help
 
 Encoding details
 ----------------

@@ -17,7 +17,7 @@ you write into the file
 
 .. code:: c
 
-   	right = d5 0 1 2 3
+   right = d5 0 1 2 3
 
 Every key in the .ani file not starting with @ corresponds to a sequence.
 The sequence specification itself is a list of frame indices. In the example
@@ -39,9 +39,9 @@ More examples:
 
 .. code:: c
 
-	flap = d5 0 1 2 3 d2 4 5 6 7
-	left = m d5 0 1 2 3
-	alternateleftright = m d5 0 1 2 3 m 0 1 2 3
+   flap = d5 0 1 2 3 d2 4 5 6 7
+   left = m d5 0 1 2 3
+   alternateleftright = m d5 0 1 2 3 m 0 1 2 3
 
 There are many possibilities to use ``d<n>`` to make animations look dynamic (or
 strange)
