@@ -1,7 +1,7 @@
 .. _taisei-project--game-manual:
 
 .. role:: strike
-    :class: strike
+   :class: strike
 
 Taisei Project – Game Manual
 ============================

@@ -76,7 +76,7 @@ We recommend fetching the source code using ``git``:
 
 .. code:: sh
 
-    git clone --recurse-submodules https://github.com/taisei-project/taisei
+   git clone --recurse-submodules https://github.com/taisei-project/taisei
 
 You should also run ``git submodule update`` whenever you pull in
 new code, checkout another branch, or perform any ``git`` actions. The ``./pull``
@@ -104,9 +104,9 @@ your host machine is:
 
 .. code:: sh
 
-    meson setup build/
-    meson compile -C build/
-    meson install -C build/
+   meson setup build/
+   meson compile -C build/
+   meson install -C build/
 
 See the `Building <./doc/BUILD.rst>`__ doc for more information on how to build
 Taisei, and its list of dependencies.

@@ -507,41 +507,41 @@ Examples
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_STDOUT=+i
+      TAISEI_LOGLVLS_STDOUT=+i
 
 -  In Debug builds: remove *Debug* and *Info* output from the console:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_STDOUT=-di
+      TAISEI_LOGLVLS_STDOUT=-di
 
    OR:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_CONSOLE=-di
+      TAISEI_LOGLVLS_CONSOLE=-di
 
 -  Don't save anything to the log file:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_FILE=-a
+      TAISEI_LOGLVLS_FILE=-a
 
 -  Don't print anything to the console:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_CONSOLE=-a
+      TAISEI_LOGLVLS_CONSOLE=-a
 
 -  Don't save anything to the log file, except for *Error*\ s and *Fatal*\ s:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_FILE=-a+ef
+      TAISEI_LOGLVLS_FILE=-a+ef
 
 -  Print everything except *Debug* to ``stderr``, nothing to ``stdout``:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_STDOUT=-a
-       TAISEI_LOGLVLS_STDERR=+a-d
+      TAISEI_LOGLVLS_STDOUT=-a
+      TAISEI_LOGLVLS_STDERR=+a-d
