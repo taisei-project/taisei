@@ -238,7 +238,7 @@ SDLGPU renderer
 
    If ``1``, render the backbuffer into a staging texture before copying it to the swapchain at presentation. This is
    needed to emulate swapchain reads on SDLGPU, where the swapchain is write-only. Disabling this option eliminates the
-   copy overhead, but breaks screenshots. If you don't need the built-in screenshow functionality, it is safe to turn it
+   copy overhead, but breaks screenshots. If you don't need the built-in screenshot functionality, it is safe to turn it
    off.
 
 Audio
@@ -268,7 +268,7 @@ Timing
    | Default: ``3``
 
    If over ``0``, tries to give up processing time to other applications while waiting for the next frame, if at least
-   ``frame_time / this_value`` amount of time is remaining. Increasesing this value reduces CPU usage, but may harm
+   ``frame_time / this_value`` amount of time is remaining. Increasing this value reduces CPU usage, but may harm
    performance. Set to ``0`` for the v1.2 default behaviour.
 
 **TAISEI_FRAMELIMITER_COMPENSATE**
@@ -334,8 +334,8 @@ Frame Dump Mode
    | Default: unset
    | **Experimental**
 
-   If set, enables the framedump mode. In framedump mode, Taiseil will write every rendered frame as a .png file into a
-   directly specified by this variable.
+   If set, enables the framedump mode. In framedump mode, Taisei will write every rendered frame as a .png file into a
+   directory specified by this variable.
 
 **TAISEI_FRAMEDUMP_SOURCE**
    | Default: ``screen``
