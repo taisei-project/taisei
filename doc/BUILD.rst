@@ -26,7 +26,7 @@ dependencies its needs to compile. If you accidentally omit it during checkout, 
 Dependencies
 ------------
 
-Build-Time Dependenices
+Build-Time Dependencies
 """""""""""""""""""""""
 
 -  ``gcc`` or ``clang``
@@ -75,7 +75,7 @@ pull in what it can. Relying on this is *not* recommended in most circumstances,
 operating system's package manager.
 
 For consistency, we tend to release Taisei using exclusively built-in packages. However, you can also use system
-dependencies as well. There's a tradeoff in consistency and reproduceability for speed and ease of use.
+dependencies as well. There's a tradeoff in consistency and reproducibility for speed and ease of use.
 
 This is controlled through the ``--wrap-mode`` flag with ``meson``. (More on that later.)
 
