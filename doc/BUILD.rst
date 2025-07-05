@@ -1,25 +1,22 @@
 Taisei Project - Build Options
 ==============================
 
-This is intended for anyone looking to build Taisei for any of its supported
-operating systems, including Linux, macOS, Windows, Emscripten, Switch, and
-others.
+This is intended for anyone looking to build Taisei for any of its supported operating systems, including Linux, macOS,
+Windows, Emscripten, Switch, and others.
 
 .. contents::
 
 Checking Out Code
 -----------------
 
-First, you'll need to checkout the repository. You can do that with the
-following:
+First, you'll need to checkout the repository. You can do that with the following:
 
 .. code:: sh
 
    git clone --recurse-submodules https://github.com/taisei-project/taisei
 
-The ``--recurse-submodules`` flag is absolutely necessary, or Taisei will not
-build, as it will be missing many of the dependencies its needs to compile. If
-you accidentally omit it during checkout, you can fix it with:
+The ``--recurse-submodules`` flag is absolutely necessary, or Taisei will not build, as it will be missing many of the
+dependencies its needs to compile. If you accidentally omit it during checkout, you can fix it with:
 
 .. code:: sh
 
@@ -60,64 +57,55 @@ Optional
 
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES and SDL-GPU backends)
 -  libglslang (for OpenGL ES and SDL-GPU backends)
--  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
-   flaky/non-existent OpenGL support, such as Windows)
--  GameMode headers (Linux only; for automatic
-   `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
+-  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with flaky/non-existent OpenGL support, such as
+   Windows)
+-  GameMode headers (Linux only; for automatic `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
 -  OpenSSL >= 1.1.0 or LibreSSL >= 2.7.0 (for a better SHA-256 implementation)
 
 
 Built-In vs. System Dependencies
 """"""""""""""""""""""""""""""""
 
-Due to the wide array of platforms Taisei supports, we provide meson
-subprojects for its core dependencies using the
-`Meson dependency wrap system <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__.
-This is to facilitate consistent build environments, including cross-builds,
-and for more esoteric platforms like Emscripten.
+Due to the wide array of platforms Taisei supports, we provide meson subprojects for its core dependencies using the
+`Meson dependency wrap system <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__. This is to facilitate
+consistent build environments, including cross-builds, and for more esoteric platforms like Emscripten.
 
-For convenience, ``meson`` will detect which packages are missing from your
-system and use its wrap dependency system to pull in what it can. Relying
-on this is *not* recommended in most circumstances, and you should instead
-rely on your operating system's package manager.
+For convenience, ``meson`` will detect which packages are missing from your system and use its wrap dependency system to
+pull in what it can. Relying on this is *not* recommended in most circumstances, and you should instead rely on your
+operating system's package manager.
 
-For consistency, we tend to release Taisei using exclusively built-in packages.
-However, you can also use system dependencies as well. There's a tradeoff in
-consistency and reproduceability for speed and ease of use.
+For consistency, we tend to release Taisei using exclusively built-in packages. However, you can also use system
+dependencies as well. There's a tradeoff in consistency and reproduceability for speed and ease of use.
 
-This is controlled through the ``--wrap-mode`` flag with ``meson``. (More
-on that later.)
+This is controlled through the ``--wrap-mode`` flag with ``meson``. (More on that later.)
 
 Linux
 '''''
 
-On an Ubuntu or Debian-based distro, the following will install the mandatory
-tools for building Taisei.
+On an Ubuntu or Debian-based distro, the following will install the mandatory tools for building Taisei.
 
 .. code:: sh
 
    apt update
    apt install meson cmake build-essential
 
-Beyond that, consult the *Dependencies* list above. Many distros
-package compile-time system dependencies with ``*-dev`` (i.e: ``libsdl2-dev``).
-Search with your distro's package manager to install the correct libraries.
+Beyond that, consult the *Dependencies* list above. Many distros package compile-time system dependencies with ``*-dev``
+(i.e: ``libsdl2-dev``). Search with your distro's package manager to install the correct libraries.
 
 macOS
 '''''
 
-On macOS, you must install the Xcode Command Line Tools to build Taisei for
-the platform, as it contains headers and tools for building native macOS apps.
+On macOS, you must install the Xcode Command Line Tools to build Taisei for the platform, as it contains headers and
+tools for building native macOS apps.
 
 .. code:: sh
 
    xcode-select --install
 
-There are additional command line tools that you'll need. You can acquire those
-by using `Homebrew <https://brew.sh/>`__.
+There are additional command line tools that you'll need. You can acquire those by using `Homebrew
+<https://brew.sh/>`__.
 
-Follow the instructions for installing Homebrew, and then install the following
-tools:
+Follow the instructions for installing Homebrew, and then install the following tools:
 
 .. code:: sh
 
@@ -125,9 +113,8 @@ tools:
 
 You can then install dependencies from the *Dependencies* list.
 
-As of 2021-08-05, you should **not** install the following packages via
-Homebrew, as the versions available do not compile against Taisei correctly.
-If you're having mysterious errors, ensure that they're not installed.
+As of 2021-08-05, you should **not** install the following packages via Homebrew, as the versions available do not
+compile against Taisei correctly. If you're having mysterious errors, ensure that they're not installed.
 
 -  ``spirv-tools``
 -  ``spirv-cross``
@@ -136,47 +123,38 @@ If you're having mysterious errors, ensure that they're not installed.
 
    brew remove spirv-tools spirv-cross
 
-In addition, if you're trying to compile on an older version of macOS
-(i.e: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
-Let ``meson`` pull in the corrected version for you via subprojects.
+In addition, if you're trying to compile on an older version of macOS (i.e: <10.12), SDL2 may not compile correctly on
+Homebrew (as of 2019-02-19). Let ``meson`` pull in the corrected version for you via subprojects.
 
-You can also install `create-dmg <https://github.com/create-dmg/create-dmg>`__
-for packaging ``.dmg`` files, which enables some additional options such as
-positioning of icons in the ``.dmg``.
+You can also install `create-dmg <https://github.com/create-dmg/create-dmg>`__ for packaging ``.dmg`` files, which
+enables some additional options such as positioning of icons in the ``.dmg``.
 
 Windows
 '''''''
 
-Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to
-achieve cross-compiling for Windows. Microsoft's native C compiler toolchain
-simply does not support the things Taisei needs to compile correctly, including
-fundamental things like
-`complex numbers <https://en.wikipedia.org/wiki/Complex_number>`__.
+Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to achieve cross-compiling for Windows.
+Microsoft's native C compiler toolchain simply does not support the things Taisei needs to compile correctly, including
+fundamental things like `complex numbers <https://en.wikipedia.org/wiki/Complex_number>`__.
 
 
-You can use ``llvm-mingw`` too, or you can check if your distro has any
-``mingw64`` cross-compiler toolchains available as well. That's just the one
-that works for us.
+You can use ``llvm-mingw`` too, or you can check if your distro has any ``mingw64`` cross-compiler toolchains available
+as well. That's just the one that works for us.
 
-Additionally, you can install `nsis <https://nsis.sourceforge.io/Main_Page>`__
-(>= 3.0) for packaging Windows installer ``.exe`` files. (However, you can
-still package ``.zip`` files for Windows without it.)
+Additionally, you can install `nsis <https://nsis.sourceforge.io/Main_Page>`__ (>= 3.0) for packaging Windows installer
+``.exe`` files. (However, you can still package ``.zip`` files for Windows without it.)
 
-On macOS, you're probably better off using Docker and the
-`Docker container <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that
-``llvm-mingw`` provides, and installing ``nsis`` on top of it.
+On macOS, you're probably better off using Docker and the `Docker container
+<https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that ``llvm-mingw`` provides, and installing ``nsis`` on top of it.
 
-Another option for Windows-based computers is leveraging Windows 10's
-`Windows Subsystem For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
-to cross-compile to Windows using their Ubuntu image. You can also potentially
-use a ``mingw64`` toolchain directly on Windows, however that isn't supported
-or recommended, as it's generally more trouble than its worth.
+Another option for Windows-based computers is leveraging Windows 10's `Windows Subsystem For Linux (WSL) Subsystem
+<https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__ to cross-compile to Windows using their Ubuntu image.
+You can also potentially use a ``mingw64`` toolchain directly on Windows, however that isn't supported or recommended,
+as it's generally more trouble than it's worth.
 
 Build Options
 -------------
 
-This is *not* an exhaustive list. You can see the full list of options using
-``meson`` in the ``taisei`` directory.
+This is *not* an exhaustive list. You can see the full list of options using ``meson`` in the ``taisei`` directory.
 
 .. code:: sh
 
@@ -186,28 +164,24 @@ This is *not* an exhaustive list. You can see the full list of options using
 Setup
 """""
 
-The first command you'll need to run is ``setup``, which creates a directory
-(in this case, ``taisei/build/``). It checks your system for various
-dependencies and required tools, which should take about a minute on most
-systems.
+The first command you'll need to run is ``setup``, which creates a directory (in this case, ``taisei/build/``). It
+checks your system for various dependencies and required tools, which should take about a minute on most systems.
 
 .. code:: sh
 
    # inside the taisei/ directory you cloned before
    meson setup build/
 
-You can also have the ``setup`` command contain certain build options (seen
-below). The following are an *example* and *not required* for getting Taisei
-building.
+You can also have the ``setup`` command contain certain build options (seen below). The following are an *example* and
+*not required* for getting Taisei building.
 
 .. code:: sh
 
    # enables Developer Mode and debugging symbols
    meson setup build/ -Ddeveloper=true -Dbuildtype=debug
 
-You can then apply more build options later using ``meson configure`` (as seen
-below). It will automatically reconfigure your build environment with the new
-options without having to rebuild everything.
+You can then apply more build options later using ``meson configure`` (as seen below). It will automatically reconfigure
+your build environment with the new options without having to rebuild everything.
 
 System/Vendored Dependencies (``--wrap-mode``)
 """"""""""""""""""""""""""""""""""""""""""""""
@@ -217,17 +191,16 @@ See: `Meson Manual <https://mesonbuild.com/Wrap-dependency-system-manual.html>`_
 * Default: ``default``
 * Options: ``default``, ``nofallback``, ``forcefallback``, ...
 
-This is a core ``meson`` flag that does quite a few things. Not all of them will
-be covered here. Refer to the ``meson`` documentation linked above.
+This is a core ``meson`` flag that does quite a few things. Not all of them will be covered here. Refer to the ``meson``
+documentation linked above.
 
-Generally, ``default`` will rely on system-installed libraries when available,
-and download missing dependencies when necessary.
+Generally, ``default`` will rely on system-installed libraries when available, and download missing dependencies when
+necessary.
 
-``forcefallback`` will force the use of wrapped dependencies whenever possible.
-Recommended for release builds.
+``forcefallback`` will force the use of wrapped dependencies whenever possible. Recommended for release builds.
 
-``nofallback`` disallows the use of wrapped dependencies whenever possible,
-instead relying on system libraries. Useful for CI.
+``nofallback`` disallows the use of wrapped dependencies whenever possible, instead relying on system libraries. Useful
+for CI.
 
 .. code:: sh
 
@@ -242,11 +215,11 @@ Relative Directory Install (``-Dinstall_relocatable``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-This option enables a "relocatable" installation layout, where everything is confined
-to one directory and no full paths are hardcoded into the executable.
+This option enables a "relocatable" installation layout, where everything is confined to one directory and no full paths
+are hardcoded into the executable.
 
-The ``auto`` defaults to ``enabled`` when building for Windows, Emscripten, Switch,
-or macOS with ``install_macos_bundle`` enabled. Otherwise, it defaults to ``disabled``.
+The ``auto`` defaults to ``enabled`` when building for Windows, Emscripten, Switch, or macOS with
+``install_macos_bundle`` enabled. Otherwise, it defaults to ``disabled``.
 
 Note that you probably want to change the ``--prefix`` with this option enabled.
 
@@ -261,14 +234,13 @@ Install Prefix (``--prefix``)
 
 Specifies a path under which all game files are installed.
 
-If ``install_relocatable`` is enabled, Taisei will be installed into the root of this
-directory, and thus you will probably want to change it from the default value.
+If ``install_relocatable`` is enabled, Taisei will be installed into the root of this directory, and thus you will
+probably want to change it from the default value.
 
-Otherwise, it's not recommended to touch this option unless you know what you are
-doing.
+Otherwise, it's not recommended to touch this option unless you know what you are doing.
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -280,8 +252,8 @@ Package Data (``-Dpackage_data``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-If enabled, game assets will be packaged into a ``.zip`` archive. Otherwise, they will
-be installed into the filesystem directly.
+If enabled, game assets will be packaged into a ``.zip`` archive. Otherwise, they will be installed into the filesystem
+directly.
 
 This option is not available for Emscripten.
 
@@ -297,8 +269,7 @@ ZIP Package Loading (``-Dvfs_zip``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-Controls whether Taisei can load game data (textures, shaders, etc.) from
-``.zip`` files. Requires ``libzip``.
+Controls whether Taisei can load game data (textures, shaders, etc.) from ``.zip`` files. Requires ``libzip``.
 
 .. code:: sh
 
@@ -310,8 +281,8 @@ In-Game Developer Options (``-Ddeveloper``)
 * Default: ``false``
 * Options: ``true``, ``false``
 
-Enables various tools useful for developers and testers, such as cheats, stage menu,
-quick save/load, extra debugging information, etc.
+Enables various tools useful for developers and testers, such as cheats, stage menu, quick save/load, extra debugging
+information, etc.
 
 .. code:: sh
 
@@ -325,8 +296,8 @@ Build Type (``-Dbuildtype``)
 
 Sets the type of build. ``debug`` reduces optimizations and enables debugging symbols.
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -338,16 +309,15 @@ Assertions (``-Db_ndebug``)
 * Default: ``if-release``
 * Options: ``if-release``, ``true``, ``false``
 
-The name of this flag is opposite of what you'd expect. Think of it as "Not
-Debugging". It controls the ``NDEBUG`` declaration which is responsible for
-deactivating ``assert()`` macros.
+The name of this flag is opposite of what you'd expect. Think of it as "Not Debugging". It controls the ``NDEBUG``
+declaration which is responsible for deactivating ``assert()`` macros.
 
 Setting to ``false`` will *enable* assertions (good for debugging).
 
 Keep ``true`` during release.
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -359,16 +329,15 @@ Strict Compiler Warnings (``-Dwerror``)
 * Default: ``false``
 * Options: ``true``, ``false``
 
-This option forces stricter checks against Taisei's codebase to ensure code
-health, treating all ``Warnings`` as ``Errors`` in the code.
+This option forces stricter checks against Taisei's codebase to ensure code health, treating all ``Warnings`` as
+``Errors`` in the code.
 
-It's highly recommended to **enable** this (i.e. set to ``true``) whenever
-developing for the engine. Sometimes it's overly pedantic, but much of the
-time it provides useful advice. For example, it can detect potential
-null pointer dereferences that may not be obvious to the human eye.
+It's highly recommended to **enable** this (i.e. set to ``true``) whenever developing for the engine. Sometimes it's
+overly pedantic, but much of the time it provides useful advice. For example, it can detect potential null pointer
+dereferences that may not be obvious to the human eye.
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -380,9 +349,8 @@ Deprecation Warnings (``-Ddeprecation_warnings``)
 * Default: ``default``
 * Options: ``error``, ``no-error``, ``ignore``, ``default``
 
-Sets deprecation warnings to either hard-fail (``error``), print as warnings but
-not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
-ignore them (``ignore``). ``default`` respects the ``-Dwerror`` setting.
+Sets deprecation warnings to either hard-fail (``error``), print as warnings but not trigger full errors if
+``-Dwerror=true`` (``no-error``), and otherwise ignore them (``ignore``). ``default`` respects the ``-Dwerror`` setting.
 
 Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
 
@@ -394,29 +362,27 @@ Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
 Debugging With Sanitizers (``-Db_sanitize``)
 """"""""""""""""""""""""""""""""""""""""""""
 
-This is useful for debugging memory management errors, leaks, and undefined behavior.
-However, there is some additional setup required to use it.
+This is useful for debugging memory management errors, leaks, and undefined behavior. However, there is some additional
+setup required to use it.
 
 .. code:: sh
 
    meson configure build/ -Db_sanitize=address,undefined
 
-Depending on your platform, you may need to specify the specific library binary
-to use to launch ASan appropriately. Using macOS as an example:
+Depending on your platform, you may need to specify the specific library binary to use to launch ASan appropriately.
+Using macOS as an example:
 
 .. code:: sh
 
    export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.5/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
-The ``../12.0.5/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
-version of Xcode. If it fails to launch for you, ensure that the version number
-is correct by browsing to the parent directory of ``../clang``.
+The ``../12.0.5/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each version of Xcode. If it fails to launch
+for you, ensure that the version number is correct by browsing to the parent directory of ``../clang``.
 
-Then, you can launch Taisei's binary from the command line (using macOS as an
-example):
+Then, you can launch Taisei's binary from the command line (using macOS as an example):
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -430,14 +396,13 @@ Link-Time Optimizations (``-Db_lto``)
 * Default: ``true``
 * Options: ``true``, ``false``
 
-Link-time optimizations (LTO) increase build times, but also increase
-performance. For quicker build times during development, you can disable it.
-For release builds, this should be kept ``true``.
+Link-time optimizations (LTO) increase build times, but also increase performance. For quicker build times during
+development, you can disable it. For release builds, this should be kept ``true``.
 
 See: `Interprocedural Optimization <https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO>`__
 
-This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
-for more information.
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
+information.
 
 .. code:: sh
 
@@ -449,11 +414,9 @@ Binary Striping (``-Dstrip``)
 * Default: ``true``
 * Options: ``true``, ``false``
 
-This option prevents stripping of the `taisei` binary, providing a marginally
-faster build time.
+This option prevents stripping of the `taisei` binary, providing a marginally faster build time.
 
-Keep this ``true`` during releases, but ``false`` during development, as it will
-strip out useful debugging symbols.
+Keep this ``true`` during releases, but ``false`` during development, as it will strip out useful debugging symbols.
 
 .. code:: sh
 
@@ -492,8 +455,7 @@ Default Renderer (``-Dr_default``)
 
 Sets the default renderer to use when Taisei launches.
 
-When set to ``auto``, defaults to the first enabled backend in this order:
-``gl33``, ``gles30``.
+When set to ``auto``, defaults to the first enabled backend in this order: ``gl33``, ``gles30``.
 
 The chosen backend must not be disabled.
 
@@ -504,8 +466,8 @@ The chosen backend must not be disabled.
    # for GL ES 3.0
    meson configure build/ -Dr_default=gles30
 
-You can switch the renderer using the ``--renderer`` flag with the ``taisei``
-binary, like this: ``taisei --renderer gles30``.
+You can switch the renderer using the ``--renderer`` flag with the ``taisei`` binary, like this: ``taisei --renderer
+gles30``.
 
 Shader Transpiler (``-Dshader_transpiler``)
 '''''''''''''''''''''''''''''''''''''''''''
@@ -513,13 +475,12 @@ Shader Transpiler (``-Dshader_transpiler``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-For using OpenGL ES or SDL-GPU, the shader transpiler is necessary for converting
-Taisei's shaders to a format usable by that driver.
+For using OpenGL ES or SDL-GPU, the shader transpiler is necessary for converting Taisei's shaders to a format usable by
+that driver.
 
 Requires ``glslang`` and ``SPIRV-cross``.
 
-Note that for Emscripten and Switch platforms, the translation is performed offline,
-and this option is not available.
+Note that for Emscripten and Switch platforms, the translation is performed offline, and this option is not available.
 
 .. code:: sh
 
@@ -530,16 +491,13 @@ ANGLE
 
 Building ANGLE (Optional)
 '''''''''''''''''''''''''
-`ANGLE <https://github.com/google/angle>`__ is Google's graphics translation
-layer, intended for Chromium. Taisei packages it with Windows builds to
-workaround some bugs and performance issues with many Windows OpenGL drivers,
-and it can be optionally packaged as an experimental Metal renderer for macOS.
+`ANGLE <https://github.com/google/angle>`__ is Google's graphics translation layer, intended for Chromium. Taisei
+packages it with Windows builds to workaround some bugs and performance issues with many Windows OpenGL drivers, and it
+can be optionally packaged as an experimental Metal renderer for macOS.
 
-You need to read
-`this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and
-set up Google's custom build system to get things going. However, the below
-commands might help you compiling what you need from it when you have that all
-set up.
+You need to read `this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and set up Google's custom
+build system to get things going. However, the below commands might help you compiling what you need from it when you
+have that all set up.
 
 .. code:: sh
 
@@ -554,11 +512,10 @@ It will output two files to ``angle/out/x64``:
 * ``libEGL.(*)``
 * ``libGLESv2.(*)``
 
-The file extension can be ``.dll`` for Windows, ``.dylib`` for macOS,
-and ``.so`` for Linux.
+The file extension can be ``.dll`` for Windows, ``.dylib`` for macOS, and ``.so`` for Linux.
 
-Using ``-Dinstall_angle`` and ``-Dangle_lib*`` (see below), ``meson`` will copy
-those files over into the package itself when running the packaging steps.
+Using ``-Dinstall_angle`` and ``-Dangle_lib*`` (see below), ``meson`` will copy those files over into the package itself
+when running the packaging steps.
 
 ANGLE Library Paths (``-Dangle_lib*``)
 ''''''''''''''''''''''''''''''''''''''
@@ -566,8 +523,7 @@ ANGLE Library Paths (``-Dangle_lib*``)
 * Default: ``(null)``
 * Options: ``/path/to/libGLESv2.{dll,dylib,so}``/``path/to/libEGL.{dll,dylib,so}``
 
-``-Dangle_libgles`` and ``-Dangle_libegl`` provide the full paths to the ANGLE
-libraries necessary for that engine.
+``-Dangle_libgles`` and ``-Dangle_libegl`` provide the full paths to the ANGLE libraries necessary for that engine.
 
 Generally, both need to be supplied at the same time.
 
