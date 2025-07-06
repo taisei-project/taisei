@@ -44,13 +44,13 @@ HUD
 
 Once you reach the game itself, a bunch of numbers will appear on the right of your screen (HUD). These are:
 
--  **Score** Your current score. See `Scoring System`_. grazing, and collecting items.
--  **Lives** How many lives you have. The *Next* value shows the next score at which you receive a bonus new life.
--  **Spell Cards** How many `Bombs`_ you have. If your *Fragment* count goes to 500, you get a new bomb.
--  **Power** How strong your current shot is. Maxes out at 4, but can be overcollected until 6.
--  **Value** `Point Item Value`_ at the top of the screen.
--  **Volts** See `Scoring System`_.
--  **Graze** Raise it by getting close to bullets.
+- **Score** Your current score. See `Scoring System`_. grazing, and collecting items.
+- **Lives** How many lives you have. The *Next* value shows the next score at which you receive a bonus new life.
+- **Spell Cards** How many `Bombs`_ you have. If your *Fragment* count goes to 500, you get a new bomb.
+- **Power** How strong your current shot is. Maxes out at 4, but can be overcollected until 6.
+- **Value** `Point Item Value`_ at the top of the screen.
+- **Volts** See `Scoring System`_.
+- **Graze** Raise it by getting close to bullets.
 
 Controls
 --------
@@ -112,13 +112,13 @@ first, but they are safe to touch.
 
 These are:
 
--  **Blue** Point items that increase your score.
--  **Red** Gives you more power. Comes in different sizes, always with a capital P.
--  **Green Star** Bomb. Appears either filled (full bomb) or as an empty outline (worth 500 bomb fragments).
--  **Pink Heart** One extra life.
--  **PIV Items** Small yellow ghosts that increase the value of your point items.
--  **Surge Lightning** Will spawn during your Power Surge to provide charge.
--  **Voltage** Spawn after a Power Surge completes and increase PIV (*a lot*), Bombs and Volts.
+- **Blue** Point items that increase your score.
+- **Red** Gives you more power. Comes in different sizes, always with a capital P.
+- **Green Star** Bomb. Appears either filled (full bomb) or as an empty outline (worth 500 bomb fragments).
+- **Pink Heart** One extra life.
+- **PIV Items** Small yellow ghosts that increase the value of your point items.
+- **Surge Lightning** Will spawn during your Power Surge to provide charge.
+- **Voltage** Spawn after a Power Surge completes and increase PIV (*a lot*), Bombs and Volts.
 
 If you fly near to the top of the screen, all the visible items will be picked up (shown as flying towards you).
 
@@ -128,28 +128,28 @@ Bosses
 Taisei has 6 levels (called *stages*). Each stage has a boss and a midboss in some form. They are much stronger than
 normal enemies and have different attacks with time limits. There are different types of Attacks:
 
--  **Normal**: A signature move every boss has. They are a break between the other, more fierce attacks, but don’t let
-   your guard down.
+- **Normal**: A signature move every boss has. They are a break between the other, more fierce attacks, but don’t let
+  your guard down.
 
--  **Spell Card**: This is where the Bosses concentrate their powers (resulting in a background change) and hit you with
-   really hard and unusual patterns. They give a lot of extra points and 100 bomb fragments when you *capture* them. That
-   means shooting down the HP within the time limit without getting hit or using bombs.
+- **Spell Card**: This is where the Bosses concentrate their powers (resulting in a background change) and hit you with
+  really hard and unusual patterns. They give a lot of extra points and 100 bomb fragments when you *capture* them. That
+  means shooting down the HP within the time limit without getting hit or using bombs.
 
-   You can revisit spellcards you have encountered in the *Spell Practice* mode to get better at the ones you frequently
-   die on.
+  You can revisit spellcards you have encountered in the *Spell Practice* mode to get better at the ones you frequently
+  die on.
 
--  **Voltage Overdrive**: Collect enough `Voltage`_ to unlock these at the end of the boss battles.
+- **Voltage Overdrive**: Collect enough `Voltage`_ to unlock these at the end of the boss battles.
 
-   These are tricky unique spells that will take some creativity to dodge. Due to the extremely ionized Danmaku
-   conditions, your Bomb and Life meters are malfunctioning. You can’t be hurt, but you can’t use your bombs either.
+  These are tricky unique spells that will take some creativity to dodge. Due to the extremely ionized Danmaku
+  conditions, your Bomb and Life meters are malfunctioning. You can’t be hurt, but you can’t use your bombs either.
 
-   One boss seems to be especially attuned to these surroundings and awaits you with about the strangest spell in the
-   game. If you capture it, it may unlock something nice.
+  One boss seems to be especially attuned to these surroundings and awaits you with about the strangest spell in the
+  game. If you capture it, it may unlock something nice.
 
--  **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card that makes them completely invincible. You are
-   on your own here. Try to survive somehow until the timer runs out.
+- **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card that makes them completely invincible. You are
+  on your own here. Try to survive somehow until the timer runs out.
 
-   You might want to use *Spell Practice* to perfect one of them.
+  You might want to use *Spell Practice* to perfect one of them.
 
 Scoring System
 --------------
@@ -209,5 +209,5 @@ Knowing this much should help to get you started!
 If you want more tricks and hints on how to *“git gud”*, check out resources on how to play *Tōhō*, the game Taisei is
 based on.
 
-Enjoy playing, and if you want to contact us, visit us on Freenode IRC #taisei-project or on `Discord
+Enjoy playing, and if you want to contact us, visit us on Freenode IRC ``#taisei-project`` or on `Discord
 <https://discord.gg/JEHCMzW>`__.

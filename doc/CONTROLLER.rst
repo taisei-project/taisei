@@ -24,17 +24,17 @@ custom-made game controller using a unique interface, you’ll need to provide i
 
 There are a few ways to generate a custom mapping:
 
--  You can use the `controllermap <https://aur.archlinux.org/packages/controllermap>`__ utility, which `comes with SDL
-   source code <https://hg.libsdl.org/SDL/file/68a767ae3a88/test/controllermap.c>`__.
--  If you use Steam, you can configure your controller there. Then you can add Taisei as a non-Steam game; run it from
-   Steam and everything should *just work™*. In case you don’t want to do that, find ``config/config.vdf`` in your Steam
-   installation directory, and look for the ``SDL_GamepadBind`` variable. It contains a list of SDL mappings separated
-   by line breaks.
--  You can also try the `SDL2 Gamepad Tool by General Arcade <http://www.generalarcade.com/gamepadtool/>`__. This
-   program is free to use, but not open source.
--  Finally, you can try to write a mapping by hand. You will probably have to refer to the SDL documentation. See
-   `gamecontrollerdb.txt <https://github.com/taisei-project/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt>`__
-   for some more examples.
+- You can use the `controllermap <https://aur.archlinux.org/packages/controllermap>`__ utility, which `comes with SDL
+  source code <https://hg.libsdl.org/SDL/file/68a767ae3a88/test/controllermap.c>`__.
+- If you use Steam, you can configure your controller there. Then you can add Taisei as a non-Steam game; run it from
+  Steam and everything should *just work™*. In case you don’t want to do that, find ``config/config.vdf`` in your Steam
+  installation directory, and look for the ``SDL_GamepadBind`` variable. It contains a list of SDL mappings separated by
+  line breaks.
+- You can also try the `SDL2 Gamepad Tool by General Arcade <http://www.generalarcade.com/gamepadtool/>`__. This program
+  is free to use, but not open source.
+- Finally, you can try to write a mapping by hand. You will probably have to refer to the SDL documentation. See
+  `gamecontrollerdb.txt <https://github.com/taisei-project/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt>`__ for
+  some more examples.
 
 Whether you use one of the above tools, or hand-roll one yourself, the mapping should look something like this:
 
@@ -44,10 +44,10 @@ Whether you use one of the above tools, or hand-roll one yourself, the mapping s
 
 Once you have your mapping, there are two ways to make Taisei use it:
 
--  Create a file named ``gamecontrollerdb.txt`` where your config, replays and screenshots are, and put each mapping on
-   a new line.
--  Put your mappings in the environment variable ``SDL_GAMECONTROLLERCONFIG``, also separated by line breaks. Other
-   games that use the GameController API will also pick them up.
+- Create a file named ``gamecontrollerdb.txt`` where your config, replays and screenshots are, and put each mapping on a
+  new line.
+- Put your mappings in the environment variable ``SDL_GAMECONTROLLERCONFIG``, also separated by line breaks. Other games
+  that use the GameController API will also pick them up.
 
 When you’re done, please consider contributing your mappings to `SDL <https://libsdl.org/>`__, `SDL_GameControllerDB
 <https://github.com/gabomdq/SDL_GameControllerDB>`__, and `us

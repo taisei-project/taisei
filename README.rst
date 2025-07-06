@@ -101,10 +101,10 @@ Replays, Screenshots, and Settings Locations
 
 Taisei stores all data in a platform-specific directory:
 
--  On **Windows**, this will probably be ``%APPDATA%\taisei``
--  On **macOS**, it’s ``$HOME/Library/Application Support/taisei``
--  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it’s ``$XDG_DATA_HOME/taisei`` or
-   ``$HOME/.local/share/taisei``
+- On **Windows**, this will probably be ``%APPDATA%\taisei``
+- On **macOS**, it’s ``$HOME/Library/Application Support/taisei``
+- On **Linux**, **\*BSD**, and most other **Unix**-like systems, it’s ``$XDG_DATA_HOME/taisei`` or
+  ``$HOME/.local/share/taisei``
 
 This is referred to as the **Storage Directory**. You can set the environment variable ``TAISEI_STORAGE_PATH`` to
 override this behaviour.
@@ -121,6 +121,5 @@ compiling or running Taisei.
 Contact
 -------
 
--  https://taisei-project.org/
-
--  `Our server on Discord <https://discord.gg/JEHCMzW>`__
+- https://taisei-project.org/
+- `Our server on Discord <https://discord.gg/JEHCMzW>`__

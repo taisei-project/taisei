@@ -1,4 +1,3 @@
-
 Basis Universal
 ===============
 
@@ -134,7 +133,6 @@ not apply LZ compression to UASTC files automatically yet, and Taisei wouldn’t
 stored compressed inside of a ``.zip`` package). If you want to use UASTC nonetheless, pass ``--uastc`` to ``mkbasis``.
 
 *TODO*
-
 
 Caveats and limitations
 -----------------------
