@@ -24,7 +24,7 @@ Taisei repository, including submodules, this can be done like so on Linux:
    cd subprojects/basis_universal
    meson setup --buildtype=release -Db_lto=true -Dcpp_args=-march=native build
    meson compile -C build basisu
-   ln -s $PWD/build/basisu ~/.local/bin
+   ln -s "$PWD/build/basisu" ~/.local/bin
 
 Verify that the encoder is working by running ``basisu``. It should print a long list of options. If the command is not
 found, make sure ``~/.local/bin`` is in your ``PATH``, or choose another directory that is.
@@ -47,7 +47,7 @@ The ``mkbasis`` wrapper script is what you’ll actually use to create ``.basis`
 
 .. code:: sh
 
-   ln -s $PWD/scripts/mkbasis.py ~/.local/bin/mkbasis
+   ln -s "$PWD/scripts/mkbasis.py" ~/.local/bin/mkbasis
 
 Verify that it works by running ``mkbasis``.
 
