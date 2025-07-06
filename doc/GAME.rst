@@ -3,7 +3,7 @@
 .. role:: strike
    :class: strike
 
-Taisei Project – Game Manual
+Taisei Project - Game Manual
 ============================
 
 .. contents::
@@ -12,7 +12,7 @@ Introduction
 ------------
 
 Taisei is a shoot-em-up game. Lots of bullets cover the screen and if you are hit by one, you die. To make things
-easier, your hitbox is very small–much smaller than your character.
+easier, your hitbox is very small—much smaller than your character.
 
 If you get hit you lose a life; if you are out of lives, it’s Game Over, but you get a few Continues to keep playing
 (without scores).
@@ -93,10 +93,10 @@ with. Thankfully, your character has magical power to trigger so called Spell Ca
 a lot of damage.
 
 You can use them to clear out bullets and enemies from the screen. However you only get a limited amount of them, so
-they are best used when you are in a pinch. When used against a boss' Spell Card, it voids your capturing bonus.
+they are best used when you are in a pinch. When used against a boss’ Spell Card, it voids your capturing bonus.
 
 Rumor has it that if you get hit by a bullet and hit the bomb key fast enough, you can avoid death. This is called
-*Death Bombing* and people who master it-- so the lore goes-- will find their bomb meter becoming a second life meter.
+*Death Bombing* and people who master it—so the lore goes—will find their bomb meter becoming a second life meter.
 
 Power Surge
 -----------
@@ -168,7 +168,7 @@ go up beyond a certain point, the game will also auto collect all items on the s
 Auto collection is also triggered by other events such as bombs, and the items collected in this way will always count
 as collected at the top, so it is beneficial for your score.
 
-The base (full) value of a point item is referred to as Point Item Value, or PIV. It's displayed on the HUD next to the
+The base (full) value of a point item is referred to as Point Item Value, or PIV. It’s displayed on the HUD next to the
 blue point icon. It can be increased by collecting small Value items that usually spawn when bullets are canceled, but
 the best way to increase it is through the Voltage system. PIV also affects some other values, such as spell card
 bonuses.
@@ -190,7 +190,7 @@ Both gradually deplete at different rates. The Surge will abruptly end when both
 charges can be replenished by collecting lightning items, which appear instead of mini-power items when you graze
 bullets; regular power items also replenish charge levels.
 
-Your Surge becomes more powerful the longer it's maintained, represented by a growing sparkling aura around your
+Your Surge becomes more powerful the longer it’s maintained, represented by a growing sparkling aura around your
 character. The more negative charge you currently have, the faster your Surge grows.
 
 Once the Surge ends, all of it is released in a blast that damages enemies and clears bullets. The damage and area of

@@ -15,7 +15,7 @@ About Taisei Project
 
 Taisei Project is an open source fan-game set in the world of `Tōhō Project
 <https://en.wikipedia.org/wiki/Touhou_Project>`__. It is a top-down vertical-scrolling curtain fire shooting game
-(STG), also known as a "bullet hell" or "danmaku." STGs are fast-paced games focused around pattern recognition and
+(STG), also known as a “bullet hell” or “danmaku.” STGs are fast-paced games focused around pattern recognition and
 mastery through practice.
 
 Taisei Project is highly portable, and is written in C11, using SDL2 with an OpenGL renderer. It is officially supported
@@ -31,12 +31,12 @@ For the story, read `this <doc/STORY.txt>`__. (Spoiler warning!)
 About Tōhō Project
 ^^^^^^^^^^^^^^^^^^
 
-Tōhō Project is an indie game series (also known as "doujin" in Japanese) known for its ensemble cast of characters and
+Tōhō Project is an indie game series (also known as “doujin” in Japanese) known for its ensemble cast of characters and
 memorable soundtracks. It is produced by and large by a single artist known as ZUN, and has a `permissive license
 <https://en.touhouwiki.net/wiki/Touhou_Wiki:Copyrights#Copyright_status.2FTerms_of_Use_of_the_Touhou_Project>`__ which
 allows for indie derivative works such as Taisei Project to legally exist.
 
-Taisei is *not* a "clone" of Tōhō, and tells an original story with its own music, art, gameplay mechanics, and
+Taisei is *not* a “clone” of Tōhō, and tells an original story with its own music, art, gameplay mechanics, and
 codebase. While some familiarity with Tōhō is helpful, the gameplay can be enjoyed on its own without prior knowledge of
 the series.
 
@@ -78,7 +78,7 @@ _______
 ⚠️ **NOTE**: Due to the way GitHub packages source code, the ``Download ZIP`` link on the main repo *does not work*.
 
 This is due to the fact that GitHub does not package submodules alongside source code when it automatically generates
-``.zip`` files. We've instead created those archives manually, and you **MUST** download the archive from the `Releases
+``.zip`` files. We’ve instead created those archives manually, and you **MUST** download the archive from the `Releases
 <https://github.com/taisei-project/taisei/releases>`__ page.
 
 Compiling Source Code
@@ -102,8 +102,8 @@ Replays, Screenshots, and Settings Locations
 Taisei stores all data in a platform-specific directory:
 
 -  On **Windows**, this will probably be ``%APPDATA%\taisei``
--  On **macOS**, it's ``$HOME/Library/Application Support/taisei``
--  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's ``$XDG_DATA_HOME/taisei`` or
+-  On **macOS**, it’s ``$HOME/Library/Application Support/taisei``
+-  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it’s ``$XDG_DATA_HOME/taisei`` or
    ``$HOME/.local/share/taisei``
 
 This is referred to as the **Storage Directory**. You can set the environment variable ``TAISEI_STORAGE_PATH`` to

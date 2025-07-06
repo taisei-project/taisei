@@ -33,7 +33,7 @@ found, make sure ``~/.local/bin`` is in your ``PATH``, or choose another directo
 The optimization options in ``meson setup`` are optional but highly recommended, as the encoding process can be quite
 slow.
 
-It's also possible to use `the upstream encoder <https://github.com/BinomialLLC/basis_universal>`__, which may be
+It’s also possible to use `the upstream encoder <https://github.com/BinomialLLC/basis_universal>`__, which may be
 packaged by your distribution. However, this is not recommended. As of 2020-08-06, the upstream encoder is missing some
 important performance optimizations; see
 `BinomialLLC/basis_universal#105 <https://github.com/BinomialLLC/basis_universal/pull/105>`__
@@ -43,7 +43,7 @@ important performance optimizations; see
 Step 2: The wrapper
 ~~~~~~~~~~~~~~~~~~~
 
-The ``mkbasis`` wrapper script is what you'll actually use to create ``.basis`` files. Simply symlink it into your
+The ``mkbasis`` wrapper script is what you’ll actually use to create ``.basis`` files. Simply symlink it into your
 ``PATH``:
 
 .. code:: sh
@@ -130,7 +130,7 @@ as their ETC1S equivalents (including mipmaps), comparable to the source file st
 compression.
 
 Although UASTC should theoretically work, it has not been well tested with Taisei yet. The ``mkbasis`` wrapper also does
-not apply LZ compression to UASTC files automatically yet, and Taisei wouldn't pick them up either (unless they are
+not apply LZ compression to UASTC files automatically yet, and Taisei wouldn’t pick them up either (unless they are
 stored compressed inside of a ``.zip`` package). If you want to use UASTC nonetheless, pass ``--uastc`` to ``mkbasis``.
 
 *TODO*

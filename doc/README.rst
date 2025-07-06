@@ -1,7 +1,7 @@
 Taisei Project - Documentation
 ==============================
 
-Here's a list of all the docs we have for working with Taisei.
+Here’s a list of all the docs we have for working with Taisei.
 
 Gameplay & Troubleshooting
 --------------------------

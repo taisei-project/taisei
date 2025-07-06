@@ -17,7 +17,7 @@ To define the action *right* of the player flying to the left for example, you w
    right = d5 0 1 2 3
 
 Every key in the .ani file not starting with @ corresponds to a sequence. The sequence specification itself is a list of
-frame indices. In the example above, the right sequence will cycle frames 0-3. Everything that is not a number like d5
+frame indices. In the example above, the right sequence will cycle frames 0–3. Everything that is not a number like d5
 in the example is a parameter:
 
 **d<n>**
@@ -43,10 +43,10 @@ Some naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The resource code does not require you to choose any specific names for your sequences, but different parts of the game
-of course have to at some point. The most common convention is calling the standard sequence "main". This is the least
+of course have to at some point. The most common convention is calling the standard sequence “main”. This is the least
 you need to do for anything using an aniplayer, because the aniplayer needs to know a valid starting animation.
 
-If you have a sequence of the sprite going left or right, call it "left" and "right". Player and fairy animations do
+If you have a sequence of the sprite going left or right, call it “left” and “right”. Player and fairy animations do
 this.
 
 Look at existing files for more examples. Wriggle might be interesting for complicated delay and queue trickery. The

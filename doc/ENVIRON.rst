@@ -1,4 +1,4 @@
-Taisei Project – Environment Variables
+Taisei Project - Environment Variables
 ======================================
 
 .. contents::
@@ -6,10 +6,10 @@ Taisei Project – Environment Variables
 Introduction
 ------------
 
-Some of Taisei's more advanced configuration options are delegated to `environment variables
+Some of Taisei’s more advanced configuration options are delegated to `environment variables
 <https://en.wikipedia.org/wiki/Environment_variable>`__. This document attempts to describe them all.
 
-Generally you don't need to set any of them. They are intended for developers and advanced users only. Therefore,
+Generally you don’t need to set any of them. They are intended for developers and advanced users only. Therefore,
 familiarity with the concept is assumed.
 
 In addition to the variables listed here, those processed by our runtime dependencies (such as SDL) also take effect,
@@ -41,9 +41,9 @@ Virtual filesystem
    addition to the stock assets. The custom resources shadow the default ones if the names clash. The default path is
    platform specific, and is equivalent to the return value of ``SDL_GetPrefPath("", "taisei")``:
 
-   -  On **Windows**, it's ``%APPDATA%\taisei``.
-   -  On **macOS**, it's ``$HOME/Library/Application Support/taisei``.
-   -  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's ``$XDG_DATA_HOME/taisei`` or
+   -  On **Windows**, it’s ``%APPDATA%\taisei``.
+   -  On **macOS**, it’s ``$HOME/Library/Application Support/taisei``.
+   -  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it’s ``$XDG_DATA_HOME/taisei`` or
       ``$HOME/.local/share/taisei``.
 
 **TAISEI_CACHE_PATH**
@@ -52,12 +52,12 @@ Virtual filesystem
    If set, overrides the default **cache directly** path. This is where Taisei stores transcoded Basis Universal
    textures and translated shaders to speed up future loading times.
 
-   -  On **Windows**, it's ``%LOCALAPPDATA%\taisei\cache``.
-   -  On **macOS**, it's ``$HOME/Library/Caches/taisei``.
-   -  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it's ``$XDG_CACHE_HOME/taisei`` or
+   -  On **Windows**, it’s ``%LOCALAPPDATA%\taisei\cache``.
+   -  On **macOS**, it’s ``$HOME/Library/Caches/taisei``.
+   -  On **Linux**, **\*BSD**, and most other **Unix**-like systems, it’s ``$XDG_CACHE_HOME/taisei`` or
       ``$HOME/.cache/taisei``.
 
-   It is safe to delete this directly; Taisei will rebuild the cache as it loads resources. If you don't want Taisei to
+   It is safe to delete this directly; Taisei will rebuild the cache as it loads resources. If you don’t want Taisei to
    write a persistent cache, you can set this to a non-writable directory.
 
 Resources
@@ -84,7 +84,7 @@ Resources
 **TAISEI_PRELOAD_REQUIRED**
    | Default: ``0``
 
-   If ``1``, the game will crash with an error message when it attempts to use a resource that hasn't been previously
+   If ``1``, the game will crash with an error message when it attempts to use a resource that hasn’t been previously
    preloaded. Useful for developers to debug missing preloads.
 
 **TAISEI_PRELOAD_SHADERS**
@@ -166,9 +166,9 @@ OpenGL and GLES renderers
 **TAISEI_LIBGL**
    | Default: unset
 
-   OpenGL library to load instead of the default. The value has a platform-specific meaning (it's passed to the
+   OpenGL library to load instead of the default. The value has a platform-specific meaning (it’s passed to the
    equivalent of ``dlopen``). Takes precedence over ``SDL_OPENGL_LIBRARY`` if set. Has no effect if Taisei is linked to
-   libgl (which is not recommended, because it's not portable).
+   libgl (which is not recommended, because it’s not portable).
 
 **TAISEI_GL_DEBUG**
    | Default: ``0``
@@ -179,7 +179,7 @@ OpenGL and GLES renderers
 **TAISEI_GL_EXT_OVERRIDES**
    | Default: unset
 
-   Space-separated list of OpenGL extensions that are assumed to be supported, even if the driver says they aren't.
+   Space-separated list of OpenGL extensions that are assumed to be supported, even if the driver says they aren’t.
    Prefix an extension with ``-`` to invert this behaviour. Might be used to work around bugs in some
    weird/ancient/broken drivers, but your chances are slim. Note that this only affects code paths that actually test
    for the given extensions, not the actual OpenGL functionality. Some OpenGL implementations (such as Mesa) provide
@@ -216,7 +216,7 @@ OpenGL and GLES renderers
    | Default: ``0``; ``1`` on Windows
 
    If ``1`` and the gles30 renderer backend has been configured to use ANGLE, it will create a WebGL-compatible context.
-   This is needed to work around broken cubemaps in ANGLE's D3D11 backend.
+   This is needed to work around broken cubemaps in ANGLE’s D3D11 backend.
 
 SDLGPU renderer
 ~~~~~~~~~~~~~~~
@@ -238,7 +238,7 @@ SDLGPU renderer
 
    If ``1``, render the backbuffer into a staging texture before copying it to the swapchain at presentation. This is
    needed to emulate swapchain reads on SDLGPU, where the swapchain is write-only. Disabling this option eliminates the
-   copy overhead, but breaks screenshots. If you don't need the built-in screenshot functionality, it is safe to turn it
+   copy overhead, but breaks screenshots. If you don’t need the built-in screenshot functionality, it is safe to turn it
    off.
 
 Audio
@@ -260,7 +260,7 @@ Timing
 **TAISEI_HIRES_TIMER**
    | Default: ``1``
 
-   If ``1``, tries to use the system's high resolution timer to limit the game's framerate. Disabling this is not
+   If ``1``, tries to use the system’s high resolution timer to limit the game’s framerate. Disabling this is not
    recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less
    accurate.
 
@@ -309,18 +309,18 @@ Kiosk Mode
 **TAISEI_KIOSK**
    | Default: ``0``
 
-   If ``1``, run Taisei in "kiosk mode". This forces the game into fullscreen, makes the window uncloseable, disables
-   the "Quit" main menu option, and enables a watchdog that resets the game back to the main menu and default settings
-   if there's no user activity for too long.
+   If ``1``, run Taisei in “kiosk mode”. This forces the game into fullscreen, makes the window uncloseable, disables
+   the “Quit” main menu option, and enables a watchdog that resets the game back to the main menu and default settings
+   if there’s no user activity for too long.
 
-   Useful for running a public "arcade cabinet" at events. You can customize the game's default setting by placing a
+   Useful for running a public “arcade cabinet” at events. You can customize the game’s default setting by placing a
    ``config.default`` file into one of the resource search paths, e.g. ``$HOME/.local/share/taisei/resources``. The
    format is the same as the ``config`` file created by Taisei in the storage directly.
 
 **TAISEI_KIOSK_PREVENT_QUIT**
    | Default: ``0``
 
-   If ``1``, allows users to quit the game in kiosk mode. Useful if you're running a multi-game arcade cabinet setup.
+   If ``1``, allows users to quit the game in kiosk mode. Useful if you’re running a multi-game arcade cabinet setup.
 
 **TAISEI_KIOSK_TIMEOUT**
    | Default: ``7200`` (2 minutes)
@@ -348,9 +348,9 @@ Frame Dump Mode
 **TAISEI_FRAMEDUMP_COMPRESSION**
    | Default: ``1``
 
-   Level of deflate compression to apply to dumped frames, in the 0-9 range. Lower values will produce larger files that
+   Level of deflate compression to apply to dumped frames, in the 0–9 range. Lower values will produce larger files that
    will encode faster. Larger values may create a large backlog of frames to encode that will consume a lot of RAM,
-   depending on your CPU's capabilities.
+   depending on your CPU’s capabilities.
 
 Miscellaneous
 ~~~~~~~~~~~~~
@@ -359,7 +359,7 @@ Miscellaneous
    | Default: ``1``
    | *Linux only*
 
-   If ``1``, enables automatic integration with Feral Interactive's GameMode daemon. Only meaningful for
+   If ``1``, enables automatic integration with Feral Interactive’s GameMode daemon. Only meaningful for
    GameMode-enabled builds.
 
 **TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY**
@@ -371,10 +371,10 @@ Miscellaneous
 Logging
 ~~~~~~~
 
-Taisei's logging system currently has five basic levels and works by dispatching messages to a few output handlers. Each
+Taisei’s logging system currently has five basic levels and works by dispatching messages to a few output handlers. Each
 handler has a level filter, which is configured by a separate environment variable. All of those variables work the same
-way: their value looks like an IRC mode string, and represents a modification of the handler's default settings. If this
-doesn't make sense, take a look at the *Examples* section.
+way: their value looks like an IRC mode string, and represents a modification of the handler’s default settings. If this
+doesn’t make sense, take a look at the *Examples* section.
 
 The levels
 ^^^^^^^^^^
@@ -384,7 +384,7 @@ The levels
 -  **Info** (*i*) logs some events that are expected to occur during normal operation, for example when a spell is
    unlocked or a screenshot is taken.
 -  **Warning** (*w*) usually complains about misuse of the engine features, deprecations, unimplemented functionality,
-   other small anomalies that aren't directly detrimental to functionality.
+   other small anomalies that aren’t directly detrimental to functionality.
 -  **Error** (*e*) alerts of non-critical errors, for example a missing optional resource, corrupted progress data, or
    failure to save a replay due to insufficient storage space or privileges.
 -  **Fatal** (*f*) is an irrecoverable failure condition. Such an event most likely signifies a programming error or a
@@ -428,13 +428,13 @@ The variables
 **TAISEI_LOG_ASYNC_FAST_SHUTDOWN**
    | Default: ``0``
 
-   If ``1``, don't wait for the whole log queue to be written when shutting down. This will make the game quit faster if
+   If ``1``, don’t wait for the whole log queue to be written when shutting down. This will make the game quit faster if
    log writing is slow, at the expense of log integrity. Ignored if ``TAISEI_LOG_ASYNC`` is disabled.
 
 **TAISEI_SDL_LOG**
    | Default: ``0``
 
-   If ``>0``, redirects SDL's log output into the Taisei log. The value controls the minimum log priority; see
+   If ``>0``, redirects SDL’s log output into the Taisei log. The value controls the minimum log priority; see
    ``SDL_log.h`` for details.
 
 Examples
@@ -459,19 +459,19 @@ Examples
 
       TAISEI_LOGLVLS_CONSOLE=-di
 
--  Don't save anything to the log file:
+-  Don’t save anything to the log file:
 
    .. code:: sh
 
       TAISEI_LOGLVLS_FILE=-a
 
--  Don't print anything to the console:
+-  Don’t print anything to the console:
 
    .. code:: sh
 
       TAISEI_LOGLVLS_CONSOLE=-a
 
--  Don't save anything to the log file, except for *Error*\ s and *Fatal*\ s:
+-  Don’t save anything to the log file, except for *Error*\ s and *Fatal*\ s:
 
    .. code:: sh
 
