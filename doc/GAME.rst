@@ -73,7 +73,7 @@ If you don’t like the defaults, you can easily remap them in the settings.
 
 Using the Gamepad is also supported. See options to set up controls.
 
-Users of non-qwerty keyboard layouts: Don’t worry, Taisei’s controls are not based on layout but key location.
+Users of non-QWERTY keyboard layouts: Don’t worry, Taisei’s controls are not based on layout but key location.
 
 Focus
 -----
