@@ -9,10 +9,10 @@ Introduction
 Taisei uses `complex numbers <https://en.wikipedia.org/wiki/Complex_number>`__ in its game code for a number of
 different functions, such as:
 
-* Player and enemy position and movement
-* Danmaku patterns and bullet movement
-* Special effects and particles
-* Spell card backgrounds for bosses
+- Player and enemy position and movement
+- Danmaku patterns and bullet movement
+- Special effects and particles
+- Spell card backgrounds for bosses
 
 As you can probably see, it’s important to have a firm grasp of complex numbers in order to make heads or tails of what
 the game is doing if you want to develop for it.
@@ -27,14 +27,14 @@ things like vectors and matrices isn’t as readily available or pleasant to use
 There are many different places you can learn about complex numbers, but we’ve found these two YouTube creators do a
 better job than we could of explaining the core concepts behind complex numbers.
 
-* `Imaginary Numbers are Real <https://www.youtube.com/watch?v=T647CGsuOVU&list=PLiaHhY2iBX9g6KIvZ_703G3KJXapKkNaF>`__
-  by Welch Labs - short and punchy video series
-* `Complex Number Fundamentals <https://www.youtube.com/watch?v=5PcpBw5Hbwo>`__ by 3Blue1Brown - a longer lecture-style
+- `Imaginary Numbers are Real <https://www.youtube.com/watch?v=T647CGsuOVU&list=PLiaHhY2iBX9g6KIvZ_703G3KJXapKkNaF>`__
+  by Welch Labs: short and punchy video series
+- `Complex Number Fundamentals <https://www.youtube.com/watch?v=5PcpBw5Hbwo>`__ by 3Blue1Brown: a longer lecture-style
   format
 
 More helpful links:
 
-* `Formula for converting a *cartesian coordinate* to a *polar coordinate*
+- `Formula for converting a *cartesian coordinate* to a *polar coordinate*
   <https://www.engineeringtoolbox.com/converting-cartesian-polar-coordinates-d_1347.html>`__
 
 Core Concept
@@ -81,8 +81,8 @@ The important piece here, for our purposes, is:
    VIEWPORT_W/2.0 + 200.0 * I
 
 What this is doing is specifying a position on the “real” X-axis (``VIEWPORT_W/2.0``, which in Taisei means ``480.0 /
-2.0`` or `240.0`), and then specifying a position on the “imaginary” Y-axis (``200.0 * I``). The ``I`` here is the same
-``i`` described in the videos and the above explanation.
+2.0`` or ``240.0``), and then specifying a position on the “imaginary” Y-axis (``200.0 * I``). The ``I`` here is the
+same ``i`` described in the videos and the above explanation.
 
 So what we’re really looking at here is:
 
@@ -108,10 +108,10 @@ This ``aim`` variable could be passed to a ``move_towards`` function attached to
 bullets shooting directly at the player in a straight line, wherever on the screen they may be at the time.
 
 Let’s look at the argument inside ``cnormalize`` first, ``global.plr.pos - e->pos``. Both ``global.plr.pos`` and
-``e->pos`` are *complex numbers*, in that they have both *real* and *imaginary* parts. Much like the example in ``Simple
-Movement``, they represent a place on the X/Y grid.
+``e->pos`` are *complex numbers*, in that they have both *real* and *imaginary* parts. Much like the example in *Simple
+Movement*, they represent a place on the X/Y grid.
 
-In the format of ``[X,Y]``, let’s say that ``global.plr.pos`` is ``[-1, 6]``, and that ``enemy->pos`` is ``[6, 3]``.
+In the format of ``[X, Y]``, let’s say that ``global.plr.pos`` is ``[-1, 6]``, and that ``enemy->pos`` is ``[6, 3]``.
 
 .. image:: images/math-01.png
    :width: 300pt

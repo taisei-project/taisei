@@ -1,9 +1,9 @@
 The Animation Sequence Format
 =============================
 
-An animation is made up of a number of sprites and an .ani file which contains all the metadata.
+An animation is made up of a number of sprites and an ``.ani`` file which contains all the metadata.
 
-The .ani file needs to specify the number of sprites using the ``@sprite_count`` attribute. Then different animation
+The ``.ani`` file needs to specify the number of sprites using the ``@sprite_count`` attribute. Then different animation
 sequences can be defined.
 
 Animation sequences are chains of sprites that can be replayed in-game. For example, Cirno can either fly normally or
@@ -16,16 +16,16 @@ To define the action *right* of the player flying to the left for example, you w
 
    right = d5 0 1 2 3
 
-Every key in the .ani file not starting with @ corresponds to a sequence. The sequence specification itself is a list of
-frame indices. In the example above, the right sequence will cycle frames 0–3. Everything that is not a number like d5
-in the example is a parameter:
+Every key in the .ani file not starting with ``@`` corresponds to a sequence. The sequence specification itself is a
+list of frame indices. In the example above, the right sequence will cycle frames 0–3. Everything that is not a number
+like ``d5`` in the example is a parameter:
 
-**d<n>**
-  sets the frame delay to n. This means every sprite index given is shown for n ingame frames.
-**m**
-  toggles the mirroring of the following frames.
-**m0,m1**
-  set the absolute mirroring of the following frames.
+``d<n>``
+   sets the frame delay to ``n``. This means every sprite index given is shown for ``n`` in-game frames.
+``m``
+   toggles the mirroring of the following frames.
+``m0,m1``
+   set the absolute mirroring of the following frames.
 
 All parameters are persistent within one sequence specification until you change them.
 
@@ -51,4 +51,3 @@ this.
 
 Look at existing files for more examples. Wriggle might be interesting for complicated delay and queue trickery. The
 documentation of the ``AniPlayer`` struct might also be interesting to learn more about the internals.
-
