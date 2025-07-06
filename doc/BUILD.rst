@@ -9,7 +9,7 @@ Windows, Emscripten, Switch, and others.
 Checking Out Code
 -----------------
 
-First, you'll need to checkout the repository. You can do that with the following:
+First, you’ll need to checkout the repository. You can do that with the following:
 
 .. code:: sh
 
@@ -72,10 +72,10 @@ consistent build environments, including cross-builds, and for more esoteric pla
 
 For convenience, ``meson`` will detect which packages are missing from your system and use its wrap dependency system to
 pull in what it can. Relying on this is *not* recommended in most circumstances, and you should instead rely on your
-operating system's package manager.
+operating system’s package manager.
 
 For consistency, we tend to release Taisei using exclusively built-in packages. However, you can also use system
-dependencies as well. There's a tradeoff in consistency and reproducibility for speed and ease of use.
+dependencies as well. There’s a tradeoff in consistency and reproducibility for speed and ease of use.
 
 This is controlled through the ``--wrap-mode`` flag with ``meson``. (More on that later.)
 
@@ -90,7 +90,7 @@ On an Ubuntu or Debian-based distro, the following will install the mandatory to
    apt install meson cmake build-essential
 
 Beyond that, consult the *Dependencies* list above. Many distros package compile-time system dependencies with ``*-dev``
-(i.e: ``libsdl2-dev``). Search with your distro's package manager to install the correct libraries.
+(i.e: ``libsdl2-dev``). Search with your distro’s package manager to install the correct libraries.
 
 macOS
 '''''
@@ -102,7 +102,7 @@ tools for building native macOS apps.
 
    xcode-select --install
 
-There are additional command line tools that you'll need. You can acquire those by using `Homebrew
+There are additional command line tools that you’ll need. You can acquire those by using `Homebrew
 <https://brew.sh/>`__.
 
 Follow the instructions for installing Homebrew, and then install the following tools:
@@ -114,7 +114,7 @@ Follow the instructions for installing Homebrew, and then install the following 
 You can then install dependencies from the *Dependencies* list.
 
 As of 2021-08-05, you should **not** install the following packages via Homebrew, as the versions available do not
-compile against Taisei correctly. If you're having mysterious errors, ensure that they're not installed.
+compile against Taisei correctly. If you’re having mysterious errors, ensure that they’re not installed.
 
 -  ``spirv-tools``
 -  ``spirv-cross``
@@ -123,7 +123,7 @@ compile against Taisei correctly. If you're having mysterious errors, ensure tha
 
    brew remove spirv-tools spirv-cross
 
-In addition, if you're trying to compile on an older version of macOS (i.e: <10.12), SDL2 may not compile correctly on
+In addition, if you’re trying to compile on an older version of macOS (i.e: <10.12), SDL2 may not compile correctly on
 Homebrew (as of 2019-02-19). Let ``meson`` pull in the corrected version for you via subprojects.
 
 You can also install `create-dmg <https://github.com/create-dmg/create-dmg>`__ for packaging ``.dmg`` files, which
@@ -133,23 +133,23 @@ Windows
 '''''''
 
 Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to achieve cross-compiling for Windows.
-Microsoft's native C compiler toolchain simply does not support the things Taisei needs to compile correctly, including
+Microsoft’s native C compiler toolchain simply does not support the things Taisei needs to compile correctly, including
 fundamental things like `complex numbers <https://en.wikipedia.org/wiki/Complex_number>`__.
 
 
 You can use ``llvm-mingw`` too, or you can check if your distro has any ``mingw64`` cross-compiler toolchains available
-as well. That's just the one that works for us.
+as well. That’s just the one that works for us.
 
 Additionally, you can install `nsis <https://nsis.sourceforge.io/Main_Page>`__ (>= 3.0) for packaging Windows installer
 ``.exe`` files. (However, you can still package ``.zip`` files for Windows without it.)
 
-On macOS, you're probably better off using Docker and the `Docker container
+On macOS, you’re probably better off using Docker and the `Docker container
 <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that ``llvm-mingw`` provides, and installing ``nsis`` on top of it.
 
-Another option for Windows-based computers is leveraging Windows 10's `Windows Subsystem For Linux (WSL) Subsystem
+Another option for Windows-based computers is leveraging Windows 10’s `Windows Subsystem For Linux (WSL) Subsystem
 <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__ to cross-compile to Windows using their Ubuntu image.
-You can also potentially use a ``mingw64`` toolchain directly on Windows, however that isn't supported or recommended,
-as it's generally more trouble than it's worth.
+You can also potentially use a ``mingw64`` toolchain directly on Windows, however that isn’t supported or recommended,
+as it’s generally more trouble than it’s worth.
 
 Build Options
 -------------
@@ -164,7 +164,7 @@ This is *not* an exhaustive list. You can see the full list of options using ``m
 Setup
 """""
 
-The first command you'll need to run is ``setup``, which creates a directory (in this case, ``taisei/build/``). It
+The first command you’ll need to run is ``setup``, which creates a directory (in this case, ``taisei/build/``). It
 checks your system for various dependencies and required tools, which should take about a minute on most systems.
 
 .. code:: sh
@@ -215,7 +215,7 @@ Relative Directory Install (``-Dinstall_relocatable``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-This option enables a "relocatable" installation layout, where everything is confined to one directory and no full paths
+This option enables a “relocatable” installation layout, where everything is confined to one directory and no full paths
 are hardcoded into the executable.
 
 The ``auto`` defaults to ``enabled`` when building for Windows, Emscripten, Switch, or macOS with
@@ -237,7 +237,7 @@ Specifies a path under which all game files are installed.
 If ``install_relocatable`` is enabled, Taisei will be installed into the root of this directory, and thus you will
 probably want to change it from the default value.
 
-Otherwise, it's not recommended to touch this option unless you know what you are doing.
+Otherwise, it’s not recommended to touch this option unless you know what you are doing.
 
 This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
 information.
@@ -309,7 +309,7 @@ Assertions (``-Db_ndebug``)
 * Default: ``if-release``
 * Options: ``if-release``, ``true``, ``false``
 
-The name of this flag is opposite of what you'd expect. Think of it as "Not Debugging". It controls the ``NDEBUG``
+The name of this flag is opposite of what you’d expect. Think of it as “Not Debugging”. It controls the ``NDEBUG``
 declaration which is responsible for deactivating ``assert()`` macros.
 
 Setting to ``false`` will *enable* assertions (good for debugging).
@@ -329,10 +329,10 @@ Strict Compiler Warnings (``-Dwerror``)
 * Default: ``false``
 * Options: ``true``, ``false``
 
-This option forces stricter checks against Taisei's codebase to ensure code health, treating all ``Warnings`` as
+This option forces stricter checks against Taisei’s codebase to ensure code health, treating all ``Warnings`` as
 ``Errors`` in the code.
 
-It's highly recommended to **enable** this (i.e. set to ``true``) whenever developing for the engine. Sometimes it's
+It’s highly recommended to **enable** this (i.e. set to ``true``) whenever developing for the engine. Sometimes it’s
 overly pedantic, but much of the time it provides useful advice. For example, it can detect potential null pointer
 dereferences that may not be obvious to the human eye.
 
@@ -379,7 +379,7 @@ Using macOS as an example:
 The ``../12.0.5/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each version of Xcode. If it fails to launch
 for you, ensure that the version number is correct by browsing to the parent directory of ``../clang``.
 
-Then, you can launch Taisei's binary from the command line (using macOS as an example):
+Then, you can launch Taisei’s binary from the command line (using macOS as an example):
 
 This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__ for more
 information.
@@ -475,7 +475,7 @@ Shader Transpiler (``-Dshader_transpiler``)
 * Default: ``auto``
 * Options: ``auto``, ``enabled``, ``disabled``
 
-For using OpenGL ES or SDL-GPU, the shader transpiler is necessary for converting Taisei's shaders to a format usable by
+For using OpenGL ES or SDL-GPU, the shader transpiler is necessary for converting Taisei’s shaders to a format usable by
 that driver.
 
 Requires ``glslang`` and ``SPIRV-cross``.
@@ -491,11 +491,11 @@ ANGLE
 
 Building ANGLE (Optional)
 '''''''''''''''''''''''''
-`ANGLE <https://github.com/google/angle>`__ is Google's graphics translation layer, intended for Chromium. Taisei
+`ANGLE <https://github.com/google/angle>`__ is Google’s graphics translation layer, intended for Chromium. Taisei
 packages it with Windows builds to workaround some bugs and performance issues with many Windows OpenGL drivers, and it
 can be optionally packaged as an experimental Metal renderer for macOS.
 
-You need to read `this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and set up Google's custom
+You need to read `this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and set up Google’s custom
 build system to get things going. However, the below commands might help you compiling what you need from it when you
 have that all set up.
 
