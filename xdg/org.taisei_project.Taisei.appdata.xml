@@ -39,6 +39,12 @@
 		</screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.4.3" date="2025-07-10">
+			<url>https://taisei-project.org/news/0020_v1.4.3</url>
+			<description>
+				<p>This is a stable maintenance release. It has some important bugfixes and features backported from the v1.5 development tree.</p>
+			</description>
+		</release>
 		<release version="1.4.2" date="2024-10-08">
 			<url>https://taisei-project.org/news/0018_v1.4.2</url>
 			<description>
