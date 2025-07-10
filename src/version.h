@@ -13,28 +13,21 @@
 
 #include <SDL3/SDL_iostream.h>
 
-#ifdef TAISEI_BUILDCONF_DEBUG
-	#define TAISEI_VERSION_BUILD_TYPE_0 "debug"
+#ifdef TAISEI_BUILDCONF_DEVELOPER
+	#define TAISEI_VERSION_BUILD_TYPE_0 "devbuild"
 #else
 	#define TAISEI_VERSION_BUILD_TYPE_0 "release"
 #endif
 
-#ifdef TAISEI_BUILDCONF_DEVELOPER
-	#define TAISEI_VERSION_BUILD_TYPE_1 " devbuild"
-#else
-	#define TAISEI_VERSION_BUILD_TYPE_1 ""
-#endif
-
 #ifdef NDEBUG
-	#define TAISEI_VERSION_BUILD_TYPE_2 ""
+	#define TAISEI_VERSION_BUILD_TYPE_1 ""
 #else
-	#define TAISEI_VERSION_BUILD_TYPE_2 " assert"
+	#define TAISEI_VERSION_BUILD_TYPE_1 " assert"
 #endif
 
 #define TAISEI_VERSION_BUILD_TYPE \
 	TAISEI_VERSION_BUILD_TYPE_0 \
 	TAISEI_VERSION_BUILD_TYPE_1 \
-	TAISEI_VERSION_BUILD_TYPE_2 \
 
 extern const char *const TAISEI_VERSION;
 extern const char *const TAISEI_VERSION_FULL;

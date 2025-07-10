@@ -37,10 +37,6 @@ if is_developer_build
     dist_version_string = '@0@-devbuild'.format(dist_version_string)
 endif
 
-if is_debug_build
-    dist_version_string = '@0@-debug'.format(dist_version_string)
-endif
-
 dist_script = find_program(files('gen-dist.py'))
 dist_name = 'Taisei-@0@-@1@-@2@'.format(dist_version_string, package_system_name, host_machine.cpu_family())
 dist_command = [dist_script, common_taiseilib_args]

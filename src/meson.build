@@ -24,7 +24,7 @@ if host_machine.system() == 'windows'
         '-DMANIFEST=@0@'.format(manifest),
     ]
 
-    if is_debug_build
+    if is_developer_build
         rcdefs += ['-DBUILDTYPE_DEFINE=#define DEBUG_BUILD']
     else
         rcdefs += ['-DBUILDTYPE_DEFINE=#define RELEASE_BUILD']
