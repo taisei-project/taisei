@@ -12,8 +12,10 @@ if [[ -z "$VERSION" ]]; then
 	exit 0
 fi
 
-meson install -C "$MESON_BUILD_ROOT_MACOS_X64"
-meson install -C "$MESON_BUILD_ROOT_MACOS_AARCH64"
+meson compile -C "$MESON_BUILD_ROOT_MACOS_X64" debugsyms --verbose
+meson compile -C "$MESON_BUILD_ROOT_MACOS_AARCH64" debugsyms --verbose
+meson install --skip-subprojects -C "$MESON_BUILD_ROOT_MACOS_X64"
+meson install --skip-subprojects -C "$MESON_BUILD_ROOT_MACOS_AARCH64"
 
 cp -a "$MESON_BUILD_ROOT_MACOS_X64_COMPILED/" "$MESON_BUILD_ROOT_MACOS_COMBINED"
 printf -- "Combining x64 and AArch64 binaries...\n\n"
