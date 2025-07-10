@@ -511,7 +511,6 @@ else  # Non-relocatable
 endif
 
 config.set('TAISEI_BUILDCONF_RELOCATABLE_INSTALL', is_relocatable_install)
-config.set('TAISEI_BUILDCONF_DEBUG', is_debug_build)
 config.set('TAISEI_BUILDCONF_DEVELOPER', is_developer_build)
 config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'windows' or
