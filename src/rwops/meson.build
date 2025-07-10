@@ -12,7 +12,7 @@ rwops_src = files(
     'rwops_zstd.c',
 )
 
-if is_debug_build
+if is_developer_build
     rwops_src += files(
         'rwops_trace.c',
     )
