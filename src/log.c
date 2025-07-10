@@ -576,8 +576,11 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
 }
 
 static inline int thread_color(uint64_t tid) {
+	// skip first few dark colors to ensure thread names are visible on dark backgrounds
+	static const int color_offset = 3;
+
 	uint64_t hash = splitmix64(&tid);
-	return 0x10 + hash % 0xD8;
+	return 0x10 + color_offset + hash % (0xD8 - color_offset);
 }
 
 static const char *thread_name(LogEntry *entry, size_t tmpsize, char tmpbuf[tmpsize]) {
