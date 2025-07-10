@@ -697,6 +697,17 @@ foreach bindist_target : bindist_targets
     )
 endforeach
 
+if have_debug_syms_target
+    debug_symbols_compressed_file = '@0@-debugsyms.tar.xz'.format(dist_name)
+    debug_symbols_compressed = custom_target(debug_symbols_compressed_file,
+        command : [find_program('tar'), 'cfa', '@OUTPUT@', '@INPUT@'],
+        build_by_default : false,
+        input : debug_symbols,
+        output : debug_symbols_compressed_file
+    )
+    alias_target('debugsyms', debug_symbols_compressed)
+endif
+
 meson.add_devenv({
     'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
     'TAISEI_GL_DEBUG': '1',

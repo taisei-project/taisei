@@ -200,6 +200,7 @@ configure_file(configuration : config, output : 'build_config.h')
 
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 have_libtaisei = false
+have_debug_syms_target = false
 
 if host_machine.system() == 'emscripten'
     if get_option('b_staticpic')
@@ -474,6 +475,38 @@ else
         install_dir : bindir,
         export_dynamic : stages_live_reload,
     )
+
+    if host_machine.system() == 'darwin'
+        have_debug_syms_target = true
+        debug_symbols_file = '@0@.dwarf'.format(taisei_basename)
+        debug_symbols = custom_target(debug_symbols_file,
+            command : [
+                find_program('dsymutil'),
+                '--flat',
+                '@INPUT@',
+                '-o', '@OUTPUT@',
+            ],
+            build_by_default : false,
+            install : false,
+            input : taisei,
+            output : debug_symbols_file
+        )
+    else
+        have_debug_syms_target = true
+        debug_symbols_file = '@0@.dwarf'.format(taisei_basename)
+        debug_symbols = custom_target(debug_symbols_file,
+            command : [
+                find_program('strip'),
+                '--only-keep-debug',
+                '@INPUT@',
+                '-o', '@OUTPUT@'
+            ],
+            build_by_default : false,
+            install : false,
+            input : taisei,
+            output : debug_symbols_file
+        )
+    endif
 
     bindist_deps += taisei
     have_libtaisei = true
