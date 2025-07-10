@@ -119,7 +119,7 @@ jobs:
     - name: Build
       run: |
         echo "Version set to ${{ env.BUILD_VERSION }}" # needs to be here as GITHUB_ENV doesn't update until the next step: https://github.com/github/docs/issues/7892
-        meson compile -C build/linux --verbose
+        meson compile -C build/linux debugsyms --verbose
         meson install -C build/linux
 
     - name: Unwanted Library Check
@@ -134,14 +134,22 @@ jobs:
     - name: Package (Binary)
       run: |
         ninja txz -C build/linux --verbose
-        scripts/sign-release.py build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz
+        scripts/sign-release.py build/linux/Taisei-${{ env.BUILD_VERSION }}*-linux-x86_64.tar.xz
 
     - name: Upload Artifact (Binary)
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: linux-x86_64-${{ env.BUILD_VERSION }}-txz
-        path: build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz*
+        path: build/linux/Taisei-${{ env.BUILD_VERSION }}*-linux-x86_64.tar.xz*
+        if-no-files-found: error
+
+    - name: Upload Artifact (Debug)
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: linux-x86_64-${{ env.BUILD_VERSION }}-debugsyms
+        path: build/linux/Taisei-${{ env.BUILD_VERSION }}*-linux-x86_64-debugsyms.tar.xz
         if-no-files-found: error
 
     - name: Package (Source)
@@ -162,7 +170,7 @@ jobs:
       run: >
         gh release upload "${{ github.event.inputs.release-tag }}"
         build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz*
-        build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz*
+        build/linux/Taisei-${{ env.BUILD_VERSION }}*-linux-x86_64*.tar.xz*
 
     - name: Upload Log
       if: always()
@@ -242,7 +250,7 @@ jobs:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
-    - name: Upload Artifact
+    - name: Upload Artifact (DMG)
       uses: actions/upload-artifact@v4
       if: success()
       with:
@@ -250,11 +258,20 @@ jobs:
         path: build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg*
         if-no-files-found: error
 
+    - name: Upload Artifact (Debug)
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: macos-universal-${{ env.BUILD_VERSION }}-debugsyms
+        path: build-release/*/Taisei*-debugsyms.tar.xz
+        if-no-files-found: error
+
     - name: Upload Release Artifacts
       if: ${{ github.event.inputs.release-tag }}
       run: >
         gh release upload "${{ github.event.inputs.release-tag }}"
         build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg*
+        build-release/*/Taisei*-debugsyms.tar.xz
 
     - name: Upload Log
       if: always()
@@ -309,40 +326,49 @@ jobs:
     - name: Build
       run: |
         echo "Version set to ${{ env.BUILD_VERSION }}"
-        meson compile -C build/windows
+        meson compile -C build/windows debugsyms --verbose
 
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86_64.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-setup-exe
-        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe*
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86_64.exe*
         if-no-files-found: error
 
     - name: Package (ZIP)
       run: |
         ninja zip -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64.zip
 
     - name: Upload Artifact (ZIP)
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-zip
-        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip*
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64.zip*
+        if-no-files-found: error
+
+    - name: Upload Artifact (Debug)
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: windows-x86_64-${{ env.BUILD_VERSION }}-debugsyms
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64-debugsyms.tar.xz
         if-no-files-found: error
 
     - name: Upload Release Artifacts
       if: ${{ github.event.inputs.release-tag }}
       run: >
         gh release upload "${{ github.event.inputs.release-tag }}"
-        build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe*
-        build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86_64.exe*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64.zip*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64-debugsyms.tar.xz
 
     - name: Upload Log
       if: always()
@@ -397,40 +423,49 @@ jobs:
     - name: Build
       run: |
         echo "Version set to ${{ env.BUILD_VERSION }}"
-        meson compile -C build/windows
+        meson compile -C build/windows debugsyms --verbose
 
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-setup-exe
-        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe*
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86.exe*
         if-no-files-found: error
 
     - name: Package (ZIP)
       run: |
         ninja zip -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86.zip
 
     - name: Upload Artifact (ZIP)
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-zip
-        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip*
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86.zip*
+        if-no-files-found: error
+
+    - name: Upload Artifact (ZIP)
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: windows-x86-${{ env.BUILD_VERSION }}-debugsyms
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86-debugsyms.tar.xz
         if-no-files-found: error
 
     - name: Upload Release Artifacts
       if: ${{ github.event.inputs.release-tag }}
       run: >
         gh release upload "${{ github.event.inputs.release-tag }}"
-        build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe*
-        build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86.exe*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86.zip*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86-debugsyms.tar.xz
 
     - name: Upload Log
       if: always()
@@ -519,21 +554,21 @@ jobs:
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         ninja txz -C build/emscripten --verbose
-        scripts/sign-release.py build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz
+        scripts/sign-release.py build/emscripten/Taisei-${{ env.BUILD_VERSION }}*-emscripten-wasm32.tar.xz
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: emscripten-wasm32-${{ env.BUILD_VERSION }}-txz
-        path: build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz*
+        path: build/emscripten/Taisei-${{ env.BUILD_VERSION }}*-emscripten-wasm32.tar.xz*
         if-no-files-found: error
 
     - name: Upload Release Artifacts
       if: ${{ github.event.inputs.release-tag }}
       run: >
         gh release upload "${{ github.event.inputs.release-tag }}"
-        build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz*
+        build/emscripten/Taisei-${{ env.BUILD_VERSION }}*-emscripten-wasm32.tar.xz*
 
     - name: Upload Log
       if: always()
