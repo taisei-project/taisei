@@ -476,9 +476,9 @@ if is_relocatable_install
 
         meson.add_install_script(
             macos_install_dylibs_command,
-            ':'.join(meson.get_cross_property('macos_lib_path', [])),
-            ':'.join(meson.get_cross_property('macos_tool_path', [])),
-            meson.get_cross_property('macos_tool_prefix', ''),
+            ':'.join(meson.get_external_property('macos_lib_path', [])),
+            ':'.join(meson.get_external_property('macos_tool_path', [])),
+            meson.get_external_property('macos_tool_prefix', ''),
         )
 
         # Relative to SDL_GetBasePath() (bundle root)
