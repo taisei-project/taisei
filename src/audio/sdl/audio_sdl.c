@@ -75,9 +75,12 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 		.freq = AUDIO_FREQ,
 	}, have;
 
-	// FIXME looks like we can't specify buffer size at all anymore?
-	attr_unused int want_bufsize = config_get_int(CONFIG_MIXER_CHUNKSIZE);
+	int want_bufsize = config_get_int(CONFIG_MIXER_CHUNKSIZE);
 	int have_bufsize;
+
+	char buf[32];
+	snprintf(buf, sizeof(buf), "%d", want_bufsize);
+	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, buf);
 
 	audio.sink = SDL_OpenAudioDeviceStream(
 		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, mixer_callback, NULL);
