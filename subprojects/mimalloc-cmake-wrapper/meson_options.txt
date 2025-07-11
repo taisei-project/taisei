@@ -1,97 +1,104 @@
 option(
     'secure',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Use full security mitigations (like guard pages, allocation randomization, double-free mitigation, and free-list corruption detection)'
 )
 
 option(
+    'debug_basic',
+    type : 'feature',
+    value : 'auto',
+    description : 'Enable extra debugging features'
+)
+
+option(
     'debug_full',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Use full internal heap invariant checking in DEBUG mode (expensive)'
 )
 
 option(
     'padding',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Enable padding to detect heap block overflow (always on in DEBUG or SECURE mode, or with Valgrind/ASAN)'
 )
 
 option(
     'override',
-    type : 'boolean',
-    value : true,
-    description : "Override the standard malloc interface (i.e. define entry points for 'malloc', 'free', etc)"
+    type : 'feature',
+    value : 'auto',
+    description : 'Override the standard malloc interface (i.e. define entry points for "malloc", "free", etc)'
 )
 
 option(
     'xmalloc',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Enable abort() call on memory allocation failure by default'
 )
 
 option(
     'show_errors',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Show error and warning messages by default (only enabled by default in DEBUG mode)'
 )
 
 option(
     'track_valgrind',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Compile with Valgrind support (adds a small overhead)'
 )
 
 option(
     'track_asan',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Compile with address sanitizer support (adds a small overhead)'
 )
 
 option(
     'track_etw',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Compile with Windows event tracing (ETW) support (adds a small overhead)'
 )
 
 option(
     'local_dynamic_tls',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Use local-dynamic-tls, a slightly slower but dlopen-compatible thread local storage mechanism (Unix)'
 )
 
 option(
     'libc_musl',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Set this when linking with musl libc'
 )
 
 option(
     'guarded',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Build with guard pages behind certain object allocations (implies MI_NO_PADDING=ON)'
 )
 
 option(
     'no_padding',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Force no use of padding even in DEBUG mode etc.'
 )
 
 option(
     'no_thp',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
     description : 'Disable transparent huge pages support on Linux/Android for the mimalloc process only'
 )

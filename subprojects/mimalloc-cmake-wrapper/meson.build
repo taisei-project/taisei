@@ -3,11 +3,22 @@ project('mimalloc-cmake-wrapper')
 cmake = import('cmake')
 mimalloc_options = cmake.subproject_options()
 mimalloc_options.set_install(false)
+
+# mimalloc abuses CMake build type to enable extra debug features
+if get_option('debug_basic').enabled()
+    mimalloc_buildtype = 'Debug'
+elif get_option('debug')
+    mimalloc_buildtype = 'RelWithDebInfo'
+else
+    mimalloc_buildtype = 'Release'
+endif
+
 mimalloc_options.add_cmake_defines({
     'MI_BUILD_SHARED': false,
     'MI_BUILD_STATIC': true,
     'MI_BUILD_OBJECT': false,
     'MI_BUILD_TESTS': false,
+    'CMAKE_BUILD_TYPE': mimalloc_buildtype,
 })
 
 # TODO detect musl and set MI_LIBC_MUSL?
