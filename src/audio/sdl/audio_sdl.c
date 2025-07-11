@@ -73,10 +73,9 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 		.channels = AUDIO_CHANNELS,
 		.format = AUDIO_FORMAT,
 		.freq = AUDIO_FREQ,
-	}, have;
+	};
 
 	int want_bufsize = config_get_int(CONFIG_MIXER_CHUNKSIZE);
-	int have_bufsize;
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "%d", want_bufsize);
@@ -90,21 +89,7 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 		return false;
 	}
 
-	SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(audio.sink);
-	SDL_GetAudioDeviceFormat(dev, &have, &have_bufsize);
-
-	if(have.freq != want.freq || have.format != want.format) {
-		log_warn(
-			"Audio device spec doesn't match our request, "
-			"requested (freq=%i, fmt=0x%x), got (freq=%i, fmt=0x%x). "
-			"Sound may be distorted.",
-		   want.freq, want.format, have.freq, have.format
-		);
-	}
-
-	log_debug("Buffer size: %u (want %u)", have_bufsize, want_bufsize);
-
-	*spec = have;
+	*spec = want;  // SDL will resample it for us
 	audio.silence = SDL_GetSilenceValueForFormat(want.format);
 
 	return true;
