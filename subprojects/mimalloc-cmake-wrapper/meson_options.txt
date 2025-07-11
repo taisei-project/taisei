@@ -29,7 +29,7 @@ option(
 option(
     'override',
     type : 'feature',
-    value : 'auto',
+    value : 'disabled',
     description : 'Override the standard malloc interface (i.e. define entry points for "malloc", "free", etc)'
 )
 
