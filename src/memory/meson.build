@@ -20,7 +20,9 @@ endif
 
 if allocator == 'mimalloc'
     dep_mimalloc = dependency('mimalloc',
-        required : orig_allocator == 'mimalloc')
+        required : orig_allocator == 'mimalloc',
+        fallback : ['mimalloc-cmake-wrapper', 'mimalloc_dep']
+    )
     if dep_mimalloc.found()
         taisei_deps += dep_mimalloc
     else
