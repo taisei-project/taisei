@@ -273,12 +273,21 @@ static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong 
 	ulong error = count ? 0 : 1;
 
 	if(SDL_SeekIO(rwops, offset, SDL_IO_SEEK_SET) < 0) {
-		log_error("Can't seek in stream (%s)", (char*)stream->pathname.pointer);
+		log_error("Can't seek in stream (%s): %s", (char*)stream->pathname.pointer, SDL_GetError());
 		return error;
 	}
 
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-	SDL_ReadIO(rwops, buffer, count);
+	if(count == 0) {
+		return 0;
+	}
+
+	size_t r = SDL_ReadIO(rwops, buffer, count);
+
+	if(r == 0 && SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+		log_error("Read error (%s): %s", (char*)stream->pathname.pointer, SDL_GetError());
+	}
+
+	return r;
 }
 
 static void ftstream_close(FT_Stream stream) {

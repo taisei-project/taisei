@@ -126,9 +126,12 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 	}
 
 	pixmap->data.untyped = mem_alloc(pixmap->data_size);
-	size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-		SDL_ReadIO(cstream, pixmap->data.untyped,
-			   pixmap->data_size);
+	size_t read = SDL_ReadIO(cstream, pixmap->data.untyped, pixmap->data_size);
+
+	if(read == 0 && SDL_GetIOStatus(cstream) != SDL_IO_STATUS_EOF) {
+		log_sdl_error(LOG_ERROR, "SDL_ReadIO");
+		goto fail;
+	}
 
 	if(read != pixmap->data_size) {
 		log_error("Read %zu bytes, expected %u", read, pixmap->data_size);

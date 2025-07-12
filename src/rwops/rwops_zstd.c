@@ -328,8 +328,7 @@ static bool rwzstd_compress(ZstdData *z, ZSTD_EndDirective edir, size_t *status)
 	}
 
 	if(out->pos > 0) {
-		size_t written = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
-			SDL_WriteIO(z->wrapped, out->dst, out->pos);
+		size_t written = SDL_WriteIO(z->wrapped, out->dst, out->pos);
 
 		if(UNLIKELY(written != out->pos)) {
 			SDL_SetError("SDL_WriteIO() returned %zi; expected %zi. Error: %s", written, out->pos, SDL_GetError());
