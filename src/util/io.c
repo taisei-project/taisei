@@ -273,21 +273,3 @@ void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) {
 		}
 	}
 }
-
-void SDL_RWsync(SDL_IOStream *rwops) {
-	#if HAVE_STDIO_H
-	if(rwops->type == SDL_RWOPS_STDFILE) {
-		FILE *fp = rwops->hidden.stdio.fp;
-
-		if(UNLIKELY(!fp)) {
-			return;
-		}
-
-		fflush(fp);
-
-		#ifdef TAISEI_BUILDCONF_HAVE_POSIX
-		fsync(fileno(fp));
-		#endif
-	}
-	#endif
-}

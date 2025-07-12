@@ -21,7 +21,6 @@ size_t SDL_RWprintf(SDL_IOStream *rwops, const char *fmt, ...) attr_printf(2, 3)
 size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, ...) attr_printf(3, 4) attr_nonnull_all;
 size_t SDL_RWvprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, va_list args) attr_nonnull_all;
 void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) attr_nonnull_all;
-void SDL_RWsync(SDL_IOStream *rwops);
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
 void tsfprintf(FILE *out, const char *restrict fmt, ...) attr_printf(2, 3);
