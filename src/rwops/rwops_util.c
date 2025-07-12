@@ -73,9 +73,12 @@ int64_t rwutil_seek_emulated_abs(
 
 	while(new_pos > *pos) {
 		size_t want_read_size = min(new_pos - *pos, readbuf_size);
-		size_t read_size = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-			SDL_ReadIO(rw, readbuf, want_read_size);
+		size_t read_size = SDL_ReadIO(rw, readbuf, want_read_size);
 		assert(read_size <= want_read_size);
+
+		if(read_size == 0 && SDL_GetIOStatus(rw) != SDL_IO_STATUS_EOF) {
+			return -1;
+		}
 
 		if(read_size < readbuf_size) {
 			break;
