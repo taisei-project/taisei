@@ -10,7 +10,7 @@
 #include "log.h"
 
 #define TRACE(tdata, fmt, ...) \
-	log_debug("[%lx :: %p :: %s] " fmt, SDL_GetCurrentThreadID(), (tdata), (tdata)->tag, __VA_ARGS__)
+	log_debug("[%llx :: %p :: %s] " fmt, (unsigned long long)SDL_GetCurrentThreadID(), (tdata), (tdata)->tag, __VA_ARGS__)
 
 #define TRACE_ERR(rw) \
 	TRACE((rw), "Error: %s", SDL_GetError())
