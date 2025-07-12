@@ -52,7 +52,7 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 	uint8_t *webp_buffer = SDL_LoadFile_IO(stream, &webp_bufsize, false);
 
 	if(UNLIKELY(!webp_buffer)) {
-		log_sdl_error(LOG_ERROR, "SDL_RWreadAll");
+		log_sdl_error(LOG_ERROR, "SDL_LoadFile_IO");
 		return false;
 	}
 

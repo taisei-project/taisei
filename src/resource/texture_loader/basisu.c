@@ -387,8 +387,7 @@ static char *read_basis_file(SDL_IOStream *rw, size_t *file_size,
 	char *buf = NULL;
 
 	if(LIKELY(rw)) {
-		buf = SDL_RWreadAll(rw, file_size, INT32_MAX);
-		SDL_CloseIO(rw);
+		buf = SDL_LoadFile_IO(rw, file_size, true);
 	}
 
 	if(UNLIKELY(!buf)) {
