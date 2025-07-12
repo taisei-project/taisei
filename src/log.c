@@ -289,7 +289,7 @@ static void log_dispatch_async(LogEntry *entry) {
 
 static void *sync_logger(List **loggers, List *logger, void *arg) {
 	Logger *l = (Logger*)logger;
-	SDL_RWsync(l->out);
+	SDL_FlushIO(l->out);
 	return NULL;
 }
 
@@ -383,7 +383,7 @@ static void *delete_logger(List **loggers, List *logger, void *arg) {
 		l->formatter.free(&l->formatter);
 	}
 
-	SDL_RWsync(l->out);
+	SDL_FlushIO(l->out);
 	SDL_CloseIO(l->out);
 	mem_free(list_unlink(loggers, logger));
 
