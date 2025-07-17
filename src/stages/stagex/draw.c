@@ -439,7 +439,7 @@ void stagex_drawsys_init(void) {
 	init_glitch_mask_fb();
 	init_spellbg_fb();
 
-	SDL_RWops *stream = vfs_open("res/gfx/stagex/code.num_slices", VFS_MODE_READ);
+	SDL_IOStream *stream = vfs_open("res/gfx/stagex/code.num_slices", VFS_MODE_READ);
 
 	if(!stream) {
 		log_fatal("VFS error: %s", vfs_get_error());
@@ -448,7 +448,7 @@ void stagex_drawsys_init(void) {
 	char buf[32];
 	SDL_RWgets(stream, buf, sizeof(buf));
 	draw_data->codetex_num_segments = strtol(buf, NULL, 0);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 
 	Texture *tex_code = res_texture("stagex/code");
 	uint w, h;
