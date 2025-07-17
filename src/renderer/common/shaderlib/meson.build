@@ -17,6 +17,7 @@ dep_spvc = dependency('spirv-cross-c-shared', required : opt_shader_transpiler)
 dep_glslang = dependency('glslang',
     required : opt_shader_transpiler,
     fallback : ['glslang', 'glslang_dep'],
+    method : 'cmake',
     modules : ['glslang::glslang', 'glslang::glslang-default-resource-limits'])
 shader_transpiler_enabled = dep_spvc.found() and dep_glslang.found()
 
