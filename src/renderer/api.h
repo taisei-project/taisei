@@ -262,7 +262,7 @@ typedef enum VertexAttribConversion {
 typedef struct VertexAttribSpec {
 	uint8_t elements;
 	VertexAttribType type;
-	VertexAttribConversion coversion;
+	VertexAttribConversion conversion;
 	uint divisor;
 } VertexAttribSpec;
 

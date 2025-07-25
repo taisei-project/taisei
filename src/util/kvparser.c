@@ -53,7 +53,7 @@ bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 		key = ptr;
 		val = sep + sizeof(separator) - 1;
 
-		// the separator may be preceeded by any kind of whitespace, so strip it from the key
+		// the separator may be preceded by any kind of whitespace, so strip it from the key
 		while(isspace(*(ptr = strchr(key, 0) - 1))) {
 			*ptr = 0;
 		}

@@ -26,7 +26,7 @@
 
 	extern bool _in_draw_code;
 	#define BEGIN_DRAW_CODE() do { if(_in_draw_code) { log_fatal("BEGIN_DRAW_CODE not followed by END_DRAW_CODE"); } _in_draw_code = true; } while(0)
-	#define END_DRAW_CODE() do { if(!_in_draw_code) { log_fatal("END_DRAW_CODE not preceeded by BEGIN_DRAW_CODE"); } _in_draw_code = false; } while(0)
+	#define END_DRAW_CODE() do { if(!_in_draw_code) { log_fatal("END_DRAW_CODE not preceded by BEGIN_DRAW_CODE"); } _in_draw_code = false; } while(0)
 	#define IN_DRAW_CODE (_in_draw_code)
 #else
 	#define set_debug_info(debug)

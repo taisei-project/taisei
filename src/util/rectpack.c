@@ -172,7 +172,7 @@ static RectPackSection *split_vertical(
 static RectPackSection *split_horizontal(
 	RectPack *rp, RectPackSectionSource secsrc,  RectPackSection *s, double width, double height
 ) {
-	RP_DEBUG("spliting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
+	RP_DEBUG("splitting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
 
 	assert(rect_width(s->rect) >= width);
 	assert(rect_height(s->rect) >= height);
@@ -226,7 +226,7 @@ static RectPackSection *split_vertical(
 	assert(rect_width(s->rect) >= width);
 	assert(rect_height(s->rect) >= height);
 
-	RP_DEBUG("spliting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
+	RP_DEBUG("splitting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
 
 	if(rect_width(s->rect) == width) {
 		assert(rect_height(s->rect) > height);

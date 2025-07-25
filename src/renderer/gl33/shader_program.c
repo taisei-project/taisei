@@ -185,14 +185,14 @@ static void gl33_commit_uniform(Uniform *uniform) {
 
 	assert(update_sz + update_ofs <= uniform->elem_size * uniform->array_size);
 
-	if(memcmp(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz)) {
-		memcpy(uniform->cache.commited + update_ofs, uniform->cache.pending + update_ofs, update_sz);
+	if(memcmp(uniform->cache.committed + update_ofs, uniform->cache.pending + update_ofs, update_sz)) {
+		memcpy(uniform->cache.committed + update_ofs, uniform->cache.pending + update_ofs, update_sz);
 
 		type_to_accessors[uniform->type].setter(
 			uniform,
 			uniform->cache.update_first_idx,
 			update_count,
-			uniform->cache.commited + update_ofs
+			uniform->cache.committed + update_ofs
 		);
 	}
 
@@ -353,7 +353,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 			uni.elem_size = typeinfo->element_size * typeinfo->elements;
 		}
 
-		uni.cache.commited = mem_alloc_array(uni.array_size, uni.elem_size);
+		uni.cache.committed = mem_alloc_array(uni.array_size, uni.elem_size);
 		uni.cache.pending = mem_alloc_array(uni.array_size, uni.elem_size);
 		uni.cache.update_first_idx = uni.array_size;
 
@@ -367,9 +367,9 @@ static bool cache_uniforms(ShaderProgram *prog) {
 			// TODO: Might want to fix this properly if this issue ever actually
 			// affects cases where we write to an array with an offset. But that's
 			// probably not going to happen.
-			memset(uni.cache.commited, 0xf0, uni.array_size * uni.elem_size);
+			memset(uni.cache.committed, 0xf0, uni.array_size * uni.elem_size);
 		} else {
-			type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
+			type_to_accessors[uni.type].getter(&uni, size, uni.cache.committed);
 		}
 
 		Uniform *new_uni = memdup(&uni, sizeof(uni));
@@ -457,7 +457,7 @@ static void *free_uniform(const char *key, void *data, void *arg) {
 	}
 
 	mem_free(uniform->textures);
-	mem_free(uniform->cache.commited);
+	mem_free(uniform->cache.committed);
 	mem_free(uniform->cache.pending);
 	mem_free(uniform);
 	return NULL;
@@ -559,7 +559,7 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 
 		mem_free(uold->textures);
 		mem_free(uold->cache.pending);
-		mem_free(uold->cache.commited);
+		mem_free(uold->cache.committed);
 
 		if(unew) {
 			uold->textures = unew->textures;
@@ -582,7 +582,7 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 			uold->array_size = 0;
 			uold->textures = NULL;
 			uold->cache.pending = NULL;
-			uold->cache.commited = NULL;
+			uold->cache.committed = NULL;
 		}
 	}
 

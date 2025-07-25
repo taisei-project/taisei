@@ -18,7 +18,7 @@ static SDL_GPUVertexElementFormat vertex_elem_format(VertexAttribType type, Vert
 	static struct {
 		uint8_t elements;
 		uint8_t type;
-		uint8_t coversion;
+		uint8_t conversion;
 	} formats[] = {
 		[SDL_GPU_VERTEXELEMENTFORMAT_INT]              = { 1, VA_INT, VA_CONVERT_INT },
 		[SDL_GPU_VERTEXELEMENTFORMAT_INT2]             = { 2, VA_INT, VA_CONVERT_INT },
@@ -67,7 +67,7 @@ static SDL_GPUVertexElementFormat vertex_elem_format(VertexAttribType type, Vert
 	for(SDL_GPUVertexElementFormat fmt = 0; fmt < ARRAY_SIZE(formats); ++fmt) {
 		if(
 			formats[fmt].type == type &&
-			formats[fmt].coversion == conv &&
+			formats[fmt].conversion == conv &&
 			formats[fmt].elements == vsize
 		) {
 			return fmt;
@@ -149,7 +149,7 @@ void sdlgpu_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFo
 
 		sdl_attribs[i] = (SDL_GPUVertexAttribute) {
 			.buffer_slot = binding_idx,
-			.format = vertex_elem_format(attribs[i].spec.type, attribs[i].spec.coversion, attribs[i].spec.elements),
+			.format = vertex_elem_format(attribs[i].spec.type, attribs[i].spec.conversion, attribs[i].spec.elements),
 			.location = i,
 			.offset = attribs[i].offset,
 		};

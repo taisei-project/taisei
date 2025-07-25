@@ -266,7 +266,7 @@ static_assert((HT_MIN_SIZE & (~HT_MIN_SIZE + 1)) == HT_MIN_SIZE, "HT_MIN_SIZE mu
  *
  * A structure representing a hash table.
  * All its fields are considered private and should be left unmolested,
- * please use the API functiosn instead of manipulating these directly.
+ * please use the API functions instead of manipulating these directly.
  */
 typedef struct HT_BASETYPE HT_BASETYPE;
 

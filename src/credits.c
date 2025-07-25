@@ -34,7 +34,7 @@ static struct {
 	DYNAMIC_ARRAY(CreditsEntry) entries;
 	float panelalpha;
 	int end;
-	bool skipable;
+	bool skippable;
 	CallChain cc;
 
 	ManagedFramebufferGroup *mfb_group;
@@ -347,7 +347,7 @@ static void credits_init(void) {
 	// ending just now, which this counter includes.
 	// That is unless we're in `taisei --credits`. But in that case, skipping is
 	// presumably not desired anyway.
-	credits.skipable = progress_times_any_ending_achieved() > 1;
+	credits.skippable = progress_times_any_ending_achieved() > 1;
 
 	progress_unlock_bgm("credits");
 	audio_bgm_play(res_bgm("credits"), false, 0, 0);
@@ -600,7 +600,7 @@ static LogicFrameAction credits_logic_frame(void *arg) {
 
 	if(credits.end == 0) {
 		return LFRAME_STOP;
-	} else if(credits.skipable && gamekeypressed(KEY_SKIP)) {
+	} else if(credits.skippable && gamekeypressed(KEY_SKIP)) {
 		return LFRAME_SKIP;
 	} else {
 		return LFRAME_WAIT;

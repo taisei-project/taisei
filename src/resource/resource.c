@@ -129,7 +129,7 @@ struct InternalResource {
 	DYNAMIC_ARRAY(WatchedPath) watched_paths;
 
 	// Other resources that this one depends on.
-	// When a dependecy gets reloaded, this resource will get reloaded as well.
+	// When a dependency gets reloaded, this resource will get reloaded as well.
 	IResPtrArray dependencies;
 
 	// Reverse dependencies, i.e. which resources depend on this one.
@@ -1475,7 +1475,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 		// NOTE: New dependencies already associated during load (in res_load_dependency)
 		ires_unmake_dependent(persistent, &persistent->dependencies);
 
-		// Move dependecy list into persistent entry
+		// Move dependency list into persistent entry
 		dynarray_free_data(&persistent->dependencies);
 		persistent->dependencies = ires->dependencies;
 		memset(&ires->dependencies, 0, sizeof(ires->dependencies));

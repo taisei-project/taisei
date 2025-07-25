@@ -474,7 +474,7 @@ static bool config_load_stream(SDL_IOStream *stream) {
 	ConfigParseState state = {};
 
 	if(!parse_keyvalue_stream_cb(stream, config_set, &state)) {
-		log_warn("Errors occured while parsing the configuration file");
+		log_warn("Errors occurred while parsing the configuration file");
 	}
 
 	config_apply_upgrades(config_get_int(CONFIG_VERSION), &state);

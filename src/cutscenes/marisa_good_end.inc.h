@@ -16,7 +16,7 @@
 	}},
 	{ "cutscenes/locations/moriya", {
 		T_SANAE("—which had a brand new math co-processor, allowing it to have advanced vector processing capabilities. Combined with other improvements, such as its DVD drive—"),
-		T_ELLY("Ah, I see. Facinating. Wow. Incredible."),
+		T_ELLY("Ah, I see. Fascinating. Wow. Incredible."),
 		T_KANAKO("You two having fun?"),
 		T_ELLY("… y-yes, ma’am."),
 		{ 0 },

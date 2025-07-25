@@ -243,7 +243,7 @@ static bool segment_is_visible(cmplxf a, cmplxf b, const FloatRect *bounds) {
 	if(ya < top    && yb < top)    return false;
 	if(ya > bottom && yb > bottom) return false;
 
-	// One point above bounds, other below, both within horizonal bounds.
+	// One point above bounds, other below, both within horizontal bounds.
 	// This segment will always intersect the viewport, thus visibe.
 	// Note that this is very rare.
 	// We only handle it here because the code below can't deal with this specific case.

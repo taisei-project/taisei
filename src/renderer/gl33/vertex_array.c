@@ -82,14 +82,14 @@ static void gl33_vertex_array_update_layout(VertexArray *varr) {
 
 		glEnableVertexAttribArray(i);
 
-		switch(a->spec.coversion) {
+		switch(a->spec.conversion) {
 			case VA_CONVERT_FLOAT:
 			case VA_CONVERT_FLOAT_NORMALIZED:
 				glVertexAttribPointer(
 					i,
 					a->spec.elements,
 					va_type_to_gl_type[a->spec.type],
-					a->spec.coversion == VA_CONVERT_FLOAT_NORMALIZED,
+					a->spec.conversion == VA_CONVERT_FLOAT_NORMALIZED,
 					a->stride,
 					(void*)a->offset
 				);

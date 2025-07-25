@@ -1317,20 +1317,20 @@ static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArg
 
 void boss_death(Boss **boss) {
 	Attack *a = boss_get_final_attack(*boss);
-	bool fleed = false;
+	bool fled = false;
 
 	if(!a) {
 		// XXX: why does this happen?
 		log_debug("FIXME: boss had no final attacK?");
 	} else {
-		fleed = a->type == AT_Move;
+		fled = a->type == AT_Move;
 	}
 
-	if((*boss)->acount && !fleed) {
+	if((*boss)->acount && !fled) {
 		petal_explosion(35, (*boss)->pos);
 	}
 
-	if(!fleed) {
+	if(!fled) {
 		clear_hazards_and_enemies();
 		stage_shake_view(100);
 

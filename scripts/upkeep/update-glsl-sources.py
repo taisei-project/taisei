@@ -137,7 +137,7 @@ def update(args, shaders_root):
 
 def main(args):
     import argparse
-    parser = argparse.ArgumentParser(description='Update build defintions to include all GLSL files.', prog=args[0])
+    parser = argparse.ArgumentParser(description='Update build definitions to include all GLSL files.', prog=args[0])
     add_common_args(parser)
 
     args = parser.parse_args(args[1:])

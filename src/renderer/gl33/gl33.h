@@ -39,7 +39,7 @@ void gl33_end_draw(void *state);
 // The texture will become bound to the unit on next state sync.
 // To force a sync, call gl33_sync_texunit(texture->binding_unit, ...) next.
 //
-// `texture` may be NULL, in which case a unit with empty binding will be choosen.
+// `texture` may be NULL, in which case a unit with empty binding will be chosen.
 //
 // If `lock_target` is not 0, the unit becomes "locked", so that subsequent calls to
 // gl33_bind_texture can not clobber it. The lock remains active until gl33_sync_texunit
@@ -53,7 +53,7 @@ void gl33_end_draw(void *state);
 // If `preferred_unit` is >= 0, it suggests which texturing unit to choose. This is a mere hint,
 // it is not guaranteed to be honored.
 //
-// Returns the numeric ID of the choosen texturing unit.
+// Returns the numeric ID of the chosen texturing unit.
 uint gl33_bind_texture(Texture *texture, GLuint lock_target, int preferred_unit);
 
 void gl33_bind_vao(GLuint vao);

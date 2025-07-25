@@ -22,7 +22,7 @@ typedef struct MatrixStack {
 	mat4 stack[MATSTACK_LIMIT] CGLM_ALIGN(32);
 } MatrixStack;
 
-// Resets [ms] to its initial state, with a single indentity matrix.
+// Resets [ms] to its initial state, with a single identity matrix.
 // Must be called at least once before the stack can be used.
 void matstack_reset(MatrixStack *ms)
 	attr_nonnull(1);

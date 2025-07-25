@@ -77,7 +77,7 @@ typedef enum ProgfileCommand {
 
 	Now in case you wonder why I decided to do it this way instead of stuffing everything in the config file, here are a couple of reasons:
 
-		- The config module, as of the time of writting, is messy enough and probably needs refactoring.
+		- The config module, as of the time of writing, is messy enough and probably needs refactoring.
 
 		- I don't want to mix user preferences with things that are not supposed to be directly edited.
 

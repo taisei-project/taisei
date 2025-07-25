@@ -558,7 +558,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 	if(digital * gamepad.axes[id].digital < 0) {
 		// axis changed direction without passing the '0' state
 		// this can be bad for digital input simulation (aka 'restricted mode')
-		// so we insert a fake 0 event inbetween
+		// so we insert a fake 0 event in between
 		gamepad_axis(id, 0);
 	}
 

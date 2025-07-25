@@ -39,7 +39,7 @@ struct Uniform {
 	struct {
 		// buffer size = elem_size * array_size
 		char *pending;
-		char *commited;
+		char *committed;
 
 		uint update_first_idx;
 		uint update_last_idx;

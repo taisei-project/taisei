@@ -56,7 +56,7 @@ static struct pkg_loader_t* find_loader(const char *str) {
 }
 
 void vfs_load_packages(const char *dir, const char *unionmp) {
-	// go over the packages in dir in alphapetical order and merge them into unionmp
+	// go over the packages in dir in alphabetical order and merge them into unionmp
 	// e.g. files in 00-aaa.zip will be shadowed by files in 99-zzz.zip
 
 	size_t numpaks = 0;

@@ -639,17 +639,17 @@ static bool texture_loader_basisu_load_pixmap(
 	const char *ctx,
 	struct basisu_load_data *bld,
 	TextureLoadData *ld,
-	basist_transcode_level_params *parm,
+	basist_transcode_level_params *param,
 	Pixmap *out_pixmap
 ) {
 	basist_image_level_desc level_desc;
 	TRY_BOOL(
 		basist_transcoder_get_image_level_desc,
-		bld->tc, parm->image_index, parm->level_index, &level_desc
+		bld->tc, param->image_index, param->level_index, &level_desc
 	);
 
 	struct basis_size_info size_info = texture_loader_basisu_get_transcoded_size_info(
-		ld, bld->tc, parm->image_index, parm->level_index, parm->format
+		ld, bld->tc, param->image_index, param->level_index, param->format
 	);
 
 	if(size_info.block_size == 0) {
@@ -657,7 +657,7 @@ static bool texture_loader_basisu_load_pixmap(
 	}
 
 	BASISU_DEBUG("Image %i  Level %i   [%ix%i] : %i * %i = %i",
-		parm->image_index, parm->level_index,
+		param->image_index, param->level_index,
 		level_desc.orig_width, level_desc.orig_height,
 		size_info.num_blocks, size_info.block_size,
 		size_info.num_blocks * size_info.block_size
@@ -667,7 +667,7 @@ static bool texture_loader_basisu_load_pixmap(
 
 	if(!texture_loader_basisu_load_cached(
 		bld->basis_hash,
-		parm,
+		param,
 		&level_desc,
 		bld->px_decode_format,
 		bld->px_origin,
@@ -681,17 +681,17 @@ static bool texture_loader_basisu_load_pixmap(
 
 		out_pixmap->data_size = data_size;
 		out_pixmap->data.untyped = mem_alloc(out_pixmap->data_size);
-		parm->output_blocks = out_pixmap->data.untyped;
-		parm->output_blocks_size = size_info.num_blocks;
+		param->output_blocks = out_pixmap->data.untyped;
+		param->output_blocks_size = size_info.num_blocks;
 
-		TRY_BOOL(basist_transcoder_transcode_image_level, bld->tc, parm);
+		TRY_BOOL(basist_transcoder_transcode_image_level, bld->tc, param);
 
 		out_pixmap->format = bld->px_decode_format;
 		out_pixmap->width = level_desc.orig_width;
 		out_pixmap->height = level_desc.orig_height;
 		out_pixmap->origin = bld->px_origin;
 
-		texture_loader_basisu_cache(bld->basis_hash, parm, &level_desc, out_pixmap);
+		texture_loader_basisu_cache(bld->basis_hash, param, &level_desc, out_pixmap);
 	}
 
 	if(bld->is_uncompressed_fallback) {
