@@ -8,13 +8,15 @@
 
 #include "zipfile_impl.h"
 
+#include "util/miscmath.h"
+
 #include "rwops/rwops_util.h"
 #include "rwops/rwops_zstd.h"
 
 #define FORCE_MANUAL_DECOMPRESSION (0)
 
 #if FORCE_MANUAL_DECOMPRESSION
-	#include "rwops_zlib.h"
+	#include "rwops/rwops_zlib.h"
 #endif
 
 typedef struct ZipIOData {
@@ -206,7 +208,7 @@ SDL_IOStream *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
 		switch(zpnode->compression) {
 			#if FORCE_MANUAL_DECOMPRESSION
 			case ZIP_CM_DEFLATE:
-				io = SDL_RWWrapInflateReaderSeekable(io, zpnode->size, imin(4096, iodata->size), true);
+				io = SDL_RWWrapInflateReaderSeekable(io, zpnode->size, min(4096, iodata->size), true);
 				break;
 			#endif
 
