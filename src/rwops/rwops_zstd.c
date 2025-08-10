@@ -230,7 +230,7 @@ static SDL_IOStream *rwzstd_open_reader(
 	}
 
 	ZstdData *z;
-	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false, false);
+	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false, seekable);
 
 	if(!io) {
 		return NULL;
