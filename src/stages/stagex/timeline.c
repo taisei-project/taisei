@@ -8,13 +8,18 @@
 
 #include "timeline.h"   // IWYU pragma: keep
 #include "background_anim.h"
+#include "common_tasks.h"
+#include "coroutine/taskdsl.h"
+#include "enemy_classes.h"
+#include "global.h"
+#include "move.h"
 #include "nonspells/nonspells.h"
 #include "stagex.h"
 #include "yumemi.h"
 
 #include "stages/common_imports.h"
 
-#define BPM168_4BEATS 86
+#define BEATS 86
 
 static void stagex_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -259,7 +264,7 @@ TASK(scuttleproj_appear) {
 	WAIT(20);
 
 	int num_spots = 32;
-	for(int i = 0; i < BPM168_4BEATS * 3; i++) {
+	for(int i = 0; i < BEATS * 3; i++) {
 		int spot = rng_range(0,num_spots);
 		cmplx offset = cdir(M_TAU/num_spots*spot);
 		real clr = rng_range(0,1);
@@ -441,7 +446,7 @@ static int midboss_section(void) {
 
 	STAGE_BOOKMARK(midboss);
 	stagex_bg_trigger_next_phase();
-	t += WAIT(BPM168_4BEATS * 1.25);
+	t += WAIT(BEATS * 1.25);
 	play_sfx("shot_special1");
 
 	INVOKE_TASK(midswirls,
@@ -453,7 +458,7 @@ static int midboss_section(void) {
 		.turn_duration = 30
 	);
 
-	t += WAIT(BPM168_4BEATS);
+	t += WAIT(BEATS);
 
 	INVOKE_TASK(midswirls,
 		.count = 8,
@@ -464,7 +469,7 @@ static int midboss_section(void) {
 		.turn_duration = 30
 	);
 
-	t += WAIT(BPM168_4BEATS);
+	t += WAIT(BEATS);
 
 	INVOKE_TASK(midswirls,
 		.count = 8,
@@ -484,13 +489,13 @@ static int midboss_section(void) {
 		.turn_duration = 30
 	);
 
-	t += WAIT(BPM168_4BEATS * 2);
+	t += WAIT(BEATS * 2);
 
 	INVOKE_TASK(scuttleproj_appear);
 	INVOKE_TASK(ngoner_fairy, 140 + 140 * I);
-	t += WAIT(BPM168_4BEATS);
+	t += WAIT(BEATS);
 	INVOKE_TASK(ngoner_fairy, VIEWPORT_W - 140 + 140 * I);
-	t += WAIT(BPM168_4BEATS);
+	t += WAIT(BEATS);
 	while(!global.boss) {
 		++t;
 		YIELD;
@@ -554,22 +559,151 @@ TASK(intro_swirl, { cmplx origin; cmplx dir; }) {
 	// enemy_kill(e);
 }
 
-DEFINE_EXTERN_TASK(stagex_timeline) {
-	WAIT(BPM168_4BEATS * 2);
+TASK(intro_fairy, { cmplx origin; }) {
+	auto e = TASK_BIND(espawn_big_fairy(ARGS.origin, ITEMS(.power = 2, .points = 2)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
 
-	{
-		int t = BPM168_4BEATS * 1000;
-		int interval = 8;
-		cmplx r = cdir(0.3);
-		cmplx dir = -I;
-		for(;t - interval > 0; t -= interval) {
-			INVOKE_SUBTASK(intro_swirl, 0.5*(VIEWPORT_W+VIEWPORT_H*I) + 80 * dir, dir);
-			dir *= r;
-			WAIT(interval);
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	int duration = BEATS;
+	for(int t = 0; t < duration; t++) {
+		real f = t/(real)duration;
+		real range = 1+4 * pcos(M_PI+2*M_PI*f);
+		int x, y;
+		do {
+			x = rng_range(-range, range);
+			y = rng_range(-range, range);
+		} while(x*x + y*y > range*range);
+
+		cmplx aim = cnormalize(global.plr.pos-e->pos);
+		cmplx ppos = e->pos + 20 * (x + I * y);
+		cmplx paim = cnormalize(global.plr.pos - ppos);
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = ppos,
+			.color = RGB(2*f,1*f,1),
+			.move = move_accelerated((2+f)*aim, 0.02*paim)
+		);
+
+		play_sfx_loop("shot1_loop");
+
+		WAIT(4);
+	}
+	e->move = move_linear(2*I);
+}
+
+TASK(square_fairy, { cmplx origin; int corruption; }) {
+	auto e = TASK_BIND(espawn_fairy_red(ARGS.origin, ITEMS(.power = 1)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	e->move = move_linear(I*cnormalize(0.5*(VIEWPORT_W+I*VIEWPORT_H)-e->pos));
+
+	for(;;) {
+		INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		WAIT(BEATS/2);
+
+		int num = 5;
+		for(int side = 0; side < 4; side++) {
+			cmplx aim = cdir(M_PI/2*side + 0.1*ARGS.corruption);
+
+			for(int n = -num/2; n <= num/2; n++) {
+				cmplx dir = aim * (2+1*I*n);
+				PROJECTILE(
+					.proto = pp_bigball,
+					.pos = e->pos,
+					.color = RGB(0,0,1),
+					.move = move_linear(dir)
+				);
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = e->pos,
+					.color = RGB(1,0,0),
+					.move = move_linear((1.2+0.1*ARGS.corruption*I*sin(n))*dir)
+				);
+			}
 		}
-		log_debug("%i", t);
+		play_sfx("special_shot1");
+		WAIT(BEATS*4.5);
 	}
 
+
+}
+
+TASK(transition_swirl, { cmplx origin; cmplx dir; int corruption; }) {
+	auto e = TASK_BIND(espawn_swirl(ARGS.origin, ITEMS(.power = 0)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS/2);
+
+	e->move = move_accelerated(ARGS.dir, 0.01*cdir(0.1)*ARGS.dir);
+
+	for(int t = 0; t < 10; t++) {
+		for(int side = -1; side <= 1; side+=2) {
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos,
+				.color = RGB(0.5*ARGS.corruption,0.2*ARGS.corruption,1-ARGS.corruption),
+				.move = move_accelerated(side*I*ARGS.dir, 0.01*ARGS.corruption*-ARGS.dir)
+			);
+		}
+		play_sfx("shot1");
+
+		WAIT(10);
+	}
+}
+
+
+TASK(intro_swirls) {
+	int t = BEATS * 10;
+	int interval = 8;
+	cmplx r = cdir(0.3);
+	cmplx dir = -I;
+	for(;t - interval > 0; t -= interval) {
+		INVOKE_SUBTASK(intro_swirl, 0.5*(VIEWPORT_W+VIEWPORT_H*I) + 80 * dir, dir);
+		dir *= r;
+		WAIT(interval);
+	}
+	AWAIT_SUBTASKS;
+}
+
+TASK(transition_swirls) {
+	int duration = 3*BEATS;
+	int count = 100;
+
+	for(int t = 0; t < 1.5*BEATS; t++) {
+		cmplx pos = 50*I*cos(t) + 50*sin(sin(sin(t)));
+		cmplx dir = 3*cnormalize(pos);
+		INVOKE_SUBTASK(transition_swirl, VIEWPORT_W/2 + I*VIEWPORT_H/2 + pos, dir, 0);
+		WAIT(1);
+	}
+	WAIT(BEATS/4);
+	for(int t = 0; t < 1.5*BEATS; t++) {
+		cmplx pos = 50*I*cos(t) + 50*sin(t^(342345));
+		cmplx dir = -3*cnormalize(pos);
+		INVOKE_SUBTASK(transition_swirl, VIEWPORT_W/2 + I*VIEWPORT_H/2 + pos, dir, 1);
+		WAIT(1);
+	}
+	AWAIT_SUBTASKS;
+}
+
+DEFINE_EXTERN_TASK(stagex_timeline) {
+	WAIT(BEATS);
+
+	INVOKE_SUBTASK(intro_swirls);
+	INVOKE_SUBTASK_DELAYED(2*BEATS, intro_fairy, 100 + 200*I);
+	INVOKE_SUBTASK_DELAYED(4*BEATS, intro_fairy, VIEWPORT_W-100 + 200*I);
+	INVOKE_SUBTASK_DELAYED(6*BEATS, intro_fairy, VIEWPORT_W/2 + 200*I);
+
+	real delay = 2;
+	for(int repeat = 0; repeat < 5; repeat++) {
+		for(int n = 0; n < 7; n++) {
+			INVOKE_SUBTASK_DELAYED((8+delay*repeat)*BEATS, square_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 100*cos(repeat)*I*cexp(-I*n), repeat);
+		}
+		delay -= 0.2;
+	}
+
+	INVOKE_SUBTASK_DELAYED(16*BEATS, transition_swirls);
 
 	// WAIT(400);
 
@@ -581,11 +715,11 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(4140 - midboss_time);
 	stagex_bg_trigger_tower_dissolve();
 	STAGE_BOOKMARK(post-midboss-filler);
-	WAIT(BPM168_4BEATS * 24);
+	WAIT(BEATS * 24);
 	stagex_bg_trigger_next_phase();
 
 	STAGE_BOOKMARK(pre-boss);
-	WAIT(BPM168_4BEATS * 6);
+	WAIT(BEATS * 6);
 
 	INVOKE_TASK(spawn_boss);
 	while(!global.boss) YIELD;
