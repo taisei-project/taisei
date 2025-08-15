@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "stageinfo.h"
-
-// NOTE: See the 'yumemi' branch for the work-in-progress extra stage
-
-extern StageProcs extra_procs;
+void stagex_bg_init_fullstage(void);
+void stagex_bg_trigger_next_phase(void);
+void stagex_bg_trigger_tower_dissolve(void);
