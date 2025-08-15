@@ -12,12 +12,16 @@
 #include "coroutine/taskdsl.h"
 #include "enemy_classes.h"
 #include "global.h"
+#include "lasers/rules.h"
 #include "move.h"
 #include "nonspells/nonspells.h"
 #include "stagex.h"
+#include "util.h"
+#include "util/miscmath.h"
 #include "yumemi.h"
 
 #include "stages/common_imports.h"
+#include <cglm/ease.h>
 
 #define BEATS 86
 
@@ -638,10 +642,10 @@ TASK(transition_swirl, { cmplx origin; cmplx dir; int corruption; }) {
 
 	e->move = move_accelerated(ARGS.dir, 0.01*cdir(0.1)*ARGS.dir);
 
-	for(int t = 0; t < 10; t++) {
+	for(int t = 0; t < 3; t++) {
 		for(int side = -1; side <= 1; side+=2) {
 			PROJECTILE(
-				.proto = pp_wave,
+				.proto = ARGS.corruption ? pp_wave : pp_bullet,
 				.pos = e->pos,
 				.color = RGB(0.5*ARGS.corruption,0.2*ARGS.corruption,1-ARGS.corruption),
 				.move = move_accelerated(side*I*ARGS.dir, 0.01*ARGS.corruption*-ARGS.dir)
@@ -668,9 +672,6 @@ TASK(intro_swirls) {
 }
 
 TASK(transition_swirls) {
-	int duration = 3*BEATS;
-	int count = 100;
-
 	for(int t = 0; t < 1.5*BEATS; t++) {
 		cmplx pos = 50*I*cos(t) + 50*sin(sin(sin(t)));
 		cmplx dir = 3*cnormalize(pos);
@@ -685,6 +686,107 @@ TASK(transition_swirls) {
 		WAIT(1);
 	}
 	AWAIT_SUBTASKS;
+}
+
+TASK(octahedron_proj, { vec3 *vertices; int *path; cmplx *shift; real offset; }) {
+	auto p = TASK_BIND(PROJECTILE(.proto = pp_flea, .color = RGBA(1,0.3,0,0)));
+
+	real speed = 0.01;
+	for(int t=0;;t += WAIT(1)) {
+		real f = t*speed + ARGS.offset;
+		int idx = f;
+		f -= idx;
+		idx %= 12;
+		vec3 tmp = {};
+		glm_vec3_lerp(ARGS.vertices[ARGS.path[idx]], ARGS.vertices[ARGS.path[idx+1]], f, tmp);
+		p->pos = *ARGS.shift + tmp[0] + I * tmp[1];
+	}
+}
+
+TASK(octahedron, { cmplx pos; MoveParams move; vec3 axis; real final_size; real size_timescale; }) {
+
+	// this is float, can/should we make it double?
+	vec3 vertices[] = {
+		{1,0,0},
+		{-1,0,0},
+		{0,1,0},
+		{0,-1,0},
+		{0,0,1},
+		{0,0,-1}
+	};
+
+	// for(int i = 0; i < ARRAY_SIZE(vertices); i++) {
+	// 	glm_vec3_scale(vertices[i], 100, vertices[i]);
+	// }
+
+	cmplx shift = ARGS.pos;
+	float scale = 1;
+	INVOKE_SUBTASK(common_easing_animate, &scale, ARGS.final_size, ARGS.size_timescale, glm_ease_quad_out);
+
+
+	int path[] = {
+		0,2,4,0,3,4,1,3,5,1,2,5,0
+	};
+
+	int count = 80;
+
+	for(int i = 0; i < count; i++) {
+		INVOKE_SUBTASK(octahedron_proj, vertices, path, &shift, i*12.0/count);
+	}
+	for(;;) {
+		for(int i = 0; i < ARRAY_SIZE(vertices); i++) {
+			glm_vec3_rotate(vertices[i], 0.01, ARGS.axis);
+			glm_vec3_scale_as(vertices[i], scale, vertices[i]);
+		}
+
+		move_update(&shift, &ARGS.move);
+
+		WAIT(1);
+	}
+}
+
+TASK(octahedron_fairy, { cmplx origin; }) {
+	auto e = TASK_BIND(espawn_super_fairy(ARGS.origin, ITEMS(.power = 3, .bomb_fragment = 1)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	for(int t = 0; t < 600; t += WAIT(BEATS/8)) {
+		cmplx aim = cdir(t*0.1);
+		vec3 axis = { im(aim), re(aim), 1 };
+		INVOKE_TASK(octahedron, .pos = e->pos, .move = move_linear(2*aim), .final_size = 100, .size_timescale = 3*BEATS, .axis={axis[0], axis[1],axis[2]});
+		play_sfx("shot3");
+	}
+	e->move = move_linear(-I);
+}
+
+TASK(assist_laser, { cmplx pos; cmplx accel; }) {
+
+	PROJECTILE(pp_ball, .max_viewport_dist=100, .pos = ARGS.pos, .color = RGBA(0.0,0.0,1.0,0.0), .move = move_accelerated(0,ARGS.accel));
+	create_laser(ARGS.pos, 10, 10000, RGBA(0.0,0.0,1.0,0.0), laser_rule_accelerated(0, ARGS.accel));
+	WAIT(10);
+	PROJECTILE(pp_ball, .max_viewport_dist=100, .pos = ARGS.pos, .color = RGBA(0.0,0.0,1.0,0.0), .move = move_accelerated(0,ARGS.accel));
+}
+
+TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
+	auto e = TASK_BIND(espawn_fairy_blue(ARGS.origin, ITEMS(.points = 1)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	e->move = ARGS.move;
+	WAIT(5);
+
+	for(;;) {
+		int count = 10;
+		play_sfx("laser1");
+		for(int i = 0; i < count; i++) {
+			cmplx aim = cdir(M_TAU/count*i);
+			aim *= cnormalize(global.plr.pos-e->pos)*cdir(2*M_PI/4);
+
+			INVOKE_TASK(assist_laser, e->pos, 0.07*aim);
+			WAIT(1);
+		}
+		WAIT(2*BEATS);
+	}
 }
 
 DEFINE_EXTERN_TASK(stagex_timeline) {
@@ -708,8 +810,20 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	// WAIT(400);
 
 	// INVOKE_TASK(fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
+	WAIT(3120/BEATS*BEATS);
+	STAGE_BOOKMARK(special1);
 
-	WAIT(5762);
+	INVOKE_SUBTASK_DELAYED(0, octahedron_fairy, .origin = 0.5*(VIEWPORT_W + I * VIEWPORT_H));
+	for(int t = 0; t < 6; t++) {
+		cmplx aim = cdir(M_TAU/6*t)*100;
+		for(int i = -1; i < 2; i+=2) {
+			cmplx pos = aim*i + 0.5*(VIEWPORT_W + I * VIEWPORT_H);
+			INVOKE_SUBTASK_DELAYED(BEATS+t*BEATS, assist_fairy, .origin = pos, .move = move_linear(cnormalize(aim)*i));
+		}
+	}
+
+
+	WAIT(5762-3120/BEATS*BEATS);
 	int midboss_time = midboss_section();
 	stagex_bg_trigger_next_phase();
 	WAIT(4140 - midboss_time);
