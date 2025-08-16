@@ -15,6 +15,7 @@
 #include "lasers/rules.h"
 #include "move.h"
 #include "nonspells/nonspells.h"
+#include "projectile.h"
 #include "stagex.h"
 #include "util.h"
 #include "util/miscmath.h"
@@ -789,6 +790,63 @@ TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
 	}
 }
 
+TASK(funk_small_bullet, { cmplx *pos; versor *rot; real f; }) {
+	auto p = TASK_BIND(PROJECTILE(.proto = pp_rice, .color = RGBA(1.0,0.5,0.0,0.0)));
+
+	real radius  = 50;
+	for(int t = 0; t < 3*BEATS;t++) {
+		real speed = 0.001;
+		real phi = speed * t + M_TAU*ARGS.f;
+		vec3 pos = {cos(phi), sin(phi), 0};
+		vec3 vel = {-sin(phi), cos(phi), 0};
+		vec3 rotated;
+		glm_quat_rotatev(*ARGS.rot, pos, rotated);
+		p->pos = *ARGS.pos + radius * (rotated[0] + I * rotated[1]);
+		glm_quat_rotatev(*ARGS.rot, vel, rotated);
+		p->move = move_linear(8*(rotated[0] + I * rotated[1]));
+		WAIT(1);
+	}
+	play_sfx("noise1");
+}
+
+TASK(funk_bullet, { cmplx pos; MoveParams move; }) {
+	auto p = TASK_BIND(PROJECTILE(.proto = pp_soul, .color = RGBA(0.1,0.1,0.8,0.1), .pos = ARGS.pos, .move = ARGS.move, .flags = PFLAG_MANUALANGLE));
+
+	vec3 axis1;
+	cmplx dir1 = rng_dir();
+	cmplx dir2 = rng_dir();
+	axis1[0] = re(dir1)*re(dir2);
+	axis1[1] = im(dir1)*re(dir2);
+	axis1[2] = im(dir2);
+
+	versor rot1, rot2;
+	glm_quat_identity(rot1);
+	glm_quat_identity(rot2);
+
+	int count = 30;
+	for(int i = 0; i < count; i++) {
+		INVOKE_SUBTASK(funk_small_bullet, &p->pos, &rot1, i/(real)count);
+		INVOKE_SUBTASK(funk_small_bullet, &p->pos, &rot2, i/(real)count);
+	}
+
+	for(;;) {
+		cmplx dir1 = rng_dir();
+		cmplx dir2 = rng_dir();
+		versor q, tmp;
+		p->angle = rng_angle();
+		glm_quat(q, 0.12, re(dir1)*re(dir2), im(dir1)*re(dir2), im(dir2));
+		glm_quat_mul(rot1, q, tmp);
+		glm_quat_copy(tmp, rot1);
+		q[2] = rng_f64s();
+		glm_quat_mul(rot2, q, tmp);
+		glm_quat_copy(tmp, rot2);
+
+
+
+		WAIT(1);
+	}
+}
+
 DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(BEATS);
 
@@ -822,6 +880,7 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 		}
 	}
 
+	INVOKE_SUBTASK_DELAYED(BEATS + 10*BEATS, funk_bullet, .pos = 0.5*(VIEWPORT_W + I * VIEWPORT_H), . move = move_linear(I));
 
 	WAIT(5762-3120/BEATS*BEATS);
 	int midboss_time = midboss_section();
