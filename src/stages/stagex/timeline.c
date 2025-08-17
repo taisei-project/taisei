@@ -12,17 +12,12 @@
 #include "coroutine/taskdsl.h"
 #include "enemy_classes.h"
 #include "global.h"
-#include "lasers/rules.h"
 #include "move.h"
 #include "nonspells/nonspells.h"
-#include "projectile.h"
 #include "stagex.h"
-#include "util.h"
-#include "util/miscmath.h"
 #include "yumemi.h"
 
 #include "stages/common_imports.h"
-#include <cglm/ease.h>
 
 #define BEATS 86
 
@@ -793,8 +788,8 @@ TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
 TASK(funk_small_bullet, { cmplx *pos; versor *rot; real f; }) {
 	auto p = TASK_BIND(PROJECTILE(.proto = pp_rice, .color = RGBA(1.0,0.5,0.0,0.0)));
 
-	real radius  = 50;
-	for(int t = 0; t < 3*BEATS;t++) {
+	real radius  = 30;
+	for(int t = 0; t < 2*BEATS;t++) {
 		real speed = 0.001;
 		real phi = speed * t + M_TAU*ARGS.f;
 		vec3 pos = {cos(phi), sin(phi), 0};
@@ -803,7 +798,7 @@ TASK(funk_small_bullet, { cmplx *pos; versor *rot; real f; }) {
 		glm_quat_rotatev(*ARGS.rot, pos, rotated);
 		p->pos = *ARGS.pos + radius * (rotated[0] + I * rotated[1]);
 		glm_quat_rotatev(*ARGS.rot, vel, rotated);
-		p->move = move_linear(8*(rotated[0] + I * rotated[1]));
+		p->move = move_linear(4*(rotated[0] + I * rotated[1]));
 		WAIT(1);
 	}
 	play_sfx("noise1");
@@ -823,7 +818,7 @@ TASK(funk_bullet, { cmplx pos; MoveParams move; }) {
 	glm_quat_identity(rot1);
 	glm_quat_identity(rot2);
 
-	int count = 30;
+	int count = 20;
 	for(int i = 0; i < count; i++) {
 		INVOKE_SUBTASK(funk_small_bullet, &p->pos, &rot1, i/(real)count);
 		INVOKE_SUBTASK(funk_small_bullet, &p->pos, &rot2, i/(real)count);
@@ -841,11 +836,141 @@ TASK(funk_bullet, { cmplx pos; MoveParams move; }) {
 		glm_quat_mul(rot2, q, tmp);
 		glm_quat_copy(tmp, rot2);
 
-
-
 		WAIT(1);
 	}
 }
+
+TASK(funk_fairy, { cmplx pos; MoveParams move; }) {
+	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	WAIT(BEATS);
+	int count = 4;
+
+	for(int i = 0; i < count; i++) {
+		cmplx aim = 2*cnormalize(global.plr.pos-e->pos)*cdir(0.5*(i-count/2.0));
+		INVOKE_TASK(funk_bullet, e->pos, move_asymptotic_simple(aim, 4));
+
+		play_sfx("shot_special1");
+		WAIT(BEATS/2);
+	}
+	e->move = ARGS.move;
+
+}
+
+TASK(funk_fairies) {
+	cmplx corners[] = {
+		50+50*I,
+		VIEWPORT_W-50+50*I,
+		VIEWPORT_W-50+I*VIEWPORT_H-50*I,
+		50 + I*VIEWPORT_H-50*I,
+	};
+	for(int i = 0; i < 6; i++) {
+		INVOKE_SUBTASK_DELAYED( i*BEATS, funk_fairy, .pos = corners[i%4], . move = move_linear(cnormalize((VIEWPORT_W + I*VIEWPORT_H)/2 - corners[i%4])));
+	}
+	AWAIT_SUBTASKS;
+}
+
+TASK(drum_fairy, { cmplx pos; }) {
+	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+	WAIT(BEATS/2);
+
+	for(int t = 0; t < 20; t++) {
+		int count = 40;
+
+		for(int i = 0; i < count; i++) {
+			cmplx aim = cdir(M_TAU/count * i+t);
+
+			PROJECTILE(pp_rice, .color = RGBA(1.0, 0.3, 0.05, 1.0), .pos = e->pos + 20*aim, .move = move_accelerated(0.5*aim, 0.02*aim));
+		}
+		play_sfx("shot2");
+		WAIT(BEATS/8);
+	}
+	e->move = move_linear(2*I);
+}
+
+typedef struct LaserRuleStaircaseData {
+	cmplx tread;
+	cmplx riser;
+	real velocity;
+} LaserRuleStaircaseData;
+
+static cmplx staircase_laser_rule_impl(Laser *l, real t, void *ruledata) {
+	LaserRuleStaircaseData *rd = ruledata;
+
+	real ltread = cabs(rd->tread);
+	real lriser = cabs(rd->riser);
+
+	real f = rd->velocity * t;
+	int num_steps = f/(ltread + lriser);
+	f -= num_steps * (ltread + lriser);
+	cmplx last = cnormalize(rd->tread) * f;
+	if(f > ltread) {
+		last = rd->tread + cnormalize(rd->riser) * (f - ltread);
+	}
+	return l->pos +  num_steps * (rd->tread + rd->riser) + last;
+}
+
+static LaserRule staircase_laser_rule(cmplx tread, cmplx riser, real velocity) {
+	LaserRuleStaircaseData rd = {
+		tread,
+		riser,
+		velocity,
+	};
+	return MAKE_LASER_RULE(staircase_laser_rule_impl, rd);
+}
+
+TASK(staircase_swirl, { cmplx pos; cmplx dir; bool cross;}) {
+	auto e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	play_sfx("laser1");
+	if(!ARGS.cross) {
+		create_laser(e->pos, 80, 500, RGBA(0.1,0.3,1,0), staircase_laser_rule(-20, 20*I, 4));
+	} else {
+		create_laser(e->pos, 80, 500, RGBA(0.1,0.3,1,0), laser_rule_linear(4*ARGS.dir));
+
+	}
+	e->move = move_linear(2*I*ARGS.dir);
+}
+
+TASK(staircase_swirls, { bool cross; }) {
+	real offset = 10;
+	real total_length = VIEWPORT_W + VIEWPORT_H - 4*offset;
+
+	WAIT(BEATS);
+	int count = total_length/40;
+	for(int i = 0; i < count; i++) {
+		real l = total_length/count*i;
+		cmplx dir;
+		cmplx pos;
+		if(l < VIEWPORT_W-2*offset) {
+			pos = offset + l + offset*I;
+			dir = I;
+		} else {
+			pos = VIEWPORT_W-offset + (offset + l-(VIEWPORT_W-offset*2))*I;
+			dir = -1;
+		}
+
+		if(ARGS.cross) {
+			pos = VIEWPORT_W + I*VIEWPORT_H - pos;
+			dir *= -1;
+		}
+
+		INVOKE_SUBTASK(staircase_swirl, pos, dir, .cross = ARGS.cross);
+	}
+	AWAIT_SUBTASKS;
+}
+
 
 DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(BEATS);
@@ -880,7 +1005,14 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 		}
 	}
 
-	INVOKE_SUBTASK_DELAYED(BEATS + 10*BEATS, funk_bullet, .pos = 0.5*(VIEWPORT_W + I * VIEWPORT_H), . move = move_linear(I));
+	STAGE_BOOKMARK_DELAYED(14*BEATS, funk-fairies);
+	INVOKE_SUBTASK_DELAYED(14*BEATS, funk_fairies);
+
+	STAGE_BOOKMARK_DELAYED(23*BEATS, drum-fairy);
+	INVOKE_SUBTASK_DELAYED(23*BEATS, drum_fairy, .pos = 40+40*I);
+	INVOKE_SUBTASK_DELAYED(24*BEATS, staircase_swirls);
+	INVOKE_SUBTASK_DELAYED(26*BEATS, drum_fairy, .pos = VIEWPORT_W-40+(VIEWPORT_H-40)*I);
+	INVOKE_SUBTASK_DELAYED(27*BEATS, staircase_swirls, .cross=true);
 
 	WAIT(5762-3120/BEATS*BEATS);
 	int midboss_time = midboss_section();
