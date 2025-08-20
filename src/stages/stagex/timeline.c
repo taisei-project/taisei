@@ -734,6 +734,46 @@ TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
 	}
 }
 
+TASK(amaranth_proj, { cmplx pos; MoveParams move; }) {
+	auto p = TASK_BIND(PROJECTILE(pp_bigball, .color = RGBA(1.0,0.3,0,1), .pos = ARGS.pos, .move = ARGS.move));
+
+	for(;;) {
+		int count = 1;
+		real radius = 10;
+		for(int i = 0; i < count; i++) {
+			real x, y;
+			do {
+				x = rng_f64s();
+				y = rng_f64s();
+			} while(x*x + y*y > 1);
+
+			cmplx pos = p->pos + radius*(x + I*y);
+			cmplx dir = cpow(cnormalize(x + I*y),3);
+			PROJECTILE(pp_flea, .color = RGBA(1.0,0.3,0,0), .pos = pos, .move = (MoveParams){.velocity = 0.01*dir, .retention = 1.03});
+		}
+		play_sfx_loop("shot1_loop");
+		YIELD;
+	}
+}
+
+TASK(amaranth_fairy, { cmplx pos; MoveParams move; }) {
+	auto e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 2)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+
+	INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+
+	e->move = ARGS.move;
+
+	WAIT(5);
+	for(int t = 0; t < 3; t++) {
+		cmplx aim = cnormalize(global.plr.pos-e->pos);
+		INVOKE_TASK(amaranth_proj, e->pos, move_linear(4*aim));
+		play_sfx("shot_special1");
+		WAIT(BEATS);
+	}
+}
+
 TASK(octahedron_proj, { vec3 *vertices; int *path; cmplx *shift; real offset; }) {
 	auto p = TASK_BIND(PROJECTILE(.proto = pp_flea, .color = RGBA(1,0.3,0,0)));
 
@@ -1092,6 +1132,10 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	INVOKE_SUBTASK_DELAYED(20*BEATS, wheat_fairy, 200+100*I, move_accelerated(-1 + I, 0.01));
 	INVOKE_SUBTASK_DELAYED(23*BEATS, wheat_fairy, 100+200*I, move_accelerated(1 + I, 0.01));
 	INVOKE_SUBTASK_DELAYED(25*BEATS, wheat_fairy, 300+200*I, move_accelerated(1 + I, -0.01));
+
+	for(int i = 0; i < 6; i++) {
+		INVOKE_SUBTASK_DELAYED(27*BEATS+BEATS*i, amaranth_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150*cdir(M_TAU/4*i), move_accelerated(1 + I, -0.01));
+	}
 	// WAIT(400);
 
 	// INVOKE_SUBTASK_DELAYED(27*BEATS, fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
