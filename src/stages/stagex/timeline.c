@@ -601,7 +601,7 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 	e->move = move_linear(I*cnormalize(0.5*(VIEWPORT_W+I*VIEWPORT_H)-e->pos));
 
 	for(;;) {
-		INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
 
 		int num = 5;
@@ -613,13 +613,13 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 				PROJECTILE(
 					.proto = pp_bigball,
 					.pos = e->pos,
-					.color = RGB(0,0,1),
+					.color = RGBA(0,0.2,1, 0),
 					.move = move_linear(dir)
 				);
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = e->pos,
-					.color = RGB(1,0,0),
+					.color = RGBA(1,0.2,0,0.5),
 					.move = move_linear((1.2+0.1*ARGS.corruption*I*sin(n))*dir)
 				);
 			}
@@ -643,7 +643,7 @@ TASK(transition_swirl, { cmplx origin; cmplx dir; int corruption; }) {
 			PROJECTILE(
 				.proto = ARGS.corruption ? pp_wave : pp_bullet,
 				.pos = e->pos,
-				.color = RGB(0.5*ARGS.corruption,0.2*ARGS.corruption,1-ARGS.corruption),
+				.color = RGB(1*ARGS.corruption,0.2*ARGS.corruption,1-ARGS.corruption),
 				.move = move_accelerated(side*I*ARGS.dir, 0.01*ARGS.corruption*-ARGS.dir)
 			);
 		}
@@ -672,14 +672,14 @@ TASK(transition_swirls) {
 		cmplx pos = 50*I*cos(t) + 50*sin(sin(sin(t)));
 		cmplx dir = 3*cnormalize(pos);
 		INVOKE_SUBTASK(transition_swirl, VIEWPORT_W/2 + I*VIEWPORT_H/2 + pos, dir, 0);
-		WAIT(1);
+		WAIT(2);
 	}
 	WAIT(BEATS/4);
-	for(int t = 0; t < 1.5*BEATS; t++) {
+	for(int t = 0; t < BEATS; t++) {
 		cmplx pos = 50*I*cos(t) + 50*sin(t^(342345));
 		cmplx dir = -3*cnormalize(pos);
 		INVOKE_SUBTASK(transition_swirl, VIEWPORT_W/2 + I*VIEWPORT_H/2 + pos, dir, 1);
-		WAIT(1);
+		WAIT(2);
 	}
 	AWAIT_SUBTASKS;
 }
@@ -715,7 +715,7 @@ TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
 		real length = 100;
 
 		MoveParams move = e->move;
-		e->move = move_stop(0.9);
+		e->move = move_dampen(0.9);
 		for(int i = 0; i < points; i++) {
 			cmplx dir = cdir(M_TAU/points * i)/I;
 			int count = 10;
@@ -912,8 +912,8 @@ TASK(scissor_fairy, { cmplx origin; MoveParams move; int dir;}) {
 
 	real scissor = 0;
 	for(int t = 0; t < BEATS; t++) {
-		real spread = -1+0.04*t;
-		scissor += 0.005;
+		real spread = -0.5+0.04*t;
+		scissor += 0.003;
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		PROJECTILE(pp_ball, RGBA(1, 0.3, 0, 0.5), .pos = e->pos, .move = move_accelerated(4*aim*cdir(spread*ARGS.dir), scissor * I * aim * ARGS.dir));
 		play_sfx_loop("shot1_loop");
@@ -945,16 +945,16 @@ TASK(funk_small_bullet, { cmplx *pos; versor *rot; real f; }) {
 TASK(funk_bullet, { cmplx pos; MoveParams move; }) {
 	auto p = TASK_BIND(PROJECTILE(.proto = pp_soul, .color = RGBA(0.1,0.1,0.8,0.1), .pos = ARGS.pos, .move = ARGS.move, .flags = PFLAG_MANUALANGLE));
 
-	vec3 axis1;
+	vec3 axis;
 	cmplx dir1 = rng_dir();
 	cmplx dir2 = rng_dir();
-	axis1[0] = re(dir1)*re(dir2);
-	axis1[1] = im(dir1)*re(dir2);
-	axis1[2] = im(dir2);
+	axis[0] = re(dir1)*re(dir2);
+	axis[1] = im(dir1)*re(dir2);
+	axis[2] = im(dir2);
 
 	versor rot1, rot2;
 	glm_quat_identity(rot1);
-	glm_quat_identity(rot2);
+	glm_quatv(rot2,rng_angle(), axis);
 
 	int count = 20;
 	for(int i = 0; i < count; i++) {
@@ -1127,14 +1127,14 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	}
 
 	INVOKE_SUBTASK_DELAYED(16*BEATS, transition_swirls);
-	STAGE_BOOKMARK_DELAYED(17*BEATS, cross-lasers);
+	STAGE_BOOKMARK_DELAYED(16*BEATS, transition1);
 
 	INVOKE_SUBTASK_DELAYED(20*BEATS, wheat_fairy, 200+100*I, move_accelerated(-1 + I, 0.01));
 	INVOKE_SUBTASK_DELAYED(23*BEATS, wheat_fairy, 100+200*I, move_accelerated(1 + I, 0.01));
 	INVOKE_SUBTASK_DELAYED(25*BEATS, wheat_fairy, 300+200*I, move_accelerated(1 + I, -0.01));
 
-	for(int i = 0; i < 6; i++) {
-		INVOKE_SUBTASK_DELAYED(27*BEATS+BEATS*i, amaranth_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150*cdir(M_TAU/4*i), move_accelerated(1 + I, -0.01));
+	for(int i = 0; i < 5; i++) {
+		INVOKE_SUBTASK_DELAYED(28*BEATS+BEATS*i, amaranth_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150*cdir(M_TAU/4*i), move_accelerated(1 + I, -0.01));
 	}
 	// WAIT(400);
 
