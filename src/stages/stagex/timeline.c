@@ -917,7 +917,7 @@ TASK(scissor_fairy, { cmplx origin; MoveParams move; int dir;}) {
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		PROJECTILE(pp_ball, RGBA(1, 0.3, 0, 0.5), .pos = e->pos, .move = move_accelerated(4*aim*cdir(spread*ARGS.dir), scissor * I * aim * ARGS.dir));
 		play_sfx_loop("shot1_loop");
-		WAIT(1);
+		WAIT(3);
 	}
 	e->move = ARGS.move;
 }
@@ -1024,7 +1024,7 @@ TASK(drum_fairy, { cmplx pos; }) {
 		int count = 40;
 
 		for(int i = 0; i < count; i++) {
-			cmplx aim = cdir(M_TAU/count * i + 0.02*t);
+			cmplx aim = cdir(M_TAU/count * i + 0*t);
 
 			PROJECTILE(pp_rice, .color = RGBA(1.0, 0.3, 0.05, 1.0), .pos = e->pos + 20*aim, .move = move_accelerated(0.5*aim, 0.02*aim));
 		}
