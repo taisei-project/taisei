@@ -715,7 +715,7 @@ TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
 		real length = 100;
 
 		MoveParams move = e->move;
-		e->move = move_dampen(0.9);
+		e->move.retention = 0.9;
 		for(int i = 0; i < points; i++) {
 			cmplx dir = cdir(M_TAU/points * i)/I;
 			int count = 10;
