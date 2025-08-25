@@ -1,4 +1,4 @@
-（`中文版 <doc/README_CN.rst>`__）
+（`中文版 <README_CN.rst>`__）
 ==============
 Taisei Project 
 ==============
