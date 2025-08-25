@@ -1,4 +1,6 @@
-Taisei Project
+（`中文版 <doc/README_CN.rst>`__）
+==============
+Taisei Project 
 ==============
 
 .. image:: misc/icons/taisei.ico
