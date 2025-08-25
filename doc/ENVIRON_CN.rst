@@ -387,7 +387,7 @@ Kiosk模式
 例子
 ^^^^^^^^
 
-- 在Release构建: 从标准输出流输出 *Info* 信息, 此外按照 *Warning*\  s, *Error*\  s, 和 *Fatal*\ s  排序。
+- 在Release构建: 从标准输出流输出 *Info* 信息, 此外按照 *Warning*\ , *Error*\  , 和 *Fatal*\   排序。
   默认：
 
    .. code:: sh
@@ -418,13 +418,13 @@ Kiosk模式
 
       TAISEI_LOGLVLS_CONSOLE=-a
 
-- 不要保存任何日志, 除了 *Error*\ s and *Fatal*\ s:
+- 不要保存任何日志, 除了 *Error*\  和 *Fatal*\ :
 
    .. code:: sh
 
       TAISEI_LOGLVLS_FILE=-a+ef
 
-- Print everything except *Debug* to ``stderr``, nothing to ``stdout``:
+- 将除 *Debug* 之外的所有内容输出到 ``stderr``，不输出到 ``stdout``:
 
    .. code:: sh
 
