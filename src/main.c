@@ -309,7 +309,11 @@ int main(int argc, char **argv);
 
 attr_used
 int main(int argc, char **argv) {
-	setlocale(LC_ALL, "C");
+	setlocale(LC_ALL, "");
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(TAISEI_BUILDCONF_GETTEXT_PACKAGE, TAISEI_BUILDCONF_LOCALE_PATH);
+	textdomain(TAISEI_BUILDCONF_GETTEXT_PACKAGE);
+
 	mem_install_sdl_callbacks();
 	thread_init();
 	coroutines_init();
