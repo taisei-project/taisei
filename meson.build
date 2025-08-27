@@ -205,6 +205,7 @@ dep_zip         = dependency('libzip',         version : '>=1.5.0', required : o
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
 dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
+dep_intl        = dependency('intl', required : true)
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -229,6 +230,7 @@ taisei_deps = [
     dep_zip,
     dep_zlib,
     dep_zstd,
+    dep_intl,
     # don't add glad here
 ]
 
@@ -463,6 +465,7 @@ if is_relocatable_install
     doc_path = '.'  # Meson bug https://github.com/mesonbuild/meson/issues/4295
     xdg_path = 'freedesktop.org'
     lib_path = '.'
+    locale_path = 'locale'
 
     if macos_app_bundle
         bundle_dir = 'Taisei.app'
@@ -470,6 +473,7 @@ if is_relocatable_install
         bundle_datadir = join_paths('Contents', 'Resources')
         bundle_bindir = join_paths('Contents', 'MacOS')
         bundle_libdir = bundle_bindir
+        bundle_localedir = join_paths(bunlde_datadir, 'locale')
 
         datadir = join_paths(bundle_dir, bundle_datadir)
         bindir = join_paths(bundle_dir, bundle_bindir)
@@ -485,6 +489,7 @@ if is_relocatable_install
         # Relative to SDL_GetBasePath() (bundle root)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(bundle_datadir, data_path))
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(bundle_libdir))
+        config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', bundle_localedir)
 
         # Make paths prefix-relative for installation
         data_path = join_paths(datadir, data_path)
@@ -496,6 +501,7 @@ if is_relocatable_install
         # Relative to SDL_GetBasePath() (typically contains the executable)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', lib_path)
+        config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', locale_path)
     endif
 else  # Non-relocatable
     bindir = get_option('bindir')
@@ -509,6 +515,7 @@ else  # Non-relocatable
     # Static absolute paths
     config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
     config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(get_option('prefix'), lib_path))
+    config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', join_paths(get_option('prefix'), 'share/locale'))
 endif
 
 config.set('TAISEI_BUILDCONF_RELOCATABLE_INSTALL', is_relocatable_install)
@@ -518,6 +525,8 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
+
+config.set_quoted('TAISEI_BUILDCONF_GETTEXT_PACKAGE', meson.project_name())
 
 if host_machine.system() == 'windows'
     custom_target('COPYING.txt',
@@ -589,6 +598,7 @@ foreach pathvar : [
     'TAISEI_BUILDCONF_ANGLE_GLES_PATH',
     'TAISEI_BUILDCONF_DATA_PATH',
     'TAISEI_BUILDCONF_LIB_PATH',
+    'TAISEI_BUILDCONF_LOCALE_PATH',
 ]
     if config.has(pathvar)
         p = config.get_unquoted(pathvar)
@@ -663,6 +673,7 @@ else
     config.set_quoted('TAISEI_BUILDCONF_REL_SRC_DIR', relative_dir)
 endif
 
+subdir('po')
 subdir('misc')
 subdir('emscripten')
 subdir('switch')

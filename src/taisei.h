@@ -17,6 +17,9 @@
 #include "util/consideredharmful.h"   // IWYU pragma: export
 #include "memory/memory.h"            // IWYU pragma: export
 
+#include <libintl.h>
+#define _(str) gettext(str)
+
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this
 	#define DEBUG 1
