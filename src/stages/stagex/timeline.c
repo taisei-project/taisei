@@ -508,38 +508,46 @@ static int midboss_section(void) {
 	return t;
 }
 
-TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; }) {
-	int d0 = 60;
-	int d1 = 15;
-
+TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; int d0; int d1;}) {
 	play_sfx("laser1");
 
 	MoveParams *move;
-	auto l = TASK_BIND(create_dynamic_laser(ARGS.origin, 120, (d0+d1) * 4, ARGS.clr, &move));
+	auto l = TASK_BIND(create_dynamic_laser(ARGS.origin, 120, (ARGS.d0+ARGS.d1) * 4, ARGS.clr, &move));
 	l->width_exponent = 0.5;
+
+	cmplx pos = ARGS.origin;
+	INVOKE_SUBTASK(common_move_ext, .pos = &pos, .move_params = move);
 
 	cmplx r = ARGS.r;
 	*move = move_linear(ARGS.dir * 3);
 
-	for(;;) {
-		WAIT(d0);
+	for(int i = 0; i < 4; i++) {
+		WAIT(ARGS.d0);
+		cmplx aim = cnormalize(global.plr.pos - pos);
+		PROJECTILE(pp_ball, &l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
+		play_sfx("shot3");
 		move->velocity *= r;
-		WAIT(d1);
+		WAIT(ARGS.d1);
+		aim = cnormalize(global.plr.pos - pos);
+		PROJECTILE(pp_ball, &l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
+		play_sfx("shot3");
 		move->velocity *= r;
 	}
 }
 
-TASK(fairy_laser45, { cmplx origin; }) {
+TASK(laser45_big_fairy, { cmplx origin; }) {
 	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
 	ecls_anyfairy_summon(e, 60);
 
 	for(int i = 0; i < 3; ++i) {
 		RADIAL_LOOP(l, 8, I) {
-			INVOKE_TASK(laser45, e->pos, l.dir, cdir(M_PI/4), RGB(0.5, 0.1, 0.8));
-			INVOKE_TASK_DELAYED(30, laser45, e->pos, l.dir, cdir(-M_PI/4), RGB(0.1, 0.5, 0.8));
+			INVOKE_TASK(laser45, e->pos, l.dir, cdir(M_PI/4), RGBA(1, 0.3, 0.0, 0), .d0 = 60, .d1 = 45);
+			INVOKE_TASK_DELAYED(30, laser45, e->pos, l.dir, cdir(-M_PI/4), RGBA(0.1, 0.1, 1,0), .d0 =60, .d1=15);
 		}
 		WAIT(400);
 	}
+
+	e->move = move_linear(-I);
 
 	enemy_kill(e);
 }
@@ -1109,6 +1117,69 @@ TASK(staircase_swirls, { bool cross; }) {
 	AWAIT_SUBTASKS;
 }
 
+TASK(aimed_laser45, { cmplx origin; cmplx dir; int delay; int warpid; const Color *clr;}) {
+
+	MoveParams *move;
+
+	real offset = 9;
+	real speed = 3;
+
+	cmplx pos = ARGS.origin + offset * ARGS.warpid * I * ARGS.dir;
+
+	auto l = TASK_BIND(create_dynamic_laser(pos, 120, (ARGS.delay) * 8, ARGS.clr, &move));
+	l->width_exponent = 0.5;
+
+	*move = move_linear(ARGS.dir * speed);
+	INVOKE_SUBTASK(common_move_ext, .pos = &pos, .move_params = move);
+
+
+
+	for(int i = 0; i < 4; i++) {
+		WAIT(ARGS.delay/(1+(i&1)));
+		cmplx dir = cnormalize(move->velocity);
+		cmplx midpos = pos - offset * ARGS.warpid * I * dir;
+		cmplx r = 1;
+		real min_dist = INFINITY;
+		for(int d = -1; d <= 1; d++) {
+			cmplx normal = I*dir*cdir(d*M_PI/4);
+
+			real distance_from_line = fabs(creal(conj(normal)*(global.plr.pos-midpos)));
+
+			if(distance_from_line < min_dist) {
+				min_dist = distance_from_line;
+				r = cdir(d*M_PI/4);
+			}
+		}
+
+		if(re(midpos) < 0 || re(midpos) > VIEWPORT_W || im(midpos) < 0 || im(midpos) > VIEWPORT_H) {
+			break;
+		}
+		int waittime = (-ARGS.warpid * sign(im(r)) + 2) * (offset/speed - 1);
+		WAIT(waittime);
+		play_sfx("shot3");
+		cmplx aim = cnormalize(global.plr.pos - pos);
+		PROJECTILE(pp_flea, RGBA(1,0.2,0,0), .pos = pos, .move = move_accelerated(0, 0.01*aim));
+
+		move->velocity *= r;
+		WAIT(waittime);
+	}
+}
+
+TASK(aimed_laser45_warp, { cmplx origin; cmplx dir; int delay; const Color *clr; }) {
+	play_sfx("laser1");
+
+	for(int i = -2; i <= 2; i++) {
+		INVOKE_SUBTASK(aimed_laser45, .origin = ARGS.origin, .dir = ARGS.dir, .warpid = i, .clr = ARGS.clr, .delay = ARGS.delay);
+	}
+	AWAIT_SUBTASKS;
+}
+
+TASK(laser45_warp_fairy, { cmplx origin; cmplx final_pos; }) {
+	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
+	ecls_anyfairy_summon(e, BEATS);
+	e->move = move_towards(ARGS.final_pos, 0.03);
+
+}
 
 DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(BEATS);
@@ -1176,6 +1247,10 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(4140 - midboss_time);
 	stagex_bg_trigger_tower_dissolve();
 	STAGE_BOOKMARK(post-midboss-filler);
+	RADIAL_LOOP(l, 10, I) {
+	INVOKE_SUBTASK_DELAYED(3*BEATS, aimed_laser45_warp, 0.5*(VIEWPORT_W + I*VIEWPORT_W), .clr = RGBA(0.1,0.1,1, 0), .dir = l.dir, .delay=30);
+	}
+	// INVOKE_SUBTASK_DELAYED(3*BEATS, laser45_big_fairy, 0.5*(VIEWPORT_W + I*VIEWPORT_W));
 	WAIT(BEATS * 24);
 	stagex_bg_trigger_next_phase();
 
