@@ -677,3 +677,4 @@ src/cutscenes/youmu_good_end.inc.h
 src/cutscenes/youmu_extra_intro.inc.h
 src/cutscenes/reimu_bad_end.inc.h
 src/cutscenes/cutscene.h
+po/extra_strings.c
