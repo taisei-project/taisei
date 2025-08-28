@@ -65,3 +65,10 @@
 
 #define PRELOAD_FACE(face) \
 	portrait_preload_face_sprite(ARGS.preload_group, _charname, #face, ARGS.preload_rflags)
+
+#define TITLE_CIRNO(actor) TITLE(actor, _("Cirno"), _("Thermodynamic Ice Fairy"))
+#define TITLE_HINA(actor) TITLE(actor, _("Kagiyama Hina"), _("Gyroscopic Pestilence God"));
+#define TITLE_WRIGGLE(actor) TITLE(actor, _("Wriggle Nightbug"), _("Insect Rights Activist"));
+#define TITLE_KURUMI(actor) TITLE(actor, _("Kurumi"), _("High-Society Phlebotomist"));
+#define TITLE_IKU(actor) TITLE(actor, _("Nagae Iku"), _("Fulminologist of the Heavens"));
+#define TITLE_ELLY(actor) TITLE(actor, _("Elly"), _("The Theoretical Reaper"));

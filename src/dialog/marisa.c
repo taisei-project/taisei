@@ -36,7 +36,7 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 	FACE(marisa, sweat_smile);
 	MSG(marisa, "I was gonna get it done in the fall, but now…");
 
-	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
+	TITLE_CIRNO(cirno);
 	MSG(cirno, "Why would I do that?! You’re never going to pay me back!");
 	EVENT(music_changes);
 	FACE(cirno, angry);
@@ -92,7 +92,7 @@ DIALOG_TASK(marisa, Stage2PreBoss) {
 	MSG(marisa, "Thanks for the advice! I’ll be ignoring it, though.");
 	MSG(marisa, "See ya.");
 
-	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
+	TITLE_HINA(hina);
 	FACE(hina, serious);
 	MSG(hina, "Oh my… you’re quite the rebellious one, aren’t you?");
 	MSG(hina, "Such confidence, ignoring my warning like that.");
@@ -154,7 +154,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	FACE(marisa, happy);
 	MSG(marisa, "Mind passin’ a message along?");
 
-	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
+	TITLE_WRIGGLE(wriggle);
 	FACE(wriggle, outraged);
 	MSG(wriggle, "Um, OBVIOUSLY I’m not the messenger!");
 	FACE(wriggle, proud);
@@ -271,7 +271,7 @@ DIALOG_TASK(marisa, Stage4PreBoss) {
 	FACE(marisa, sweat_smile);
 	MSG(marisa, "Writin’ pure ficiton is more honest for them, I guess.");
 
-	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
+	TITLE_KURUMI(kurumi);
 	FACE(kurumi, normal);
 	MSG(kurumi, "Yeah, duh?");
 	MSG(kurumi, "Of course, most of it is garbage that only weirdos like!");
@@ -384,7 +384,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(marisa, "Hmm… probably a major illusion of some kind…?");
 	MSG(marisa, "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…");
 
-	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
+	TITLE_IKU(iku);
 	FACE(iku, smile);
 	MSG(iku, "… pardon me, are you conversing with yourself?");
 
@@ -562,7 +562,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "I’m pretty disappointed.");
 	MSG(marisa, "Honestly, this might be the most disappointing incident yet.");
 
-	TITLE(elly, "Elly", "The Theoretical Reaper");
+	TITLE_ELLY(elly);
 	MSG(elly, "You’re after… magic?");
 	FACE(elly, smug);
 	MSG(elly, "Hah! You’ll regret wasting your time on such nonsense.");

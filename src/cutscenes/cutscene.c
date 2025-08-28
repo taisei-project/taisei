@@ -302,10 +302,10 @@ static void draw_center_text(
 	p.align = ALIGN_CENTER;
 	p.pos.x = SCREEN_W/2;
 	p.pos.y = SCREEN_H/2 - font_get_lineskip(p.font_ptr);
-	text_draw(e->header, &p);
+	text_draw(_(e->header), &p);
 	p.pos.y += font_get_lineskip(p.font_ptr) * 1.2;
 	p.font_ptr = res_font("standard");
-	text_draw(e->text, &p);
+	text_draw(_(e->text), &p);
 }
 
 static void draw_text(CutsceneState *st) {
@@ -359,13 +359,13 @@ static void draw_text(CutsceneState *st) {
 			p.pos.x += speaker_width - ofs;
 			w -= speaker_width;
 			p.align = ALIGN_RIGHT;
-			text_draw(e->header, &p);
+			text_draw(_(e->header), &p);
 			p.align = ALIGN_LEFT;
 			p.pos.x += ofs;
 		}
 
-		char buf[strlen(e->text) * 2 + 1];
-		text_wrap(font, e->text, w, buf, sizeof(buf));
+		char buf[strlen(_(e->text)) * 2 + 1];
+		text_wrap(font, _(e->text), w, buf, sizeof(buf));
 		text_draw(buf, &p);
 
 		y += text_height(font, buf, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
