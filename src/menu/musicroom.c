@@ -120,7 +120,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 	if(p->state & MSTATE_PLAYING) {
 		color_mul(&clr, RGBA(0.1, 0.6, 0.8, 0.8));
-		text_draw("Now playing", &(TextParams) {
+		text_draw(_("Now playing"), &(TextParams) {
 			.pos = { SCREEN_W - 200, 20 * i },
 			.shader_ptr = p->text_shader,
 			.align = ALIGN_RIGHT,
@@ -132,7 +132,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 static void musicroom_draw(MenuData *m) {
 	r_state_push();
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Music Room");
+	draw_menu_title(m, _("Music Room"));
 	draw_menu_list(m, 100, 100, musicroom_draw_item, SCREEN_H / GOLDEN_RATIO, NULL);
 
 	float comment_height = SCREEN_H * (1 - 1 / GOLDEN_RATIO);
@@ -166,15 +166,15 @@ static void musicroom_draw(MenuData *m) {
 
 		if(p->state & MSTATE_CONFIRM) {
 			comment = (
-				"\nYou have not unlocked this track yet!\n\n"
-				"If you wish to hear it anyway, please select it again to confirm."
+				_("\nYou have not unlocked this track yet!\n\n"
+				  "If you wish to hear it anyway, please select it again to confirm.")
 			);
 			clr->g *= 0.3;
 			clr->b *= 0.2;
 		} else if(!(p->state & MSTATE_COMMENT_VISIBLE)) {
 			continue;
-		} else if(!(comment = bgm_get_comment(p->bgm))) {
-			comment = "\nNo comment available";
+		} else if(!(comment = _(bgm_get_comment(p->bgm)))) {
+			comment = _("\nNo comment available");
 		}
 
 		text_draw_wrapped(comment, SCREEN_W - text_x * 2, &(TextParams) {
@@ -230,7 +230,7 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 	const char *title = bgm ? bgm_get_title(bgm) : NULL;
 
 	if(!title) {
-		title = "Unknown track";
+		title = _("Unknown track");
 	}
 
 	auto p = ALLOC(MusicEntryParam, {
