@@ -19,6 +19,8 @@
 
 #include <libintl.h>
 #define _(str) gettext(str)
+// used for marking strings for xgettext without translating them
+#define N_(str) str
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this

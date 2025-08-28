@@ -1,11 +1,261 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-28 09:14-0400\n"
+"POT-Creation-Date: 2025-08-28 18:13-0400\n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: src/menu/charprofile.c:61
+msgid "Hakurei Reimu"
+msgstr ""
+
+#: src/menu/charprofile.c:62
+msgid "Shrine Maiden of Fantasy"
+msgstr ""
+
+#: src/menu/charprofile.c:63 src/menu/charprofile.c:73
+msgid "Human"
+msgstr ""
+
+#: src/menu/charprofile.c:64
+msgid "Literature (Fiction)"
+msgstr ""
+
+#: src/menu/charprofile.c:65
+msgid ""
+"The incredibly particular shrine maiden.\n"
+"\n"
+"She’s taking a break from her busy novel-reading schedule to take care of an "
+"incident.\n"
+"\n"
+"Mostly, she has a vague feeling of sentimentality for a bygone era.\n"
+"\n"
+"Regardless, when the residents of Yōkai Mountain show up sobbing at her "
+"door, she has no choice but to put her book down and spring into action."
+msgstr ""
+
+#: src/menu/charprofile.c:71
+msgid "Kirisame Marisa"
+msgstr ""
+
+#: src/menu/charprofile.c:72
+msgid "Unbelievably Ordinary Magician"
+msgstr ""
+
+#: src/menu/charprofile.c:74
+msgid "Eclecticism"
+msgstr ""
+
+#: src/menu/charprofile.c:75
+msgid ""
+"The confident, hyperactive witch.\n"
+"\n"
+"Curious as ever about the limits of magic and the nature of reality, and "
+"when she hears about “eldritch lunacy,” her curiosity gets the better of "
+"her.\n"
+"\n"
+"But maybe this “grimoire” is best left unread?\n"
+"\n"
+"Not that a warning like that would stop her anyways. So, off she goes."
+msgstr ""
+
+#: src/menu/charprofile.c:81
+msgid "Konpaku Yōmu"
+msgstr ""
+
+#: src/menu/charprofile.c:82
+msgid "Swordswoman Between Worlds"
+msgstr ""
+
+#: src/menu/charprofile.c:83
+msgid "Half-Human, Half-Phantom"
+msgstr ""
+
+#: src/menu/charprofile.c:84
+msgid "Fencing"
+msgstr ""
+
+#: src/menu/charprofile.c:85
+msgid ""
+"The swordswoman of the somewhat-dead.\n"
+"\n"
+"“While you were playing games, I was studying the blade” … is probably what "
+"she’d say.\n"
+"\n"
+"Entirely too serious about everything, and utterly terrified of (half of) "
+"her own existence.\n"
+"\n"
+"Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
+"doesn’t let it get to her head."
+msgstr ""
+
+#: src/menu/charprofile.c:91 src/dialog/dialog_macros.h:69
+msgid "Cirno"
+msgstr ""
+
+#: src/menu/charprofile.c:92 src/dialog/dialog_macros.h:69
+msgid "Thermodynamic Ice Fairy"
+msgstr ""
+
+#: src/menu/charprofile.c:93
+msgid "Fairy"
+msgstr ""
+
+#: src/menu/charprofile.c:94
+msgid "Thermodynamics"
+msgstr ""
+
+#: src/menu/charprofile.c:95
+msgid ""
+"The lovably-foolish ice fairy.\n"
+"\n"
+"Perhaps she’s a bit dissatisfied after her recent duels with secret gods and "
+"hellish fairies?\n"
+"\n"
+"Consider going easy on her."
+msgstr ""
+
+#: src/menu/charprofile.c:106
+msgid ""
+"Guardian of Yōkai Mountain. Her angular momentum is out of this world!\n"
+"\n"
+"She seems awfully concerned with your health and safety, to the point of "
+"being quite overbearing.\n"
+"\n"
+"You’re old enough to decide your own path in life, though."
+msgstr ""
+
+#: src/menu/charprofile.c:113
+msgid "Scuttle"
+msgstr ""
+
+#: src/menu/charprofile.c:114
+msgid "Agile Insect Engineer"
+msgstr ""
+
+#: src/menu/charprofile.c:115
+msgid "Bombardier Beetle"
+msgstr ""
+
+#: src/menu/charprofile.c:116
+msgid "Full Stack 'Web' Development"
+msgstr ""
+
+#: src/menu/charprofile.c:117
+msgid ""
+"Not all things are computable, and this bug seems to sneak in at a decisive "
+"fork in your commute to the true culprit.\n"
+"\n"
+"The majority of insects do not scheme grand revolutions, yet their presence "
+"alone is enough to upset the course of events."
+msgstr ""
+
+#: src/menu/charprofile.c:124 src/dialog/dialog_macros.h:71
+msgid "Wriggle Nightbug"
+msgstr ""
+
+#: src/menu/charprofile.c:125 src/dialog/dialog_macros.h:71
+msgid "Insect Rights Activist"
+msgstr ""
+
+#: src/menu/charprofile.c:126
+msgid "Insect"
+msgstr ""
+
+#: src/menu/charprofile.c:127
+msgid "Evolutionary Socio-Entomology"
+msgstr ""
+
+#: src/menu/charprofile.c:128
+msgid ""
+"A bright bug - or was it insect? - far from her usual stomping grounds.\n"
+"\n"
+"She feels that Insects have lost their “rightful place” in history, whatever "
+"that means.\n"
+"\n"
+"If she thinks she has a raw evolutionary deal, someone ought to tell her "
+"about the trilobites…"
+msgstr ""
+
+#: src/menu/charprofile.c:136 src/dialog/dialog_macros.h:72
+msgid "High-Society Phlebotomist"
+msgstr ""
+
+#: src/menu/charprofile.c:137
+msgid "Vampire"
+msgstr ""
+
+#: src/menu/charprofile.c:138
+msgid "Hematology"
+msgstr ""
+
+#: src/menu/charprofile.c:139
+msgid ""
+"Vampiric blast from the past. Doesn’t she know Gensōkyō already has new "
+"bloodsuckers in town?\n"
+"\n"
+"Sucking blood is what she’s good at, but her current job is a gatekeeper, "
+"and her true passion is high fashion.\n"
+"\n"
+"Everyone’s got multiple side-hustles these days…"
+msgstr ""
+
+#: src/menu/charprofile.c:147 src/dialog/dialog_macros.h:73
+msgid "Fulminologist of the Heavens"
+msgstr ""
+
+#: src/menu/charprofile.c:148
+msgid "Oarfish"
+msgstr ""
+
+#: src/menu/charprofile.c:149
+msgid "Meteorology (Fulminology)"
+msgstr ""
+
+#: src/menu/charprofile.c:150
+msgid ""
+"Messenger from the clouds, and an amateur meteorologist.\n"
+"\n"
+"Seems to have been reading a few too many outdated psychiatry textbooks in "
+"recent times.\n"
+"\n"
+"Despite being so formal and stuffy, she seems to be the only one who knows "
+"what’s going on."
+msgstr ""
+
+#: src/menu/charprofile.c:161
+msgid ""
+"Slightly upset over being forgotten.\n"
+"\n"
+"Has apparently gotten herself a tutor in the “dark art” of theoretical "
+"physics. Her side-hustle is megalomania.\n"
+"\n"
+"Literally on top of the world, without a care to spare for those beneath "
+"her. Try not to let too many stones crush the innocent yōkai below when her "
+"Tower of Babel starts to crumble."
+msgstr ""
+
+#: src/menu/charprofile.c:168
+msgid "Locked"
+msgstr ""
+
+#: src/menu/charprofile.c:170
+msgid "You have not unlocked this character yet!"
+msgstr ""
+
+#: src/menu/charprofile.c:190
+msgid "Species"
+msgstr ""
+
+#: src/menu/charprofile.c:191
+msgid "Area of Study"
+msgstr ""
+
+#: src/menu/charprofile.c:267
+msgid "Press [Fire] for alternate expressions"
+msgstr ""
 
 #: src/menu/mainmenu.c:118
 msgid "Start Story"
@@ -31,7 +281,7 @@ msgstr "Stage auswählen"
 msgid "Replays"
 msgstr "Replays"
 
-#: src/menu/mainmenu.c:128
+#: src/menu/mainmenu.c:128 src/menu/media.c:33
 msgid "Media Room"
 msgstr "Media-Raum"
 
@@ -42,6 +292,46 @@ msgstr "Optionen"
 #: src/menu/mainmenu.c:132
 msgid "Quit"
 msgstr "Verlassen"
+
+#: src/menu/musicroom.c:123
+msgid "Now playing"
+msgstr ""
+
+#: src/menu/musicroom.c:135 src/menu/media.c:56
+#, fuzzy
+msgid "Music Room"
+msgstr "Media-Raum"
+
+#: src/menu/musicroom.c:169
+msgid ""
+"\n"
+"You have not unlocked this track yet!\n"
+"\n"
+"If you wish to hear it anyway, please select it again to confirm."
+msgstr ""
+
+#: src/menu/musicroom.c:177
+msgid ""
+"\n"
+"No comment available"
+msgstr ""
+
+#: src/menu/musicroom.c:233
+msgid "Unknown track"
+msgstr ""
+
+#: src/menu/media.c:55
+msgid "Character Profiles"
+msgstr ""
+
+#: src/menu/media.c:57
+#, fuzzy
+msgid "Replay Cutscenes"
+msgstr "Replays"
+
+#: src/menu/media.c:59
+msgid "Back"
+msgstr ""
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
@@ -58,12 +348,6 @@ msgstr ""
 #: src/dialog/reimu.c:59
 msgid "What’s gotten into you all of a sudden?"
 msgstr ""
-
-#: src/dialog/reimu.c:62 src/dialog/marisa.c:39 src/dialog/youmu.c:35
-msgid "Cirno"
-msgid_plural "Thermodynamic Ice Fairy"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:63
 msgid "Gah! Y-you again?! Are you here to get in the way of my plans?!"
@@ -125,12 +409,6 @@ msgstr ""
 #: src/dialog/reimu.c:129
 msgid "Do you even know what you’re protecting me from this time?"
 msgstr ""
-
-#: src/dialog/reimu.c:131 src/dialog/marisa.c:95 src/dialog/youmu.c:89
-msgid "Kagiyama Hina"
-msgid_plural "Gyroscopic Pestilence God"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:134
 msgid ""
@@ -204,12 +482,6 @@ msgstr ""
 msgid ""
 "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
 msgstr ""
-
-#: src/dialog/reimu.c:201 src/dialog/marisa.c:157 src/dialog/youmu.c:163
-msgid "Wriggle Nightbug"
-msgid_plural "Insect Rights Activist"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
@@ -312,12 +584,6 @@ msgstr ""
 #: src/dialog/reimu.c:285
 msgid "Are you behind all these… strange thoughts everyone’s having?"
 msgstr ""
-
-#: src/dialog/reimu.c:288 src/dialog/marisa.c:274 src/dialog/youmu.c:253
-msgid "Kurumi"
-msgid_plural "High-Society Phlebotomist"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:289
 msgid ""
@@ -497,12 +763,6 @@ msgstr ""
 #: src/dialog/reimu.c:404
 msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
 msgstr ""
-
-#: src/dialog/reimu.c:406 src/dialog/marisa.c:387 src/dialog/youmu.c:382
-msgid "Nagae Iku"
-msgid_plural "Fulminologist of the Heavens"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:408
 msgid "Ah, apologies. It must have been friendly fire."
@@ -693,12 +953,6 @@ msgstr ""
 #: src/dialog/reimu.c:545
 msgid "I’m not in the mood to argue, so don’t push me!"
 msgstr ""
-
-#: src/dialog/reimu.c:547 src/dialog/marisa.c:565 src/dialog/youmu.c:506
-msgid "Elly"
-msgid_plural "The Theoretical Reaper"
-msgstr[0] ""
-msgstr[1] ""
 
 #: src/dialog/reimu.c:549
 msgid "Bold of you to barge into MY tower and give ME orders!"
@@ -2673,6 +2927,34 @@ msgstr ""
 msgid "Behold, your judgement before the true nature of reality!"
 msgstr ""
 
+#: src/dialog/dialog_macros.h:70
+msgid "Kagiyama Hina"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:70
+msgid "Gyroscopic Pestilence God"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:72 src/cutscenes/scene_impl.h:70
+msgid "Kurumi"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:73
+msgid "Nagae Iku"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:74 src/cutscenes/scene_impl.h:69
+msgid "Elly"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:74
+msgid "The Theoretical Reaper"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:2
+msgid "Marisa (Bad Ending)"
+msgstr ""
+
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
@@ -2999,6 +3281,58 @@ msgid ""
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
 
+#: src/cutscenes/scene_impl.h:60
+msgid "Reimu"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:61
+msgid "Marisa"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:62
+msgid "Yōmu"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:63
+msgid "Yukari"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:64
+msgid "Kanako"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:65
+msgid "Suwako"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:66
+msgid "Sanae"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:67
+msgid "Sumireko"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:68
+msgid "Yuyuko"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:71
+msgid "Remilia"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:72
+msgid "Flandre"
+msgstr ""
+
+#: src/cutscenes/scene_impl.h:73
+msgid "Patchouli"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:2
+msgid "Reimu (Good Ending)"
+msgstr ""
+
 #: src/cutscenes/reimu_good_end.inc.h:7 src/cutscenes/reimu_extra_intro.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
@@ -3162,6 +3496,10 @@ msgstr ""
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:2
+msgid "Marisa (Good Ending)"
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:7
@@ -3404,6 +3742,10 @@ msgid ""
 "suddenly spring to life again…"
 msgstr ""
 
+#: src/cutscenes/youmu_bad_end.inc.h:2
+msgid "Yōmu (Bad Ending)"
+msgstr ""
+
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
 msgstr ""
@@ -3526,6 +3868,10 @@ msgstr ""
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:2
+msgid "Marisa (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
@@ -3732,6 +4078,10 @@ msgstr ""
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:2
+msgid "Reimu (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:8
@@ -3956,6 +4306,10 @@ msgid ""
 "Reimu flew off to meet her next challenge…"
 msgstr ""
 
+#: src/cutscenes/youmu_good_end.inc.h:2
+msgid "Yōmu (Good Ending)"
+msgstr ""
+
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
 msgstr ""
@@ -4114,6 +4468,10 @@ msgid ""
 "discussed details of an ancient future’s past…"
 msgstr ""
 
+#: src/cutscenes/youmu_extra_intro.inc.h:2
+msgid "Yōmu (Extra Stage Intro)"
+msgstr ""
+
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
 msgstr ""
@@ -4259,6 +4617,10 @@ msgid ""
 "After bidding Elly and Lady Yuyuko farewell, Yōmu returned to Gensōkyō, and "
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:2
+msgid "Reimu (Bad Ending)"
 msgstr ""
 
 #: src/cutscenes/reimu_bad_end.inc.h:9

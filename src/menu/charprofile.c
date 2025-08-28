@@ -42,6 +42,8 @@ typedef struct CharacterProfile {
 	const char *name;
 	const char *fullname;
 	const char *title;
+	const char *species;
+	const char *area_of_study;
 	const char *description;
 	const char *background;
 	const char *faces[NUM_FACES];
@@ -55,33 +57,41 @@ typedef struct CharProfileContext {
 static const CharacterProfile profiles[NUM_PROFILES] = {
 	[PROFILE_REIMU] = {
 		.name = "reimu",
-		.fullname = "Hakurei Reimu",
-		.title = "Shrine Maiden of Fantasy",
-		.description = "Species: Human\nArea of Study: Literature (Fiction)\n\nThe incredibly particular shrine maiden.\n\nShe’s taking a break from her busy novel-reading schedule to take care of an incident.\n\nMostly, she has a vague feeling of sentimentality for a bygone era.\n\nRegardless, when the residents of Yōkai Mountain show up sobbing at her door, she has no choice but to put her book down and spring into action.",
+		.fullname = N_("Hakurei Reimu"),
+		.title = N_("Shrine Maiden of Fantasy"),
+		.species = N_("Human"),
+		.area_of_study = N_("Literature (Fiction)"),
+		.description = N_("The incredibly particular shrine maiden.\n\nShe’s taking a break from her busy novel-reading schedule to take care of an incident.\n\nMostly, she has a vague feeling of sentimentality for a bygone era.\n\nRegardless, when the residents of Yōkai Mountain show up sobbing at her door, she has no choice but to put her book down and spring into action."),
 		.background = "reimubg",
 		.faces = FACES("normal", "surprised", "unamused", "happy", "sigh", "smug", "puzzled", "assertive", "irritated", "outraged"),
 	},
 	[PROFILE_MARISA] = {
 		.name = "marisa",
-		.fullname = "Kirisame Marisa",
-		.title = "Unbelievably Ordinary Magician",
-		.description = "Species: Human\nArea of Study: Eclecticism\n\nThe confident, hyperactive witch.\n\nCurious as ever about the limits of magic and the nature of reality, and when she hears about “eldritch lunacy,” her curiosity gets the better of her.\n\nBut maybe this “grimoire” is best left unread?\n\nNot that a warning like that would stop her anyways. So, off she goes.",
+		.fullname = N_("Kirisame Marisa"),
+		.title = N_("Unbelievably Ordinary Magician"),
+		.species = N_("Human"),
+		.area_of_study = N_("Eclecticism"),
+		.description = N_("The confident, hyperactive witch.\n\nCurious as ever about the limits of magic and the nature of reality, and when she hears about “eldritch lunacy,” her curiosity gets the better of her.\n\nBut maybe this “grimoire” is best left unread?\n\nNot that a warning like that would stop her anyways. So, off she goes."),
 		.background = "marisa_bombbg",
 		.faces = FACES("normal", "surprised", "sweat_smile", "happy", "smug", "puzzled", "unamused", "inquisitive"),
 	},
 	[PROFILE_YOUMU] = {
 		.name = "youmu",
-		.fullname = "Konpaku Yōmu",
-		.title = "Swordswoman Between Worlds",
-		.description = "Species: Half-Human, Half-Phantom\nArea of Study: Fencing\n\nThe swordswoman of the somewhat-dead.\n\n“While you were playing games, I was studying the blade” … is probably what she’d say.\n\nEntirely too serious about everything, and utterly terrified of (half of) her own existence.\n\nStill, she’s been given an important mission by Lady Yuyuko. Hopefully she doesn’t let it get to her head.",
+		.fullname = N_("Konpaku Yōmu"),
+		.title = N_("Swordswoman Between Worlds"),
+		.species = N_("Half-Human, Half-Phantom"),
+		.area_of_study = N_("Fencing"),
+		.description = N_("The swordswoman of the somewhat-dead.\n\n“While you were playing games, I was studying the blade” … is probably what she’d say.\n\nEntirely too serious about everything, and utterly terrified of (half of) her own existence.\n\nStill, she’s been given an important mission by Lady Yuyuko. Hopefully she doesn’t let it get to her head."),
 		.background = "youmu_bombbg1",
 		.faces = FACES("normal", "eeeeh", "embarrassed", "eyes_closed", "chuuni", "happy", "relaxed", "sigh", "smug", "surprised", "unamused"),
 	},
 	[PROFILE_CIRNO] = {
 		.name = "cirno",
-		.fullname = "Cirno",
-		.title = "Thermodynamic Ice Fairy",
-		.description = "Species: Fairy\nArea of Study: Thermodynamics\n\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
+		.fullname = N_("Cirno"),
+		.title = N_("Thermodynamic Ice Fairy"),
+		.species = N_("Fairy"),
+		.area_of_study = N_("Thermodynamics"),
+		.description = N_("The lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her."),
 		.background = "stage1/cirnobg",
 		.unlock = PBGM_STAGE1_BOSS,
 		.faces = FACES("normal", "angry", "defeated"),
@@ -90,25 +100,31 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "hina",
 		.fullname = "Kagiyama Hina",
 		.title = "Gyroscopic Pestilence God",
-		.description = "Species: Pestilence God\nArea of Study: Gyroscopic Stabilization\n\nGuardian of Yōkai Mountain. Her angular momentum is out of this world!\n\nShe seems awfully concerned with your health and safety, to the point of being quite overbearing.\n\nYou’re old enough to decide your own path in life, though.",
+		.species = "Pestilence God",
+		.area_of_study = "Gyroscopic Stabilization",
+		.description = N_("Guardian of Yōkai Mountain. Her angular momentum is out of this world!\n\nShe seems awfully concerned with your health and safety, to the point of being quite overbearing.\n\nYou’re old enough to decide your own path in life, though."),
 		.unlock = PBGM_STAGE2_BOSS,
 		.background = "stage2/spellbg2",
 		.faces = FACES("normal", "concerned", "serious", "defeated"),
 	},
 	[PROFILE_SCUTTLE] = {
 		.name = "scuttle",
-		.fullname = "Scuttle",
-		.title = "Agile Insect Engineer",
-		.description = "Species: Bombardier Beetle\nArea of Study: Full-Stack 'Web' Development\n\nNot all things are computable, and this bug seems to sneak in at a decisive fork in your commute to the true culprit.\n\nThe majority of insects do not scheme grand revolutions, yet their presence alone is enough to upset the course of events.",
+		.fullname = N_("Scuttle"),
+		.title = N_("Agile Insect Engineer"),
+		.species = N_("Bombardier Beetle"),
+		.area_of_study = N_("Full Stack 'Web' Development"),
+		.description = N_("Not all things are computable, and this bug seems to sneak in at a decisive fork in your commute to the true culprit.\n\nThe majority of insects do not scheme grand revolutions, yet their presence alone is enough to upset the course of events."),
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg1",
 		.faces = FACES("normal"),
 	},
 	[PROFILE_WRIGGLE] = {
 		.name = "wriggle",
-		.fullname = "Wriggle Nightbug",
-		.title = "Insect Rights Activist",
-		.description = "Species: Insect\nArea of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\n\nShe feels that Insects have lost their “rightful place” in history, whatever that means.\n\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
+		.fullname = N_("Wriggle Nightbug"),
+		.title = N_("Insect Rights Activist"),
+		.species = N_("Insect"),
+		.area_of_study = N_("Evolutionary Socio-Entomology"),
+		.description = N_("A bright bug - or was it insect? - far from her usual stomping grounds.\n\nShe feels that Insects have lost their “rightful place” in history, whatever that means.\n\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…"),
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg2",
 		.faces = FACES("normal", "calm", "outraged", "proud", "defeated"),
@@ -116,8 +132,10 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 	[PROFILE_KURUMI] = {
 		.name = "kurumi",
 		.fullname = "Kurumi",
-		.title = "High-Society Phlebotomist",
-		.description = "Species: Vampire\nArea of Study: Hematology\n\nVampiric blast from the past. Doesn’t she know Gensōkyō already has new bloodsuckers in town?\n\nSucking blood is what she’s good at, but her current job is a gatekeeper, and her true passion is high fashion.\n\nEveryone’s got multiple side-hustles these days…",
+		.title = N_("High-Society Phlebotomist"),
+		.species = N_("Vampire"),
+		.area_of_study = N_("Hematology"),
+		.description = N_("Vampiric blast from the past. Doesn’t she know Gensōkyō already has new bloodsuckers in town?\n\nSucking blood is what she’s good at, but her current job is a gatekeeper, and her true passion is high fashion.\n\nEveryone’s got multiple side-hustles these days…"),
 		.unlock = PBGM_STAGE4_BOSS,
 		.background = "stage4/kurumibg1",
 		.faces = FACES("normal", "dissatisfied", "puzzled", "tsun", "tsun_blush", "defeated"),
@@ -125,8 +143,10 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 	[PROFILE_IKU] = {
 		.name = "iku",
 		.fullname = "Nagae Iku",
-		.title = "Fulminologist of the Heavens",
-		.description = "Species: Oarfish\nArea of Study: Meteorology (Fulminology)\n\nMessenger from the clouds, and an amateur meteorologist.\n\nSeems to have been reading a few too many outdated psychiatry textbooks in recent times.\n\nDespite being so formal and stuffy, she seems to be the only one who knows what’s going on.",
+		.title = N_("Fulminologist of the Heavens"),
+		.species = N_("Oarfish"),
+		.area_of_study = N_("Meteorology (Fulminology)"),
+		.description = N_("Messenger from the clouds, and an amateur meteorologist.\n\nSeems to have been reading a few too many outdated psychiatry textbooks in recent times.\n\nDespite being so formal and stuffy, she seems to be the only one who knows what’s going on."),
 		.background = "stage5/spell_lightning",
 		.unlock = PBGM_STAGE5_BOSS,
 		.faces = FACES("normal", "smile", "serious", "eyes_closed", "defeated"),
@@ -135,16 +155,18 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "elly",
 		.fullname = "Elly",
 		.title = "The Theoretical Reaper",
-		.description = "Species: Shinigami(?)\nArea of Study: Theoretical Physics / Forensic Pathology (dual-major)\n\nSlightly upset over being forgotten.\n\nHas apparently gotten herself a tutor in the “dark art” of theoretical physics. Her side-hustle is megalomania.\n\nLiterally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent yōkai below when her Tower of Babel starts to crumble.",
+		.species = "Shinigami(?)",
+		.area_of_study = "Theoretical Physics / Forensic Pathology (dual-major)",
+		.description = N_("Slightly upset over being forgotten.\n\nHas apparently gotten herself a tutor in the “dark art” of theoretical physics. Her side-hustle is megalomania.\n\nLiterally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent yōkai below when her Tower of Babel starts to crumble."),
 		.background = "stage6/spellbg_toe",
 		.unlock = PBGM_STAGE6_BOSS1,
 		.faces = FACES("normal", "eyes_closed", "angry", "shouting", "smug", "blush"),
 	},
 	[PROFILE_LOCKED] = {
 		.name = "locked",
-		.fullname = "Locked",
+		.fullname = N_("Locked"),
 		.title = "...",
-		.description = "You have not unlocked this character yet!",
+		.description = N_("You have not unlocked this character yet!"),
 		.unlock = PBGM_GAMEOVER,
 		.background = "stage1/cirnobg",
 		.faces = FACES("locked"),
@@ -162,6 +184,13 @@ static int check_unlocked_profile(int i) {
 	return selected;
 }
 
+static char *format_description(const CharacterProfile *profile) {
+	return strfmt("%s: %s\n%s: %s\n\n%s",
+		_("Species"),_(profile->species),
+		_("Area of Study"), _(profile->area_of_study),
+		_(profile->description));
+}
+
 static void charprofile_logic(MenuData *m) {
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		e->drawdata += 0.05 * ((m->cursor != i) - e->drawdata);
@@ -170,7 +199,10 @@ static void charprofile_logic(MenuData *m) {
 	Font *font = res_font("small");
 	char buf[512] = { 0 };
 	int j = check_unlocked_profile(m->cursor);
-	text_wrap(font, profiles[j].description, DESCRIPTION_WIDTH, buf, sizeof(buf));
+
+	char *description = format_description(&profiles[j]);
+	text_wrap(font, description, DESCRIPTION_WIDTH, buf, sizeof(buf));
+	mem_free(description);
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
 	fapproach_asymptotic_p(&m->drawdata[0], 1, 0.1, 1e-5);
@@ -231,7 +263,7 @@ static void charprofile_draw(MenuData *m) {
 	if(selected != PROFILE_LOCKED) {
 		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
 		r_draw_sprite(&portrait_params);
-		text_draw_wrapped("Press [Fire] for alternate expressions", DESCRIPTION_WIDTH, &(TextParams) {
+		text_draw_wrapped(_("Press [Fire] for alternate expressions"), DESCRIPTION_WIDTH, &(TextParams) {
 			.align = ALIGN_LEFT,
 			.pos = { 25, 570 },
 			.font = "standard",
@@ -272,13 +304,15 @@ static void charprofile_draw(MenuData *m) {
 	});
 	r_mat_mv_pop();
 
-	text_draw_wrapped(profiles[selected].description, DESCRIPTION_WIDTH, &(TextParams) {
+	char *description = format_description(&profiles[selected]);
+	text_draw_wrapped(description, DESCRIPTION_WIDTH, &(TextParams) {
 		.align = ALIGN_LEFT,
 		.pos = { -175, 120 },
 		.font = "small",
 		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(o, o, o, o),
 	});
+	mem_free(description);
 	r_mat_mv_pop();
 
 	o = 0.3*sin(m->frames/20.0)+0.5;
