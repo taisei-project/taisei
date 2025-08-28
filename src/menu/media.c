@@ -30,7 +30,7 @@ static void menu_action_enter_charprofileview(MenuData *menu, void *arg) {
 
 static void draw_media_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Media Room");
+	draw_menu_title(m, _("Media Room"));
 	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
@@ -52,11 +52,11 @@ MenuData *create_media_menu(void) {
 	m->end = end_media_menu;
 	m->context = rg;
 
-	add_menu_entry(m, "Character Profiles", menu_action_enter_charprofileview, NULL);
-	add_menu_entry(m, "Music Room", menu_action_enter_musicroom, NULL);
-	add_menu_entry(m, "Replay Cutscenes", menu_action_enter_cutsceneview, NULL);
+	add_menu_entry(m, _("Character Profiles"), menu_action_enter_charprofileview, NULL);
+	add_menu_entry(m, _("Music Room"), menu_action_enter_musicroom, NULL);
+	add_menu_entry(m, _("Replay Cutscenes"), menu_action_enter_cutsceneview, NULL);
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;

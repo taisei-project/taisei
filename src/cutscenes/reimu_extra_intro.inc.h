@@ -1,5 +1,5 @@
 
-.name = "Reimu (Extra Stage Intro)",
+.name = N_("Reimu (Extra Stage Intro)"),
 .bgm = "intro",
 
 .phases = (CutscenePhase[]) {

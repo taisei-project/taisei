@@ -32,7 +32,7 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 	FACE(youmu, smug);
 	MSG(youmu, "I tend to dislike dueling those weaker than myself, so I’d appreciate it if you’d step aside.");
 
-	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
+	TITLE_CIRNO(cirno);
 	MSG(cirno, "Hah! Maybe YOU should step aside, then!");
 
 	FACE(youmu, eyes_closed);
@@ -86,7 +86,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 
 	MSG(youmu, "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate—");
 
-	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
+	TITLE_HINA(hina);
 	MSG(hina, "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this slide.");
 	FACE(youmu, normal);
 	FACE(hina, serious);
@@ -160,7 +160,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 
 	FACE(wriggle, outraged);
 	MSG(wriggle, "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!");
-	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
+	TITLE_WRIGGLE(wriggle);
 	MSG(wriggle, "Ever heard of beetles? Flies? Show us some respect!");
 
 	FACE(youmu, normal);
@@ -250,7 +250,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	FACE(youmu, relaxed);
 	MSG(youmu, "Who might you be?");
 
-	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
+	TITLE_KURUMI(kurumi);
 	FACE(kurumi, tsun);
 	MSG(kurumi, "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!");
 	MSG(kurumi, "You better remember that!");
@@ -379,7 +379,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(iku, normal);
 	MSG(iku, "On the contrary, I would say.");
-	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
+	TITLE_IKU(iku);
 	FACE(youmu, normal);
 	MSG(iku, "I decided to do some research on my own.");
 	MSG(iku, "This tower is controlled by a machine…");
@@ -503,7 +503,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	FACE(youmu, happy);
 	MSG(youmu, "Absolutely splendid!");
 
-	TITLE(elly, "Elly", "The Theoretical Reaper");
+	TITLE_ELLY(elly);
 	MSG(elly, "Ah, I’m no shinigami, especially not now.");
 
 	FACE(youmu, eyes_closed);

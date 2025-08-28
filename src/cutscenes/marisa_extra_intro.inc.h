@@ -1,5 +1,5 @@
 
-.name = "Marisa (Extra Stage Intro)",
+.name = N_("Marisa (Extra Stage Intro)"),
 .bgm = "intro",
 
 .phases = (CutscenePhase[]) {

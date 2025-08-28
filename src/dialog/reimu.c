@@ -59,7 +59,7 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	MSG(reimu, "What’s gotten into you all of a sudden?");
 	// Titles are not yet implemented, but this should work once they are.
 	// Right now this does nothing.
-	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
+	TITLE_CIRNO(cirno);
 	MSG(cirno, "Gah! Y-you again?! Are you here to get in the way of my plans?!");
 
 	MSG(reimu, "What ‘plans'? Freezing frogs?");
@@ -128,7 +128,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	FACE(reimu, normal);
 	MSG(reimu, "Do you even know what you’re protecting me from this time?");
 
-	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
+	TITLE_HINA(hina);
 
 	FACE(hina, normal);
 	MSG(hina, "A bright girl like you should know that Yōkai Mountain is especially dangerous today.");
@@ -198,7 +198,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	MSG(reimu, "Eh? You? Aren’t you a bit far from home?");
 	MSG(reimu, "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō.");
 
-	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
+	TITLE_WRIGGLE(wriggle);
 	FACE(wriggle, outraged);
 	MSG(wriggle, "'Far from home'? But you’ve intruded on my secret lair!");
 	FACE(wriggle, proud);
@@ -285,7 +285,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 	MSG(reimu, "Are you behind all these… strange thoughts everyone’s having?");
 
 	FACE(kurumi, normal);
-	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
+	TITLE_KURUMI(kurumi);
 	MSG(kurumi, "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with you…");
 	MSG(kurumi, "Your clothing is giving me some strange thoughts!");
 	MSG(kurumi, "Where’d you even get that outfit?! Dumpster diving?! For real!");
@@ -403,7 +403,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	MSG(reimu, "Oh, it’s you. Why did you attack me earlier, anyway?");
 
-	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
+	TITLE_IKU(iku);
 	FACE(iku, smile);
 	MSG(iku, "Ah, apologies. It must have been friendly fire.");
 	FACE(iku, eyes_closed);
@@ -544,7 +544,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "Just turn it off already.");
 	MSG(reimu, "I’m not in the mood to argue, so don’t push me!");
 
-	TITLE(elly, "Elly", "The Theoretical Reaper");
+	TITLE_ELLY(elly);
 	FACE(elly, angry);
 	MSG(elly, "Bold of you to barge into MY tower and give ME orders!");
 	MSG(elly, "I still remember what you did to Lady Kazami and I back then!");
