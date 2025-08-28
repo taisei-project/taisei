@@ -1,5 +1,7 @@
 msgid ""
 msgstr ""
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-28 09:14-0400\n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -40,3 +42,4343 @@ msgstr "Optionen"
 #: src/menu/mainmenu.c:132
 msgid "Quit"
 msgstr "Verlassen"
+
+#: src/dialog/reimu.c:46
+msgid "Snow during summer? This is certainly familiar…"
+msgstr ""
+
+#: src/dialog/reimu.c:52
+msgid "Nobody can stop me now!"
+msgstr ""
+
+#: src/dialog/reimu.c:56
+msgid "Mwahahaha!"
+msgstr ""
+
+#: src/dialog/reimu.c:59
+msgid "What’s gotten into you all of a sudden?"
+msgstr ""
+
+#: src/dialog/reimu.c:62 src/dialog/marisa.c:39 src/dialog/youmu.c:35
+msgid "Cirno"
+msgid_plural "Thermodynamic Ice Fairy"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:63
+msgid "Gah! Y-you again?! Are you here to get in the way of my plans?!"
+msgstr ""
+
+#: src/dialog/reimu.c:65
+msgid "What ‘plans'? Freezing frogs?"
+msgstr ""
+
+#: src/dialog/reimu.c:67
+msgid "Anyway, I don’t really care. So if you could just—"
+msgstr ""
+
+#: src/dialog/reimu.c:71
+msgid "I’ll never tell you! Prepare to be chilled to the bone!"
+msgstr ""
+
+#: src/dialog/reimu.c:90
+msgid "Chill out! I didn’t mean it like that!"
+msgstr ""
+
+#: src/dialog/reimu.c:92
+msgid "You could have just let me through, you know."
+msgstr ""
+
+#: src/dialog/reimu.c:93
+msgid "Not fair! You broke the rules! I wasn’t ready yet…"
+msgstr ""
+
+#: src/dialog/reimu.c:112
+msgid ""
+"With those loudmouthed kappa gone, the mountain feels practically deserted."
+msgstr ""
+
+#: src/dialog/reimu.c:114
+msgid "I almost miss them."
+msgstr ""
+
+#: src/dialog/reimu.c:117
+msgid "Ah, it’s Ms. Hakurei."
+msgstr ""
+
+#: src/dialog/reimu.c:121
+msgid "I thought you might come."
+msgstr ""
+
+#: src/dialog/reimu.c:123
+msgid "But once again, you’re trying to go places you shouldn’t."
+msgstr ""
+
+#: src/dialog/reimu.c:124
+msgid "What a troubled girl…"
+msgstr ""
+
+#: src/dialog/reimu.c:127
+msgid "So much for ‘deserted’…"
+msgstr ""
+
+#: src/dialog/reimu.c:129
+msgid "Do you even know what you’re protecting me from this time?"
+msgstr ""
+
+#: src/dialog/reimu.c:131 src/dialog/marisa.c:95 src/dialog/youmu.c:89
+msgid "Kagiyama Hina"
+msgid_plural "Gyroscopic Pestilence God"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:134
+msgid ""
+"A bright girl like you should know that Yōkai Mountain is especially "
+"dangerous today."
+msgstr ""
+
+#: src/dialog/reimu.c:136
+msgid "You ought to turn back now, my dear."
+msgstr ""
+
+#: src/dialog/reimu.c:139
+msgid "(She… she completely ignored my question.)"
+msgstr ""
+
+#: src/dialog/reimu.c:141
+msgid "Does it matter that the Gods asked me to come this time?"
+msgstr ""
+
+#: src/dialog/reimu.c:145
+msgid "I know better than the mountain Gods this time."
+msgstr ""
+
+#: src/dialog/reimu.c:146
+msgid "If you do not turn back immediately, I’ll have to repel you by force."
+msgstr ""
+
+#: src/dialog/reimu.c:149
+msgid "So annoying…"
+msgstr ""
+
+#: src/dialog/reimu.c:166
+msgid "So I lost… you can keep going then, I suppose."
+msgstr ""
+
+#: src/dialog/reimu.c:168
+msgid ""
+"You should know by now that I can handle it. Why are you being so "
+"overbearing?"
+msgstr ""
+
+#: src/dialog/reimu.c:169
+msgid ""
+"Just don’t say I didn’t warn you, when you inevitably get mauled by "
+"whatever’s out there…"
+msgstr ""
+
+#: src/dialog/reimu.c:172
+msgid "(Ignored again…)"
+msgstr ""
+
+#: src/dialog/reimu.c:188
+msgid ""
+"Aside from everyone being whipped up into a frenzy, I can’t see anything "
+"abnormal yet."
+msgstr ""
+
+#: src/dialog/reimu.c:191
+msgid "Well, to your human eyes, insects may seem ‘normal’…"
+msgstr ""
+
+#: src/dialog/reimu.c:195
+msgid "… but there was a time when we reigned supreme!"
+msgstr ""
+
+#: src/dialog/reimu.c:198
+msgid "Eh? You? Aren’t you a bit far from home?"
+msgstr ""
+
+#: src/dialog/reimu.c:199
+msgid ""
+"Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
+msgstr ""
+
+#: src/dialog/reimu.c:201 src/dialog/marisa.c:157 src/dialog/youmu.c:163
+msgid "Wriggle Nightbug"
+msgid_plural "Insect Rights Activist"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:203
+msgid "'Far from home'? But you’ve intruded on my secret lair!"
+msgstr ""
+
+#: src/dialog/reimu.c:205
+msgid "Haven’t you heard of the Car—…"
+msgstr ""
+
+#: src/dialog/reimu.c:206
+msgid "Carb—…"
+msgstr ""
+
+#: src/dialog/reimu.c:208
+msgid "That period of history?"
+msgstr ""
+
+#: src/dialog/reimu.c:209
+msgid "It was the greatest time, everyone should’ve heard of it by now!"
+msgstr ""
+
+#: src/dialog/reimu.c:211
+msgid ""
+"Seems pretty far-fetched to me, honestly. But you yōkai are always coming up "
+"with the craziest theories…"
+msgstr ""
+
+#: src/dialog/reimu.c:214
+msgid "Don’t lump us great insects in with common yōkai!"
+msgstr ""
+
+#: src/dialog/reimu.c:216
+msgid "I’m going to restore us to our rightful glory of old!"
+msgstr ""
+
+#: src/dialog/reimu.c:219
+msgid "Giant insects? But you’re tiny."
+msgstr ""
+
+#: src/dialog/reimu.c:221
+msgid "And I still don’t know what you mean by ‘glory of old.’"
+msgstr ""
+
+#: src/dialog/reimu.c:225
+msgid "You don’t seem very educated about our history."
+msgstr ""
+
+#: src/dialog/reimu.c:226
+msgid "Allow me to be your teacher!"
+msgstr ""
+
+#: src/dialog/reimu.c:240
+msgid "Giant insects roaming Gensōkyō, huh?"
+msgstr ""
+
+#: src/dialog/reimu.c:241
+msgid "Sounds like one of Sanae’s ‘nuclear’ experiments."
+msgstr ""
+
+#: src/dialog/reimu.c:243
+msgid "B-but I saw it clearly… the glorious past of insectkind…"
+msgstr ""
+
+#: src/dialog/reimu.c:246
+msgid "Don’t you have a pretty sweet deal as it is, though?"
+msgstr ""
+
+#: src/dialog/reimu.c:247
+msgid "You practically own Gensōkyō’s forests."
+msgstr ""
+
+#: src/dialog/reimu.c:249
+msgid "But can’t we ever hope for more…?"
+msgstr ""
+
+#: src/dialog/reimu.c:267
+msgid "Huh? There’s a mansion jutting out of this tower?"
+msgstr ""
+
+#: src/dialog/reimu.c:269
+msgid "This makes even less sense than usual."
+msgstr ""
+
+#: src/dialog/reimu.c:275
+msgid "And who are you supposed to be?"
+msgstr ""
+
+#: src/dialog/reimu.c:279
+msgid "Oi, that’s what I should be asking!"
+msgstr ""
+
+#: src/dialog/reimu.c:282 src/dialog/youmu.c:321
+msgid "…?"
+msgstr ""
+
+#: src/dialog/reimu.c:284
+msgid "And what are you doing, anyways?"
+msgstr ""
+
+#: src/dialog/reimu.c:285
+msgid "Are you behind all these… strange thoughts everyone’s having?"
+msgstr ""
+
+#: src/dialog/reimu.c:288 src/dialog/marisa.c:274 src/dialog/youmu.c:253
+msgid "Kurumi"
+msgid_plural "High-Society Phlebotomist"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:289
+msgid ""
+"I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with "
+"you…"
+msgstr ""
+
+#: src/dialog/reimu.c:290
+msgid "Your clothing is giving me some strange thoughts!"
+msgstr ""
+
+#: src/dialog/reimu.c:291
+msgid "Where’d you even get that outfit?! Dumpster diving?! For real!"
+msgstr ""
+
+#: src/dialog/reimu.c:294
+msgid "Ugh, another prissy mansion-dweller."
+msgstr ""
+
+#: src/dialog/reimu.c:296
+msgid "I thought I remembered you from somewhere, but no. Absolutely not."
+msgstr ""
+
+#: src/dialog/reimu.c:298
+msgid "Just… stop whatever it is you’re doing, right now."
+msgstr ""
+
+#: src/dialog/reimu.c:301
+msgid "Once you get some fashion sense, maybe I will!"
+msgstr ""
+
+#: src/dialog/reimu.c:304
+msgid "… so you *are* behind this, huh?"
+msgstr ""
+
+#: src/dialog/reimu.c:306
+msgid "Besides, haven’t you ever seen a shrine maiden before?"
+msgstr ""
+
+#: src/dialog/reimu.c:309
+msgid "You’re a shrine maiden?"
+msgstr ""
+
+#: src/dialog/reimu.c:311
+msgid "More like… BRINE maiden!"
+msgstr ""
+
+#: src/dialog/reimu.c:314
+msgid "T-this is what a shrine maiden wears. It’s a uniform."
+msgstr ""
+
+#: src/dialog/reimu.c:316
+msgid "Uniform? Are you kidding me?!"
+msgstr ""
+
+#: src/dialog/reimu.c:317
+msgid ""
+"I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
+msgstr ""
+
+#: src/dialog/reimu.c:318
+msgid ""
+"What’s with those patterns, anyways? It’s completely unorthodox! It’s not "
+"even using the right type of fabric!"
+msgstr ""
+
+#: src/dialog/reimu.c:320
+msgid "Get out of here, fake-maiden!"
+msgstr ""
+
+#: src/dialog/reimu.c:323
+msgid "… ARGH!"
+msgstr ""
+
+#: src/dialog/reimu.c:325
+msgid "Listen!! It’s HARD to find clothes I can wear every day on the job!"
+msgstr ""
+
+#: src/dialog/reimu.c:326
+msgid "It has to fit a certain style!"
+msgstr ""
+
+#: src/dialog/reimu.c:327
+msgid "And only a few fabrics feel good to wear!"
+msgstr ""
+
+#: src/dialog/reimu.c:328
+msgid "I can’t stand scratchy wool or slippery silk!"
+msgstr ""
+
+#: src/dialog/reimu.c:329
+msgid "Everything else feels terrible against my skin—"
+msgstr ""
+
+#: src/dialog/reimu.c:332
+msgid "Whoa, hey, sorry, didn’t mean to make you all—"
+msgstr ""
+
+#: src/dialog/reimu.c:336
+msgid "I *hate* prissy mansion dwellers!"
+msgstr ""
+
+#: src/dialog/reimu.c:338
+msgid "Let’s just get this over with!"
+msgstr ""
+
+#: src/dialog/reimu.c:352
+msgid "That’s what you get for insulting my outfit like that."
+msgstr ""
+
+#: src/dialog/reimu.c:354
+msgid "Ouch ouch ouch…"
+msgstr ""
+
+#: src/dialog/reimu.c:355
+msgid "W-wait, what happened?"
+msgstr ""
+
+#: src/dialog/reimu.c:357
+msgid "What do you mean ‘what happened’?"
+msgstr ""
+
+#: src/dialog/reimu.c:359
+msgid "(M-maybe if I fake having amnesia… yeah, that’s it…!)"
+msgstr ""
+
+#: src/dialog/reimu.c:361
+msgid "O-oof, my head! Ow! How did I even get here???"
+msgstr ""
+
+#: src/dialog/reimu.c:362
+msgid "W-wait! Aren’t you that girl from a long while back?"
+msgstr ""
+
+#: src/dialog/reimu.c:365
+msgid "I don’t remember you at all."
+msgstr ""
+
+#: src/dialog/reimu.c:367
+msgid "But somehow, so familiar…"
+msgstr ""
+
+#: src/dialog/reimu.c:369
+msgid ""
+"This feeling is annoying, whatever it is. Make it stop, or tell me how to "
+"make it stop."
+msgstr ""
+
+#: src/dialog/reimu.c:372
+msgid "Huh? I-I don’t know! I barely remember anything!"
+msgstr ""
+
+#: src/dialog/reimu.c:373
+msgid "(Ugh, her outfit really does suck though…)"
+msgstr ""
+
+#: src/dialog/reimu.c:375
+msgid "(Just another victim…?)"
+msgstr ""
+
+#: src/dialog/reimu.c:377
+msgid "I’ll deal with you after I figure out whatever's happening here."
+msgstr ""
+
+#: src/dialog/reimu.c:394
+msgid "I’ve got a bad feeling about this…"
+msgstr ""
+
+#: src/dialog/reimu.c:396
+msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
+msgstr ""
+
+#: src/dialog/reimu.c:402
+msgid "Or perchance it a side effect of the tower’s mere presence?"
+msgstr ""
+
+#: src/dialog/reimu.c:404
+msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
+msgstr ""
+
+#: src/dialog/reimu.c:406 src/dialog/marisa.c:387 src/dialog/youmu.c:382
+msgid "Nagae Iku"
+msgid_plural "Fulminologist of the Heavens"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:408
+msgid "Ah, apologies. It must have been friendly fire."
+msgstr ""
+
+#: src/dialog/reimu.c:410
+msgid "Things are quite hectic here. I beg your understanding."
+msgstr ""
+
+#: src/dialog/reimu.c:411
+msgid "But it has been a while, has it not?"
+msgstr ""
+
+#: src/dialog/reimu.c:414
+msgid "Err, right, yes, it has been a while. Nice to see you again."
+msgstr ""
+
+#: src/dialog/reimu.c:417
+msgid "This tower is unlike anything I have seen before."
+msgstr ""
+
+#: src/dialog/reimu.c:418
+msgid ""
+"Since word spread through the clouds, I’ve learned that the culprit is "
+"connected to ‘parallel universes.’"
+msgstr ""
+
+#: src/dialog/reimu.c:421
+msgid ""
+"You mean like Otherworlds? That’s not too out of the ordinary these days."
+msgstr ""
+
+#: src/dialog/reimu.c:423
+msgid ""
+"This feels different though. It’s like the walls are sucking up faith into a "
+"void."
+msgstr ""
+
+#: src/dialog/reimu.c:424
+msgid "I’m surprised the fairies are surviving at all…"
+msgstr ""
+
+#: src/dialog/reimu.c:426
+msgid "But what are you even doing here?"
+msgstr ""
+
+#: src/dialog/reimu.c:429
+msgid "It is not just the Netherworld and Gensōkyō being affected."
+msgstr ""
+
+#: src/dialog/reimu.c:431
+msgid ""
+"In Bhava-agra, the Eldest Daughter’s personality has experienced some "
+"changes, too."
+msgstr ""
+
+#: src/dialog/reimu.c:434
+msgid "It’s spreading that fast?!"
+msgstr ""
+
+#: src/dialog/reimu.c:437
+msgid "Initially, I had no plans towards interfering."
+msgstr ""
+
+#: src/dialog/reimu.c:440
+msgid ""
+"However, the tower’s psychological effects began to intensify, and I began "
+"to fear that nobody would take charge."
+msgstr ""
+
+#: src/dialog/reimu.c:443
+msgid "(Do people have this little faith in me…?)"
+msgstr ""
+
+#: src/dialog/reimu.c:446
+msgid "As more minds began to fall prey, I considered a theory…"
+msgstr ""
+
+#: src/dialog/reimu.c:448
+msgid "Is this machine incompatible with the existence of fantasy?"
+msgstr ""
+
+#: src/dialog/reimu.c:450
+msgid "That may be why you feel a sense of dread about the place."
+msgstr ""
+
+#: src/dialog/reimu.c:453
+msgid "Well, that settles it. Where’s the owner, then?"
+msgstr ""
+
+#: src/dialog/reimu.c:456
+msgid "To be frank, I am not sure whether you are up to the task."
+msgstr ""
+
+#: src/dialog/reimu.c:457
+msgid ""
+"You are still relatively composed, yes, but your mental state seems to be "
+"deteriorating."
+msgstr ""
+
+#: src/dialog/reimu.c:460
+msgid "Deteriorating? But I just got here!"
+msgstr ""
+
+#: src/dialog/reimu.c:463
+msgid ""
+"You are still so worrisome. You ought to go home before you lose yourself."
+msgstr ""
+
+#: src/dialog/reimu.c:466
+msgid "No!"
+msgstr ""
+
+#: src/dialog/reimu.c:469
+msgid "I beg your pardon?"
+msgstr ""
+
+#: src/dialog/reimu.c:471
+msgid "Don’t keep telling me how little you think of me. I’m sick of it!"
+msgstr ""
+
+#: src/dialog/reimu.c:473
+msgid "I’m going to give everyone a reason to have faith in me!"
+msgstr ""
+
+#: src/dialog/reimu.c:475
+msgid "It seems your resolve is unwavering. Very well, then."
+msgstr ""
+
+#: src/dialog/reimu.c:476
+msgid "Allow me to test your resistance to their infuriating machine!"
+msgstr ""
+
+#: src/dialog/reimu.c:502
+msgid "Ah…"
+msgstr ""
+
+#: src/dialog/reimu.c:503
+msgid "I was wrong for doubting you, I suppose…"
+msgstr ""
+
+#: src/dialog/reimu.c:506
+msgid "Somehow I don’t feel too satisfied by that."
+msgstr ""
+
+#: src/dialog/reimu.c:509
+msgid "To be honest with you, I’m glad you arrived after all."
+msgstr ""
+
+#: src/dialog/reimu.c:510
+msgid "I know now that I would not have been able to defeat her."
+msgstr ""
+
+#: src/dialog/reimu.c:512
+msgid ""
+"Since you’re still able to think clearly, perhaps Gensōkyō will be saved "
+"after all."
+msgstr ""
+
+#: src/dialog/reimu.c:515
+msgid "Finally."
+msgstr ""
+
+#: src/dialog/reimu.c:517
+msgid "But you’re right. This is bigger than Gensōkyō."
+msgstr ""
+
+#: src/dialog/reimu.c:518
+msgid "I’ll need to take this seriously."
+msgstr ""
+
+#: src/dialog/reimu.c:521
+msgid "Glad to hear it."
+msgstr ""
+
+#: src/dialog/reimu.c:537
+msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
+msgstr ""
+
+#: src/dialog/reimu.c:541
+msgid "How strange. You should’ve lost your mind by now."
+msgstr ""
+
+#: src/dialog/reimu.c:544
+msgid "Just turn it off already."
+msgstr ""
+
+#: src/dialog/reimu.c:545
+msgid "I’m not in the mood to argue, so don’t push me!"
+msgstr ""
+
+#: src/dialog/reimu.c:547 src/dialog/marisa.c:565 src/dialog/youmu.c:506
+msgid "Elly"
+msgid_plural "The Theoretical Reaper"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/dialog/reimu.c:549
+msgid "Bold of you to barge into MY tower and give ME orders!"
+msgstr ""
+
+#: src/dialog/reimu.c:550
+msgid "I still remember what you did to Lady Kazami and I back then!"
+msgstr ""
+
+#: src/dialog/reimu.c:553
+msgid "And what was that, again?"
+msgstr ""
+
+#: src/dialog/reimu.c:554
+msgid "I’m getting a familiar feeling just looking at you, but…"
+msgstr ""
+
+#: src/dialog/reimu.c:557
+msgid "Is this a joke?! Are you trying to mock me?!"
+msgstr ""
+
+#: src/dialog/reimu.c:560
+msgid ""
+"I think I would’ve remembered a giant tower that makes people go mad with "
+"power!"
+msgstr ""
+
+#: src/dialog/reimu.c:561
+msgid ""
+"The least you can do when accusing someone is to tell them what they’ve "
+"supposedly done!"
+msgstr ""
+
+#: src/dialog/reimu.c:564
+msgid "Ah. I see."
+msgstr ""
+
+#: src/dialog/reimu.c:566
+msgid "Fine. I will."
+msgstr ""
+
+#: src/dialog/reimu.c:568
+msgid ""
+"This tower is a recent invention. Its mere existence is revolutionary in "
+"several scientific fields."
+msgstr ""
+
+#: src/dialog/reimu.c:569
+msgid ""
+"The denizens of this Gensōkyō ought to have been thankful for its vast "
+"scientific knowledge…"
+msgstr ""
+
+#: src/dialog/reimu.c:570
+msgid "But alas, we have other plans."
+msgstr ""
+
+#: src/dialog/reimu.c:573
+msgid "‘This’ Gensōkyō…?"
+msgstr ""
+
+#: src/dialog/reimu.c:576
+msgid "Somehow, it feels like more of a punishment."
+msgstr ""
+
+#: src/dialog/reimu.c:577
+msgid "Ever heard of ‘ignorance is bliss’?"
+msgstr ""
+
+#: src/dialog/reimu.c:578
+msgid ""
+"There won’t be anyone to rule over, or whatever, if you make them all lose "
+"it."
+msgstr ""
+
+#: src/dialog/reimu.c:580
+msgid ""
+"The Tower of Babel is capable of ‘enlightening’ those fortunate to be around "
+"it."
+msgstr ""
+
+#: src/dialog/reimu.c:582
+msgid "Anyone unable to comprehend its brilliance will be driven to madness."
+msgstr ""
+
+#: src/dialog/reimu.c:584
+msgid ""
+"But this is simply retribution for the crimes that have been committed "
+"against us!"
+msgstr ""
+
+#: src/dialog/reimu.c:587
+msgid "‘Parallel universes’, is that it?"
+msgstr ""
+
+#: src/dialog/reimu.c:590
+msgid "Hmm? Is that what you think this Gensōkyō is?"
+msgstr ""
+
+#: src/dialog/reimu.c:593
+msgid "You tell me! You’re the megalomaniac!"
+msgstr ""
+
+#: src/dialog/reimu.c:595
+msgid "Do you hate me because some other Reimu did something? Is that it?"
+msgstr ""
+
+#: src/dialog/reimu.c:596
+msgid "But then what does that have to do with any of us?!"
+msgstr ""
+
+#: src/dialog/reimu.c:598
+msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
+msgstr ""
+
+#: src/dialog/reimu.c:601
+msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
+msgstr ""
+
+#: src/dialog/reimu.c:603
+msgid ""
+"Only the privileged, such as Lady Kazami, made it out! The rest of us were "
+"lost!"
+msgstr ""
+
+#: src/dialog/reimu.c:606
+msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
+msgstr ""
+
+#: src/dialog/reimu.c:607
+msgid ""
+"I remember when I first met Alice, and she said some weird things too, just "
+"like you are now."
+msgstr ""
+
+#: src/dialog/reimu.c:609
+msgid "But she didn’t go around threatening everyone!"
+msgstr ""
+
+#: src/dialog/reimu.c:612
+msgid ""
+"We weren’t as lucky! And as reparation, we will take control of this "
+"Gensōkyō!"
+msgstr ""
+
+#: src/dialog/reimu.c:613
+msgid "We will make it so we will NEVER be forgotten!"
+msgstr ""
+
+#: src/dialog/reimu.c:616
+msgid "Even in Gensōkyō, you can be forgotten, huh?"
+msgstr ""
+
+#: src/dialog/reimu.c:617
+msgid ""
+"What a miserable thought. No wonder I felt terrible just seeing this place!"
+msgstr ""
+
+#: src/dialog/reimu.c:619
+msgid "Turn it off, or being forgotten will be the least of your worries!"
+msgstr ""
+
+#: src/dialog/reimu.c:623
+msgid "It’s too late for that! Soon, all of Gensōkyō will become enlightened!"
+msgstr ""
+
+#: src/dialog/reimu.c:625
+msgid ""
+"Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
+"power, surpassed by nothing!"
+msgstr ""
+
+#: src/dialog/reimu.c:626
+msgid "We won’t be forgotten again!"
+msgstr ""
+
+#: src/dialog/reimu.c:639
+msgid "Is that it? Are you finally done?"
+msgstr ""
+
+#: src/dialog/reimu.c:640
+msgid "Y-you think this is over?! The time of reckoning is upon you!"
+msgstr ""
+
+#: src/dialog/reimu.c:641
+msgid "Gaze upon the ultimate truth of the universe, and tremble!"
+msgstr ""
+
+#: src/dialog/marisa.c:23
+msgid "Snow again? But I just put away my winter coat."
+msgstr ""
+
+#: src/dialog/marisa.c:25
+msgid "…even though it’s half-way through summer already."
+msgstr ""
+
+#: src/dialog/marisa.c:28
+msgid "Don’t you like the cold weather???"
+msgstr ""
+
+#: src/dialog/marisa.c:32
+msgid "It should be winter all the time!"
+msgstr ""
+
+#: src/dialog/marisa.c:35
+msgid "Mind paying to get my coat cleaned, then?"
+msgstr ""
+
+#: src/dialog/marisa.c:37
+msgid "I was gonna get it done in the fall, but now…"
+msgstr ""
+
+#: src/dialog/marisa.c:40
+msgid "Why would I do that?! You’re never going to pay me back!"
+msgstr ""
+
+#: src/dialog/marisa.c:43
+msgid "I’m gonna turn you into an ice cube!"
+msgstr ""
+
+#: src/dialog/marisa.c:46
+msgid "Really? I prefer shaved ice, myself."
+msgstr ""
+
+#: src/dialog/marisa.c:60
+msgid "Why don’t you go play with your new friend, the one from Hell?"
+msgstr ""
+
+#: src/dialog/marisa.c:61
+msgid "Maybe then it’d be more of a fair fight."
+msgstr ""
+
+#: src/dialog/marisa.c:63
+msgid "Ouch…"
+msgstr ""
+
+#: src/dialog/marisa.c:64
+msgid "I-I mean, last time she lost! And next time, you will too!"
+msgstr ""
+
+#: src/dialog/marisa.c:66
+msgid "Sure, sure."
+msgstr ""
+
+#: src/dialog/marisa.c:82
+msgid "Geez, this place is kinda sad now."
+msgstr ""
+
+#: src/dialog/marisa.c:83
+msgid "What would be causin’ the yōkai to get all weird, anyways?"
+msgstr ""
+
+#: src/dialog/marisa.c:86
+msgid "Why hello, Ms. Kirisame."
+msgstr ""
+
+#: src/dialog/marisa.c:89
+msgid "You seem to be as reckless as always. I recommend turning back."
+msgstr ""
+
+#: src/dialog/marisa.c:92
+msgid "Thanks for the advice! I’ll be ignoring it, though."
+msgstr ""
+
+#: src/dialog/marisa.c:93
+msgid "See ya."
+msgstr ""
+
+#: src/dialog/marisa.c:97
+msgid "Oh my… you’re quite the rebellious one, aren’t you?"
+msgstr ""
+
+#: src/dialog/marisa.c:98
+msgid "Such confidence, ignoring my warning like that."
+msgstr ""
+
+#: src/dialog/marisa.c:101
+msgid "I’ll take that as a compliment."
+msgstr ""
+
+#: src/dialog/marisa.c:104
+msgid ""
+"And do you know what happens to naughty girls who don’t listen to their "
+"elders?"
+msgstr ""
+
+#: src/dialog/marisa.c:105
+msgid "They get showered in misfortune for years!"
+msgstr ""
+
+#: src/dialog/marisa.c:118
+msgid "You’re way more snippy than usual today."
+msgstr ""
+
+#: src/dialog/marisa.c:119
+msgid "It’s kinda annoyin’, honestly."
+msgstr ""
+
+#: src/dialog/marisa.c:121
+msgid "H-how mean…"
+msgstr ""
+
+#: src/dialog/marisa.c:122
+msgid "Don’t you see I was just trying to keep you safe…?"
+msgstr ""
+
+#: src/dialog/marisa.c:124
+msgid "Don’t get all motherly on me now."
+msgstr ""
+
+#: src/dialog/marisa.c:126
+msgid "I’ve had enough of that for a lifetime."
+msgstr ""
+
+#: src/dialog/marisa.c:142
+msgid ""
+"Geez, everyone’s getting even more reckless the further up I go. What gives?"
+msgstr ""
+
+#: src/dialog/marisa.c:145
+msgid "Wait ‘til you meet their leader!"
+msgstr ""
+
+#: src/dialog/marisa.c:148
+msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
+msgstr ""
+
+#: src/dialog/marisa.c:151
+msgid "Feel free to go ahead. I’m listening."
+msgstr ""
+
+#: src/dialog/marisa.c:153
+msgid "Oh, you’re the messenger?"
+msgstr ""
+
+#: src/dialog/marisa.c:155
+msgid "Mind passin’ a message along?"
+msgstr ""
+
+#: src/dialog/marisa.c:159
+msgid "Um, OBVIOUSLY I’m not the messenger!"
+msgstr ""
+
+#: src/dialog/marisa.c:161
+msgid "Yeah, I’m the great leader of Insectkind!"
+msgstr ""
+
+#: src/dialog/marisa.c:164
+msgid "Great leader? What, did the insects unionize or somethin’?"
+msgstr ""
+
+#: src/dialog/marisa.c:167
+msgid "No! I told you, I’m the leader! The mastermind!"
+msgstr ""
+
+#: src/dialog/marisa.c:169
+msgid "So, what’s your question?"
+msgstr ""
+
+#: src/dialog/marisa.c:172
+msgid "Hmm, guess I forgot."
+msgstr ""
+
+#: src/dialog/marisa.c:173
+msgid "What’s yer deal, anyways?"
+msgstr ""
+
+#: src/dialog/marisa.c:176
+msgid "We insects have three demands:"
+msgstr ""
+
+#: src/dialog/marisa.c:177
+msgid "First: say nay to insect spray!"
+msgstr ""
+
+#: src/dialog/marisa.c:178
+msgid "Second: swat the swatters!"
+msgstr ""
+
+#: src/dialog/marisa.c:180
+msgid "Third: the right to bite!"
+msgstr ""
+
+#: src/dialog/marisa.c:181
+msgid "Fourth—!"
+msgstr ""
+
+#: src/dialog/marisa.c:184
+msgid ""
+"Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
+"to do."
+msgstr ""
+
+#: src/dialog/marisa.c:185
+msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
+msgstr ""
+
+#: src/dialog/marisa.c:189
+msgid "Maybe I know more than you think."
+msgstr ""
+
+#: src/dialog/marisa.c:191
+msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
+msgstr ""
+
+#: src/dialog/marisa.c:205
+msgid "Tougher than usual, but not tough enough."
+msgstr ""
+
+#: src/dialog/marisa.c:206
+msgid "Where’d ya pick up those new moves, anyway?"
+msgstr ""
+
+#: src/dialog/marisa.c:208
+msgid "Aw! It was, um… the great vision of our glorious Insect past!"
+msgstr ""
+
+#: src/dialog/marisa.c:209
+msgid "It was in the age of Car—… Carb—… the age of Carbs!"
+msgstr ""
+
+#: src/dialog/marisa.c:212
+msgid "‘Glorious insect past’? ‘Carbs’?"
+msgstr ""
+
+#: src/dialog/marisa.c:214
+msgid ""
+"Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
+"‘n all that."
+msgstr ""
+
+#: src/dialog/marisa.c:215
+msgid "I remember that doctor at Eientei goin’ off about it once."
+msgstr ""
+
+#: src/dialog/marisa.c:217
+msgid "Only time I’d seen her so excited…"
+msgstr ""
+
+#: src/dialog/marisa.c:219
+msgid "Yeah, that!"
+msgstr ""
+
+#: src/dialog/marisa.c:221
+msgid "Do you want to be an ally in our glorious conquest…?"
+msgstr ""
+
+#: src/dialog/marisa.c:224
+msgid "Maybe later."
+msgstr ""
+
+#: src/dialog/marisa.c:226
+msgid "Probably never."
+msgstr ""
+
+#: src/dialog/marisa.c:243
+msgid "Oh wow, a mysterious, magical mansion!"
+msgstr ""
+
+#: src/dialog/marisa.c:245
+msgid "… how generic can you get?"
+msgstr ""
+
+#: src/dialog/marisa.c:248
+msgid "And to top it off, a western witch!"
+msgstr ""
+
+#: src/dialog/marisa.c:250
+msgid "Seen it a thousand times already. It’s such a boring motif."
+msgstr ""
+
+#: src/dialog/marisa.c:253
+msgid "Right? But I make up for it with my devilish charm."
+msgstr ""
+
+#: src/dialog/marisa.c:256
+msgid "But that theme is so overdone…"
+msgstr ""
+
+#: src/dialog/marisa.c:258
+msgid "What’s next? A maid?"
+msgstr ""
+
+#: src/dialog/marisa.c:260
+msgid ""
+"A little girl with almost no dialogue who becomes a fan-favourite anyways?"
+msgstr ""
+
+#: src/dialog/marisa.c:261
+msgid "One that’ll have her personality massacred by the fans?"
+msgstr ""
+
+#: src/dialog/marisa.c:264
+msgid ""
+"Maybe they’ll even make her something edgy like a vampire to drive up sales."
+msgstr ""
+
+#: src/dialog/marisa.c:267
+msgid "Ugh! Maybe I’ve been reading too much manga that those tengu churn out."
+msgstr ""
+
+#: src/dialog/marisa.c:270
+msgid "The tengu write manga now?"
+msgstr ""
+
+#: src/dialog/marisa.c:272
+msgid "Writin’ pure ficiton is more honest for them, I guess."
+msgstr ""
+
+#: src/dialog/marisa.c:276
+msgid "Yeah, duh?"
+msgstr ""
+
+#: src/dialog/marisa.c:277
+msgid "Of course, most of it is garbage that only weirdos like!"
+msgstr ""
+
+#: src/dialog/marisa.c:279
+msgid "And don’t EVEN get me started on certain character designs! So generic!"
+msgstr ""
+
+#: src/dialog/marisa.c:282
+msgid "Maybe they oughta hire someone with some fashion sense."
+msgstr ""
+
+#: src/dialog/marisa.c:285
+msgid "That’d be me, then!"
+msgstr ""
+
+#: src/dialog/marisa.c:286
+msgid "My ideas would surely make a splash, if they’d recognize my talent!"
+msgstr ""
+
+#: src/dialog/marisa.c:289
+msgid "Eh? Maybe…"
+msgstr ""
+
+#: src/dialog/marisa.c:292
+msgid "Huh?!"
+msgstr ""
+
+#: src/dialog/marisa.c:295
+msgid "Your outfit’s missin’ somethin'…"
+msgstr ""
+
+#: src/dialog/marisa.c:298
+msgid "H-Hmph! I could say the same about you!"
+msgstr ""
+
+#: src/dialog/marisa.c:300
+msgid "Seriously, it’s just a plain generic witch outfit!"
+msgstr ""
+
+#: src/dialog/marisa.c:303
+msgid "That’s just because it’s summer!"
+msgstr ""
+
+#: src/dialog/marisa.c:305
+msgid ""
+"My winter petticoats are legendary. Girls across Gensōkyō talk about ‘em."
+msgstr ""
+
+#: src/dialog/marisa.c:307
+msgid "In fact, there’s a few of ‘em, uh, deeper inside this mansion."
+msgstr ""
+
+#: src/dialog/marisa.c:309
+msgid "So I’ll be headin’ in, then."
+msgstr ""
+
+#: src/dialog/marisa.c:313
+msgid "Oh, I’m not letting you go without a fight!"
+msgstr ""
+
+#: src/dialog/marisa.c:315
+msgid "Let’s see who’s the most fashionable here, witch!"
+msgstr ""
+
+#: src/dialog/marisa.c:329
+msgid "Whoever has the best petticoat wins. It’s a scientific fact."
+msgstr ""
+
+#: src/dialog/marisa.c:331
+msgid "… but since when do I care about scientific facts?"
+msgstr ""
+
+#: src/dialog/marisa.c:333
+msgid "W-wait, what was I doing again?"
+msgstr ""
+
+#: src/dialog/marisa.c:334
+msgid "(Y-yeah, that’s it, play it off as amnesia…"
+msgstr ""
+
+#: src/dialog/marisa.c:335
+msgid "(But, hmm… haven’t I seen this nerdy-looking girl before…?)"
+msgstr ""
+
+#: src/dialog/marisa.c:336
+msgid "Uuu, I don’t remember anything at all!!"
+msgstr ""
+
+#: src/dialog/marisa.c:339
+msgid "Ah, sorry, sorry. I think ya slipped ‘n hit your head."
+msgstr ""
+
+#: src/dialog/marisa.c:341
+msgid "I’m Gensōkyō’s… petticoat inspector."
+msgstr ""
+
+#: src/dialog/marisa.c:343
+msgid "I’m here to inspect the petticoats in this here mansion."
+msgstr ""
+
+#: src/dialog/marisa.c:345
+msgid "Ya were just lettin’ me in, so I’ll be off, then."
+msgstr ""
+
+#: src/dialog/marisa.c:348
+msgid "Uhm, I kind of doubt that…"
+msgstr ""
+
+#: src/dialog/marisa.c:350
+msgid "Not that I could stop you, anyways…"
+msgstr ""
+
+#: src/dialog/marisa.c:352
+msgid "Ugh, I didn’t sign up to get beaten like this!"
+msgstr ""
+
+#: src/dialog/marisa.c:355
+msgid "‘Sign up’? I thought you didn’t remember anything."
+msgstr ""
+
+#: src/dialog/marisa.c:358
+msgid "N-Nevermind!"
+msgstr ""
+
+#: src/dialog/marisa.c:375
+msgid "This place is fascinatin’!"
+msgstr ""
+
+#: src/dialog/marisa.c:376
+msgid "I gotta tell Nitori!"
+msgstr ""
+
+#: src/dialog/marisa.c:379
+msgid "I would not recommend getting too enamoured, young witch."
+msgstr ""
+
+#: src/dialog/marisa.c:381
+msgid "I’m surprised to see you here. How have you been?"
+msgstr ""
+
+#: src/dialog/marisa.c:383
+msgid "What grimoire would this be in…?"
+msgstr ""
+
+#: src/dialog/marisa.c:384
+msgid "Hmm… probably a major illusion of some kind…?"
+msgstr ""
+
+#: src/dialog/marisa.c:385
+msgid ""
+"That’d be easier than making the bricks weightless, ‘n it’s a good disguise…"
+msgstr ""
+
+#: src/dialog/marisa.c:389
+msgid "… pardon me, are you conversing with yourself?"
+msgstr ""
+
+#: src/dialog/marisa.c:392
+msgid "Huh? No, I was askin’ ya a question."
+msgstr ""
+
+#: src/dialog/marisa.c:394
+msgid "An interesting theory, I suppose."
+msgstr ""
+
+#: src/dialog/marisa.c:396
+msgid "It’d make sense though, right?"
+msgstr ""
+
+#: src/dialog/marisa.c:398
+msgid ""
+"It appeared outta nowhere. If it were real brick, the air displacement alone "
+"woulda caused a huge noise…"
+msgstr ""
+
+#: src/dialog/marisa.c:399
+msgid "And it’d take so much power, too."
+msgstr ""
+
+#: src/dialog/marisa.c:400
+msgid "Definitely an illusion, then."
+msgstr ""
+
+#: src/dialog/marisa.c:402
+msgid "The premise of your theory is flawed, unfortunately."
+msgstr ""
+
+#: src/dialog/marisa.c:405
+msgid "The technology on display here is beyond our current comprehension."
+msgstr ""
+
+#: src/dialog/marisa.c:408
+msgid "Technology? Whoa, so yer sayin’ this is REAL brick?!"
+msgstr ""
+
+#: src/dialog/marisa.c:410
+msgid "*tap tap*"
+msgstr ""
+
+#: src/dialog/marisa.c:412
+msgid ""
+"It’s so cold it’s almost creepy, like it was suckin’ magic right outta my "
+"fingers."
+msgstr ""
+
+#: src/dialog/marisa.c:414
+msgid "But that means the tower… has corporeal form?!"
+msgstr ""
+
+#: src/dialog/marisa.c:415
+msgid "Dang! Now I GOTTA meet the owner!"
+msgstr ""
+
+#: src/dialog/marisa.c:416
+msgid "What grimoires does she got to pull somethin’ like this off?!"
+msgstr ""
+
+#: src/dialog/marisa.c:419
+msgid "I-I would imagine she does not use grimoires, or magic."
+msgstr ""
+
+#: src/dialog/marisa.c:421
+msgid ""
+"This is highly complex machinery, likely relying on advanced computational—"
+msgstr ""
+
+#: src/dialog/marisa.c:423
+msgid "But then, what’s the power source?"
+msgstr ""
+
+#: src/dialog/marisa.c:424
+msgid "Not even nuclear fusion could sustain somethin’ like this!"
+msgstr ""
+
+#: src/dialog/marisa.c:427
+msgid "I-I am not sure of its exact mechanics—"
+msgstr ""
+
+#: src/dialog/marisa.c:430
+msgid "Where’d y’say she was?"
+msgstr ""
+
+#: src/dialog/marisa.c:433
+msgid "You mean…?"
+msgstr ""
+
+#: src/dialog/marisa.c:436
+msgid "The owner, o’ course! Upstairs, right?"
+msgstr ""
+
+#: src/dialog/marisa.c:439
+msgid ""
+"Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
+"divulge any further information, for your own protection."
+msgstr ""
+
+#: src/dialog/marisa.c:442
+msgid "What’s her name?"
+msgstr ""
+
+#: src/dialog/marisa.c:444
+msgid "Why are you not listening to me…?"
+msgstr ""
+
+#: src/dialog/marisa.c:447
+msgid "Do ya got any tips on talkin’ to her, maybe make her loosen up a bit?"
+msgstr ""
+
+#: src/dialog/marisa.c:449
+msgid "I don’t wanna blow my chance."
+msgstr ""
+
+#: src/dialog/marisa.c:452
+msgid ""
+"I am trying to spare you further peril, yet all you can do is talk over me. "
+"Be more considerate."
+msgstr ""
+
+#: src/dialog/marisa.c:453
+msgid ""
+"I had expectations that you would be able to approach this with a clear head "
+"and resolve this incident, but it seems—"
+msgstr ""
+
+#: src/dialog/marisa.c:456
+msgid "Ah, I see, I see. I’ll have to turn on the ol’ Kirisame charm."
+msgstr ""
+
+#: src/dialog/marisa.c:459
+msgid "I get it, I get it."
+msgstr ""
+
+#: src/dialog/marisa.c:460
+msgid "Haven’t done ‘femme fatale’ in a while, but…"
+msgstr ""
+
+#: src/dialog/marisa.c:464
+msgid "Enough!"
+msgstr ""
+
+#: src/dialog/marisa.c:465
+msgid ""
+"It is said that specifically applied electro-stimulation can ease the mind."
+msgstr ""
+
+#: src/dialog/marisa.c:467
+msgid "Allow me to put that into practice for you!"
+msgstr ""
+
+#: src/dialog/marisa.c:493
+msgid "Oof, I hope that didn’t make my hair too frizzy."
+msgstr ""
+
+#: src/dialog/marisa.c:495
+msgid "Y’know, for my big first impression ‘n all."
+msgstr ""
+
+#: src/dialog/marisa.c:498
+msgid "F-For the last time, she’ll have nothing to teach you…"
+msgstr ""
+
+#: src/dialog/marisa.c:499
+msgid ""
+"Her powers rely on technology and the scientific method. Of that much, I am "
+"sure."
+msgstr ""
+
+#: src/dialog/marisa.c:502
+msgid ""
+"The one time Sanae’s not around to geek out about all the sciencey stuff, eh?"
+msgstr ""
+
+#: src/dialog/marisa.c:505
+msgid ""
+"Ah well, I know how to operate one of those Intelligent Phones, and that’s "
+"plenty advanced, so I should be fine."
+msgstr ""
+
+#: src/dialog/marisa.c:507
+msgid "By the way, have ya been hearing that strange voice?"
+msgstr ""
+
+#: src/dialog/marisa.c:509
+msgid "Strange voice?"
+msgstr ""
+
+#: src/dialog/marisa.c:512
+msgid "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever."
+msgstr ""
+
+#: src/dialog/marisa.c:513
+msgid "Probably just those weird madness rays tryin’ to get me."
+msgstr ""
+
+#: src/dialog/marisa.c:516
+msgid "Ugh, you fool."
+msgstr ""
+
+#: src/dialog/marisa.c:518
+msgid ""
+"But perhaps you are thinking just well enough to resolve this incident after "
+"all…"
+msgstr ""
+
+#: src/dialog/marisa.c:521
+msgid "Ah! There’s that voice again!"
+msgstr ""
+
+#: src/dialog/marisa.c:523
+msgid "So strange…"
+msgstr ""
+
+#: src/dialog/marisa.c:540
+msgid "I’ve been waiting for you to make your move."
+msgstr ""
+
+#: src/dialog/marisa.c:542
+msgid "Sneaking around as you are, and yet still so loud somehow."
+msgstr ""
+
+#: src/dialog/marisa.c:545
+msgid "Hmm…"
+msgstr ""
+
+#: src/dialog/marisa.c:548
+msgid ""
+"Did you really think I wouldn’t notice all the commotion you caused inside "
+"the tower?"
+msgstr ""
+
+#: src/dialog/marisa.c:550
+msgid "Hmmmmmmm…"
+msgstr ""
+
+#: src/dialog/marisa.c:553
+msgid "Stop being an insolent brat and speak up!"
+msgstr ""
+
+#: src/dialog/marisa.c:556
+msgid "… sigh."
+msgstr ""
+
+#: src/dialog/marisa.c:559
+msgid "… w-what is it?"
+msgstr ""
+
+#: src/dialog/marisa.c:561
+msgid "Ya don’t look like a magician after all."
+msgstr ""
+
+#: src/dialog/marisa.c:562
+msgid "I’m pretty disappointed."
+msgstr ""
+
+#: src/dialog/marisa.c:563
+msgid "Honestly, this might be the most disappointing incident yet."
+msgstr ""
+
+#: src/dialog/marisa.c:566
+msgid "You’re after… magic?"
+msgstr ""
+
+#: src/dialog/marisa.c:568
+msgid "Hah! You’ll regret wasting your time on such nonsense."
+msgstr ""
+
+#: src/dialog/marisa.c:569
+msgid "Soon, you’ll see the error of—"
+msgstr ""
+
+#: src/dialog/marisa.c:571
+msgid "Do ya know how boring it is to be a magician in Gensōkyō these days?"
+msgstr ""
+
+#: src/dialog/marisa.c:574
+msgid "I couldn’t possibly care about—"
+msgstr ""
+
+#: src/dialog/marisa.c:576
+msgid "Seriously! Recently it’s just been ‘God this’ and ‘Otherworld that’."
+msgstr ""
+
+#: src/dialog/marisa.c:577
+msgid "Reimu’s been pickin’ up some sweet skills, but me? Nothin’!"
+msgstr ""
+
+#: src/dialog/marisa.c:578
+msgid "Gods use magic too, but they’re like her! They don’t need books!"
+msgstr ""
+
+#: src/dialog/marisa.c:579
+msgid "But I do! And I end up empty handed every dang time!"
+msgstr ""
+
+#: src/dialog/marisa.c:582
+msgid "I SAID I don’t CARE about your stupid little sorc—"
+msgstr ""
+
+#: src/dialog/marisa.c:584
+msgid ""
+"I saw this place ‘n I was all, ‘Whoa! Is this all enchantments ‘n stuff?!’"
+msgstr ""
+
+#: src/dialog/marisa.c:586
+msgid "I got really excited!"
+msgstr ""
+
+#: src/dialog/marisa.c:587
+msgid "‘Maybe I could get a new trump-card outta this’ is what I thought."
+msgstr ""
+
+#: src/dialog/marisa.c:589
+msgid "But obviously yer a shinigami or somethin’. And I didn’t see a library…"
+msgstr ""
+
+#: src/dialog/marisa.c:590
+msgid "I guess that oarfish from before was right."
+msgstr ""
+
+#: src/dialog/marisa.c:591
+msgid "Master Spark’s good ‘n all, but it’ll only get me so far in life…"
+msgstr ""
+
+#: src/dialog/marisa.c:594 src/dialog/youmu.c:225 src/dialog/youmu.c:541
+msgid "…"
+msgstr ""
+
+#: src/dialog/marisa.c:595
+msgid "*sigh*"
+msgstr ""
+
+#: src/dialog/marisa.c:596
+msgid "Are you finally done?"
+msgstr ""
+
+#: src/dialog/marisa.c:598
+msgid "Is this some kind of joke?!"
+msgstr ""
+
+#: src/dialog/marisa.c:600
+msgid "How does every version of you just keep mocking me?!"
+msgstr ""
+
+#: src/dialog/marisa.c:602
+msgid ""
+"What, you mean last time? At least then you were guardin’ some powerful "
+"thingy I coulda used."
+msgstr ""
+
+#: src/dialog/marisa.c:603
+msgid "I’m tryin’ to remember, was that timeline a bust, too?"
+msgstr ""
+
+#: src/dialog/marisa.c:605
+msgid ""
+"At least I met Yūka, right? Did ya know she ended up givin’ me my trademark "
+"spell?"
+msgstr ""
+
+#: src/dialog/marisa.c:606
+msgid "Not right then, ‘n not voluntarily, but—"
+msgstr ""
+
+#: src/dialog/marisa.c:609
+msgid "Y-you remember that?! But how—?!"
+msgstr ""
+
+#: src/dialog/marisa.c:610
+msgid ""
+"… ugh, nevermind! It’s not as if you could possibly grasp the Tower’s true "
+"power."
+msgstr ""
+
+#: src/dialog/marisa.c:612
+msgid ""
+"After all, I can already sense your feeble mind succumbing to its might!"
+msgstr ""
+
+#: src/dialog/marisa.c:615
+msgid "Eh? I’m not depressed or anythin’. I’m just disappointed."
+msgstr ""
+
+#: src/dialog/marisa.c:618
+msgid ""
+"I-It’s not about being ‘depressed’! It’s about being overwhelmed with the "
+"vast knowledge of the universe!"
+msgstr ""
+
+#: src/dialog/marisa.c:619
+msgid ""
+"Once you realize the true potential of reality, you’ll go mad with knowledge!"
+msgstr ""
+
+#: src/dialog/marisa.c:620
+msgid "Don’t you see?! Nothing can stop us now! For we are—!"
+msgstr ""
+
+#: src/dialog/marisa.c:623
+msgid ""
+"But I’m already mad with knowledge! Why do ya think I drink all the time?!"
+msgstr ""
+
+#: src/dialog/marisa.c:624
+msgid "My mind’s always racin’ with this ‘n that…"
+msgstr ""
+
+#: src/dialog/marisa.c:625
+msgid ""
+"Ya think this is any different than how I usually live?! Get over y’erself!"
+msgstr ""
+
+#: src/dialog/marisa.c:627
+msgid "Now, I gotta ask… ya really, seriously don’t got anything?"
+msgstr ""
+
+#: src/dialog/marisa.c:628
+msgid "A single bookshelf?! A few loose scribbled notes?!"
+msgstr ""
+
+#: src/dialog/marisa.c:629
+msgid ""
+"Heck, I’ll even take one of those little glowy tablet thingies with all "
+"those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
+msgstr ""
+
+#: src/dialog/marisa.c:632
+msgid ""
+"Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you "
+"any longer!"
+msgstr ""
+
+#: src/dialog/marisa.c:635
+msgid ""
+"Oh c’mon, turn the madness-whatever off ‘n we’ll go out for drinks! There’s "
+"this nice new bar in town with a cute—"
+msgstr ""
+
+#: src/dialog/marisa.c:637
+msgid "There’s no force in this world that would make me turn back now!"
+msgstr ""
+
+#: src/dialog/marisa.c:640
+msgid "Someone as ‘ordinary’ as you getting in our way may be impressive…"
+msgstr ""
+
+#: src/dialog/marisa.c:642
+msgid "But there’s no place for sorcery in our enlightened vision of Gensōkyō!"
+msgstr ""
+
+#: src/dialog/marisa.c:644
+msgid "Now, succumb to the madness!"
+msgstr ""
+
+#: src/dialog/marisa.c:657
+msgid "Are ya sure ya don’t got a spellbook laying around?! Nothin’ at all?!"
+msgstr ""
+
+#: src/dialog/marisa.c:659
+msgid "Are you still on about that?! Fine, see what good it does you!"
+msgstr ""
+
+#: src/dialog/marisa.c:661
+msgid ""
+"Your pitiful magic amounts to nothing against the true nature of reality!"
+msgstr ""
+
+#: src/dialog/youmu.c:23
+msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
+msgstr ""
+
+#: src/dialog/youmu.c:26
+msgid "Hey!"
+msgstr ""
+
+#: src/dialog/youmu.c:29
+msgid "I’m cooler than you, so get off my lake!"
+msgstr ""
+
+#: src/dialog/youmu.c:31
+msgid "I can see you’re quite cold, yes."
+msgstr ""
+
+#: src/dialog/youmu.c:33
+msgid ""
+"I tend to dislike dueling those weaker than myself, so I’d appreciate it if "
+"you’d step aside."
+msgstr ""
+
+#: src/dialog/youmu.c:36
+msgid "Hah! Maybe YOU should step aside, then!"
+msgstr ""
+
+#: src/dialog/youmu.c:39
+msgid ""
+"I suppose it’s as good a time as any to practice my Snowflake-Destruction "
+"Technique."
+msgstr ""
+
+#: src/dialog/youmu.c:43
+msgid ""
+"But if I turn you into a snowflake, you’ll have to chop yourself in half!"
+msgstr ""
+
+#: src/dialog/youmu.c:57
+msgid "The cold is no good for such fine blades…"
+msgstr ""
+
+#: src/dialog/youmu.c:59
+msgid "Y-you should be careful with t-those!"
+msgstr ""
+
+#: src/dialog/youmu.c:62
+msgid "Yes, that’s what I was just saying."
+msgstr ""
+
+#: src/dialog/youmu.c:79
+msgid "So this is Yōkai Mountain…"
+msgstr ""
+
+#: src/dialog/youmu.c:80
+msgid "A shame, I’ve heard this is usually quite a lovely place."
+msgstr ""
+
+#: src/dialog/youmu.c:83
+msgid "Oh my, what’s this? A new face?"
+msgstr ""
+
+#: src/dialog/youmu.c:85
+msgid "And who might you be, dear?"
+msgstr ""
+
+#: src/dialog/youmu.c:87
+msgid "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate—"
+msgstr ""
+
+#: src/dialog/youmu.c:90
+msgid ""
+"I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
+"slide."
+msgstr ""
+
+#: src/dialog/youmu.c:93
+msgid ""
+"Young girls such as yourself shouldn’t be sent to do such dangerous errands!"
+msgstr ""
+
+#: src/dialog/youmu.c:96
+msgid "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—"
+msgstr ""
+
+#: src/dialog/youmu.c:97
+msgid "—having mastered my technique over *decades*—"
+msgstr ""
+
+#: src/dialog/youmu.c:98
+msgid "—dare I say even the best in Gensōkyō—"
+msgstr ""
+
+#: src/dialog/youmu.c:101
+msgid ""
+"Aww… but you’re so adorable! No way someone like you could be into that."
+msgstr ""
+
+#: src/dialog/youmu.c:102
+msgid ""
+"Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage "
+"phase?"
+msgstr ""
+
+#: src/dialog/youmu.c:105
+msgid "It’s not a PHASE, mo—"
+msgstr ""
+
+#: src/dialog/youmu.c:107
+msgid "…!!"
+msgstr ""
+
+#: src/dialog/youmu.c:122
+msgid "Did you just call me ‘mom’…?"
+msgstr ""
+
+#: src/dialog/youmu.c:125
+msgid "I did not."
+msgstr ""
+
+#: src/dialog/youmu.c:126
+msgid "It must be the madness overcoming you."
+msgstr ""
+
+#: src/dialog/youmu.c:127
+msgid "Yes, indeed."
+msgstr ""
+
+#: src/dialog/youmu.c:130
+msgid "My, my…~"
+msgstr ""
+
+#: src/dialog/youmu.c:133
+msgid "Don’t you dare."
+msgstr ""
+
+#: src/dialog/youmu.c:149
+msgid "The further I go into this forest, the more restless I feel."
+msgstr ""
+
+#: src/dialog/youmu.c:151
+msgid "Something is definitely amiss."
+msgstr ""
+
+#: src/dialog/youmu.c:154
+msgid "Amiss?"
+msgstr ""
+
+#: src/dialog/youmu.c:156
+msgid "Perhaps you’re frightened by our growing, overwhelming influence?"
+msgstr ""
+
+#: src/dialog/youmu.c:159
+msgid "Bugs do not concern me at the moment."
+msgstr ""
+
+#: src/dialog/youmu.c:162
+msgid "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!"
+msgstr ""
+
+#: src/dialog/youmu.c:164
+msgid "Ever heard of beetles? Flies? Show us some respect!"
+msgstr ""
+
+#: src/dialog/youmu.c:167
+msgid "Apologies, I meant no offense."
+msgstr ""
+
+#: src/dialog/youmu.c:169
+msgid ""
+"I am on a mission from Lady Yuyuko to end whatever is causing the disturbance"
+"—"
+msgstr ""
+
+#: src/dialog/youmu.c:172
+msgid "Oh, oh, I understand now."
+msgstr ""
+
+#: src/dialog/youmu.c:174
+msgid ""
+"The power wielded by an army of giant insects would surely raise some "
+"concerns."
+msgstr ""
+
+#: src/dialog/youmu.c:176
+msgid "Simply put, we want to restore our rightful place in history!"
+msgstr ""
+
+#: src/dialog/youmu.c:177
+msgid ""
+"It’s only natural that the lower inhabitants of the mountain would get "
+"nervous in the face of our natural dominance."
+msgstr ""
+
+#: src/dialog/youmu.c:179
+msgid "Your apology is accepted. You shall not fear our wrath—"
+msgstr ""
+
+#: src/dialog/youmu.c:182
+msgid "… no, no, bugs alone wouldn’t cause this kind of disturbance…"
+msgstr ""
+
+#: src/dialog/youmu.c:184
+msgid "All they’re capable of is ruining my carefully manicured garden."
+msgstr ""
+
+#: src/dialog/youmu.c:186
+msgid "Did you just say you’re…"
+msgstr ""
+
+#: src/dialog/youmu.c:188
+msgid "… a gardener?!"
+msgstr ""
+
+#: src/dialog/youmu.c:193
+msgid "Your true face is finally revealed!"
+msgstr ""
+
+#: src/dialog/youmu.c:194
+msgid ""
+"My light shines brighter than ever now! I shall teach this lowly usurper due "
+"respect!"
+msgstr ""
+
+#: src/dialog/youmu.c:195
+msgid "So that we may live above beyond your green thumb once and for all!"
+msgstr ""
+
+#: src/dialog/youmu.c:209
+msgid "Are you aware of the legend of the Tonbokiri?"
+msgstr ""
+
+#: src/dialog/youmu.c:210
+msgid ""
+"It was said its blade could cut insects in half simply by them landing on it."
+msgstr ""
+
+#: src/dialog/youmu.c:212
+msgid "Undoubtedly, that is what has transpired today."
+msgstr ""
+
+#: src/dialog/youmu.c:214
+msgid "That’s not the past I saw…"
+msgstr ""
+
+#: src/dialog/youmu.c:216
+msgid "How unfortunate for you."
+msgstr ""
+
+#: src/dialog/youmu.c:218
+msgid ""
+"Fear not. I will end your delusional madness and restore justice and order "
+"to the—"
+msgstr ""
+
+#: src/dialog/youmu.c:220
+msgid "… ugh, that’s a little much, even for me, isn’t it?"
+msgstr ""
+
+#: src/dialog/youmu.c:222
+msgid "Seems about right, honestly…"
+msgstr ""
+
+#: src/dialog/youmu.c:241
+msgid "A-ha, I must be close to the true entrance now."
+msgstr ""
+
+#: src/dialog/youmu.c:243
+msgid "This tower… I can already feel it…"
+msgstr ""
+
+#: src/dialog/youmu.c:245
+msgid "Could this be a challenge worthy of my skills…?!"
+msgstr ""
+
+#: src/dialog/youmu.c:249
+msgid "Really? This mansion is actually pretty trashy, though."
+msgstr ""
+
+#: src/dialog/youmu.c:251
+msgid "Who might you be?"
+msgstr ""
+
+#: src/dialog/youmu.c:255
+msgid "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!"
+msgstr ""
+
+#: src/dialog/youmu.c:256
+msgid "You better remember that!"
+msgstr ""
+
+#: src/dialog/youmu.c:259
+msgid "Perhaps I will."
+msgstr ""
+
+#: src/dialog/youmu.c:261
+msgid "Are you an associate of this… mansion-tower’s denizens, then?"
+msgstr ""
+
+#: src/dialog/youmu.c:264
+msgid "Of course not! Who do you take me for?!"
+msgstr ""
+
+#: src/dialog/youmu.c:265
+msgid ""
+"No WAY I’d want to associate myself with the dweebs running this mansion!"
+msgstr ""
+
+#: src/dialog/youmu.c:266
+msgid "They dress like they’ve fallen out of a bad 80s anime!"
+msgstr ""
+
+#: src/dialog/youmu.c:269
+msgid "I see. I have no immediate reason to distrust you."
+msgstr ""
+
+#: src/dialog/youmu.c:271
+msgid "… what’s an ‘80s anime’, though, if I may ask?"
+msgstr ""
+
+#: src/dialog/youmu.c:274
+msgid "I don’t know, don’t ask me!"
+msgstr ""
+
+#: src/dialog/youmu.c:275
+msgid ""
+"The lady in the tower talks about it a lot, so it must be something horrible "
+"for sure."
+msgstr ""
+
+#: src/dialog/youmu.c:278
+msgid "Didn’t you just say you weren’t associated with them?"
+msgstr ""
+
+#: src/dialog/youmu.c:280
+msgid "Yeah, but I was lying to see how gullible you were."
+msgstr ""
+
+#: src/dialog/youmu.c:283
+msgid "O-of course. I-I knew that."
+msgstr ""
+
+#: src/dialog/youmu.c:285
+msgid "I wanted to see if you’d come clean."
+msgstr ""
+
+#: src/dialog/youmu.c:287
+msgid "My true challenge lies beyond you. Step aside."
+msgstr ""
+
+#: src/dialog/youmu.c:291
+msgid "Nope. You’ve got a dance with a gorgeous vampire scheduled first!"
+msgstr ""
+
+#: src/dialog/youmu.c:292
+msgid "En garde, brooding swordsgirl!"
+msgstr ""
+
+#: src/dialog/youmu.c:306
+msgid "Despite your inferior technique, I must thank you."
+msgstr ""
+
+#: src/dialog/youmu.c:307
+msgid ""
+"‘Dancing’ with you has been a pleasant distraction on the path to completing "
+"my mission."
+msgstr ""
+
+#: src/dialog/youmu.c:309
+msgid "Tell your ‘leader’ that I am coming for them."
+msgstr ""
+
+#: src/dialog/youmu.c:311
+msgid "(She earnestly talks like a manga anti-hero…)"
+msgstr ""
+
+#: src/dialog/youmu.c:313
+msgid "O-Oh, okay then!"
+msgstr ""
+
+#: src/dialog/youmu.c:315
+msgid "I’m sick of guarding this creepy, spooky mansion anyways."
+msgstr ""
+
+#: src/dialog/youmu.c:318
+msgid "S-… spooky?"
+msgstr ""
+
+#: src/dialog/youmu.c:323
+msgid ""
+"… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
+"they made it haunted, with like, ghosts and stuff!"
+msgstr ""
+
+#: src/dialog/youmu.c:326
+msgid "G-…"
+msgstr ""
+
+#: src/dialog/youmu.c:327
+msgid "GHOSTS?!"
+msgstr ""
+
+#: src/dialog/youmu.c:329
+msgid "Scary vengeful ghosts! Trying to kill you, even!"
+msgstr ""
+
+#: src/dialog/youmu.c:330
+msgid "But surely a strong swordsgirl like yourself could handle it."
+msgstr ""
+
+#: src/dialog/youmu.c:333
+msgid "B-Bring it on! Nothing will stand in my way!"
+msgstr ""
+
+#: src/dialog/youmu.c:336
+msgid "(Teehee, so gullible.)"
+msgstr ""
+
+#: src/dialog/youmu.c:353
+msgid "Incredible. Truly astounding."
+msgstr ""
+
+#: src/dialog/youmu.c:355
+msgid "Yes, the final battle approaches. I can feel it."
+msgstr ""
+
+#: src/dialog/youmu.c:357
+msgid ""
+"Will it be a legendary duel? One to go down in the history of Gensōkyō?!"
+msgstr ""
+
+#: src/dialog/youmu.c:360
+msgid "Oh, the gardener from the Netherworld?"
+msgstr ""
+
+#: src/dialog/youmu.c:362
+msgid "It’s no surprise to see you here."
+msgstr ""
+
+#: src/dialog/youmu.c:363
+msgid "Your mistress has been taken by the Tower’s presence, I assume?"
+msgstr ""
+
+#: src/dialog/youmu.c:366
+msgid "Lady Yuyuko is in a safe, undisclosed location."
+msgstr ""
+
+#: src/dialog/youmu.c:368
+msgid "The Hakurei Shrine, I presume?"
+msgstr ""
+
+#: src/dialog/youmu.c:371
+msgid "Wh-who told you?! Are you in league with them too?!"
+msgstr ""
+
+#: src/dialog/youmu.c:374
+msgid "Of course not, but where else would she be at a time like this?"
+msgstr ""
+
+#: src/dialog/youmu.c:377
+msgid "Hmph. Perhaps we have become too predictable."
+msgstr ""
+
+#: src/dialog/youmu.c:378
+msgid "I am here to settle this matter. You need not concern yourself—"
+msgstr ""
+
+#: src/dialog/youmu.c:381
+msgid "On the contrary, I would say."
+msgstr ""
+
+#: src/dialog/youmu.c:384
+msgid "I decided to do some research on my own."
+msgstr ""
+
+#: src/dialog/youmu.c:385
+msgid "This tower is controlled by a machine…"
+msgstr ""
+
+#: src/dialog/youmu.c:387
+msgid ""
+"… and the machine’s effects seem to go well beyond Gensōkyō’s boundaries."
+msgstr ""
+
+#: src/dialog/youmu.c:390
+msgid "Including the heavens, I presume? I see."
+msgstr ""
+
+#: src/dialog/youmu.c:392
+msgid "Fear not. I will allow nothing to stand in my way."
+msgstr ""
+
+#: src/dialog/youmu.c:394
+msgid ""
+"Konpaku Yōmu, the greatest swordswoman to live and die, will settle this "
+"incident once and—"
+msgstr ""
+
+#: src/dialog/youmu.c:397
+msgid ""
+"It seems that the machine has also overinflated your ego, Swordswoman of "
+"Hakugyokurō."
+msgstr ""
+
+#: src/dialog/youmu.c:399
+msgid "Would caution not be prudent in this situation?"
+msgstr ""
+
+#: src/dialog/youmu.c:402
+msgid "Overinflated ego? Nonsense."
+msgstr ""
+
+#: src/dialog/youmu.c:403
+msgid ""
+"During my recent battles, I have achieved a flow state most blademasters "
+"only dream of!"
+msgstr ""
+
+#: src/dialog/youmu.c:405
+msgid ""
+"Through that, I have realized the true form of my previously-incomplete "
+"yōkai-vanquishing technique!"
+msgstr ""
+
+#: src/dialog/youmu.c:408
+msgid "Is that so?"
+msgstr ""
+
+#: src/dialog/youmu.c:411
+msgid "More doubt from ignorant skeptics, I see."
+msgstr ""
+
+#: src/dialog/youmu.c:413
+msgid "Shall we duel so that I may demonstrate to your satisfaction?!"
+msgstr ""
+
+#: src/dialog/youmu.c:416
+msgid "W-wait, that is not what I meant, I simply—"
+msgstr ""
+
+#: src/dialog/youmu.c:418
+msgid "I can see it in your expression! The doubt! The fear!"
+msgstr ""
+
+#: src/dialog/youmu.c:419
+msgid ""
+"But I have become one with my swords, achieving a perfection that no other "
+"before me has been able—"
+msgstr ""
+
+#: src/dialog/youmu.c:423
+msgid "Ah, I haven’t the time for this nonsense!"
+msgstr ""
+
+#: src/dialog/youmu.c:424
+msgid "I will not allow you to march onwards to your demise!"
+msgstr ""
+
+#: src/dialog/youmu.c:426
+msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
+msgstr ""
+
+#: src/dialog/youmu.c:452
+msgid "All according to plan."
+msgstr ""
+
+#: src/dialog/youmu.c:454
+msgid "Your logic is so twisted…"
+msgstr ""
+
+#: src/dialog/youmu.c:455
+msgid ""
+"Alas, it cannot be helped. You have likely been affected since before your "
+"arrival."
+msgstr ""
+
+#: src/dialog/youmu.c:456
+msgid "I have no choice but to let you through, despite my reservations."
+msgstr ""
+
+#: src/dialog/youmu.c:457
+msgid "Perhaps pure intentions lurk behind that ego of yours."
+msgstr ""
+
+#: src/dialog/youmu.c:459
+msgid "And perhaps I truly have gone mad. What of it?"
+msgstr ""
+
+#: src/dialog/youmu.c:460
+msgid "My mission is crystal clear:"
+msgstr ""
+
+#: src/dialog/youmu.c:462
+msgid ""
+"… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all "
+"connected realms!"
+msgstr ""
+
+#: src/dialog/youmu.c:463
+msgid "I will not fail!"
+msgstr ""
+
+#: src/dialog/youmu.c:465
+msgid "I-I see."
+msgstr ""
+
+#: src/dialog/youmu.c:466
+msgid ""
+"Ascend the staircase. You will find the perpetrator waiting for you there."
+msgstr ""
+
+#: src/dialog/youmu.c:467
+msgid ""
+"Be prepared. The technology she possesses is from a so-called ‘parallel "
+"universe’."
+msgstr ""
+
+#: src/dialog/youmu.c:468
+msgid ""
+"It is unlike anything any of us have encountered before. Even I am not sure "
+"of its specifics."
+msgstr ""
+
+#: src/dialog/youmu.c:471
+msgid ""
+"Fear not, I will slice her infernal machine in half like an invasive weed."
+msgstr ""
+
+#: src/dialog/youmu.c:488
+msgid "Ah."
+msgstr ""
+
+#: src/dialog/youmu.c:490
+msgid "Ahaha."
+msgstr ""
+
+#: src/dialog/youmu.c:492
+msgid "Ah-hahaha!"
+msgstr ""
+
+#: src/dialog/youmu.c:493
+msgid "Yes. Yes! This is it!"
+msgstr ""
+
+#: src/dialog/youmu.c:494
+msgid "What a magnificent arena for a heroic final battle!!"
+msgstr ""
+
+#: src/dialog/youmu.c:497
+msgid "Nothing seems to slow you down, hmm?"
+msgstr ""
+
+#: src/dialog/youmu.c:500
+msgid ""
+"Such an annoyance. But that’s to be expected of the folk of this Gensōkyō."
+msgstr ""
+
+#: src/dialog/youmu.c:502
+msgid "And I see that you’re a master of the blade, a shinigami no less!"
+msgstr ""
+
+#: src/dialog/youmu.c:504
+msgid "Absolutely splendid!"
+msgstr ""
+
+#: src/dialog/youmu.c:507
+msgid "Ah, I’m no shinigami, especially not now."
+msgstr ""
+
+#: src/dialog/youmu.c:510
+msgid ""
+"The scythe is a rather particular weapon, you must understand. Forgive me "
+"presumptiveness."
+msgstr ""
+
+#: src/dialog/youmu.c:512
+msgid ""
+"I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō."
+msgstr ""
+
+#: src/dialog/youmu.c:514
+msgid "Now, it will be the sigil of a new era!"
+msgstr ""
+
+#: src/dialog/youmu.c:516
+msgid "One that we, the ‘forgotten’, will reign over!"
+msgstr ""
+
+#: src/dialog/youmu.c:518
+msgid "Such an unwieldy weapon… for anyone to choose it willingly…"
+msgstr ""
+
+#: src/dialog/youmu.c:519
+msgid "Either you’re incredibly skilled, or incredibly foolish."
+msgstr ""
+
+#: src/dialog/youmu.c:521
+msgid "I wish to find that out!"
+msgstr ""
+
+#: src/dialog/youmu.c:522
+msgid "After our duel, let us meet and discuss our techniques!"
+msgstr ""
+
+#: src/dialog/youmu.c:525
+msgid "Techniques? Hah!"
+msgstr ""
+
+#: src/dialog/youmu.c:526
+msgid "I’m sure our existence means nothing to you! And the feeling is mutual!"
+msgstr ""
+
+#: src/dialog/youmu.c:529
+msgid "On the contrary, scythe-bearer!"
+msgstr ""
+
+#: src/dialog/youmu.c:530
+msgid "You’ve created an impeccable stage for our final confrontation."
+msgstr ""
+
+#: src/dialog/youmu.c:532
+msgid ""
+"But first, please, tell me: what is your mission? What is it you desire?"
+msgstr ""
+
+#: src/dialog/youmu.c:534
+msgid ""
+"For us to share this… intimate moment, I desire to know everything about you."
+msgstr ""
+
+#: src/dialog/youmu.c:537
+msgid "…!"
+msgstr ""
+
+#: src/dialog/youmu.c:538
+msgid "O-Our mission, is t-to—"
+msgstr ""
+
+#: src/dialog/youmu.c:543
+msgid "… is to avenge our forgotten f-friends!"
+msgstr ""
+
+#: src/dialog/youmu.c:544
+msgid ""
+"We will create a new era of Gensōkyō, where the truly forgotten can live "
+"another day!"
+msgstr ""
+
+#: src/dialog/youmu.c:545
+msgid ""
+"Soon, the residents of this land will be driven mad beyond comprehension, "
+"and be ripe to conquer!"
+msgstr ""
+
+#: src/dialog/youmu.c:547
+msgid "So you wish to avenge your fallen compatriots… how noble…"
+msgstr ""
+
+#: src/dialog/youmu.c:548
+msgid "I can feel it move me to tears…"
+msgstr ""
+
+#: src/dialog/youmu.c:550
+msgid ""
+"Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
+"conflicts with yours!"
+msgstr ""
+
+#: src/dialog/youmu.c:551
+msgid ""
+"I cannot allow you to drive my compatriots mad, or to subjugate my home!"
+msgstr ""
+
+#: src/dialog/youmu.c:553
+msgid "Perhaps, in another time and place, we could have been friends!"
+msgstr ""
+
+#: src/dialog/youmu.c:556
+msgid ""
+"B-Being friends with you h-heartless folk would be a sin! I could never!"
+msgstr ""
+
+#: src/dialog/youmu.c:559
+msgid "What a tragedy!"
+msgstr ""
+
+#: src/dialog/youmu.c:562
+msgid "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?!"
+msgstr ""
+
+#: src/dialog/youmu.c:564
+msgid ""
+"Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!"
+msgstr ""
+
+#: src/dialog/youmu.c:566
+msgid "We’re not so different, you and I."
+msgstr ""
+
+#: src/dialog/youmu.c:569
+msgid "Your courage is admirable, I’ll give you that."
+msgstr ""
+
+#: src/dialog/youmu.c:571
+msgid "But there’s an enormous difference between us, swordswoman."
+msgstr ""
+
+#: src/dialog/youmu.c:577
+msgid "For I possess the knowledge of science and rationality!"
+msgstr ""
+
+#: src/dialog/youmu.c:578
+msgid ""
+"In a magic-filled world like this, they cut through delusional opponents "
+"with unparalleled precision!"
+msgstr ""
+
+#: src/dialog/youmu.c:579
+msgid ""
+"Let’s see what good your swords do you when you fall prey to true "
+"enlightenment!"
+msgstr ""
+
+#: src/dialog/youmu.c:593
+msgid "Impressive! You’ve pushed me to 10% of my true power!"
+msgstr ""
+
+#: src/dialog/youmu.c:595
+msgid "Your despicable pride will be your downfall!"
+msgstr ""
+
+#: src/dialog/youmu.c:597
+msgid "Behold, your judgement before the true nature of reality!"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:7
+#: src/cutscenes/marisa_extra_intro.inc.h:7
+msgid "— The Scarlet Devil Mansion\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:8
+msgid "A peculiar western mansion in an eastern wonderland.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:12
+msgid ""
+"A nervous witch sat flipping through endless stacks of books, drinking tea "
+"instead of her usual sake…\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:13
+msgid "Hey Patchy, do ya got any more books on Magitech?"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:14
+msgid ""
+"Yes, but I doubt they’ll be of much use. That machine is beyond that subject "
+"entirely."
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:15
+msgid "Ugh, yer probably right, as usual."
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:19
+msgid "Marisa closed the book and let it slam onto the floor."
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:20
+msgid "Mind your manners! That’s a very old tome!"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:21
+msgid ""
+"It’s so irritatin’! I thought I solved everything but now that Tower’s just "
+"sittin’ there, ‘n the whole Mountain’s been quarantined…!"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:22
+msgid "It just ain’t satisfyin’, y’know?"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:26
+msgid "I could destroy it! Make it go BOOM!"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:27
+msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:28
+msgid "Sorry!"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:29
+msgid "Thank you for the offer, Flandre, but no."
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:30
+msgid "Awww… how boring…"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:34
+msgid ""
+"After having tea with the pair of them, Marisa wandered the stacks, looking "
+"for inspiration.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:35
+msgid ""
+"Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
+"flat on her face.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:36
+msgid ""
+"When she looked back at the floor, she didn’t see anything except the "
+"expertly-organized rows of immaculate bookshelves.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:37
+msgid "Then, she noticed something cold and thin underneath her hand."
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:41
+msgid ""
+"After some time, she realized it was a ‘Smart Device’ of some kind, like a "
+"handheld computer.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:42
+msgid ""
+"This one was far more advanced than any she'd seen from the Outside World, "
+"including that young occultist’s phone.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:43
+msgid ""
+"It behaved both as a solid and a liquid, able to rapidly change shapes by "
+"applying pressure to certain sides, into different form factors: a phone, a "
+"book, a digital typewriter with a keyboard…\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:44
+msgid ""
+"Once Marisa worked out how to make it display something, the title of a book "
+"appeared on its dim screen…"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:48
+msgid ""
+"Practical & Advanced Computational Applications of the Grand Unified Theory\n"
+"\n"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:49
+msgid "— by Usami Renko"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
+msgid "— The Hakurei Shrine\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:8 src/cutscenes/reimu_bad_end.inc.h:8
+msgid "The shrine at the border of fantasy and reality.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:9
+msgid ""
+"Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
+"summer.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:10
+msgid "There was something unsettling in the air—"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:14
+msgid "What’s got ya both so down? Did I mess up the tea?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:15
+msgid ""
+"\n"
+"Reimu and Yōmu shared a knowing glance.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:16
+msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:17
+msgid "I’m feeling something similar, I’m afraid."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:21
+msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:22
+msgid "A minute later, there was another.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:23
+msgid "And another."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:27
+msgid "Something’s definitely not right…"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:28
+msgid "Isn’t it normally comforting for the shrine to receive donations?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:29
+msgid "Normally it *would* be comforting, but…"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:33
+msgid ""
+"Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
+"after another.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:34
+msgid "Everyone seemed vaguely fearful."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:38
+msgid "Eh? What’s all this, then?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:39
+msgid "We’ve come to ask a favour."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:40
+msgid "What kinda favour?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:44
+msgid ""
+"A mysterious force was slowly causing yōkai and humans alike to succumb to "
+"an intense feeling of “knowing everything.”\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:45
+msgid ""
+"It would start with figuring out trivial problems that they’d been "
+"struggling with - a technical issue with a machine, or coming up with the "
+"perfect newspaper headline.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:46
+msgid ""
+"But as it progressed, they’d become completely enthralled by it, unable to "
+"act rationally.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:47
+msgid ""
+"Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
+"she had been carried away into madness."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:51
+msgid "Sanae just keeps talking about ‘video game consoles.’"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:52
+msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:53
+msgid ""
+"Right, but she just won’t stop. I’ve seen her excited, but not like this."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:57
+msgid "Hmm. Quite fascinating."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:58
+msgid "Where the heck did *you* come from?!"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:59
+msgid ""
+"I couldn’t help overhearing your conversation. Based on my gut feeling, and "
+"what you’ve described, the answer is obvious."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:60
+msgid "Is that so? Care to share it with us?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:64
+msgid ""
+"Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
+"in all directions from a singular point, given how indiscriminate it is."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:65
+msgid ""
+"Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
+"least for those with weaker minds."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:66
+msgid "Heh, wanna handle it then, Sumi?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:67
+msgid ""
+"A-ah, n-no, you all know the lay of the land better, a-after all, and with "
+"it being such a dire situation—"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:71
+msgid ""
+"Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
+"the Moriya Gods.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:72
+msgid "Lady Yuyuko, why are you—?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:73
+msgid ""
+"The spirits seem drawn to Yōkai Mountain as well, as if they long for "
+"something. It’s growing difficult to placate them all…"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:74
+msgid "I see. Shall I investigate as well?"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:75
+msgid "Please do."
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:79
+msgid ""
+"Elsewhere at the shrine, the kappa were all huddled into a group, talking "
+"intensely in hushed tones…\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:80
+msgid ""
+"And the tengu were furiously scribbling on their notepads, as if they’d just "
+"gotten the scoop of their careers.\n"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:81
+msgid ""
+"Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
+"lunacy’ seemed to be reaching everyone…"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:7 src/cutscenes/reimu_extra_intro.inc.h:7
+#: src/cutscenes/youmu_good_end.inc.h:7
+msgid "— The Moriya Shrine"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:8
+msgid "A rival shrine at the top of Yōkai Mountain."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:12
+msgid ""
+"Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:13
+msgid ""
+"You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
+"as quickly as possible, right?"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:14
+msgid "It’s like that, except with video games!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:15
+msgid "I don’t know anything about ‘video games’, either!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:19
+msgid ""
+"The Tower had been shut down, ending the crisis of madness sweeping the "
+"land.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:20
+msgid ""
+"Nearly everyone had returned to normal, although a few odd souls lamented "
+"their loss of ‘knowledge’.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:21
+msgid ""
+"Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
+"Shrine as penance for their actions.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:22
+msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:26
+msgid "I can’t believe it! Is nuclear fusion really that simple?!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:27
+msgid ""
+"Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
+"the magnetic containment field using—"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:28
+msgid ""
+"Of course! I was such a fool! I can’t believe I ever bothered attempting to "
+"harness the Yatagarasu!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:29
+msgid ""
+"At last, I have the final key to modernizing Gensōkyō, and preventing the "
+"energy crisis from reaching us! Fusion power is now attainable!"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:33
+msgid "O-oh dear… are you sure you’re well, ma’am?"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:34
+msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:35
+msgid "‘Normal’? Really?"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:36
+msgid ""
+"Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
+"this?"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:40
+msgid ""
+"In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
+"claiming she was ‘keeping watch’."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:44
+msgid "Hey, Elly."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:45
+msgid "Ah, yes? Do you need something from me?"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:46
+msgid ""
+"I’m surprised you’re not still pissed off at everyone. Not even a little bit."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:47
+msgid "You were shouting like a dictator up there."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:51
+msgid ""
+"It seems that the Tower's influence got to me, in the end. I thought I was "
+"stronger than that, but…"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:52
+msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:57
+msgid "What a weird machine. I wonder what the kappa think about it."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:58
+msgid ""
+"The kappa won’t touch the thing, and even Kanako has talked herself out of "
+"it."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:59
+msgid ""
+"Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:60
+msgid "Ah, whatever. As long as it stays quiet."
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:64
+msgid ""
+"With the maddening feelings gone, everyone seemed to relax more than usual, "
+"like a burden had been lifted off of them.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:65
+msgid ""
+"But for some reason, Reimu in particular seemed to have a difficult time "
+"settling down.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:66
+msgid ""
+"And even as some grew to accept the Tower of Babel looming in the skyline, "
+"there were frequent mutterings over potentially getting rid of it entirely.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_good_end.inc.h:67
+msgid ""
+"Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:7
+msgid "— The Moriya Shrine\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:8
+msgid "A workaholic shrine at the top of of Yōkai Mountain."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:12
+msgid ""
+"Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:13
+msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:14
+msgid ""
+"… which had become filthy from the local fairies partying non-stop, and some "
+"‘political demonstrations’ by the newly-formed ‘Insect Party’."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:18
+msgid ""
+"—which had a brand new math co-processor, allowing it to have advanced "
+"vector processing capabilities. Combined with other improvements, such as "
+"its DVD drive—"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:19
+msgid "Ah, I see. Fascinating. Wow. Incredible."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:20
+msgid "You two having fun?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:21
+msgid "… y-yes, ma’am."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:25
+msgid ""
+"Seems like it’s taking a bit more time for the madness to wear off for her. "
+"How’s all that ‘knowledge’ working out for you, newcomer?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:26
+msgid ""
+"I remembered way more about retro video game consoles than I wanted to! And "
+"now *you’ve* gotta deal with it!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:27
+msgid ""
+"\n"
+"Elly nodded and smiled politely, trying to hold back tears of boredom."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:31
+msgid ""
+"In the end, the newcomers seemed to calm down once the effects of the Tower "
+"had worn off, just like everyone else in Gensōkyō.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:32
+msgid ""
+"During an early afternoon, Marisa arrived with a picnic basket and a grin on "
+"her face."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:36
+msgid "Ah, Ms. Kirisame. Hello again."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:37
+msgid "Yo, Elly!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:38
+msgid "Do you… need something from me?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:39
+msgid "Heck yeah I do! A drinkin’ partner!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:43
+msgid "Isn’t it a little early for that?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:44
+msgid "Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:45
+msgid ""
+"\n"
+"Elly laughed. She wanted an excuse for a break anyways.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:46
+msgid ""
+"And so, they drank, and caught up on alternate worlds, uncanny timelines, "
+"and the strangeness of their circumstances.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:50
+msgid ""
+"I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. "
+"Don’t ya know about Isaac Newton?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:51
+msgid ""
+"The famous European mathematician? I studied his works, yes. But what about "
+"him?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:52
+msgid "He was an Alchemist!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:53
+msgid "He was a… what?!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:57
+msgid ""
+"Yup. There’s even a copy of his occult book down at the library I frequent."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:58
+msgid "He was into a lotta wild stuff."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:59
+msgid "Kinda funny ya hadn’t heard of that, actually."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:60
+msgid ""
+"Hah. That… *is* kind of funny, actually. I never ran across any of *those* "
+"books of his…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:64
+msgid ""
+"Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:65
+msgid "But what if this Gensōkyō collapses, too…?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:66
+msgid ""
+"It could! The Hakurei Barrier could fall tomorrow! But what’s the point in "
+"worryin’ about all that?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:67
+msgid "Right now, I say we enjoy what we got!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:71
+msgid "I suppose you’re right."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:72
+msgid "Although, I have to ask… how did you remember me?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:73
+msgid "Oh, that’s easy. Mushrooms!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:74
+msgid "Mush… rooms? As in, mycelium?"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:78
+msgid ""
+"Yeah! A while ago, I was cookin’ up some especially powerful ones I found in "
+"a cave near the one-armed hermit’s house…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:79
+msgid "And then, BOOM, there was a small explosion!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:80
+msgid ""
+"Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My "
+"lives were flashin’ before my eyes!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:81
+msgid ""
+"Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
+"when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:85
+msgid "That’s ridiculous. You’re ridiculous."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:86
+msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:87
+msgid ""
+"… and you were such a child when I met you. It’s odd to see you all grown "
+"up, even if it’s another you entirely."
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:88
+msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:92
+msgid ""
+"Many residents of Gensōkyō wondered if the Tower would be a blight on the "
+"skyline for all eternity.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:93
+msgid ""
+"Others questioned if its power could be harnessed to serve the greater "
+"good.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:94
+msgid ""
+"But for the guardians of Gensōkyō, they would need to be vigilant, lest it "
+"suddenly spring to life again…"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:7
+msgid "— The Tower of Babel"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:8
+msgid "The infernal machine from another world."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:12
+msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:13
+msgid ""
+"…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, "
+"stood over a makeshift grave, praying.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:14
+msgid ""
+"No, she hadn’t murdered her opponent. It was, perhaps, a little more "
+"troubling than that…"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:18
+msgid "Tell me again… she simply vanished? In mid-air?"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:19
+msgid "Yes. One moment she was there, and the next, she was not."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:20
+msgid ""
+"The vampire girl from before also disappeared, in addition to all of the "
+"loitering fairies."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:21
+msgid ""
+"It was as if everything within it ceased to exist entirely, except myself."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:25
+msgid ""
+"Thus, I must assumed I have caused their demise in some way, despite my best "
+"intentions."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:26
+msgid ""
+"That woman, Elly… we knew each other for such a short time, yet her passion "
+"and fury affected me so deeply."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:27
+msgid ""
+"Hmm… I don’t sense any lost souls here, and nobody liked that passed through "
+"the Netherworld."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:28
+msgid ""
+"I doubt she has truly died, then… ah, but all this ‘parallel universes’ "
+"stuff is beyond me, hehehe."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:32
+msgid ""
+"The Tower had ceased functioning, returning the land and yōkai around it to "
+"some semblance of status quo.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:33
+msgid ""
+"But the instigators were nowhere to be found. It was as if they had never "
+"existed.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:34
+msgid ""
+"Yōmu's newfound fearlessness had been tempered as well, replaced with a "
+"sense of loss."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:38
+msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:39
+msgid "Oh my, think nothing of it! You did great!"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:40
+msgid ""
+"But since we’re in the neighbourhood… do you think the kappa are running one "
+"of their famous festival grill stands?"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:41
+msgid "As a celebration for the incident being resolved, perhaps…?"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:42
+msgid "We could go on a fun date! And I’m feeling a bit peckish…"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:46
+msgid ""
+"The kappa of Yōkai Mountain were throwing a ‘Gaze Upon The Incredible Tower "
+"(From A Safe Distance)’ festival, to encourage human and yōkai tourism after "
+"everyone had been scared off by the Tower.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:47
+msgid "Although, Yōmu found it difficult to enjoy herself, of course.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_bad_end.inc.h:48
+msgid ""
+"Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
+"still out there, waiting for their rematch…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:8
+msgid "A haunted western mansion in an eastern wonderland."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:12
+msgid "I get such a nervous feeling around the newcomers…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:13
+msgid "They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:14
+msgid "Sure, but… you said you knew them, from another world?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:15
+msgid "Well, another me knew another them in another world."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:19
+msgid ""
+"Actually, I kinda saw every possible iteration of myself, spannin’ out over "
+"infinity, folding onto ourselves, kinda like a really incredible katana "
+"gettin’ forged. It was intense!"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:20
+msgid "It’s just like you to accidentally see the Time Knife…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:21
+msgid "The what-now?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:25
+msgid ""
+"Marisa had just finished accompanying Kurumi to do some ‘service’ on the "
+"Tower of Babel.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:26
+msgid ""
+"Kurumi and Remilia, the mistress of the mansion, were loudly gossiping "
+"amongst themselves off to the side of the library, laughing cheerfully over… "
+"tea?\n"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:27
+msgid "Marisa hoped it was tea, at least."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:31
+msgid "Ah, it’s so nice to have a fresh face around here!"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:32
+msgid ""
+"Yeah! It was so boring being around that egghead pseudo-gami all the time."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:33
+msgid ""
+"And my younger sister is a tad too reclusive to spend much time with me, "
+"these days…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:34
+msgid "Perhaps we could go out on the town sometime soon?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:38
+msgid "Sure! Know any good spots? For, you know…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:39
+msgid "Oh yes, a few, but you must keep it down for now…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:40
+msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:41
+msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:45
+msgid "Forgive the young witch, she’s such a spoil-sport at times."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:46
+msgid "Mm, indeed~."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:47
+msgid "Ugh, and after I said y’all were cool…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:51
+msgid ""
+"It was then that a low rumble echoed through the chambers of the mansion. "
+"Slowly at first, but then gaining in intensity."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:55
+msgid "Huh? What’s that?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:56
+msgid "Perhaps the fairy maids are remodeling upstairs?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:57
+msgid ""
+"\n"
+"The mansion began to shake intense, as if down to its very foundation, "
+"before ceasing entirely, as quickly as it started.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:58
+msgid ""
+"Before the dust had a chance to settle, an eerie, long siren began blaring "
+"in the distance outside the mansion."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:62
+msgid "Huh?! That’s one of the sirens I had the kappa set up!"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:63
+msgid "Sirens?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:64
+msgid "Yeah, to monitor the Tower of Babel in case anything changed."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:65
+msgid "Ah heck, and I guess that means…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:69
+msgid "Y-you saw me back there, right?! You were there! I didn’t do anything!"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:70
+msgid ""
+"Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To "
+"keep the fairies out?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:71
+msgid ""
+"Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
+"opens'?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:72
+msgid "What do ya mean?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:76
+msgid "Kurumi got rather pale, even for a vampire."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:80
+msgid "Oh no…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:81
+msgid ""
+"Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
+"up. We’ll just go back, get the kappa, and—"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:82
+msgid "Hey, um, uh, maybe you should check it out?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:83
+msgid "Like, alone? Because I'd just get in your way?"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:87
+msgid ""
+"But, uh, you know, there might be a really powerful enemy there now? So "
+"please be careful???"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:88
+msgid "Aw, are ya worried about me? That’s cute."
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:92
+msgid ""
+"Marisa grinned and magically summoned her broom, mounting it deftly, and "
+"shooting right out of an open window in a flash.\n"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:93
+msgid ""
+"Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
+"Mountain…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:8
+msgid "A workaholic shrine at the top of Yōkai Mountain."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:12
+msgid ""
+"Reimu was reading a book she'd borrowed from the Human Village’s book rental "
+"store, Suzunaan."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:13
+msgid ""
+"It was her first ‘science fiction’ series, apparently about a flat, circular "
+"world that floated through space on the backs of four turtles…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:17
+msgid "Suddenly, Yukari slid in through one of her gaps."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:18
+msgid "As usual, Reimu could feel her presence right away.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:19
+msgid ""
+"Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
+"with solemn, silent expressions."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:23
+msgid "My oh my, passing the time at rival shrines, are we?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:24
+msgid "Guard duty."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:25
+msgid "Hm? Not trusting enough of Ms. Kochiya to—"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:26
+msgid "No."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:30
+msgid "*giggle* I see."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:31
+msgid ""
+"\n"
+"As if on cue, Elly came running up the steps of the Moriya Shrine, "
+"breathlessly, clad in a Moriya shrine maiden uniform.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:35
+msgid ""
+"Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
+"meet—"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:36
+msgid "Wait, no, there’s no time for that!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:37
+msgid "Slow down. What’s wrong?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:41
+msgid ""
+"Elly brought out some kind of small communicator device. It projected an "
+"image into the air, like an illusion.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:42
+msgid "It’s the Tower! It’s spinning back up!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:43
+msgid "Spinning? It looks completely stationary from here."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:44
+msgid ""
+"No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:48
+msgid "Huh? It thought you were in control of it."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:49
+msgid ""
+"I am! I was! I should be…! But this device isn’t letting me do anything!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:50
+msgid ""
+"And I thought about going back to the Tower to turn it off again, but I-… "
+"no, i-it’s not safe to."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:51
+msgid "Eh? Why not?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:55
+msgid "Hm? What’s all this, then?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:56
+msgid "Kurumi, the Tower's turning back on!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:57
+msgid ""
+"Huh?! But all I did was seal off the mansion's main doors, so the fairies "
+"would leave it alone, just like you asked!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:58
+msgid "I… what?!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:62
+msgid ""
+"Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
+"the fairies stop playing inside of it'!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:63
+msgid "So I did!!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:64
+msgid ""
+"I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
+"I have a hard time with stroke order—"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:65
+msgid "Okay, excuse me, but what does this have to do with anything?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:69
+msgid "I… I may have stolen it from someone."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:70
+msgid "That doesn't answer my question."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:71
+msgid "She’s… still trapped in there. I thought I'd sealed her away, though!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:72
+msgid "There’s no way she should've been able to escape that!"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:76
+msgid ""
+"Elly and Kurumi got chilled expressions on their faces, falling completely "
+"silent.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:77
+msgid "Reimu closed her book and sighed."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:81
+msgid ""
+"Alright, okay, she’s a big scary monster. I had a feeling something like "
+"this might happen…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:82
+msgid "Before you go, Reimu…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:83
+msgid "Huh? What now? Want to come with?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:87
+msgid ""
+"You do care very deeply about Gensōkyō, and everyone within it, don’t you?"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:88
+msgid ""
+"Even those who fundamenally threaten us. You even give the nastiest yōkai a "
+"chance at redemption."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:89
+msgid "I admire that in you."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:93
+msgid "Ehhhh? Why are you being so sincere? It’s freaking me out."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:94
+msgid "Even you think I’m a huge softie, huh? How disappointing…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:95
+msgid ""
+"\n"
+"Yukari remained silent, responding only with a gentle smile."
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:99
+msgid ""
+"In the distance, the Tower of Babel began to emit a low, eerie rumble, as "
+"Reimu flew off to meet her next challenge…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:8
+msgid "A dignified shrine at the top of Yōkai Mountain."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:12
+msgid ""
+"Atop the Mountain, the Tower of Babel stood silently, as if a sleeping giant."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:13
+msgid ""
+"Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
+"the techniques of their craft…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:17
+msgid ""
+"I’m sure you’re aware that the classic scythe was used by farmers, and was "
+"sometimes repurposed as a makeshift weapon—"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:18
+msgid ""
+"Yes, of course. Some of the finest martial arts evolved from the practices "
+"of common folk—"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:22
+msgid ""
+"After the incident, Elly and Kurumi agreed to surrender, and disabled the "
+"Tower's ability to ‘enlighten’.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:23
+msgid ""
+"Their dispositions softened considerably, and they apologized profusely for "
+"what they had tried to do.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:24
+msgid ""
+"But even as everyone else returned to their usual selves, it seemed that "
+"Konpaku Yōmu had retained nearly all of the newfound confidence…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:28
+msgid "This Gensōkyō is so different compared to the one I was used to."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:29
+msgid "What was your Gensōkyō like, if I may ask?"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:30
+msgid ""
+"Mostly, a lot smaller. Practically barren compared to this one. It felt more "
+"like a road-side food stand."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:31
+msgid "Hmm, fascinating…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:35
+msgid ""
+"I know I said this before, but I still feel like a fool after everything."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:36
+msgid "I was miserable about my home, but to go that far…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:37
+msgid "It seems like the one most overcome by madness was myself."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:38
+msgid ""
+"I know everyone here accepted my apology, but I’m still truly sorry for what "
+"I did."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:42
+msgid "Your pain was legitimate, even if your expression of it was not."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:43
+msgid ""
+"Now that you've recognized that, you are welcome here, like anyone else."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:44
+msgid ""
+"Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
+"you what the Netherworld and Gensōkyō have to offer!"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:45
+msgid ""
+"Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
+"generous, so it shall be my treat!"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:49
+msgid "O-oh! S-sure, that would be wonderful!"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:50
+msgid "W-Well, I ought to return to my duties at the shrine."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:51
+msgid ""
+"I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
+"entertainment technology again…"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:52
+msgid ""
+"I commend you for complying with your penance, despite its… cruel hardships."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:53
+msgid ""
+"\n"
+"The pair of them laughed.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:57
+msgid ""
+"The two blademasters had become practically inseparable in an incredibly "
+"short time.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:58
+msgid ""
+"As they spent many evenings dueling, practicing, and drinking merrily, many "
+"folks commented on how they had never seen Yōmu so thrilled."
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:62
+msgid ""
+"Despite the incident being resolved, nobody had figured out how to remove "
+"the Tower, and most were too anxious to even think about it.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:63
+msgid ""
+"And with its lingering, menacing visage blighting the skyline, many wondered "
+"if the Tower was truly inert and harmless.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_good_end.inc.h:64
+msgid ""
+"Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion "
+"discussed details of an ancient future’s past…"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:7
+msgid "— The Netherworld"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:8
+msgid "The nexus between life and death."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:12
+msgid ""
+"The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
+"between the sakura trees of the ethereal realm.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:13
+msgid ""
+"The swordswoman was showing the scythe-bearer one of her favourite past-"
+"times: the mid-air bisecting sakura petals.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:14
+msgid "Yōmu was quite proud of herself, and Elly equally as impressed."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:18
+msgid ""
+"During their merriment, there was an interruption, as Elly fished some small "
+"device out of her dress pocket.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:19
+msgid ""
+"It was a communication device of some sort that seemed to be vibrating "
+"vigorously, projecting an illusion into the air…\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:20
+msgid "Elly's expression suddenly ran cold."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:24
+msgid "Hm? Is something the matter, my dear?"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:25
+msgid "The Tower…! No, it can’t be! But I…!"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:26
+msgid "Has something changed?"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:27
+msgid "It’s turning back on! In fact, at its current rate of power, it could—"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:31
+msgid "… there’s no other explanation for this."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:32
+msgid "It’s her… the one I told you about."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:33
+msgid ""
+"The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
+"Tower from."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:37
+msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:38
+msgid "I see. So, she’s arrived on her own after all."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:39
+msgid ""
+"I-I thought she would be imprisoned forever, until we were ready! But "
+"somehow, somehow she’s—"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:40
+msgid ""
+"… she’s freed herself from her prison, and she no doubt intends to finish "
+"what she started."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:41
+msgid "I see. Then it appears we no longer possess the luxury of time."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:45
+msgid "Yōmu took Elly's hands between her own, grinning confidently.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:46
+msgid "Elly! Let’s face her now, together!"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:47
+msgid "I-I… I thought we'd have more time! It’s too soon!"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:48
+msgid ""
+"I’m worried the machine will influence me again! I can’t put you at risk "
+"again, and I can’t go with you!"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:49
+msgid "Please forgive me, Yōmu!"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:53
+msgid "I completely understand."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:54
+msgid "You… do?"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:55
+msgid ""
+"Yes, of course. There’s a time and place to face one’s fears. This is not "
+"your time or place, even somewhat literally."
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:56
+msgid ""
+"However, don’t think you've gotten off so easily. When I return, it shall be "
+"your turn to pay for dinner. Understand?"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:60
+msgid "Elly couldn’t help but laugh, despite her fears.\n"
+msgstr ""
+
+#: src/cutscenes/youmu_extra_intro.inc.h:61
+msgid ""
+"After bidding Elly and Lady Yuyuko farewell, Yōmu returned to Gensōkyō, and "
+"headed towards the infernal Tower, as it began to shake and groan with "
+"impending doom…"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:9
+msgid ""
+"The Tower had powered down, yet the instigators were nowhere to be found.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:10
+msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:11
+msgid ""
+"The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
+"bated breath.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:15
+msgid "Reimu sighed, and made her announcement.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:16
+msgid ""
+"Listen up! I stopped the spread of madness, but until further notice, Yōkai "
+"Mountain is off limits!"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:20
+msgid "Nobody was pleased with that.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:21
+msgid "The Moriya Gods were visibly shocked.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:22
+msgid ""
+"The kappa demanded that they be able to fetch their equipment, and tend to "
+"their hydroponic cucumber farms.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:23
+msgid ""
+"The tengu furiously scribbled down notes, once again as if they’d had the "
+"scoop of the century, before also beginning to make their own demands.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:27
+msgid ""
+"Once Reimu had managed to placate the crowd, she sat in the back of the "
+"Hakurei Shrine, bottle of sake in hand.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:28
+msgid ""
+"She didn’t feel like drinking, however. She cradled it without even "
+"uncorking it, sighing to herself."
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:32
+msgid "Oh my, a little dissatisfied, aren’t we?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:33
+msgid ""
+"\n"
+"Reimu was never surprised by Yukari’s sudden appearances anymore, of "
+"course.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:34
+msgid "It’s unlike you to stop until everything is business as usual, Reimu."
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:35
+msgid "Depressed?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:39
+msgid "Yeah. That place sucked."
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:40
+msgid "Perhaps I should’ve gone with you, hmm?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:41
+msgid "Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:42
+msgid "That might be a bit much, even for me, dear."
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:46
+msgid ""
+"Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
+"feel frustrated and… lonely?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:47
+msgid "But why would I feel lonely? It doesn’t make any sense."
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:51
+msgid "So, what will you do?"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:52
+msgid ""
+"Find a way to get rid of it, eventually. I’m sure there’s an answer "
+"somewhere out there…"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:53
+msgid ""
+"\n"
+"Yukari smiled.\n"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:54
+msgid "Glad to hear it. It’s your duty, after all."
+msgstr ""

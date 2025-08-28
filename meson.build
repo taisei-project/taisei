@@ -673,7 +673,6 @@ else
     config.set_quoted('TAISEI_BUILDCONF_REL_SRC_DIR', relative_dir)
 endif
 
-subdir('po')
 subdir('misc')
 subdir('emscripten')
 subdir('switch')
@@ -683,6 +682,7 @@ subdir('doc')
 subdir('xdg')
 subdir('atlas')
 subdir('src')
+subdir('po')
 subdir('test')
 
 if macos_app_bundle
