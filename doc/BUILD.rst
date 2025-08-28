@@ -51,6 +51,7 @@ Required
 - freetype2
 - opusfile
 - zlib
+- gettext
 
 Optional
 ''''''''
