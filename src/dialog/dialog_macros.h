@@ -38,7 +38,7 @@
 #define ACTOR_LEFT(_name) ACTOR(_name, DIALOG_SIDE_LEFT)
 #define ACTOR_RIGHT(_name) ACTOR(_name, DIALOG_SIDE_RIGHT)
 
-#define MSG(_actor, _text) dialog_message(&dialog, &_actor, _text)
+#define MSG(_actor, _text) dialog_message(&dialog, &_actor, _(_text))
 #define MSG_UNSKIPPABLE(_actor, _delay, _text) dialog_message_unskippable(&dialog, &_actor, _text, _delay)
 #define FACE(_actor, _face) dialog_actor_set_face(&_actor, #_face)
 #define VARIANT(_actor, _variant) dialog_actor_set_variant(&_actor, #_variant)

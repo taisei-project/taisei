@@ -48,11 +48,11 @@ typedef struct Cutscene {
  */
 
 #define T_NARRATOR(text) \
-	{ CTT_NARRATION, NULL, text, COLOR_NARRATOR }
+	{ CTT_NARRATION, NULL, _(text), COLOR_NARRATOR }
 #define T_SPEECH(speaker, text, ...) \
-	{ CTT_DIALOGUE, speaker, "“" text "”", __VA_ARGS__ }
+	{ CTT_DIALOGUE, speaker, "“" _(text) "”", __VA_ARGS__ }
 #define T_CENTERED(header, text) \
-	{ CTT_CENTERED, header, text, COLOR_NARRATOR }
+	{ CTT_CENTERED, header, _(text), COLOR_NARRATOR }
 
 #define COLOR_NARRATOR { 0.955, 0.934, 0.745, 1 }
 
