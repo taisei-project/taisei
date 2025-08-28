@@ -9,39 +9,39 @@ msgstr ""
 
 #: src/menu/mainmenu.c:118
 msgid "Start Story"
-msgstr "Abenteuer beginnen"
+msgstr "开始故事"
 
 #: src/menu/mainmenu.c:119
 msgid "Start Extra"
-msgstr "Extra beginnen"
+msgstr ""
 
 #: src/menu/mainmenu.c:120
 msgid "Stage Practice"
-msgstr "Stage-Training"
+msgstr ""
 
 #: src/menu/mainmenu.c:122
 msgid "Spell Practice"
-msgstr "Spell-Training"
+msgstr ""
 
 #: src/menu/mainmenu.c:125
 msgid "Select Stage"
-msgstr "Stage auswählen"
+msgstr ""
 
 #: src/menu/mainmenu.c:127
 msgid "Replays"
-msgstr "Replays"
+msgstr ""
 
 #: src/menu/mainmenu.c:128
 msgid "Media Room"
-msgstr "Media-Raum"
+msgstr ""
 
 #: src/menu/mainmenu.c:129
 msgid "Options"
-msgstr "Optionen"
+msgstr ""
 
 #: src/menu/mainmenu.c:132
 msgid "Quit"
-msgstr "Verlassen"
+msgstr ""
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
