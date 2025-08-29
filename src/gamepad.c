@@ -105,7 +105,7 @@ static inline GamepadDevice* gamepad_get_device(int num) {
 
 const char *gamepad_device_name(int num) {
 	GamepadDevice *dev = gamepad_get_device(num);
-	static const char *const default_name = "Unknown device";
+	const char *const default_name = _("Unknown device");
 	const char *name = NULL;
 
 	if(!dev) {
@@ -867,54 +867,54 @@ bool gamepad_game_key_pressed(KeyIndex key) {
 }
 
 static const char *const gamepad_button_names[] = {
-	[GAMEPAD_BUTTON_A] = "A",
-	[GAMEPAD_BUTTON_B] = "B",
-	[GAMEPAD_BUTTON_X] = "X",
-	[GAMEPAD_BUTTON_Y] = "Y",
-	[GAMEPAD_BUTTON_BACK] = "Back",
-	[GAMEPAD_BUTTON_GUIDE] = "Guide",
-	[GAMEPAD_BUTTON_START] = "Start",
-	[GAMEPAD_BUTTON_STICK_LEFT] = "Left Stick",
-	[GAMEPAD_BUTTON_STICK_RIGHT] = "Right Stick",
-	[GAMEPAD_BUTTON_SHOULDER_LEFT] = "Left Bumper",
-	[GAMEPAD_BUTTON_SHOULDER_RIGHT] = "Right Bumper",
-	[GAMEPAD_BUTTON_DPAD_UP] = "Up",
-	[GAMEPAD_BUTTON_DPAD_DOWN] = "Down",
-	[GAMEPAD_BUTTON_DPAD_LEFT] = "Left",
-	[GAMEPAD_BUTTON_DPAD_RIGHT] = "Right",
-	[GAMEPAD_BUTTON_MISC1] = "Misc",
-	[GAMEPAD_BUTTON_P1] = "P1",
-	[GAMEPAD_BUTTON_P2] = "P2",
-	[GAMEPAD_BUTTON_P3] = "P3",
-	[GAMEPAD_BUTTON_P4] = "P4",
-	[GAMEPAD_BUTTON_TOUCHPAD] = "Touchpad",
-	[GAMEPAD_BUTTON_MISC2] = "Misc 2",
-	[GAMEPAD_BUTTON_MISC3] = "Misc 3",
-	[GAMEPAD_BUTTON_MISC4] = "Misc 4",
-	[GAMEPAD_BUTTON_MISC5] = "Misc 5",
-	[GAMEPAD_BUTTON_MISC6] = "Misc 6",
+	[GAMEPAD_BUTTON_A] = N_("A"),
+	[GAMEPAD_BUTTON_B] = N_("B"),
+	[GAMEPAD_BUTTON_X] = N_("X"),
+	[GAMEPAD_BUTTON_Y] = N_("Y"),
+	[GAMEPAD_BUTTON_BACK] = N_("Back"),
+	[GAMEPAD_BUTTON_GUIDE] = N_("Guide"),
+	[GAMEPAD_BUTTON_START] = N_("Start"),
+	[GAMEPAD_BUTTON_STICK_LEFT] = N_("Left Stick"),
+	[GAMEPAD_BUTTON_STICK_RIGHT] = N_("Right Stick"),
+	[GAMEPAD_BUTTON_SHOULDER_LEFT] = N_("Left Bumper"),
+	[GAMEPAD_BUTTON_SHOULDER_RIGHT] = N_("Right Bumper"),
+	[GAMEPAD_BUTTON_DPAD_UP] = N_("Up"),
+	[GAMEPAD_BUTTON_DPAD_DOWN] = N_("Down"),
+	[GAMEPAD_BUTTON_DPAD_LEFT] = N_("Left"),
+	[GAMEPAD_BUTTON_DPAD_RIGHT] = N_("Right"),
+	[GAMEPAD_BUTTON_MISC1] = N_("Misc"),
+	[GAMEPAD_BUTTON_P1] = N_("P1"),
+	[GAMEPAD_BUTTON_P2] = N_("P2"),
+	[GAMEPAD_BUTTON_P3] = N_("P3"),
+	[GAMEPAD_BUTTON_P4] = N_("P4"),
+	[GAMEPAD_BUTTON_TOUCHPAD] = N_("Touchpad"),
+	[GAMEPAD_BUTTON_MISC2] = N_("Misc 2"),
+	[GAMEPAD_BUTTON_MISC3] = N_("Misc 3"),
+	[GAMEPAD_BUTTON_MISC4] = N_("Misc 4"),
+	[GAMEPAD_BUTTON_MISC5] = N_("Misc 5"),
+	[GAMEPAD_BUTTON_MISC6] = N_("Misc 6"),
 };
 
 static_assert(ARRAY_SIZE(gamepad_button_names) == GAMEPAD_BUTTON_MAX);
 
 static const char *const gamepad_emulated_button_names[] = {
-	[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = "Left Trigger",
-	[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = "Right Trigger",
-	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_UP] = "Stick Up",
-	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_DOWN] = "Stick Down",
-	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_LEFT] = "Stick Left",
-	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_RIGHT] = "Stick Right",
+	[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = N_("Left Trigger"),
+	[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = N_("Right Trigger"),
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_UP] = N_("Stick Up"),
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_DOWN] = N_("Stick Down"),
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_LEFT] = N_("Stick Left"),
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_RIGHT] = N_("Stick Right"),
 };
 
 static_assert(ARRAY_SIZE(gamepad_emulated_button_names) == GAMEPAD_EMULATED_BUTTON_MAX);
 
 static const char *const gamepad_axis_names[GAMEPAD_AXIS_MAX] = {
-	[GAMEPAD_AXIS_LEFT_X] = "Left X",
-	[GAMEPAD_AXIS_LEFT_Y] = "Left Y",
-	[GAMEPAD_AXIS_RIGHT_X] = "Right X",
-	[GAMEPAD_AXIS_RIGHT_Y] = "Right Y",
-	[GAMEPAD_AXIS_TRIGGER_LEFT] = "Left Trigger",
-	[GAMEPAD_AXIS_TRIGGER_RIGHT] = "Right Trigger",
+	[GAMEPAD_AXIS_LEFT_X] = N_("Left X"),
+	[GAMEPAD_AXIS_LEFT_Y] = N_("Left Y"),
+	[GAMEPAD_AXIS_RIGHT_X] = N_("Right X"),
+	[GAMEPAD_AXIS_RIGHT_Y] = N_("Right Y"),
+	[GAMEPAD_AXIS_TRIGGER_LEFT] = N_("Left Trigger"),
+	[GAMEPAD_AXIS_TRIGGER_RIGHT] = N_("Right Trigger"),
 };
 
 static_assert(ARRAY_SIZE(gamepad_axis_names) == GAMEPAD_AXIS_MAX);
@@ -935,7 +935,7 @@ const char* gamepad_button_name(GamepadButton btn) {
 	const char *name = gamepad_button_name_internal(btn);
 
 	if(name == NULL) {
-		return "Unknown";
+		return N_("Unknown");
 	}
 
 	return name;
@@ -946,7 +946,7 @@ const char* gamepad_axis_name(GamepadAxis axis) {
 		return gamepad_axis_names[axis];
 	}
 
-	return "Unknown";
+	return N_("Unknown");
 }
 
 GamepadButton gamepad_button_from_name(const char *name) {

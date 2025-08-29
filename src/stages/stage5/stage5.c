@@ -21,7 +21,7 @@
 struct stage5_spells_s stage5_spells = {
 	.mid = {
 		.static_bomb = {
-			{ 16, 17, 18, 19}, AT_SurvivalSpell, "High Voltage “Static Bomb”", 16, 10,
+			{ 16, 17, 18, 19}, AT_SurvivalSpell, N_("High Voltage “Static Bomb”"), 16, 10,
 			TASK_INDIRECT_INIT(BossAttack, stage5_midboss_static_bomb),
 			NULL, BOSS_DEFAULT_GO_POS, 0,
 		},
@@ -29,34 +29,34 @@ struct stage5_spells_s stage5_spells = {
 
 	.boss = {
 		.atmospheric_discharge = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage “Atmospheric Discharge”", 60, 44000,
+			{ 0,  1,  2,  3}, AT_Spellcard, N_("High Voltage “Atmospheric Discharge”"), 60, 44000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_atmospheric_discharge),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 		.artificial_lightning = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign “Artificial Lightning”", 75, 60000,
+			{ 4,  5,  6,  7}, AT_Spellcard, N_("Charge Sign “Artificial Lightning”"), 75, 60000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_artificial_lightning),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 		.induction_field = {
-			{12, 13, -1, -1}, AT_Spellcard, "Current Sign “Induction Field”", 60, 50000,
+			{12, 13, -1, -1}, AT_Spellcard, N_("Current Sign “Induction Field”"), 60, 50000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_induction),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 		.inductive_resonance = {
-			{-1, -1, 14, 15}, AT_Spellcard, "Current Sign “Inductive Resonance”", 60, 50000,
+			{-1, -1, 14, 15}, AT_Spellcard, N_("Current Sign “Inductive Resonance”"), 60, 50000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_induction),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 		.natural_cathode = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign “Natural Cathode”", 60, 44000,
+			{ 8,  9, 10, 11}, AT_Spellcard, N_("Spark Sign “Natural Cathode”"), 60, 44000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_natural_cathode),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 	},
 
 	.extra.overload = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign “Overload”", 120, 22000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, N_("Circuit Sign “Overload”"), 120, 22000,
 		TASK_INDIRECT_INIT(BossAttack, stage5_spell_overload),
 		iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 	},

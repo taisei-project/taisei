@@ -412,7 +412,7 @@ static void draw_linear_healthbar(Boss *boss) {
 }
 
 static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) {
-	static const char *msg = "~ Spell Card Attack! ~";
+	const char *msg = _("~ Spell Card Attack! ~");
 
 	float msg_width = text_width(font, msg, 0);
 	float flash = 0.2 + 0.8 * pow(psin(M_PI + 5 * M_PI * f), 0.5);
@@ -432,7 +432,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float y_offset = 26 + healthbar_radial * -15;
 	float y_text_offset = 5 - font_get_metrics(font)->descent;
 	cmplx x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
-	int strw = text_width(font, b->current->name, 0);
+	int strw = text_width(font, _(b->current->name), 0);
 
 	float opacity_noplr = b->hud.spell_opacity * b->hud.global_opacity;
 	float opacity = opacity_noplr * b->hud.plrproximity_opacity;
@@ -457,12 +457,12 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6f);
 	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
 
-	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
+	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, _(b->current->name), font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
 
 	if(spellname_opacity_noplr < 1) {
 		r_mat_mv_push();
 		r_mat_mv_scale(2 - spellname_opacity_noplr, 2 - spellname_opacity_noplr, 1);
-		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity_noplr * 0.5));
+		draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, _(b->current->name), font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity_noplr * 0.5));
 		r_mat_mv_pop();
 	}
 
@@ -978,13 +978,13 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	StageTextTable tbl;
 	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
-	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus.clear);
-	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", bonus.time);
-	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", bonus.survival);
-	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", bonus.endurance);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Clear bonus"), bonus.clear);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Time bonus"), bonus.time);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Survival bonus"), bonus.survival);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Endurance bonus"), bonus.endurance);
 	stagetext_table_add_separator(&tbl);
-	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
-	stagetext_table_add_numeric(&tbl, "Total", bonus.total);
+	stagetext_table_add(&tbl, _("Diff. multiplier"), diff_bonus_text);
+	stagetext_table_add_numeric(&tbl, _("Total"), bonus.total);
 	stagetext_end_table(&tbl);
 
 	play_sfx("spellend");

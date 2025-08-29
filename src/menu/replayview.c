@@ -83,7 +83,7 @@ static void start_replay(MenuData *menu, void *arg) {
 	Replay *rpy = ictx->replay;
 
 	if(!replay_load(rpy, ictx->replayname, REPLAY_READ_EVENTS)) {
-		replayview_set_submenu(menu, replayview_sub_messagebox(menu, "Failed to load replay events"));
+		replayview_set_submenu(menu, replayview_sub_messagebox(menu, _("Failed to load replay events")));
 		return;
 	}
 
@@ -92,14 +92,14 @@ static void start_replay(MenuData *menu, void *arg) {
 
 	if(!stageinfo_get_by_id(stg->stage)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), "Can't replay this stage: unknown stage ID %X", stg->stage);
+		snprintf(buf, sizeof(buf), _("Can't replay this stage: unknown stage ID %X"), stg->stage);
 		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
 		return;
 	}
 
 	if(!plrmode_find(stg->plr_char, stg->plr_shot)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), "Can't replay this stage: unknown player character/mode %X/%X", stg->plr_char, stg->plr_shot);
+		snprintf(buf, sizeof(buf), _("Can't replay this stage: unknown player character/mode %X/%X"), stg->plr_char, stg->plr_shot);
 		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
 		return;
 	}
@@ -132,7 +132,7 @@ static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 			add_menu_entry(m, stg->title, start_replay, ictx);
 		} else {
 			char label[64];
-			snprintf(label, sizeof(label), "Unknown stage %X", stage_id);
+			snprintf(label, sizeof(label), _("Unknown stage %X"), stage_id);
 			add_menu_entry(m, label, menu_action_close, NULL);
 		}
 	});
@@ -354,7 +354,7 @@ static void replayview_draw(MenuData *m) {
 	ReplayviewContext *ctx = m->context;
 
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Replays");
+	draw_menu_title(m, _("Replays"));
 
 	draw_menu_list(m, 50, 100, replayview_drawitem, SCREEN_H, NULL);
 
@@ -462,12 +462,12 @@ MenuData *create_replayview_menu(void) {
 	int r = fill_replayview_menu(m);
 
 	if(!r) {
-		add_menu_entry(m, "No replays available. Play the game and record some!", menu_action_close, NULL);
+		add_menu_entry(m, _("No replays available. Play the game and record some!"), menu_action_close, NULL);
 	} else if(r < 0) {
-		add_menu_entry(m, "There was a problem getting the replay list :(", menu_action_close, NULL);
+		add_menu_entry(m, _("There was a problem getting the replay list :("), menu_action_close, NULL);
 	} else {
 		add_menu_separator(m);
-		add_menu_entry(m, "Back", menu_action_close, NULL);
+		add_menu_entry(m, _("Back"), menu_action_close, NULL);
 	}
 
 	return m;

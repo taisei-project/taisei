@@ -67,7 +67,7 @@ static void credits_fill(void) {
 
 	dynarray_ensure_capacity(&credits.entries, 24);
 
-	credits_add("Taisei Project\nbrought to you by…", HEADER_TIME);
+	credits_add(_("Taisei Project\nbrought to you by…"), HEADER_TIME);
 
 	credits_add((
 		"laochailan\n"
@@ -126,6 +126,12 @@ static void credits_fill(void) {
 		"https://twitter.com/violet_fantasia\n\n"
 		"Dialogue writing (Hina, Kurumi)"
 	), ENTRY_TIME);
+	credits_add((
+		_("Swordsdeer\n"
+		"剑客小鹿\n"
+		"TODO\n"
+		"Chinese translation\n")
+	), ENTRY_TIME);
 
 	credits_add((
 		"makise-homura\n"
@@ -143,7 +149,7 @@ static void credits_fill(void) {
 		"what she did"
 	), ENTRY_TIME);
 
-	credits_add("Special Thanks", HEADER_TIME);
+	credits_add(_("Special Thanks"), HEADER_TIME);
 
 	credits_add((
 		"ZUN\n"
@@ -188,17 +194,17 @@ static void credits_fill(void) {
 		"for playing"
 	), ENTRY_TIME);
 
-	credits_add((
-		"Visit Us\n"
-		"https://taisei-project.org/\n\n"
-		"And join our IRC channel\n"
-		"#taisei-project at irc.freenode.net\n\n"
-		"Or our Discord server\n"
-		"https://discord.gg/JEHCMzW"
-	), ENTRY_TIME);
+	char *visit_us = strfmt(_("Visit Us\n"
+	                          "%s\n\n"
+	                          "And join our Discord server\n"
+	                          "%s"),
+	                        "https://taisei-project.org/",
+	                        "https://discord.gg/JEHCMzW");
+	credits_add(visit_us, ENTRY_TIME);
+	mem_free(visit_us);
 
 	// Yukkuri Kyouko!
-	credits_add("*\nAnd don't forget to take it easy!", YUKKURI_TIME);
+	credits_add(_("*\nAnd don't forget to take it easy!"), YUKKURI_TIME);
 }
 
 static void credits_add(char *data, int time) {

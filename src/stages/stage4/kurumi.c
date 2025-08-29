@@ -53,7 +53,7 @@ TASK(kurumi_shadowcolor, { BoxedBoss boss; }) {
 }
 
 Boss *stage4_spawn_kurumi(cmplx pos) {
-	Boss* b = create_boss("Kurumi", "kurumi", pos);
+	Boss* b = create_boss(_("Kurumi"), "kurumi", pos);
 	boss_set_portrait(b, "kurumi", NULL, "normal");
 	b->glowcolor = *RGB(0.5, 0.1, 0.0);
 	INVOKE_TASK(kurumi_shadowcolor, ENT_BOX(b));

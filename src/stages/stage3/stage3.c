@@ -28,7 +28,7 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
-			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Disruption “Logic Bomb”", 14, 40000,
+			{ 0,  1,  2,  3}, AT_SurvivalSpell, N_("Disruption “Logic Bomb”"), 14, 40000,
 			TASK_INDIRECT_INIT(BossAttack, stage3_spell_logic_bomb),
 			stage3_draw_scuttle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
@@ -36,24 +36,24 @@ struct stage3_spells_s stage3_spells = {
 
 	.boss = {
 		.moonlight_rocket = {
-			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 40, 40000,
+			{ 6,  7,  8,  9}, AT_Spellcard, N_("Firefly Sign “Moonlight Rocket”"), 40, 40000,
 			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moonlight_rocket),
 			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 		.moths_to_a_flame = {
-			{18, 19, 20, 21}, AT_Spellcard, "Attractor “Moths to a Flame”", 90, 70000,
+			{18, 19, 20, 21}, AT_Spellcard, N_("Attractor “Moths to a Flame”"), 90, 70000,
 			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moths_to_a_flame),
 			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 		.firefly_storm = {
-			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign “Firefly Storm”", 45, 45000,
+			{14, 15, 16, 17}, AT_Spellcard, N_("Bug Sign “Firefly Storm”"), 45, 45000,
 			TASK_INDIRECT_INIT(BossAttack, stage3_spell_firefly_storm),
 			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 	},
 
 	.extra.light_singularity = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign “Light Singularity”", 75, 45000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, N_("Lamp Sign “Light Singularity”"), 75, 45000,
 		TASK_INDIRECT_INIT(BossAttack, stage3_spell_light_singularity),
 		stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 	},
