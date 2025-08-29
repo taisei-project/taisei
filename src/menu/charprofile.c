@@ -16,6 +16,7 @@
 #include "progress.h"
 #include "resource/font.h"
 #include "resource/resource.h"
+#include "taisei.h"
 #include "util/glm.h"
 #include "video.h"
 

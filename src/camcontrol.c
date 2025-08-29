@@ -207,7 +207,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 	);
 
 	StageText *grabtxt = stagetext_add(
-		"Mouse input disabled ",
+		_("Mouse input disabled "),
 		VIEWPORT_W + I*font_get_lineskip(fnt)/2, ALIGN_RIGHT, fnt, RGB(1,0.5,0), 0, 9000000, 0, 0
 	);
 

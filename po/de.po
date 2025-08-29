@@ -1,11 +1,288 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-28 19:09-0400\n"
+"POT-Creation-Date: 2025-08-29 08:12-0400\n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: src/player.c:112
+msgid "Full Power!"
+msgstr ""
+
+#: src/player.c:730
+msgid "Power Surge!"
+msgstr ""
+
+#: src/credits.c:70
+msgid ""
+"Taisei Project\n"
+"brought to you by…"
+msgstr ""
+
+#: src/credits.c:130
+msgid ""
+"Swordsdeer\n"
+"剑客小鹿\n"
+"TODO\n"
+"Chinese translation\n"
+msgstr ""
+
+#: src/credits.c:152
+msgid "Special Thanks"
+msgstr ""
+
+#: src/credits.c:197
+#, c-format
+msgid ""
+"Visit Us\n"
+"%s\n"
+"\n"
+"And join our Discord server\n"
+"%s"
+msgstr ""
+
+#: src/credits.c:207
+msgid ""
+"*\n"
+"And don't forget to take it easy!"
+msgstr ""
+
+#: src/camcontrol.c:210
+msgid "Mouse input disabled "
+msgstr ""
+
+#: src/gamepad.c:108
+msgid "Unknown device"
+msgstr ""
+
+#: src/gamepad.c:870
+msgid "A"
+msgstr ""
+
+#: src/gamepad.c:871
+msgid "B"
+msgstr ""
+
+#: src/gamepad.c:872
+msgid "X"
+msgstr ""
+
+#: src/gamepad.c:873
+msgid "Y"
+msgstr ""
+
+#: src/gamepad.c:874 src/menu/replayview.c:470 src/menu/media.c:59
+#: src/menu/options.c:811 src/menu/options.c:875 src/menu/options.c:1019
+#: src/menu/options.c:1128 src/menu/options.c:1208
+msgid "Back"
+msgstr ""
+
+#: src/gamepad.c:875
+msgid "Guide"
+msgstr ""
+
+#: src/gamepad.c:876
+#, fuzzy
+msgid "Start"
+msgstr "Abenteuer beginnen"
+
+#: src/gamepad.c:877
+msgid "Left Stick"
+msgstr ""
+
+#: src/gamepad.c:878
+msgid "Right Stick"
+msgstr ""
+
+#: src/gamepad.c:879
+msgid "Left Bumper"
+msgstr ""
+
+#: src/gamepad.c:880
+msgid "Right Bumper"
+msgstr ""
+
+#: src/gamepad.c:881
+msgid "Up"
+msgstr ""
+
+#: src/gamepad.c:882
+msgid "Down"
+msgstr ""
+
+#: src/gamepad.c:883
+msgid "Left"
+msgstr ""
+
+#: src/gamepad.c:884
+msgid "Right"
+msgstr ""
+
+#: src/gamepad.c:885
+msgid "Misc"
+msgstr ""
+
+#: src/gamepad.c:886
+msgid "P1"
+msgstr ""
+
+#: src/gamepad.c:887
+msgid "P2"
+msgstr ""
+
+#: src/gamepad.c:888
+msgid "P3"
+msgstr ""
+
+#: src/gamepad.c:889
+msgid "P4"
+msgstr ""
+
+#: src/gamepad.c:890
+msgid "Touchpad"
+msgstr ""
+
+#: src/gamepad.c:891
+msgid "Misc 2"
+msgstr ""
+
+#: src/gamepad.c:892
+msgid "Misc 3"
+msgstr ""
+
+#: src/gamepad.c:893
+msgid "Misc 4"
+msgstr ""
+
+#: src/gamepad.c:894
+msgid "Misc 5"
+msgstr ""
+
+#: src/gamepad.c:895
+msgid "Misc 6"
+msgstr ""
+
+#: src/gamepad.c:901 src/gamepad.c:916
+msgid "Left Trigger"
+msgstr ""
+
+#: src/gamepad.c:902 src/gamepad.c:917
+msgid "Right Trigger"
+msgstr ""
+
+#: src/gamepad.c:903
+msgid "Stick Up"
+msgstr ""
+
+#: src/gamepad.c:904
+msgid "Stick Down"
+msgstr ""
+
+#: src/gamepad.c:905
+msgid "Stick Left"
+msgstr ""
+
+#: src/gamepad.c:906
+msgid "Stick Right"
+msgstr ""
+
+#: src/gamepad.c:912
+msgid "Left X"
+msgstr ""
+
+#: src/gamepad.c:913
+msgid "Left Y"
+msgstr ""
+
+#: src/gamepad.c:914
+msgid "Right X"
+msgstr ""
+
+#: src/gamepad.c:915
+msgid "Right Y"
+msgstr ""
+
+#: src/gamepad.c:938 src/gamepad.c:949 src/menu/options.c:1346
+msgid "Unknown"
+msgstr ""
+
+#: src/boss.c:415
+msgid "~ Spell Card Attack! ~"
+msgstr ""
+
+#: src/boss.c:981
+msgid "Clear bonus"
+msgstr ""
+
+#: src/boss.c:982
+msgid "Time bonus"
+msgstr ""
+
+#: src/boss.c:983
+msgid "Survival bonus"
+msgstr ""
+
+#: src/boss.c:984
+msgid "Endurance bonus"
+msgstr ""
+
+#: src/boss.c:986
+msgid "Diff. multiplier"
+msgstr ""
+
+#: src/boss.c:987
+msgid "Total"
+msgstr ""
+
+#: src/stage.c:621
+#, c-format
+msgid "BGM: %s"
+msgstr ""
+
+#: src/menu/ingamemenu.c:132
+msgid "Game Paused"
+msgstr ""
+
+#: src/menu/ingamemenu.c:134 src/menu/ingamemenu.c:160 src/menu/mainmenu.c:129
+#: src/menu/options.c:1134
+msgid "Options"
+msgstr "Optionen"
+
+#: src/menu/ingamemenu.c:135
+msgid "Return to Game"
+msgstr ""
+
+#: src/menu/ingamemenu.c:136 src/menu/gameovermenu.c:81
+msgid "Restart the Game"
+msgstr ""
+
+#: src/menu/ingamemenu.c:137
+msgid "Stop the Game"
+msgstr ""
+
+#: src/menu/ingamemenu.c:158
+#, fuzzy
+msgid "Replay Paused"
+msgstr "Replays"
+
+#: src/menu/ingamemenu.c:161
+msgid "Continue Watching"
+msgstr ""
+
+#: src/menu/ingamemenu.c:162
+msgid "Restart the Stage"
+msgstr ""
+
+#: src/menu/ingamemenu.c:163
+#, fuzzy
+msgid "Skip the Stage"
+msgstr "Stage auswählen"
+
+#: src/menu/ingamemenu.c:164
+msgid "Stop Watching"
+msgstr ""
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -91,7 +368,8 @@ msgid ""
 "doesn’t let it get to her head."
 msgstr ""
 
-#: src/menu/charprofile.c:91 src/dialog/dialog_macros.h:69
+#: src/menu/charprofile.c:91 src/stages/stage1/cirno.c:26
+#: src/dialog/dialog_macros.h:69
 msgid "Cirno"
 msgstr ""
 
@@ -127,7 +405,7 @@ msgid ""
 "You’re old enough to decide your own path in life, though."
 msgstr ""
 
-#: src/menu/charprofile.c:113
+#: src/menu/charprofile.c:113 src/stages/stage3/scuttle.c:36
 msgid "Scuttle"
 msgstr ""
 
@@ -241,20 +519,51 @@ msgstr ""
 msgid "Locked"
 msgstr ""
 
-#: src/menu/charprofile.c:170
+#: src/menu/charprofile.c:172
 msgid "You have not unlocked this character yet!"
 msgstr ""
 
-#: src/menu/charprofile.c:190
+#: src/menu/charprofile.c:192
 msgid "Species"
 msgstr ""
 
-#: src/menu/charprofile.c:191
+#: src/menu/charprofile.c:193
 msgid "Area of Study"
 msgstr ""
 
-#: src/menu/charprofile.c:267
+#: src/menu/charprofile.c:269
 msgid "Press [Fire] for alternate expressions"
+msgstr ""
+
+#: src/menu/replayview.c:86
+msgid "Failed to load replay events"
+msgstr ""
+
+#: src/menu/replayview.c:95
+#, c-format
+msgid "Can't replay this stage: unknown stage ID %X"
+msgstr ""
+
+#: src/menu/replayview.c:102
+#, c-format
+msgid "Can't replay this stage: unknown player character/mode %X/%X"
+msgstr ""
+
+#: src/menu/replayview.c:135
+#, c-format
+msgid "Unknown stage %X"
+msgstr ""
+
+#: src/menu/replayview.c:357 src/menu/mainmenu.c:127
+msgid "Replays"
+msgstr "Replays"
+
+#: src/menu/replayview.c:465
+msgid "No replays available. Play the game and record some!"
+msgstr ""
+
+#: src/menu/replayview.c:467
+msgid "There was a problem getting the replay list :("
 msgstr ""
 
 #: src/menu/mainmenu.c:118
@@ -277,21 +586,26 @@ msgstr "Spell-Training"
 msgid "Select Stage"
 msgstr "Stage auswählen"
 
-#: src/menu/mainmenu.c:127
-msgid "Replays"
-msgstr "Replays"
-
 #: src/menu/mainmenu.c:128 src/menu/media.c:33
 msgid "Media Room"
 msgstr "Media-Raum"
 
-#: src/menu/mainmenu.c:129
-msgid "Options"
-msgstr "Optionen"
-
 #: src/menu/mainmenu.c:132
 msgid "Quit"
 msgstr "Verlassen"
+
+#: src/menu/charselect.c:165
+msgid "Intuition"
+msgstr ""
+
+#: src/menu/charselect.c:166
+msgid "Science"
+msgstr ""
+
+#: src/menu/charselect.c:173
+#, fuzzy
+msgid "Select Character"
+msgstr "Stage auswählen"
 
 #: src/menu/musicroom.c:123
 msgid "Now playing"
@@ -320,6 +634,70 @@ msgstr ""
 msgid "Unknown track"
 msgstr ""
 
+#: src/menu/difficultyselect.c:43
+msgid ""
+"For those just beginning\n"
+"their academic careers"
+msgstr ""
+
+#: src/menu/difficultyselect.c:44
+msgid ""
+"All those years of study\n"
+"have finally paid off"
+msgstr ""
+
+#: src/menu/difficultyselect.c:45
+msgid ""
+"You must really\n"
+"love books"
+msgstr ""
+
+#: src/menu/difficultyselect.c:46
+msgid ""
+"You either die a student,\n"
+"or live long enough to\n"
+"become a professor"
+msgstr ""
+
+#: src/menu/difficultyselect.c:64
+msgid "Select Difficulty"
+msgstr ""
+
+#: src/menu/gameovermenu.c:35
+msgid "Load Quicksave"
+msgstr ""
+
+#: src/menu/gameovermenu.c:61
+#, fuzzy
+msgid "Spell Failed"
+msgstr "Spell-Training"
+
+#: src/menu/gameovermenu.c:63
+msgid "Restart"
+msgstr ""
+
+#: src/menu/gameovermenu.c:65 src/menu/gameovermenu.c:83
+msgid "Give up"
+msgstr ""
+
+#: src/menu/gameovermenu.c:68
+msgid "Game Over"
+msgstr ""
+
+#: src/menu/gameovermenu.c:75
+#, c-format
+msgid "Continue (%i)"
+msgstr ""
+
+#: src/menu/gameovermenu.c:77
+#, c-format
+msgid "Continue"
+msgstr ""
+
+#: src/menu/gameovermenu.c:83
+msgid "Return to Title"
+msgstr ""
+
 #: src/menu/media.c:55
 msgid "Character Profiles"
 msgstr ""
@@ -329,8 +707,524 @@ msgstr ""
 msgid "Replay Cutscenes"
 msgstr "Replays"
 
-#: src/menu/media.c:59
-msgid "Back"
+#: src/menu/options.c:493
+msgid "Reset all settings to defaults?"
+msgstr ""
+
+#: src/menu/options.c:499
+msgid "Reset all settings to the last saved values?"
+msgstr ""
+
+#: src/menu/options.c:700
+msgid "Yes"
+msgstr ""
+
+#: src/menu/options.c:701
+msgid "No"
+msgstr ""
+
+#: src/menu/options.c:729
+#, fuzzy
+msgid "Video Options"
+msgstr "Optionen"
+
+#: src/menu/options.c:732
+msgid "Fullscreen"
+msgstr ""
+
+#: src/menu/options.c:737
+msgid "Display"
+msgstr ""
+
+#: src/menu/options.c:741
+msgid "Window size"
+msgstr ""
+
+#: src/menu/options.c:746
+msgid "Renderer resolution"
+msgstr ""
+
+#: src/menu/options.c:751
+msgid "Resizable window"
+msgstr ""
+
+#: src/menu/options.c:758
+msgid "Pause the game when not focused"
+msgstr ""
+
+#: src/menu/options.c:762
+msgid "Vertical synchronization"
+msgstr ""
+
+#: src/menu/options.c:771
+msgid "Skip frames"
+msgstr ""
+
+#: src/menu/options.c:779
+msgid "Overall rendering quality"
+msgstr ""
+
+#: src/menu/options.c:783
+msgid "Draw background"
+msgstr ""
+
+#: src/menu/options.c:787
+msgid "Background rendering quality"
+msgstr ""
+
+#: src/menu/options.c:794
+msgid "Anti-aliasing"
+msgstr ""
+
+#: src/menu/options.c:799
+msgid "Particle effects"
+msgstr ""
+
+#: src/menu/options.c:804
+msgid "Postprocessing effects"
+msgstr ""
+
+#: src/menu/options.c:832
+msgid "Gamepad Controls"
+msgstr ""
+
+#: src/menu/options.c:834 src/menu/options.c:1027
+msgid "Move up"
+msgstr ""
+
+#: src/menu/options.c:838 src/menu/options.c:1031
+msgid "Move down"
+msgstr ""
+
+#: src/menu/options.c:842 src/menu/options.c:1035
+msgid "Move left"
+msgstr ""
+
+#: src/menu/options.c:846 src/menu/options.c:1039
+msgid "Move right"
+msgstr ""
+
+#: src/menu/options.c:852 src/menu/options.c:1045
+msgid "Shoot"
+msgstr ""
+
+#: src/menu/options.c:856 src/menu/options.c:1049
+msgid "Focus"
+msgstr ""
+
+#: src/menu/options.c:860 src/menu/options.c:1053
+msgid "Use Spell Card"
+msgstr ""
+
+#: src/menu/options.c:864 src/menu/options.c:1057
+msgid "Power Surge / Discharge"
+msgstr ""
+
+#: src/menu/options.c:870 src/menu/options.c:1071
+msgid "Skip dialog"
+msgstr ""
+
+#: src/menu/options.c:948
+#, c-format
+msgid "Press any button on your gamepad to exit joystick testing mode"
+msgstr ""
+
+#: src/menu/options.c:951
+#, c-format
+msgid "Press %s on your gamepad to enter joystick testing mode"
+msgstr ""
+
+#: src/menu/options.c:964
+#, fuzzy
+msgid "Gamepad Options"
+msgstr "Optionen"
+
+#: src/menu/options.c:975
+msgid "Enable Gamepad/Joystick support"
+msgstr ""
+
+#: src/menu/options.c:979
+msgid "Device"
+msgstr ""
+
+#: src/menu/options.c:985 src/menu/options.c:1196
+msgid "Customize controls…"
+msgstr ""
+
+#: src/menu/options.c:989
+msgid "Remap square input into circular"
+msgstr ""
+
+#: src/menu/options.c:995
+msgid "Direction snap factor"
+msgstr ""
+
+#: src/menu/options.c:999
+msgid "Diagonal bias"
+msgstr ""
+
+#: src/menu/options.c:1006
+msgid "Dead zone"
+msgstr ""
+
+#: src/menu/options.c:1010
+msgid "Maximum zone"
+msgstr ""
+
+#: src/menu/options.c:1014
+msgid "Sensitivity"
+msgstr ""
+
+#: src/menu/options.c:1025
+msgid "Controls"
+msgstr ""
+
+#: src/menu/options.c:1063
+msgid "Toggle fullscreen"
+msgstr ""
+
+#: src/menu/options.c:1067
+msgid "Take a screenshot"
+msgstr ""
+
+#: src/menu/options.c:1077
+msgid "Toggle audio"
+msgstr ""
+
+#: src/menu/options.c:1083
+msgid "Stop the game immediately"
+msgstr ""
+
+#: src/menu/options.c:1087
+msgid "Restart the game immediately"
+msgstr ""
+
+#: src/menu/options.c:1091
+msgid "Quick save"
+msgstr ""
+
+#: src/menu/options.c:1095
+msgid "Quick load"
+msgstr ""
+
+#: src/menu/options.c:1102
+msgid "Toggle God mode"
+msgstr ""
+
+#: src/menu/options.c:1106
+msgid "Skip stage"
+msgstr ""
+
+#: src/menu/options.c:1110
+msgid "Power up"
+msgstr ""
+
+#: src/menu/options.c:1114
+msgid "Power down"
+msgstr ""
+
+#: src/menu/options.c:1118
+msgid "Disable background rendering (HoM effect)"
+msgstr ""
+
+#: src/menu/options.c:1122
+msgid "Toggle collision areas overlay"
+msgstr ""
+
+#: src/menu/options.c:1138
+msgid "Player name"
+msgstr ""
+
+#: src/menu/options.c:1145
+#, fuzzy
+msgid "Save replays"
+msgstr "Replays"
+
+#: src/menu/options.c:1151
+#, fuzzy
+msgid "Auto-restart in Spell Practice"
+msgstr "Spell-Training"
+
+#: src/menu/options.c:1155
+msgid "Power in Spell and Stage Practice"
+msgstr ""
+
+#: src/menu/options.c:1163
+msgid "Shoot by default"
+msgstr ""
+
+#: src/menu/options.c:1167
+msgid "Automatic Power Surge activation"
+msgstr ""
+
+#: src/menu/options.c:1171
+msgid "Boss healthbar style"
+msgstr ""
+
+#: src/menu/options.c:1176
+msgid "Floating score text visibility"
+msgstr ""
+
+#: src/menu/options.c:1182
+msgid "SFX Volume"
+msgstr ""
+
+#: src/menu/options.c:1186
+msgid "BGM Volume"
+msgstr ""
+
+#: src/menu/options.c:1190
+msgid "Mute audio"
+msgstr ""
+
+#: src/menu/options.c:1195
+msgid "Video options…"
+msgstr ""
+
+#: src/menu/options.c:1197
+msgid "Gamepad & Joystick options…"
+msgstr ""
+
+#: src/menu/options.c:1201
+msgid "Reload from last saved"
+msgstr ""
+
+#: src/menu/options.c:1204
+msgid "Reset to defaults"
+msgstr ""
+
+#: src/menu/options.c:1337
+msgid "Press a key to assign, ESC to cancel"
+msgstr ""
+
+#: src/menu/options.c:1377
+msgid "All devices"
+msgstr ""
+
+#: src/menu/options.c:1383
+msgid "No devices available"
+msgstr ""
+
+#: src/menu/options.c:1425
+msgid "Move an axis to assign, Back to cancel"
+msgstr ""
+
+#: src/menu/options.c:1426
+msgid "Press a button to assign, Back to cancel"
+msgstr ""
+
+#: src/menu/options.c:1442
+msgid "Unbound"
+msgstr ""
+
+#: src/stages/stage1/stage1.c:29
+msgid "Freeze Sign “Perfect Freeze”"
+msgstr ""
+
+#: src/stages/stage1/stage1.c:37
+msgid "Freeze Sign “Crystal Rain”"
+msgstr ""
+
+#: src/stages/stage1/stage1.c:42
+msgid "Winter Sign “Snow Halation”"
+msgstr ""
+
+#: src/stages/stage1/stage1.c:47
+msgid "Doom Sign “Icicle Cascade”"
+msgstr ""
+
+#: src/stages/stage1/stage1.c:54
+msgid "Frost Sign “Crystal Blizzard”"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:186
+msgid "What are you doing??"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:187
+msgid "Dodge it properly!"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:188
+msgid "I bet you can’t do it! Idiot!"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:189
+msgid "I spent so much time on this attack!"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:190
+msgid "Maybe it is too smart for secondaries!"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:191
+msgid "I think you don’t even understand the timer!"
+msgstr ""
+
+#: src/stages/stage1/spells/snow_halation.c:192
+msgid "You- You Idiootttt!"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:29
+msgid "Bloodless “Gate of Walachia”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:34
+msgid "Bloodless “Dry Fountain”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:39
+msgid "Bloodless “Red Spike”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:47
+msgid "Limit “Animate Wall”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:52
+msgid "Summoning “Demon Wall”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:57
+msgid "Power Sign “Blow the Walls”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:62
+msgid "Predation “Vampiric Vapor”"
+msgstr ""
+
+#: src/stages/stage4/stage4.c:69
+msgid "Blood Magic “Vlad’s Army”"
+msgstr ""
+
+#: src/stages/stage4/kurumi.c:56 src/dialog/dialog_macros.h:72
+#: src/cutscenes/scene_impl.h:70
+msgid "Kurumi"
+msgstr ""
+
+#: src/stages/stage2/hina.c:40 src/dialog/dialog_macros.h:70
+msgid "Kagiyama Hina"
+msgstr ""
+
+#: src/stages/stage2/wriggle.c:14
+msgid "Wriggle"
+msgstr ""
+
+#: src/stages/stage2/stage2.c:24
+msgid "Shard “Amulet of Harm”"
+msgstr ""
+
+#: src/stages/stage2/stage2.c:29
+msgid "Lottery Sign “Bad Pick”"
+msgstr ""
+
+#: src/stages/stage2/stage2.c:34
+msgid "Lottery Sign “Wheel of Fortune”"
+msgstr ""
+
+#: src/stages/stage2/stage2.c:41
+msgid "Lottery Sign “Monty Hall Danmaku”"
+msgstr ""
+
+#: src/stages/stage3/wriggle.c:30
+msgid "Wriggle EX"
+msgstr ""
+
+#: src/stages/stage3/stage3.c:31
+msgid "Disruption “Logic Bomb”"
+msgstr ""
+
+#: src/stages/stage3/stage3.c:39
+msgid "Firefly Sign “Moonlight Rocket”"
+msgstr ""
+
+#: src/stages/stage3/stage3.c:44
+msgid "Attractor “Moths to a Flame”"
+msgstr ""
+
+#: src/stages/stage3/stage3.c:49
+msgid "Bug Sign “Firefly Storm”"
+msgstr ""
+
+#: src/stages/stage3/stage3.c:56
+msgid "Lamp Sign “Light Singularity”"
+msgstr ""
+
+#: src/stages/stage5/iku.c:107 src/dialog/dialog_macros.h:73
+msgid "Nagae Iku"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:24
+msgid "High Voltage “Static Bomb”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:32
+msgid "High Voltage “Atmospheric Discharge”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:37
+msgid "Charge Sign “Artificial Lightning”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:42
+msgid "Current Sign “Induction Field”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:47
+msgid "Current Sign “Inductive Resonance”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:52
+msgid "Spark Sign “Natural Cathode”"
+msgstr ""
+
+#: src/stages/stage5/stage5.c:59
+msgid "Circuit Sign “Overload”"
+msgstr ""
+
+#: src/stages/stage5/timeline.c:33
+msgid "Bombs?"
+msgstr ""
+
+#: src/stages/stage6/elly.c:28 src/dialog/dialog_macros.h:74
+#: src/cutscenes/scene_impl.h:69
+msgid "Elly"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:28
+msgid "Newton Sign “Occam’s Razor”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:33
+msgid "Kepler Sign “Orbital Clockwork”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:38
+msgid "Maxwell Sign “Wave Theory”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:46
+msgid "Eigenstate “Many-World Interpretation”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:51
+msgid "de Broglie Sign “Wave-Particle Duality”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:56
+msgid "Ricci Sign “Spacetime Curvature”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:61
+msgid "LHC “Higgs Boson Uncovered”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:69
+msgid "Forgotten Universe “Curvature Domination”"
+msgstr ""
+
+#: src/stages/stage6/stage6.c:77
+msgid "Tower of Truth “Theory of Everything”"
 msgstr ""
 
 #: src/dialog/reimu.c:46
@@ -2927,24 +3821,19 @@ msgstr ""
 msgid "Behold, your judgement before the true nature of reality!"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:70
-msgid "Kagiyama Hina"
+#: src/video.h:17 po/extra_strings.c:4 po/extra_strings.c:8
+#: po/extra_strings.c:12 po/extra_strings.c:16 po/extra_strings.c:20
+#: po/extra_strings.c:24 po/extra_strings.c:28 po/extra_strings.c:32
+#: po/extra_strings.c:36 po/extra_strings.c:40 po/extra_strings.c:44
+#: po/extra_strings.c:48 po/extra_strings.c:52 po/extra_strings.c:56
+#: po/extra_strings.c:60 po/extra_strings.c:64 po/extra_strings.c:68
+#: po/extra_strings.c:72 po/extra_strings.c:76 po/extra_strings.c:80
+#: po/extra_strings.c:84
+msgid "Taisei Project"
 msgstr ""
 
 #: src/dialog/dialog_macros.h:70
 msgid "Gyroscopic Pestilence God"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:72 src/cutscenes/scene_impl.h:70
-msgid "Kurumi"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:73
-msgid "Nagae Iku"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:74 src/cutscenes/scene_impl.h:69
-msgid "Elly"
 msgstr ""
 
 #: src/dialog/dialog_macros.h:74
@@ -4757,16 +5646,6 @@ msgstr ""
 #: po/extra_strings.c:67 po/extra_strings.c:71 po/extra_strings.c:75
 #: po/extra_strings.c:79
 msgid "Tuck V"
-msgstr ""
-
-#: po/extra_strings.c:4 po/extra_strings.c:8 po/extra_strings.c:12
-#: po/extra_strings.c:16 po/extra_strings.c:20 po/extra_strings.c:24
-#: po/extra_strings.c:28 po/extra_strings.c:32 po/extra_strings.c:36
-#: po/extra_strings.c:40 po/extra_strings.c:44 po/extra_strings.c:48
-#: po/extra_strings.c:52 po/extra_strings.c:56 po/extra_strings.c:60
-#: po/extra_strings.c:64 po/extra_strings.c:68 po/extra_strings.c:72
-#: po/extra_strings.c:76 po/extra_strings.c:80 po/extra_strings.c:84
-msgid "Taisei Project"
 msgstr ""
 
 #: po/extra_strings.c:5

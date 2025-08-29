@@ -14,7 +14,7 @@
 
 #include <SDL3/SDL.h>
 
-#define WINDOW_TITLE "Taisei Project"
+#define WINDOW_TITLE _("Taisei Project")
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 enum {
