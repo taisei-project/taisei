@@ -26,7 +26,7 @@
 struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
-			{-1, -1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
+			{-1, -1,  2,  3}, AT_Spellcard, N_("Freeze Sign “Perfect Freeze”"), 50, 24000,
 			TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze),
 			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
@@ -34,24 +34,24 @@ struct stage1_spells_s stage1_spells = {
 
 	.boss = {
 		.crystal_rain = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
+			{ 4,  5,  6,  7}, AT_Spellcard, N_("Freeze Sign “Crystal Rain”"), 40, 33000,
 			TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain),
 			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.snow_halation = {
-			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
+			{-1, -1, 12, 13}, AT_Spellcard, N_("Winter Sign “Snow Halation”"), 50, 40000,
 			TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation),
 			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.icicle_cascade = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Cascade”", 40, 40000,
+			{ 8,  9, 10, 11}, AT_Spellcard, N_("Doom Sign “Icicle Cascade”"), 40, 40000,
 			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade),
 			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 	},
 
 	.extra.crystal_blizzard = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, N_("Frost Sign “Crystal Blizzard”"), 60, 40000,
 		TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard),
 		stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 	},

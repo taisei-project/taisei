@@ -25,7 +25,7 @@ TASK(elly_animate_colors, { BoxedBoss boss; }) {
 }
 
 Boss *stage6_spawn_elly(cmplx pos) {
-	Boss *b = create_boss("Elly", "elly", pos);
+	Boss *b = create_boss(_("Elly"), "elly", pos);
 	boss_set_portrait(b, "elly", NULL, "normal");
 	INVOKE_TASK(elly_animate_colors, ENT_BOX(b));
 	return b;
