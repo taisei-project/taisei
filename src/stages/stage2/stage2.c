@@ -21,24 +21,24 @@
 struct stage2_spells_s stage2_spells = {
 	.boss = {
 		.amulet_of_harm = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 50, 30000,
+			{ 0,  1,  2,  3}, AT_Spellcard, N_("Shard “Amulet of Harm”"), 50, 30000,
 			TASK_INDIRECT_INIT(BossAttack, stage2_spell_amulet_of_harm),
 			stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
 		},
 		.bad_pick = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 60, 43200,
+			{ 4,  5,  6,  7}, AT_Spellcard, N_("Lottery Sign “Bad Pick”"), 60, 43200,
 			TASK_INDIRECT_INIT(BossAttack, stage2_spell_bad_pick),
 			stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
 		},
 		.wheel_of_fortune = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 50, 32000,
+			{ 8,  9, 10, 11}, AT_Spellcard, N_("Lottery Sign “Wheel of Fortune”"), 50, 32000,
 			TASK_INDIRECT_INIT(BossAttack, stage2_spell_wheel_of_fortune),
 			stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
 		},
 	},
 
 	.extra.monty_hall_danmaku = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign “Monty Hall Danmaku”", 60, 60000,
+		{ 0,  1,  2,  3}, AT_ExtraSpell, N_("Lottery Sign “Monty Hall Danmaku”"), 60, 60000,
 		TASK_INDIRECT_INIT(BossAttack, stage2_spell_monty_hall_danmaku),
 		stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
 	},

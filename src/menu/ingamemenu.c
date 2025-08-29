@@ -129,12 +129,12 @@ MenuData *create_ingame_menu(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
-		.title = "Game Paused",
+		.title = _("Game Paused"),
 	});
-	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, "Return to Game", menu_action_close, NULL);
-	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, "Stop the Game", return_to_title, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Return to Game"), menu_action_close, NULL);
+	add_menu_entry(m, _("Restart the Game"), restart_game, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Stop the Game"), return_to_title, NULL)->transition = TransFadeBlack;
 	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
@@ -155,13 +155,13 @@ MenuData *create_ingame_menu_replay(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
-		.title = "Replay Paused",
+		.title = _("Replay Paused"),
 	});
-	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, "Continue Watching", menu_action_close, NULL);
-	add_menu_entry(m, "Restart the Stage", restart_game, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, "Skip the Stage", skip_stage, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, "Stop Watching", return_to_title, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Continue Watching"), menu_action_close, NULL);
+	add_menu_entry(m, _("Restart the Stage"), restart_game, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Skip the Stage"), skip_stage, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, _("Stop Watching"), return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;
 	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 

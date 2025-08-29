@@ -490,13 +490,13 @@ typedef struct ConfirmDialog {
 
 static const ConfirmDialog dialog_reset_default = {
 	.header.type = ARGTYPE_OTHER,
-	.text = "Reset all settings to defaults?",
+	.text = N_("Reset all settings to defaults?"),
 	.action = config_reset,
 };
 
 static const ConfirmDialog dialog_reset_saved = {
 	.header.type = ARGTYPE_OTHER,
-	.text = "Reset all settings to the last saved values?",
+	.text = N_("Reset all settings to the last saved values?"),
 	.action = config_load,
 };
 
@@ -629,7 +629,7 @@ static void confirm_dialog_draw(MenuData *m) {
 
 	float lineskip = font_get_lineskip(res_font("standard"));
 	float height = lineskip * 4;
-	float width  = text_width(res_font("standard"), ctx->confirm_dialog->text, 0) + 64;
+	float width  = text_width(res_font("standard"), _(ctx->confirm_dialog->text), 0) + 64;
 
 	r_state_push();
 	alpha *= 0.7;
@@ -651,7 +651,7 @@ static void confirm_dialog_draw(MenuData *m) {
 
 	r_state_pop();
 
-	text_draw(ctx->confirm_dialog->text, &(TextParams) {
+	text_draw(_(ctx->confirm_dialog->text), &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 - lineskip * 0.5 },
@@ -697,8 +697,8 @@ static void confirm_dialog(MenuData *m, void *a) {
 	sub->flags = MF_Transient | MF_Abortable;
 	sub->transition = NULL;
 	sub->context = m->context;
-	add_menu_entry(sub, "Yes", confirm_reset, NULL);
-	add_menu_entry(sub, "No", menu_action_close, NULL);
+	add_menu_entry(sub, _("Yes"), confirm_reset, NULL);
+	add_menu_entry(sub, _("No"), menu_action_close, NULL);
 	sub->cursor = 1;
 
 	OptionsMenuContext *ctx = m->context;
@@ -726,40 +726,40 @@ static MenuData* create_options_menu_video(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
 
 static MenuData* create_options_menu_video(MenuData *parent) {
-	MenuData *m = create_options_menu_base("Video Options");
+	MenuData *m = create_options_menu_base(_("Video Options"));
 	OptionBinding *b;
 
-	add_menu_entry(m, "Fullscreen", do_nothing,
+	add_menu_entry(m, _("Fullscreen"), do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		b->dependence = bind_fullscreen_dependence;
 
-	add_menu_entry(m, "Display", do_nothing,
+	add_menu_entry(m, _("Display"), do_nothing,
 		b = bind_video_display(CONFIG_VID_DISPLAY)
 	);
 
-	add_menu_entry(m, "Window size", do_nothing,
+	add_menu_entry(m, _("Window size"), do_nothing,
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;
 		b->dependence = bind_resolution_dependence;
 
-	add_menu_entry(m, "Renderer resolution", do_nothing,
+	add_menu_entry(m, _("Renderer resolution"), do_nothing,
 		b = bind_fb_resolution()
 	);	b->dependence = bind_fb_resolution_dependence;
 		b->pad++;
 
-	add_menu_entry(m, "Resizable window", do_nothing,
+	add_menu_entry(m, _("Resizable window"), do_nothing,
 		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		b->dependence = bind_resizable_dependence;
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Pause the game when not focused", do_nothing,
+	add_menu_entry(m, _("Pause the game when not focused"), do_nothing,
 		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Vertical synchronization", do_nothing,
+	add_menu_entry(m, _("Vertical synchronization"), do_nothing,
 		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
@@ -768,7 +768,7 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 		bind_addvalue(b, "adaptive");
 	}
 
-	add_menu_entry(m, "Skip frames", do_nothing,
+	add_menu_entry(m, _("Skip frames"), do_nothing,
 		b = bind_option(CONFIG_VID_FRAMESKIP, bind_common_intplus1_get, bind_common_intplus1_set)
 	);	bind_addvalue(b, "0");
 		bind_addvalue(b, "½");
@@ -776,39 +776,39 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Overall rendering quality", do_nothing,
+	add_menu_entry(m, _("Overall rendering quality"), do_nothing,
 		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
 	);
 
-	add_menu_entry(m, "Draw background", do_nothing,
+	add_menu_entry(m, _("Draw background"), do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_onoff_inverted_get, bind_common_onoff_inverted_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Background rendering quality", do_nothing,
+	add_menu_entry(m, _("Background rendering quality"), do_nothing,
 		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
 	);	b->dependence = bind_bgquality_dependence;
 		b->pad++;
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Anti-aliasing", do_nothing,
+	add_menu_entry(m, _("Anti-aliasing"), do_nothing,
 		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "none");
 		bind_addvalue(b, "fxaa");
 
-	add_menu_entry(m, "Particle effects", do_nothing,
+	add_menu_entry(m, _("Particle effects"), do_nothing,
 		b = bind_option(CONFIG_PARTICLES, bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "minimal");
 		bind_addvalue(b, "full");
 
-	add_menu_entry(m, "Postprocessing effects", do_nothing,
+	add_menu_entry(m, _("Postprocessing effects"), do_nothing,
 		b = bind_option(CONFIG_POSTPROCESS, bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "minimal");
 		bind_addvalue(b, "fast");
 		bind_addvalue(b, "full");
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -829,50 +829,50 @@ static bool gamepad_enabled_depencence(void) {
 #endif
 
 static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
-	MenuData *m = create_options_menu_base("Gamepad Controls");
+	MenuData *m = create_options_menu_base(_("Gamepad Controls"));
 
-	add_menu_entry(m, "Move up", do_nothing,
+	add_menu_entry(m, _("Move up"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
 	);
 
-	add_menu_entry(m, "Move down", do_nothing,
+	add_menu_entry(m, _("Move down"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_DOWN)
 	);
 
-	add_menu_entry(m, "Move left", do_nothing,
+	add_menu_entry(m, _("Move left"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_LEFT)
 	);
 
-	add_menu_entry(m, "Move right", do_nothing,
+	add_menu_entry(m, _("Move right"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Shoot", do_nothing,
+	add_menu_entry(m, _("Shoot"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
 	);
 
-	add_menu_entry(m, "Focus", do_nothing,
+	add_menu_entry(m, _("Focus"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Use Spell Card", do_nothing,
+	add_menu_entry(m, _("Use Spell Card"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
 	);
 
-	add_menu_entry(m, "Power Surge / Discharge", do_nothing,
+	add_menu_entry(m, _("Power Surge / Discharge"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SPECIAL)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Skip dialog", do_nothing,
+	add_menu_entry(m, _("Skip dialog"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -945,11 +945,11 @@ static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
 
 	if(ctx->gamepad_testmode.active) {
 		snprintf(buf, sizeof(buf),
-			"Press any button on your gamepad to exit joystick testing mode");
+			_("Press any button on your gamepad to exit joystick testing mode"));
 	} else {
 		snprintf(buf, sizeof(buf),
-			"Press %s on your gamepad to enter joystick testing mode",
-			gamepad_button_name(test_btn));
+			_("Press %s on your gamepad to enter joystick testing mode"),
+			_(gamepad_button_name(test_btn)));
 	}
 
 	text_draw(buf, &(TextParams) {
@@ -961,7 +961,7 @@ static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
 }
 
 static MenuData* create_options_menu_gamepad(MenuData *parent) {
-	MenuData *m = create_options_menu_base("Gamepad Options");
+	MenuData *m = create_options_menu_base(_("Gamepad Options"));
 	m->end = destroy_options_menu_gamepad;
 
 	OptionsMenuContext *ctx = m->context;
@@ -972,187 +972,187 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 	OptionBinding *b;
 
 #ifndef __SWITCH__
-	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
+	add_menu_entry(m, _("Enable Gamepad/Joystick support"), do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Device", do_nothing,
+	add_menu_entry(m, _("Device"), do_nothing,
 		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)
 	);	b->dependence = gamepad_enabled_depencence;
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Customize controls…", enter_options_menu_gamepad_controls, NULL);
+	add_menu_entry(m, _("Customize controls…"), enter_options_menu_gamepad_controls, NULL);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Remap square input into circular", do_nothing,
+	add_menu_entry(m, _("Remap square input into circular"), do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_SQUARECIRCLE, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Direction snap factor", do_nothing,
+	add_menu_entry(m, _("Direction snap factor"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP, 0, 1, 0.05)
 	);
 
-	add_menu_entry(m, "Diagonal bias", do_nothing,
+	add_menu_entry(m, _("Diagonal bias"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP_DIAG_BIAS, -1, 1, 0.05)
 	);	b->pad++;
 
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Dead zone", do_nothing,
+	add_menu_entry(m, _("Dead zone"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
 	);
 
-	add_menu_entry(m, "Maximum zone", do_nothing,
+	add_menu_entry(m, _("Maximum zone"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_MAXZONE, 0, 1, 0.01)
 	);
 
-	add_menu_entry(m, "Sensitivity", do_nothing,
+	add_menu_entry(m, _("Sensitivity"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SENS, -2, 2, 0.05)
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	return m;
 }
 
 static MenuData* create_options_menu_controls(MenuData *parent) {
-	MenuData *m = create_options_menu_base("Controls");
+	MenuData *m = create_options_menu_base(_("Controls"));
 
-	add_menu_entry(m, "Move up", do_nothing,
+	add_menu_entry(m, _("Move up"), do_nothing,
 		bind_keybinding(CONFIG_KEY_UP)
 	);
 
-	add_menu_entry(m, "Move down", do_nothing,
+	add_menu_entry(m, _("Move down"), do_nothing,
 		bind_keybinding(CONFIG_KEY_DOWN)
 	);
 
-	add_menu_entry(m, "Move left", do_nothing,
+	add_menu_entry(m, _("Move left"), do_nothing,
 		bind_keybinding(CONFIG_KEY_LEFT)
 	);
 
-	add_menu_entry(m, "Move right", do_nothing,
+	add_menu_entry(m, _("Move right"), do_nothing,
 		bind_keybinding(CONFIG_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Shoot", do_nothing,
+	add_menu_entry(m, _("Shoot"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SHOT)
 	);
 
-	add_menu_entry(m, "Focus", do_nothing,
+	add_menu_entry(m, _("Focus"), do_nothing,
 		bind_keybinding(CONFIG_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Use Spell Card", do_nothing,
+	add_menu_entry(m, _("Use Spell Card"), do_nothing,
 		bind_keybinding(CONFIG_KEY_BOMB)
 	);
 
-	add_menu_entry(m, "Power Surge / Discharge", do_nothing,
+	add_menu_entry(m, _("Power Surge / Discharge"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SPECIAL)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Toggle fullscreen", do_nothing,
+	add_menu_entry(m, _("Toggle fullscreen"), do_nothing,
 		bind_keybinding(CONFIG_KEY_FULLSCREEN)
 	);
 
-	add_menu_entry(m, "Take a screenshot", do_nothing,
+	add_menu_entry(m, _("Take a screenshot"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SCREENSHOT)
 	);
 
-	add_menu_entry(m, "Skip dialog", do_nothing,
+	add_menu_entry(m, _("Skip dialog"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Toggle audio", do_nothing,
+	add_menu_entry(m, _("Toggle audio"), do_nothing,
 		bind_keybinding(CONFIG_KEY_TOGGLE_AUDIO)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Stop the game immediately", do_nothing,
+	add_menu_entry(m, _("Stop the game immediately"), do_nothing,
 		bind_keybinding(CONFIG_KEY_STOP)
 	);
 
-	add_menu_entry(m, "Restart the game immediately", do_nothing,
+	add_menu_entry(m, _("Restart the game immediately"), do_nothing,
 		bind_keybinding(CONFIG_KEY_RESTART)
 	);
 
-	add_menu_entry(m, "Quick save", do_nothing,
+	add_menu_entry(m, _("Quick save"), do_nothing,
 		bind_keybinding(CONFIG_KEY_QUICKSAVE)
 	);
 
-	add_menu_entry(m, "Quick load", do_nothing,
+	add_menu_entry(m, _("Quick load"), do_nothing,
 		bind_keybinding(CONFIG_KEY_QUICKLOAD)
 	);
 
 #ifdef DEBUG
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Toggle God mode", do_nothing,
+	add_menu_entry(m, _("Toggle God mode"), do_nothing,
 		bind_keybinding(CONFIG_KEY_IDDQD)
 	);
 
-	add_menu_entry(m, "Skip stage", do_nothing,
+	add_menu_entry(m, _("Skip stage"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HAHAIWIN)
 	);
 
-	add_menu_entry(m, "Power up", do_nothing,
+	add_menu_entry(m, _("Power up"), do_nothing,
 		bind_keybinding(CONFIG_KEY_POWERUP)
 	);
 
-	add_menu_entry(m, "Power down", do_nothing,
+	add_menu_entry(m, _("Power down"), do_nothing,
 		bind_keybinding(CONFIG_KEY_POWERDOWN)
 	);
 
-	add_menu_entry(m, "Disable background rendering (HoM effect)", do_nothing,
+	add_menu_entry(m, _("Disable background rendering (HoM effect)"), do_nothing,
 		bind_keybinding(CONFIG_KEY_NOBACKGROUND)
 	);
 
-	add_menu_entry(m, "Toggle collision areas overlay", do_nothing,
+	add_menu_entry(m, _("Toggle collision areas overlay"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HITAREAS)
 	);
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	return m;
 }
 
 MenuData* create_options_menu(void) {
-	MenuData *m = create_options_menu_base("Options");
+	MenuData *m = create_options_menu_base(_("Options"));
 	OptionBinding *b;
 
 #ifndef __SWITCH__
-	add_menu_entry(m, "Player name", do_nothing,
+	add_menu_entry(m, _("Player name"), do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
 	);
 
 	add_menu_separator(m);
 #endif
 
-	add_menu_entry(m, "Save replays", do_nothing,
+	add_menu_entry(m, _("Save replays"), do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "always");
 		bind_addvalue(b, "never");
 		bind_addvalue(b, "ask");
 
-	add_menu_entry(m, "Auto-restart in Spell Practice", do_nothing,
+	add_menu_entry(m, _("Auto-restart in Spell Practice"), do_nothing,
 		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Power in Spell and Stage Practice", do_nothing,
+	add_menu_entry(m, _("Power in Spell and Stage Practice"), do_nothing,
 		b = bind_option(CONFIG_PRACTICE_POWER, bind_power_get, bind_power_set)
 	);	bind_addvalue(b, "0.0");
 		bind_addvalue(b, "1.0");
@@ -1160,52 +1160,52 @@ MenuData* create_options_menu(void) {
 		bind_addvalue(b, "3.0");
 		bind_addvalue(b, "4.0");
 
-	add_menu_entry(m, "Shoot by default", do_nothing,
+	add_menu_entry(m, _("Shoot by default"), do_nothing,
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Automatic Power Surge activation", do_nothing,
+	add_menu_entry(m, _("Automatic Power Surge activation"), do_nothing,
 		b = bind_option(CONFIG_AUTO_SURGE,      bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, "Boss healthbar style", do_nothing,
+	add_menu_entry(m, _("Boss healthbar style"), do_nothing,
 		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "classic");
 		bind_addvalue(b, "modern");
 
-	add_menu_entry(m, "Floating score text visibility", do_nothing,
+	add_menu_entry(m, _("Floating score text visibility"), do_nothing,
 		b = bind_scale(CONFIG_SCORETEXT_ALPHA, 0, 1, 0.05)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "SFX Volume", do_nothing,
+	add_menu_entry(m, _("SFX Volume"), do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
-	add_menu_entry(m, "BGM Volume", do_nothing,
+	add_menu_entry(m, _("BGM Volume"), do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
-	add_menu_entry(m, "Mute audio", do_nothing,
+	add_menu_entry(m, _("Mute audio"), do_nothing,
 		b = bind_option(CONFIG_MUTE_AUDIO,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Video options…", enter_options_menu_video, NULL);
-	add_menu_entry(m, "Customize controls…", enter_options_menu_controls, NULL);
-	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
+	add_menu_entry(m, _("Video options…"), enter_options_menu_video, NULL);
+	add_menu_entry(m, _("Customize controls…"), enter_options_menu_controls, NULL);
+	add_menu_entry(m, _("Gamepad & Joystick options…"), enter_options_menu_gamepad, NULL);
 	add_menu_separator(m);
 
 	auto e = add_menu_entry(
-		m, "Reload from last saved", confirm_dialog, (void*)&dialog_reset_saved);
+		m, _("Reload from last saved"), confirm_dialog, (void*)&dialog_reset_saved);
 	e->transition = NULL;
 	e = add_menu_entry(
-		m, "Reset to defaults", confirm_dialog, (void*)&dialog_reset_default);
+		m, _("Reset to defaults"), confirm_dialog, (void*)&dialog_reset_default);
 	e->transition = NULL;
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, _("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -1334,7 +1334,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 			case BT_KeyBinding: {
 				if(bind->blockinput) {
-					text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
+					text_draw(_("Press a key to assign, ESC to cancel"), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = RGBA(0.5, 1, 0.5, 1),
@@ -1343,7 +1343,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
 
 					if(!txt || !*txt) {
-						txt = "Unknown";
+						txt = _("Unknown");
 					}
 
 					text_draw(txt, &(TextParams) {
@@ -1374,13 +1374,13 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 					if(bind->valrange_max >= 0) {
 						if(bind->selected < 0) {
-							txt = "All devices";
+							txt = _("All devices");
 						} else {
 							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
 							txt = buf;
 						}
 					} else {
-						txt = "No devices available";
+						txt = _("No devices available");
 					}
 
 					text_draw(txt, &(TextParams) {
@@ -1422,8 +1422,8 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				bool is_axis = (bind->type == BT_GamepadAxisBinding);
 
 				if(bind->blockinput) {
-					char *text = is_axis ? "Move an axis to assign, Back to cancel"
-											: "Press a button to assign, Back to cancel";
+					char *text = is_axis ? _("Move an axis to assign, Back to cancel")
+											: _("Press a button to assign, Back to cancel");
 
 					text_draw(text, &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
@@ -1433,13 +1433,13 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				} else if(config_get_int(bind->configentry) >= 0) {
 					int id = config_get_int(bind->configentry);
 					const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
-					text_draw(name, &(TextParams) {
+					text_draw(_(name), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
 				} else {
-					text_draw("Unbound", &(TextParams) {
+					text_draw(_("Unbound"), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,

@@ -32,7 +32,7 @@ static MenuEntry *add_quickload_entry(MenuData *m, const GameoverMenuParams *par
 		return NULL;
 	}
 
-	return add_action_entry(m, "Load Quicksave", GAMEOVERMENU_ACTION_QUICKLOAD, params->quickload_enabled);
+	return add_action_entry(m, _("Load Quicksave"), GAMEOVERMENU_ACTION_QUICKLOAD, params->quickload_enabled);
 }
 
 static void free_gameover_menu(MenuData *m) {
@@ -58,29 +58,29 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 	add_quickload_entry(m, params);
 
 	if(global.stage->type == STAGE_SPELL) {
-		ctx->base.title = "Spell Failed";
+		ctx->base.title = _("Spell Failed");
 
-		add_action_entry(m, "Restart", GAMEOVERMENU_ACTION_RESTART, true)
+		add_action_entry(m, _("Restart"), GAMEOVERMENU_ACTION_RESTART, true)
 			->transition = TransFadeBlack;
-		add_action_entry(m, "Give up", GAMEOVERMENU_ACTION_QUIT, true)
+		add_action_entry(m, _("Give up"), GAMEOVERMENU_ACTION_QUIT, true)
 			->transition = TransFadeBlack;
 	} else {
-		ctx->base.title = "Game Over";
+		ctx->base.title = _("Game Over");
 
 		char s[64];
 		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
 		bool have_continues = c > 0;
 
 		if(have_continues) {
-			snprintf(s, sizeof(s), "Continue (%i)", c);
+			snprintf(s, sizeof(s), _("Continue (%i)"), c);
 		} else {
-			snprintf(s, sizeof(s), "Continue");
+			snprintf(s, sizeof(s), _("Continue"));
 		}
 
 		add_action_entry(m, s, GAMEOVERMENU_ACTION_CONTINUE, have_continues);
-		add_action_entry(m, "Restart the Game", GAMEOVERMENU_ACTION_RESTART, true)
+		add_action_entry(m, _("Restart the Game"), GAMEOVERMENU_ACTION_RESTART, true)
 			->transition = TransFadeBlack;
-		add_action_entry(m, have_continues ? "Give up" : "Return to Title", GAMEOVERMENU_ACTION_QUIT, true)
+		add_action_entry(m, have_continues ? _("Give up") : _("Return to Title"), GAMEOVERMENU_ACTION_QUIT, true)
 			->transition = TransFadeBlack;
 	}
 

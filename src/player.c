@@ -110,7 +110,7 @@ void player_free(Player *plr) {
 
 static void player_full_power(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
-	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
+	stagetext_add(_("Full Power!"), VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
 
 static int player_track_effective_power_change(Player *plr) {
@@ -728,7 +728,7 @@ static bool player_powersurge(Player *plr) {
 	play_sfx("powersurge_start");
 
 	collect_all_items(1);
-	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, res_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
+	stagetext_add(_("Power Surge!"), plr->pos - 64 * I, ALIGN_CENTER, res_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
 
 	INVOKE_TASK(powersurge_player_particles, ENT_BOX(plr));
 

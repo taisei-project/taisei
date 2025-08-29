@@ -30,7 +30,7 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
-	Boss *boss = global.boss = create_boss("Bombs?", "iku_mid", VIEWPORT_W + 800.0 * I);
+	Boss *boss = global.boss = create_boss(_("Bombs?"), "iku_mid", VIEWPORT_W + 800.0 * I);
 	boss->glowcolor = *RGB(0.2, 0.4, 0.5);
 	boss->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 

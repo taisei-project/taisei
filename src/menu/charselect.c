@@ -161,16 +161,16 @@ void draw_char_menu(MenuData *menu) {
 
 	r_state_push();
 
-	static const char *const prefixes[] = {
-		"Intuition",
-		"Science",
+	const char *const prefixes[] = {
+		_("Intuition"),
+		_("Science"),
 	};
 
 	assert(menu->cursor < 3);
 	PlayerCharacter *selected_char = plrchar_get((CharacterID)(uintptr_t)dynarray_get(&menu->entries, menu->cursor).arg);
 
 	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * menu->drawdata[1]), "menu/mainmenubg", selected_char->menu_texture_name);
-	draw_menu_title(menu, "Select Character");
+	draw_menu_title(menu, _("Select Character"));
 
 	CharacterID current_char = 0;
 
