@@ -488,7 +488,6 @@ if is_relocatable_install
         # Relative to SDL_GetBasePath() (bundle root)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(bundle_datadir, data_path))
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(bundle_libdir))
-        config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', bundle_localedir)
 
         # Make paths prefix-relative for installation
         data_path = join_paths(datadir, data_path)
@@ -500,7 +499,6 @@ if is_relocatable_install
         # Relative to SDL_GetBasePath() (typically contains the executable)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', lib_path)
-        config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', locale_path)
     endif
 else  # Non-relocatable
     bindir = get_option('bindir')
@@ -514,7 +512,6 @@ else  # Non-relocatable
     # Static absolute paths
     config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
     config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(get_option('prefix'), lib_path))
-    config.set_quoted('TAISEI_BUILDCONF_LOCALE_PATH', join_paths(get_option('prefix'), 'share/locale'))
 endif
 
 config.set('TAISEI_BUILDCONF_RELOCATABLE_INSTALL', is_relocatable_install)
@@ -524,8 +521,6 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
-
-config.set_quoted('TAISEI_BUILDCONF_GETTEXT_PACKAGE', meson.project_name())
 
 if host_machine.system() == 'windows'
     custom_target('COPYING.txt',
@@ -597,7 +592,6 @@ foreach pathvar : [
     'TAISEI_BUILDCONF_ANGLE_GLES_PATH',
     'TAISEI_BUILDCONF_DATA_PATH',
     'TAISEI_BUILDCONF_LIB_PATH',
-    'TAISEI_BUILDCONF_LOCALE_PATH',
 ]
     if config.has(pathvar)
         p = config.get_unquoted(pathvar)

@@ -17,10 +17,7 @@
 #include "util/consideredharmful.h"   // IWYU pragma: export
 #include "memory/memory.h"            // IWYU pragma: export
 
-#include <libintl.h>
-#define _(str) gettext(str)
-// used for marking strings for xgettext without translating them
-#define N_(str) str
+#include "intl/intl.h"
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this
