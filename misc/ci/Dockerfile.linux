@@ -18,6 +18,7 @@ RUN zypper --no-refresh -n install -y \
 	freetype2-devel \
 	gcc \
 	gcc-c++ \
+	gettext-tools \
 	gh \
 	git \
 	glslang-devel \
