@@ -15,6 +15,7 @@
 #include "eventloop/eventloop.h"
 #include "events.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "progress.h"
 #include "renderer/api.h"
 #include "replay/demoplayer.h"

@@ -12,6 +12,7 @@
 #include "dynarray.h"
 #include "events.h"
 #include "hirestime.h"
+#include "intl/intl.h"
 #include "log.h"
 #include "transition.h"
 #include "util.h"

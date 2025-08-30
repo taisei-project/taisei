@@ -16,6 +16,7 @@
 #include "audio/audio.h"
 #include "events.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "resource/font.h"
 #include "util/graphics.h"
 #include "version.h"

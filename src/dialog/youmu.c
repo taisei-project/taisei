@@ -7,6 +7,7 @@
  */
 
 #include "dialog_macros.h"
+#include "intl/intl.h"
 
 /*
  * Stage 1

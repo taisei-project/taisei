@@ -3,6 +3,7 @@ resource_src = files(
     'animation.c',
     'bgm.c',
     'font.c',
+    'i18n.c',
     'material.c',
     'model.c',
     'postprocess.c',

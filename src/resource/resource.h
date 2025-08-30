@@ -25,6 +25,7 @@ typedef enum ResourceType {
 	RES_SPRITE,
 	RES_FONT,
 	RES_MATERIAL,
+	RES_I18N,
 	RES_NUMTYPES,
 } ResourceType;
 
