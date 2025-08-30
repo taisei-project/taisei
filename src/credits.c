@@ -126,6 +126,7 @@ static void credits_fill(void) {
 		"https://twitter.com/violet_fantasia\n\n"
 		"Dialogue writing (Hina, Kurumi)"
 	), ENTRY_TIME);
+
 	credits_add((
 		_("Swordsdeer\n"
 		"剑客小鹿\n"
@@ -170,7 +171,7 @@ static void credits_fill(void) {
 		"Blender\n"                   "https://www.blender.org/\n\n"
 		"cglm\n"                      "https://github.com/recp/cglm\n\n"
 		"FreeType\n"                  "https://freetype.org/\n\n"
-		"Inkscape\n"                  "https://inkscape.org/\n"
+		"Inkscape\n"                  "https://inkscape.org/\n\n"
 		"Krita\n"                     "https://krita.org/\n\n"
 		"libpng\n"                    "http://libpng.org/\n\n"
 		"libwebp\n"                   "https://git.io/WebP\n\n"
