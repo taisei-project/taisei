@@ -7,6 +7,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#(注:对话框每42个字节或21个汉字添加一个空格以换行)
+#(Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
+
 #: src/player.c:112
 msgid "Full Power!"
 msgstr ""
@@ -2097,270 +2100,282 @@ msgstr "凝视宇宙的终极真理，颤抖吧！"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr ""
+msgstr "又下雪了？可我把冬衣刚收起来诶。"
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
-msgstr ""
+msgstr "……而且夏天已经过了一半。"
 
 #: src/dialog/marisa.c:28
 msgid "Don’t you like the cold weather???"
-msgstr ""
+msgstr "难道泥不喜欢冷天吗？？？"
 
 #: src/dialog/marisa.c:32
 msgid "It should be winter all the time!"
-msgstr ""
+msgstr "应该一直都是冬天才对！"
 
 #: src/dialog/marisa.c:35
 msgid "Mind paying to get my coat cleaned, then?"
-msgstr ""
+msgstr "那你愿意出钱把我的外套拿去洗洗吗？"
 
 #: src/dialog/marisa.c:37
 msgid "I was gonna get it done in the fall, but now…"
-msgstr ""
+msgstr "我本打算秋天的时候去洗的，但现在……"
 
 #: src/dialog/marisa.c:40
 msgid "Why would I do that?! You’re never going to pay me back!"
-msgstr ""
+msgstr "泥个大坏蛋！根本不还钱！"
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr ""
+msgstr "咱要把泥冻成冰立方！"
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr ""
+msgstr "真的吗？我倒是更喜欢刨冰呢。"
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
-msgstr ""
+msgstr "你干嘛不去找你那个来自地狱的新朋友玩呢？"
 
 #: src/dialog/marisa.c:61
 msgid "Maybe then it’d be more of a fair fight."
-msgstr ""
+msgstr "也许那样打起来才更公平些。"
 
 #: src/dialog/marisa.c:63
 msgid "Ouch…"
-msgstr ""
+msgstr "啊啊啊……"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr ""
+msgstr "咱、咱上次打赢她了！下次泥也一样打败！"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
-msgstr ""
+msgstr "好吧好吧。"
 
 #: src/dialog/marisa.c:82
 msgid "Geez, this place is kinda sad now."
-msgstr ""
+msgstr "唉，现在这个地方还真是有点凄凉啊。"
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr ""
+msgstr "话说回来，到底是什么让那些妖怪变得这么奇怪ZE"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
-msgstr ""
+msgstr "你好，雾雨小姐。"
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
-msgstr ""
-
+msgstr "你看起来还是和以往一样鲁莽。我建议你最好回头。"
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
-msgstr ""
+msgstr "谢谢你的建议！不过我会无视的DA☆ZE"
 
 #: src/dialog/marisa.c:93
 msgid "See ya."
-msgstr ""
+msgstr "回见啦。"
 
 #: src/dialog/marisa.c:97
 msgid "Oh my… you’re quite the rebellious one, aren’t you?"
-msgstr ""
+msgstr "哎呀……你还真是个叛逆的家伙。"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
-msgstr ""
+msgstr "居然这么自信，就这么无视我的警告。"
 
 #: src/dialog/marisa.c:101
 msgid "I’ll take that as a compliment."
-msgstr ""
+msgstr "我就当这是在夸我了。"
 
 #: src/dialog/marisa.c:104
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
 msgstr ""
+"那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
-msgstr ""
+msgstr "她们会接连好几年都厄运缠身！"
 
 #: src/dialog/marisa.c:118
 msgid "You’re way more snippy than usual today."
-msgstr ""
+msgstr "你今天比平时刻薄多了啊。"
 
 #: src/dialog/marisa.c:119
 msgid "It’s kinda annoyin’, honestly."
-msgstr ""
+msgstr "说真的还挺烦人的。"
 
 #: src/dialog/marisa.c:121
 msgid "H-how mean…"
-msgstr ""
+msgstr "你、你太狠了……"
 
 #: src/dialog/marisa.c:122
 msgid "Don’t you see I was just trying to keep you safe…?"
-msgstr ""
+msgstr "难道你没明白我刚才只是想保护你吗……？"
 
 #: src/dialog/marisa.c:124
 msgid "Don’t get all motherly on me now."
-msgstr ""
+msgstr "现在可别对我摆出一副妈妈的样子啊ZE"
 
 #: src/dialog/marisa.c:126
 msgid "I’ve had enough of that for a lifetime."
-msgstr ""
+msgstr "这辈子我已经受够那种事了。"
 
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
 msgstr ""
+"天啊，我越往上走，大家就越癫了. "
+"这到底是怎么回事？"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
-msgstr ""
+msgstr "等你见到他们的头领再说吧！"
 
 #: src/dialog/marisa.c:148
 msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
-msgstr ""
+msgstr "是啊，我肯定得好好问他们头领一堆问题ZE"
 
 #: src/dialog/marisa.c:151
 msgid "Feel free to go ahead. I’m listening."
-msgstr ""
+msgstr "你尽管说吧，我在听着呢。"
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr ""
+msgstr "哦，你就是那个信使？"
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
-msgstr ""
+msgstr "能帮我带个话吗？"
 
 #: src/dialog/marisa.c:159
 msgid "Um, OBVIOUSLY I’m not the messenger!"
-msgstr ""
+msgstr "额，你觉得我像信使？"
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
-msgstr ""
+msgstr "我可是昆虫界的伟大领袖！"
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr ""
+msgstr "伟大领袖？啥玩意，昆虫们还成立工会了不成？"
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
-msgstr ""
+msgstr "不！我都说了，我就是领袖！我就是黑幕！"
 
 #: src/dialog/marisa.c:169
 msgid "So, what’s your question?"
-msgstr ""
+msgstr "所以你有何问题？"
 
 #: src/dialog/marisa.c:172
 msgid "Hmm, guess I forgot."
-msgstr ""
+msgstr "嗯，看来我给忘了。"
 
 #: src/dialog/marisa.c:173
 msgid "What’s yer deal, anyways?"
-msgstr ""
+msgstr "不管怎样，你到底什么来头？"
 
 #: src/dialog/marisa.c:176
 msgid "We insects have three demands:"
-msgstr ""
+msgstr "我们昆虫一族有三大要求："
 
 #: src/dialog/marisa.c:177
 msgid "First: say nay to insect spray!"
-msgstr ""
+msgstr "第一：拒绝杀虫剂！"
 
 #: src/dialog/marisa.c:178
 msgid "Second: swat the swatters!"
-msgstr ""
+msgstr "第二：消灭苍蝇拍！"
 
 #: src/dialog/marisa.c:180
 msgid "Third: the right to bite!"
-msgstr ""
+msgstr "第三：随便叮咬人！"
 
 #: src/dialog/marisa.c:181
 msgid "Fourth—!"
-msgstr ""
+msgstr "第四——!"
 
 #: src/dialog/marisa.c:184
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
 msgstr ""
+"行行行挺有意思的，但我还有更重要的事 "
+"要办。"
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
-msgstr ""
+msgstr "……你根本就搞不清楚状况，对吧？"
 
 #: src/dialog/marisa.c:189
 msgid "Maybe I know more than you think."
-msgstr ""
+msgstr "也许我知道的比你想象的要多。"
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
 msgstr ""
+"但我绝不会把这些告诉你们这群窃取昆虫 "
+"荣耀的篡位者！"
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
-msgstr ""
+msgstr "确实比平常更难缠，但还不够ZE"
 
 #: src/dialog/marisa.c:206
 msgid "Where’d ya pick up those new moves, anyway?"
-msgstr ""
+msgstr "话说，你那些新招式是在哪儿学来的？"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
 msgstr ""
+"啊这……那是我们辉煌昆虫祖先的伟大幻象 "
+"告诉我的！"
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
-msgstr ""
+msgstr "就是在碳……碳——碳素时代的祖先！"
 
 #: src/dialog/marisa.c:212
 msgid "‘Glorious insect past’? ‘Carbs’?"
-msgstr ""
+msgstr "「辉煌的昆虫祖先」？「碳素时代」？"
 
 #: src/dialog/marisa.c:214
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
 msgstr ""
+"哦，你该不会是说石炭纪吧？就是那个巨型虫子—— "
+"呃，巨型昆虫横行的时期。"
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
 msgstr ""
+"我记得那位永远亭的医生曾经滔滔不绝地讲解 "
+"这段历史。"
 
 #: src/dialog/marisa.c:217
 msgid "Only time I’d seen her so excited…"
-msgstr ""
+msgstr "我很少见到她那么兴奋……"
 
 #: src/dialog/marisa.c:219
 msgid "Yeah, that!"
-msgstr ""
+msgstr "对，就是那个！"
 
 #: src/dialog/marisa.c:221
 msgid "Do you want to be an ally in our glorious conquest…?"
-msgstr ""
+msgstr "你愿意成为我们辉煌征服之路的盟友吗……？"
 
 #: src/dialog/marisa.c:224
 msgid "Maybe later."
-msgstr ""
+msgstr "下次一定DA☆ZE"
 
 #: src/dialog/marisa.c:226
 msgid "Probably never."
-msgstr ""
+msgstr "其实永远不会ZE"
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
@@ -4232,51 +4247,51 @@ msgstr ""
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
-msgstr ""
+msgstr "灵梦"
 
 #: src/cutscenes/scene_impl.h:61
 msgid "Marisa"
-msgstr ""
+msgstr "魔理沙"
 
 #: src/cutscenes/scene_impl.h:62
 msgid "Yōmu"
-msgstr ""
+msgstr "妖梦"
 
 #: src/cutscenes/scene_impl.h:63
 msgid "Yukari"
-msgstr ""
+msgstr "紫"
 
 #: src/cutscenes/scene_impl.h:64
 msgid "Kanako"
-msgstr ""
+msgstr "神奈子"
 
 #: src/cutscenes/scene_impl.h:65
 msgid "Suwako"
-msgstr ""
+msgstr "诹访子"
 
 #: src/cutscenes/scene_impl.h:66
 msgid "Sanae"
-msgstr ""
+msgstr "早苗"
 
 #: src/cutscenes/scene_impl.h:67
 msgid "Sumireko"
-msgstr ""
+msgstr "堇子"
 
 #: src/cutscenes/scene_impl.h:68
 msgid "Yuyuko"
-msgstr ""
+msgstr "幽幽子"
 
 #: src/cutscenes/scene_impl.h:71
 msgid "Remilia"
-msgstr ""
+msgstr "蕾米莉亚"
 
 #: src/cutscenes/scene_impl.h:72
 msgid "Flandre"
-msgstr ""
+msgstr "芙兰朵露"
 
 #: src/cutscenes/scene_impl.h:73
 msgid "Patchouli"
-msgstr ""
+msgstr "帕秋莉"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
@@ -5967,7 +5982,7 @@ msgstr ""
 
 #: po/extra_strings.c:66
 msgid "An Impish Reflection on the Water"
-msgstr ""
+msgstr "水面上顽皮的倒影"
 
 #: po/extra_strings.c:69
 msgid ""
@@ -6032,7 +6047,7 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Lightningbug ~ Lightning Heart"
-msgstr ""
+msgstr "雷霆飞萤 ~ Lightning Heart"
 
 #: po/extra_strings.c:81
 msgid ""
