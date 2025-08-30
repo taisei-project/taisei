@@ -22,6 +22,7 @@
 #include "progress.h"
 #include "renderer/common/models.h"
 #include "renderer/common/sprite_batch.h"
+#include "resource/i18n.h"
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
@@ -310,9 +311,6 @@ int main(int argc, char **argv);
 attr_used
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
-	setlocale(LC_MESSAGES, "");
-	bindtextdomain(TAISEI_BUILDCONF_GETTEXT_PACKAGE, TAISEI_BUILDCONF_LOCALE_PATH);
-	textdomain(TAISEI_BUILDCONF_GETTEXT_PACKAGE);
 
 	mem_install_sdl_callbacks();
 	thread_init();
@@ -425,6 +423,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	});
 	filewatch_init();
 	res_init();
+	i18n_init();
 	r_models_init();
 	r_sprite_batch_init();
 	r_post_init();
