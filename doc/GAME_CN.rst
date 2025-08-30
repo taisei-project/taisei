@@ -170,5 +170,5 @@ Boss
 
 如果你想了解更多技巧，可以去看看东方STG玩家们（比如威哥）的各种视频，应该有所帮助。（毕竟泰西本来就是东方同人STG）
 
-如果没有问题，请享受游戏。 如果你想联系我们，可以去Freenode IRC ``#taisei-project`` 或者 `Discord
+如果没有问题，请享受游戏。 如果你想联系我们，可以去`Discord
 <https://discord.gg/JEHCMzW>`__ .
