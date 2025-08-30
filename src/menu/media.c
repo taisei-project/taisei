@@ -11,6 +11,7 @@
 #include "charprofile.h"
 #include "common.h"
 #include "cutsceneview.h"
+#include "intl/intl.h"
 #include "musicroom.h"
 
 #include "options.h"

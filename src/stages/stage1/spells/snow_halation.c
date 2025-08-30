@@ -7,6 +7,7 @@
  */
 
 #include "spells.h"
+#include "intl/intl.h"
 
 static Color *halation_color(Color *out_clr, float phase) {
 	if(phase < 0.5) {

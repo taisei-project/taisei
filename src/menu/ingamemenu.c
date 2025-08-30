@@ -11,6 +11,7 @@
 #include "common.h"
 #include "events.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "menu.h"
 #include "renderer/api.h"
 #include "resource/font.h"

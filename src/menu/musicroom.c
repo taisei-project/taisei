@@ -10,6 +10,7 @@
 
 #include "audio/audio.h"
 #include "common.h"
+#include "intl/intl.h"
 #include "options.h"
 #include "progress.h"
 #include "renderer/api.h"

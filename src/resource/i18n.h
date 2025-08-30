@@ -6,14 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "wriggle.h"
-
-#include "boss.h"
+#pragma once
 #include "intl/intl.h"
+#include "taisei.h"
 
-Boss *stage2_spawn_wriggle(cmplx pos) {
-	Boss *wriggle = create_boss(_("Wriggle"), "wriggle", pos);
-	wriggle->glowcolor = *RGB(0.2, 0.4, 0.5);
-	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
-	return wriggle;
-}
+#include "resource.h"
+
+extern ResourceHandler i18n_res_handler;
+
+#define I18N_PATH_PREFIX "res/i18n/"
+
+void i18n_init(ResourceGroup *rg);
+
+DEFINE_OPTIONAL_RESOURCE_GETTER(IntlTextDomain, res_i18n, RES_I18N)

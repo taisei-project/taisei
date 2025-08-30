@@ -23,5 +23,5 @@ xgettext_args = [
 '-kT_PATCHOULI',
 ]
 
-i18n.gettext(config.get_unquoted('TAISEI_BUILDCONF_GETTEXT_PACKAGE'), install_dir: config.get_unquoted('TAISEI_BUILDCONF_LOCALE_PATH'), args: xgettext_args)
+i18n.gettext(meson.project_name(), install_dir: data_path / '00-taisei.pkgdir' / 'i18n', args: xgettext_args)
 

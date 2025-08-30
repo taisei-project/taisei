@@ -11,6 +11,7 @@
 #include "dynarray.h"
 #include "events.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
 #include "taskmanager.h"

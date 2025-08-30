@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "draw.h"
 #include "iku.h"
+#include "intl/intl.h"
 #include "spells/spells.h"
 #include "timeline.h"
 

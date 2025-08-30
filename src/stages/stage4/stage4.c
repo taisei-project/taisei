@@ -10,6 +10,7 @@
 
 #include "background_anim.h"
 #include "draw.h"
+#include "intl/intl.h"
 #include "kurumi.h"
 #include "spells/spells.h"
 #include "timeline.h"   // IWYU pragma: keep

@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "draw.h"
 #include "hina.h"
+#include "intl/intl.h"
 #include "spells/spells.h"
 #include "stage.h"
 #include "timeline.h"   // IWYU pragma: keep

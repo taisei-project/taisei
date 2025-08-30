@@ -12,6 +12,7 @@
 #include "dynstage.h"
 #include "entity.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "portrait.h"
 #include "stage.h"
 #include "stagedraw.h"

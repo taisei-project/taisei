@@ -13,6 +13,7 @@
 #include "options.h"
 
 #include "audio/audio.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "replay/struct.h"
 #include "resource/font.h"
