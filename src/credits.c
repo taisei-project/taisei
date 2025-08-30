@@ -129,7 +129,7 @@ static void credits_fill(void) {
 	credits_add((
 		_("Swordsdeer\n"
 		"剑客小鹿\n"
-		"TODO\n"
+		"space.bilibili.com/1097811858\n"
 		"Chinese translation\n")
 	), ENTRY_TIME);
 
