@@ -7,6 +7,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#(注:对话框每42个字节或21个汉字添加一个空格以换行)
+#(Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
+
 #: src/player.c:112
 msgid "Full Power!"
 msgstr ""
@@ -68,7 +71,7 @@ msgstr ""
 
 #: src/stageinfo.c:130
 msgid "Misty Lake Encounter"
-msgstr ""
+msgstr "雾之湖遭遇战"
 
 #: src/stageinfo.c:131
 msgid "Stage 2"
@@ -76,7 +79,7 @@ msgstr ""
 
 #: src/stageinfo.c:131
 msgid "Riverside Hina-Nagashi"
-msgstr ""
+msgstr "河畔流雏"
 
 #: src/stageinfo.c:132
 msgid "Stage 3"
@@ -84,7 +87,7 @@ msgstr ""
 
 #: src/stageinfo.c:132
 msgid "Crawly Mountain Ascent"
-msgstr ""
+msgstr "令人痒痒的登山之旅"
 
 #: src/stageinfo.c:133
 msgid "Stage 4"
@@ -92,7 +95,7 @@ msgstr ""
 
 #: src/stageinfo.c:133
 msgid "Forgotten Mansion"
-msgstr ""
+msgstr "被遗忘的宅邸"
 
 #: src/stageinfo.c:134
 msgid "Stage 5"
@@ -100,7 +103,7 @@ msgstr ""
 
 #: src/stageinfo.c:134
 msgid "Climbing the Tower of Babel"
-msgstr ""
+msgstr "巴别塔之攀"
 
 #: src/stageinfo.c:135
 msgid "Stage 6"
@@ -108,7 +111,7 @@ msgstr ""
 
 #: src/stageinfo.c:135
 msgid "Roof of the World"
-msgstr ""
+msgstr "世界之脊"
 
 #: src/stageinfo.c:136
 msgid "Extra Stage"
@@ -120,7 +123,7 @@ msgstr ""
 
 #: src/gamepad.c:108
 msgid "Unknown device"
-msgstr ""
+msgstr "未知设备"
 
 #: src/gamepad.c:870
 msgid "A"
@@ -151,15 +154,15 @@ msgstr ""
 #: src/gamepad.c:876
 #, fuzzy
 msgid "Start"
-msgstr "开始故事"
+msgstr ""
 
 #: src/gamepad.c:877
 msgid "Left Stick"
-msgstr ""
+msgstr "左摇杆"
 
 #: src/gamepad.c:878
 msgid "Right Stick"
-msgstr ""
+msgstr "右摇杆"
 
 #: src/gamepad.c:879
 msgid "Left Bumper"
@@ -308,7 +311,7 @@ msgstr ""
 
 #: src/menu/ingamemenu.c:132
 msgid "Game Paused"
-msgstr ""
+msgstr "游戏暂停"
 
 #: src/menu/ingamemenu.c:134 src/menu/ingamemenu.c:160 src/menu/mainmenu.c:129
 #: src/menu/options.c:1134
@@ -317,35 +320,35 @@ msgstr ""
 
 #: src/menu/ingamemenu.c:135
 msgid "Return to Game"
-msgstr ""
+msgstr "返回游戏"
 
 #: src/menu/ingamemenu.c:136 src/menu/gameovermenu.c:81
 msgid "Restart the Game"
-msgstr ""
+msgstr "推把"
 
 #: src/menu/ingamemenu.c:137
 msgid "Stop the Game"
-msgstr ""
+msgstr "退出游戏"
 
 #: src/menu/ingamemenu.c:158
 msgid "Replay Paused"
-msgstr ""
+msgstr "Replay暂停"
 
 #: src/menu/ingamemenu.c:161
 msgid "Continue Watching"
-msgstr ""
+msgstr "继续观看"
 
 #: src/menu/ingamemenu.c:162
 msgid "Restart the Stage"
-msgstr ""
+msgstr "重放关卡"
 
 #: src/menu/ingamemenu.c:163
 msgid "Skip the Stage"
-msgstr ""
+msgstr "跳过关卡"
 
 #: src/menu/ingamemenu.c:164
 msgid "Stop Watching"
-msgstr ""
+msgstr "退出观看"
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -781,7 +784,7 @@ msgstr ""
 #: src/menu/options.c:701
 #, fuzzy
 msgid "No"
-msgstr "不要！"
+msgstr ""
 
 #: src/menu/options.c:729
 msgid "Video Options"
@@ -817,7 +820,7 @@ msgstr ""
 
 #: src/menu/options.c:771
 msgid "Skip frames"
-msgstr ""
+msgstr "跳帧"
 
 #: src/menu/options.c:779
 msgid "Overall rendering quality"
@@ -1035,7 +1038,7 @@ msgstr ""
 
 #: src/menu/options.c:1195
 msgid "Video options…"
-msgstr ""
+msgstr "显示选项"
 
 #: src/menu/options.c:1197
 msgid "Gamepad & Joystick options…"
@@ -1075,40 +1078,40 @@ msgstr ""
 
 #: src/stages/stage1/stage1.c:29
 msgid "Freeze Sign “Perfect Freeze”"
-msgstr ""
+msgstr "冻符「Perfect Freeze」(完美冻结)"
 
 #: src/stages/stage1/stage1.c:37
 msgid "Freeze Sign “Crystal Rain”"
-msgstr ""
+msgstr "冻符「Crystal Rain」(水晶之雨)"
 
 #: src/stages/stage1/stage1.c:42
 msgid "Winter Sign “Snow Halation”"
-msgstr ""
+msgstr "冬符「Snow Halation」(雪晕)"
 
 #: src/stages/stage1/stage1.c:47
 msgid "Doom Sign “Icicle Cascade”"
-msgstr ""
+msgstr "灭符「Icicle Cascade」(冰瀑)"
 
 #: src/stages/stage1/stage1.c:54
 msgid "Frost Sign “Crystal Blizzard”"
-msgstr ""
+msgstr "霜符「Crystal Blizzard」(水晶风暴)"
 
 #: src/stages/stage1/spells/snow_halation.c:186
 #, fuzzy
 msgid "What are you doing??"
-msgstr "那你在干什么？"
+msgstr "泥在干神马？"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "Dodge it properly!"
-msgstr ""
+msgstr "好好躲避吧！"
 
 #: src/stages/stage1/spells/snow_halation.c:188
 msgid "I bet you can’t do it! Idiot!"
-msgstr ""
+msgstr "咱敢打赌你做不到！baka！"
 
 #: src/stages/stage1/spells/snow_halation.c:189
 msgid "I spent so much time on this attack!"
-msgstr ""
+msgstr "咱可沉淀了很久的！"
 
 #: src/stages/stage1/spells/snow_halation.c:190
 msgid "Maybe it is too smart for secondaries!"
@@ -1120,44 +1123,44 @@ msgstr ""
 
 #: src/stages/stage1/spells/snow_halation.c:192
 msgid "You- You Idiootttt!"
-msgstr ""
+msgstr "泥、泥个大baka!!!!!"
 
 #: src/stages/stage4/stage4.c:29
 msgid "Bloodless “Gate of Walachia”"
-msgstr ""
+msgstr "无血「瓦拉几亚之门」"
 
 #: src/stages/stage4/stage4.c:34
 msgid "Bloodless “Dry Fountain”"
-msgstr ""
+msgstr "无血「干枯的喷泉」"
 
 #: src/stages/stage4/stage4.c:39
 msgid "Bloodless “Red Spike”"
-msgstr ""
+msgstr "无血「红色尖刺」"
 
 #: src/stages/stage4/stage4.c:47
 msgid "Limit “Animate Wall”"
-msgstr ""
+msgstr "界限「Animate Wall」（生命高墙）"
 
 #: src/stages/stage4/stage4.c:52
 msgid "Summoning “Demon Wall”"
-msgstr ""
+msgstr "召唤「Demon Wall」（恶魔高墙）"
 
 #: src/stages/stage4/stage4.c:57
 msgid "Power Sign “Blow the Walls”"
-msgstr ""
+msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
 
 #: src/stages/stage4/stage4.c:62
 msgid "Predation “Vampiric Vapor”"
-msgstr ""
+msgstr "力符「炸翻高墙」"
 
 #: src/stages/stage4/stage4.c:69
 msgid "Blood Magic “Vlad’s Army”"
-msgstr ""
+msgstr "血魔法「吸血鬼大军」"
 
 #: src/stages/stage4/kurumi.c:56 src/dialog/dialog_macros.h:72
 #: src/cutscenes/scene_impl.h:70
 msgid "Kurumi"
-msgstr ""
+msgstr "胡桃"
 
 #: src/stages/stage2/hina.c:40 src/dialog/dialog_macros.h:70
 msgid "Kagiyama Hina"
@@ -1170,19 +1173,19 @@ msgstr "莉格露·奈特巴格"
 
 #: src/stages/stage2/stage2.c:24
 msgid "Shard “Amulet of Harm”"
-msgstr ""
+msgstr "碎片「破裂的护符」"
 
 #: src/stages/stage2/stage2.c:29
 msgid "Lottery Sign “Bad Pick”"
-msgstr ""
+msgstr "运符「Bad Pick」（错误的选择）"
 
 #: src/stages/stage2/stage2.c:34
 msgid "Lottery Sign “Wheel of Fortune”"
-msgstr ""
+msgstr "运符「Wheel of Fortune」(命运之轮)"
 
 #: src/stages/stage2/stage2.c:41
 msgid "Lottery Sign “Monty Hall Danmaku”"
-msgstr ""
+msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
 
 #: src/stages/stage3/wriggle.c:30
 #, fuzzy
@@ -1191,55 +1194,55 @@ msgstr "莉格露·奈特巴格"
 
 #: src/stages/stage3/stage3.c:31
 msgid "Disruption “Logic Bomb”"
-msgstr ""
+msgstr "崩解「Logic Bomb」(逻辑炸弹)"
 
 #: src/stages/stage3/stage3.c:39
 msgid "Firefly Sign “Moonlight Rocket”"
-msgstr ""
+msgstr "萤符「Moonlight Rocket」(月光火箭)"
 
 #: src/stages/stage3/stage3.c:44
 msgid "Attractor “Moths to a Flame”"
-msgstr ""
+msgstr "诱引「Moths to a Flame」(飞蛾扑火)"
 
 #: src/stages/stage3/stage3.c:49
 msgid "Bug Sign “Firefly Storm”"
-msgstr ""
+msgstr "虫符「Firefly Storm」（飞萤风暴）"
 
 #: src/stages/stage3/stage3.c:56
 msgid "Lamp Sign “Light Singularity”"
-msgstr ""
+msgstr "灯符「Light Singularity」（奇异之光）"
 
 #: src/stages/stage5/iku.c:107 src/dialog/dialog_macros.h:73
 msgid "Nagae Iku"
-msgstr ""
+msgstr "永江衣玖"
 
 #: src/stages/stage5/stage5.c:24
 msgid "High Voltage “Static Bomb”"
-msgstr ""
+msgstr "高压「Static Bomb」(静态炸弹)"
 
 #: src/stages/stage5/stage5.c:32
 msgid "High Voltage “Atmospheric Discharge”"
-msgstr ""
+msgstr "高压「Atmospheric Discharge」(大气释能)"
 
 #: src/stages/stage5/stage5.c:37
 msgid "Charge Sign “Artificial Lightning”"
-msgstr ""
+msgstr "充符「Artificial Lightning」(人造闪电)"
 
 #: src/stages/stage5/stage5.c:42
 msgid "Current Sign “Induction Field”"
-msgstr ""
+msgstr "流符「Induction Field」(磁感领域)"
 
 #: src/stages/stage5/stage5.c:47
 msgid "Current Sign “Inductive Resonance”"
-msgstr ""
+msgstr "流符「电感谐振」"
 
 #: src/stages/stage5/stage5.c:52
 msgid "Spark Sign “Natural Cathode”"
-msgstr ""
+msgstr "星火之御札「Natural Cathode」(自然阴极)"
 
 #: src/stages/stage5/stage5.c:59
 msgid "Circuit Sign “Overload”"
-msgstr ""
+msgstr "电路之御札「超负荷」"
 
 #: src/stages/stage5/timeline.c:33
 msgid "Bombs?"
@@ -1252,39 +1255,39 @@ msgstr ""
 
 #: src/stages/stage6/stage6.c:28
 msgid "Newton Sign “Occam’s Razor”"
-msgstr ""
+msgstr "牛顿之御札「Occam's Razor」(奥卡姆剃刀)"
 
 #: src/stages/stage6/stage6.c:33
 msgid "Kepler Sign “Orbital Clockwork”"
-msgstr ""
+msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
 
 #: src/stages/stage6/stage6.c:38
 msgid "Maxwell Sign “Wave Theory”"
-msgstr ""
+msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
 
 #: src/stages/stage6/stage6.c:46
 msgid "Eigenstate “Many-World Interpretation”"
-msgstr ""
+msgstr "本征态「多世界诠释」"
 
 #: src/stages/stage6/stage6.c:51
 msgid "de Broglie Sign “Wave-Particle Duality”"
-msgstr ""
+msgstr "德布罗意之御札「波粒二象性」"
 
 #: src/stages/stage6/stage6.c:56
 msgid "Ricci Sign “Spacetime Curvature”"
-msgstr ""
+msgstr "里奇之御札「时空曲率」"
 
 #: src/stages/stage6/stage6.c:61
 msgid "LHC “Higgs Boson Uncovered”"
-msgstr ""
+msgstr "L.H.C.「希格斯玻色子发现」"
 
 #: src/stages/stage6/stage6.c:69
 msgid "Forgotten Universe “Curvature Domination”"
-msgstr ""
+msgstr "遗忘之宙「Curvature Domination」(操弄曲率)"
 
 #: src/stages/stage6/stage6.c:77
 msgid "Tower of Truth “Theory of Everything”"
-msgstr ""
+msgstr "真理之塔「Theory of Everything」(万物之理论)"
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
@@ -2097,270 +2100,282 @@ msgstr "凝视宇宙的终极真理，颤抖吧！"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr ""
+msgstr "又下雪了？可我把冬衣刚收起来诶。"
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
-msgstr ""
+msgstr "……而且夏天已经过了一半。"
 
 #: src/dialog/marisa.c:28
 msgid "Don’t you like the cold weather???"
-msgstr ""
+msgstr "难道泥不喜欢冷天吗？？？"
 
 #: src/dialog/marisa.c:32
 msgid "It should be winter all the time!"
-msgstr ""
+msgstr "应该一直都是冬天才对！"
 
 #: src/dialog/marisa.c:35
 msgid "Mind paying to get my coat cleaned, then?"
-msgstr ""
+msgstr "那你愿意出钱把我的外套拿去洗洗吗？"
 
 #: src/dialog/marisa.c:37
 msgid "I was gonna get it done in the fall, but now…"
-msgstr ""
+msgstr "我本打算秋天的时候去洗的，但现在……"
 
 #: src/dialog/marisa.c:40
 msgid "Why would I do that?! You’re never going to pay me back!"
-msgstr ""
+msgstr "泥个大坏蛋！根本不还钱！"
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr ""
+msgstr "咱要把泥冻成冰立方！"
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr ""
+msgstr "真的吗？我倒是更喜欢刨冰呢。"
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
-msgstr ""
+msgstr "你干嘛不去找你那个来自地狱的新朋友玩呢？"
 
 #: src/dialog/marisa.c:61
 msgid "Maybe then it’d be more of a fair fight."
-msgstr ""
+msgstr "也许那样打起来才更公平些。"
 
 #: src/dialog/marisa.c:63
 msgid "Ouch…"
-msgstr ""
+msgstr "啊啊啊……"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr ""
+msgstr "咱、咱上次打赢她了！下次泥也一样打败！"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
-msgstr ""
+msgstr "好吧好吧。"
 
 #: src/dialog/marisa.c:82
 msgid "Geez, this place is kinda sad now."
-msgstr ""
+msgstr "唉，现在这个地方还真是有点凄凉啊。"
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr ""
+msgstr "话说回来，到底是什么让那些妖怪变得这么奇怪ZE"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
-msgstr ""
+msgstr "你好，雾雨小姐。"
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
-msgstr ""
-
+msgstr "你看起来还是和以往一样鲁莽。我建议你最好回头。"
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
-msgstr ""
+msgstr "谢谢你的建议！不过我会无视的DA☆ZE"
 
 #: src/dialog/marisa.c:93
 msgid "See ya."
-msgstr ""
+msgstr "回见啦。"
 
 #: src/dialog/marisa.c:97
 msgid "Oh my… you’re quite the rebellious one, aren’t you?"
-msgstr ""
+msgstr "哎呀……你还真是个叛逆的家伙。"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
-msgstr ""
+msgstr "居然这么自信，就这么无视我的警告。"
 
 #: src/dialog/marisa.c:101
 msgid "I’ll take that as a compliment."
-msgstr ""
+msgstr "我就当这是在夸我了。"
 
 #: src/dialog/marisa.c:104
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
 msgstr ""
+"那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
-msgstr ""
+msgstr "她们会接连好几年都厄运缠身！"
 
 #: src/dialog/marisa.c:118
 msgid "You’re way more snippy than usual today."
-msgstr ""
+msgstr "你今天比平时刻薄多了啊。"
 
 #: src/dialog/marisa.c:119
 msgid "It’s kinda annoyin’, honestly."
-msgstr ""
+msgstr "说真的还挺烦人的。"
 
 #: src/dialog/marisa.c:121
 msgid "H-how mean…"
-msgstr ""
+msgstr "你、你太狠了……"
 
 #: src/dialog/marisa.c:122
 msgid "Don’t you see I was just trying to keep you safe…?"
-msgstr ""
+msgstr "难道你没明白我刚才只是想保护你吗……？"
 
 #: src/dialog/marisa.c:124
 msgid "Don’t get all motherly on me now."
-msgstr ""
+msgstr "现在可别对我摆出一副妈妈的样子啊ZE"
 
 #: src/dialog/marisa.c:126
 msgid "I’ve had enough of that for a lifetime."
-msgstr ""
+msgstr "这辈子我已经受够那种事了。"
 
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
 msgstr ""
+"天啊，我越往上走，大家就越癫了. "
+"这到底是怎么回事？"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
-msgstr ""
+msgstr "等你见到他们的头领再说吧！"
 
 #: src/dialog/marisa.c:148
 msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
-msgstr ""
+msgstr "是啊，我肯定得好好问他们头领一堆问题ZE"
 
 #: src/dialog/marisa.c:151
 msgid "Feel free to go ahead. I’m listening."
-msgstr ""
+msgstr "你尽管说吧，我在听着呢。"
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr ""
+msgstr "哦，你就是那个信使？"
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
-msgstr ""
+msgstr "能帮我带个话吗？"
 
 #: src/dialog/marisa.c:159
 msgid "Um, OBVIOUSLY I’m not the messenger!"
-msgstr ""
+msgstr "额，你觉得我像信使？"
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
-msgstr ""
+msgstr "我可是昆虫界的伟大领袖！"
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr ""
+msgstr "伟大领袖？啥玩意，昆虫们还成立工会了不成？"
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
-msgstr ""
+msgstr "不！我都说了，我就是领袖！我就是黑幕！"
 
 #: src/dialog/marisa.c:169
 msgid "So, what’s your question?"
-msgstr ""
+msgstr "所以你有何问题？"
 
 #: src/dialog/marisa.c:172
 msgid "Hmm, guess I forgot."
-msgstr ""
+msgstr "嗯，看来我给忘了。"
 
 #: src/dialog/marisa.c:173
 msgid "What’s yer deal, anyways?"
-msgstr ""
+msgstr "不管怎样，你到底什么来头？"
 
 #: src/dialog/marisa.c:176
 msgid "We insects have three demands:"
-msgstr ""
+msgstr "我们昆虫一族有三大要求："
 
 #: src/dialog/marisa.c:177
 msgid "First: say nay to insect spray!"
-msgstr ""
+msgstr "第一：拒绝杀虫剂！"
 
 #: src/dialog/marisa.c:178
 msgid "Second: swat the swatters!"
-msgstr ""
+msgstr "第二：消灭苍蝇拍！"
 
 #: src/dialog/marisa.c:180
 msgid "Third: the right to bite!"
-msgstr ""
+msgstr "第三：随便叮咬人！"
 
 #: src/dialog/marisa.c:181
 msgid "Fourth—!"
-msgstr ""
+msgstr "第四——!"
 
 #: src/dialog/marisa.c:184
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
 msgstr ""
+"行行行挺有意思的，但我还有更重要的事 "
+"要办。"
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
-msgstr ""
+msgstr "……你根本就搞不清楚状况，对吧？"
 
 #: src/dialog/marisa.c:189
 msgid "Maybe I know more than you think."
-msgstr ""
+msgstr "也许我知道的比你想象的要多。"
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
 msgstr ""
+"但我绝不会把这些告诉你们这群窃取昆虫 "
+"荣耀的篡位者！"
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
-msgstr ""
+msgstr "确实比平常更难缠，但还不够ZE"
 
 #: src/dialog/marisa.c:206
 msgid "Where’d ya pick up those new moves, anyway?"
-msgstr ""
+msgstr "话说，你那些新招式是在哪儿学来的？"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
 msgstr ""
+"啊这……那是我们辉煌昆虫祖先的伟大幻象 "
+"告诉我的！"
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
-msgstr ""
+msgstr "就是在碳……碳——碳素时代的祖先！"
 
 #: src/dialog/marisa.c:212
 msgid "‘Glorious insect past’? ‘Carbs’?"
-msgstr ""
+msgstr "「辉煌的昆虫祖先」？「碳素时代」？"
 
 #: src/dialog/marisa.c:214
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
 msgstr ""
+"哦，你该不会是说石炭纪吧？就是那个巨型虫子—— "
+"呃，巨型昆虫横行的时期。"
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
 msgstr ""
+"我记得那位永远亭的医生曾经滔滔不绝地讲解 "
+"这段历史。"
 
 #: src/dialog/marisa.c:217
 msgid "Only time I’d seen her so excited…"
-msgstr ""
+msgstr "我很少见到她那么兴奋……"
 
 #: src/dialog/marisa.c:219
 msgid "Yeah, that!"
-msgstr ""
+msgstr "对，就是那个！"
 
 #: src/dialog/marisa.c:221
 msgid "Do you want to be an ally in our glorious conquest…?"
-msgstr ""
+msgstr "你愿意成为我们辉煌征服之路的盟友吗……？"
 
 #: src/dialog/marisa.c:224
 msgid "Maybe later."
-msgstr ""
+msgstr "下次一定DA☆ZE"
 
 #: src/dialog/marisa.c:226
 msgid "Probably never."
-msgstr ""
+msgstr "其实永远不会ZE"
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
@@ -4232,51 +4247,51 @@ msgstr ""
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
-msgstr ""
+msgstr "灵梦"
 
 #: src/cutscenes/scene_impl.h:61
 msgid "Marisa"
-msgstr ""
+msgstr "魔理沙"
 
 #: src/cutscenes/scene_impl.h:62
 msgid "Yōmu"
-msgstr ""
+msgstr "妖梦"
 
 #: src/cutscenes/scene_impl.h:63
 msgid "Yukari"
-msgstr ""
+msgstr "紫"
 
 #: src/cutscenes/scene_impl.h:64
 msgid "Kanako"
-msgstr ""
+msgstr "神奈子"
 
 #: src/cutscenes/scene_impl.h:65
 msgid "Suwako"
-msgstr ""
+msgstr "诹访子"
 
 #: src/cutscenes/scene_impl.h:66
 msgid "Sanae"
-msgstr ""
+msgstr "早苗"
 
 #: src/cutscenes/scene_impl.h:67
 msgid "Sumireko"
-msgstr ""
+msgstr "堇子"
 
 #: src/cutscenes/scene_impl.h:68
 msgid "Yuyuko"
-msgstr ""
+msgstr "幽幽子"
 
 #: src/cutscenes/scene_impl.h:71
 msgid "Remilia"
-msgstr ""
+msgstr "蕾米莉亚"
 
 #: src/cutscenes/scene_impl.h:72
 msgid "Flandre"
-msgstr ""
+msgstr "芙兰朵露"
 
 #: src/cutscenes/scene_impl.h:73
 msgid "Patchouli"
-msgstr ""
+msgstr "帕秋莉"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
@@ -5846,6 +5861,11 @@ msgid ""
 "One that’s a lot gentler than a thunderstorm… perhaps a bit more like a "
 "rainbow."
 msgstr ""
+"Staff界面的主题曲。\n"
+"\n"
+"Existential Field有一种灵动与未来的感觉。\n"
+"\n"
+"温柔的不像雷雨，更像是……彩虹。\n"
 
 #: po/extra_strings.c:42
 msgid "Dream Cycle"
@@ -5860,10 +5880,16 @@ msgid ""
 "Knowledge is the forbidden fruit; from it stem the powers of light and "
 "darkness. But it’s about time the protagonists have had a snack."
 msgstr ""
+"结局的主题曲。\n"
+"\n"
+"好同学们，我们今天都学到了些什么？\n"
+"\n"
+"啊没错：知识恰如禁果；孕育光明亦滋生黑暗。 "
+"下课下课，自机们也是时候去放松一下开香槟了。"
 
 #: po/extra_strings.c:46
 msgid "Summit of Revelations"
-msgstr ""
+msgstr "启示之巅"
 
 #: po/extra_strings.c:49
 msgid ""
@@ -5890,7 +5916,7 @@ msgstr ""
 
 #: po/extra_strings.c:54
 msgid "A Prayer Worth Three Hundred Coulombs"
-msgstr ""
+msgstr "三百库仑的祈愿"
 
 #: po/extra_strings.c:57
 msgid ""
@@ -5902,6 +5928,11 @@ msgid ""
 "\n"
 "Iku provides the first tribulation."
 msgstr ""
+"永江衣玖的主题曲。\n"
+"这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. "
+"想象一下, 在猛烈的雷雨中攀登高塔, 还要努力不感到疲惫.\n"
+"\n"
+"而衣玖, 便是千刀万剐之始."
 
 #: po/extra_strings.c:58
 msgid "Divine Correction for Outliers"
@@ -5940,10 +5971,18 @@ msgid ""
 "any other PS theme.\n"
 "What else were you expecting?"
 msgstr ""
+"啊啊啊啊啊，Akari桑，为什么咱要给这曲子起名字啊喂？!\n"
+"咱创作的每一首歌都是由接收者命名的说，\n"
+"你别给咱上压力呀……\n"
+"\n"
+"咳咳咳……没错，这是一首结算分数和满身疮痍界面的主题曲。\n"
+"它融合了最终Boss主题曲和神奈子主题曲的部分内容，就像 "
+"其他Player Score主题曲一样。\n"
+"你在期待什么？"
 
 #: po/extra_strings.c:66
 msgid "An Impish Reflection on the Water"
-msgstr ""
+msgstr "水面上顽皮的倒影"
 
 #: po/extra_strings.c:69
 msgid ""
@@ -5955,10 +5994,16 @@ msgid ""
 "However, she’s really just a minor annoyance, cold and brittle. The "
 "protagonists brush off her pranks and move on."
 msgstr ""
+"琪露诺的主题曲。\n"
+"\n"
+"这一次，她觉得自己一如既往的勇敢，且更为强大。\n"
+"\n"
+"然而嘛，她其实只是个小麻烦，就有点冷且吹弹可破。 "
+"主角们对这家伙的恶作剧置之不理，继续前进。"
 
 #: po/extra_strings.c:70
 msgid "Speak Not Falsely ~ Excitation Field"
-msgstr ""
+msgstr "谎言禁止 ~ Excitation Field"
 
 #: po/extra_strings.c:73
 msgid ""
@@ -5973,6 +6018,16 @@ msgid ""
 "Those who climb risk a long fall, so look to the top and don’t make a single "
 "dishonest step."
 msgstr ""
+"五面的主题曲。\n"
+"\n"
+"又回来了……那首歌怎么唱的？“No reason to get excited…”\n"
+"\n"
+"老实说，这歌其实是如今东西方影响力交融的产物。 "
+"如果说之前的BGM风格像钟摆般两极摆动, 那么这曲就如同 "
+"交流电般持续振荡。\n"
+"\n"
+"在此塔上, 攀登者须防失足之险, 故当目视顶峰, "
+"步步为营, 行差踏错半步不得. "
 
 #: po/extra_strings.c:74
 msgid "Evidence of Ki Domestication"
@@ -5992,7 +6047,7 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Lightningbug ~ Lightning Heart"
-msgstr ""
+msgstr "雷霆飞萤 ~ Lightning Heart"
 
 #: po/extra_strings.c:81
 msgid ""
@@ -6020,3 +6075,7 @@ msgid ""
 "Crackles and flashes of otherworldly knowlege. Maybe a bit sinister, unclear "
 "whether to be trusted."
 msgstr ""
+"开幕过场动画的主题曲。\n"
+"\n"
+"噼噼啪啪，闪闪发亮，这就是「世界之外的知识」. "
+"可能带着些许险恶，是否值得信赖尚不明确. "
