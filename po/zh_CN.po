@@ -5865,7 +5865,7 @@ msgstr ""
 "\n"
 "Existential Field有一种灵动与未来的感觉。\n"
 "\n"
-"温柔的不像雷雨，更像是……彩虹。\n"
+"温柔的不像雷雨，更像是……彩虹。"
 
 #: po/extra_strings.c:42
 msgid "Dream Cycle"
