@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-29 08:12-0400\n"
+"POT-Creation-Date: 2025-08-29 21:22-0400\n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -13,6 +13,10 @@ msgstr ""
 
 #: src/player.c:730
 msgid "Power Surge!"
+msgstr ""
+
+#: src/player.c:1580
+msgid " PIV"
 msgstr ""
 
 #: src/credits.c:70
@@ -51,6 +55,68 @@ msgstr ""
 
 #: src/camcontrol.c:210
 msgid "Mouse input disabled "
+msgstr ""
+
+#: src/stageinfo.c:48
+#, fuzzy, c-format
+msgid "Spell %d"
+msgstr "Spell-Training"
+
+#: src/stageinfo.c:130
+msgid "Stage 1"
+msgstr ""
+
+#: src/stageinfo.c:130
+msgid "Misty Lake Encounter"
+msgstr ""
+
+#: src/stageinfo.c:131
+msgid "Stage 2"
+msgstr ""
+
+#: src/stageinfo.c:131
+msgid "Riverside Hina-Nagashi"
+msgstr ""
+
+#: src/stageinfo.c:132
+msgid "Stage 3"
+msgstr ""
+
+#: src/stageinfo.c:132
+msgid "Crawly Mountain Ascent"
+msgstr ""
+
+#: src/stageinfo.c:133
+msgid "Stage 4"
+msgstr ""
+
+#: src/stageinfo.c:133
+msgid "Forgotten Mansion"
+msgstr ""
+
+#: src/stageinfo.c:134
+msgid "Stage 5"
+msgstr ""
+
+#: src/stageinfo.c:134
+msgid "Climbing the Tower of Babel"
+msgstr ""
+
+#: src/stageinfo.c:135
+msgid "Stage 6"
+msgstr ""
+
+#: src/stageinfo.c:135
+msgid "Roof of the World"
+msgstr ""
+
+#: src/stageinfo.c:136
+#, fuzzy
+msgid "Extra Stage"
+msgstr "Stage auswählen"
+
+#: src/stageinfo.c:136
+msgid "Descent into Madness"
 msgstr ""
 
 #: src/gamepad.c:108
