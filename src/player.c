@@ -1578,7 +1578,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 	stxt->custom.data2 = (void*)(uintptr_t)(points | (SCORETEXT_PIV_BIT * is_piv));
 
 	if(is_piv) {
-		strlcat(stxt->text, " PIV", sizeof(stxt->text));
+		strlcat(stxt->text, _(" PIV"), sizeof(stxt->text));
 	}
 }
 
