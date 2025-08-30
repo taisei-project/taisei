@@ -29,6 +29,7 @@ RUN apt-get install -y --no-install-recommends \
 	gnupg \
 	less \
 	libtool \
+	libintl-dev \
 	ninja-build \
 	nsis \
 	pkg-config \
