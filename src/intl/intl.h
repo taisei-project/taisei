@@ -7,7 +7,6 @@
  */
 
 #pragma once
-#include "taisei.h"
 
 #include "hashtable.h"
 
