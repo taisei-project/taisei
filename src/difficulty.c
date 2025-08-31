@@ -7,6 +7,7 @@
  */
 
 #include "difficulty.h"
+#include "intl/intl.h"
 #include "resource/resource.h"
 
 typedef struct DiffDef {
@@ -16,10 +17,10 @@ typedef struct DiffDef {
 } DiffDef;
 
 static DiffDef diffs[] = {
-	{ "Easy",    "difficulty/easy",    { 0.5, 1.0, 0.5, 1.0 } },
-	{ "Normal",  "difficulty/normal",  { 0.5, 0.5, 1.0, 1.0 } },
-	{ "Hard",    "difficulty/hard",    { 1.0, 0.5, 0.5, 1.0 } },
-	{ "Lunatic", "difficulty/lunatic", { 1.0, 0.5, 1.0, 1.0 } },
+	{ N_("Easy"),    "difficulty/easy",    { 0.5, 1.0, 0.5, 1.0 } },
+	{ N_("Normal"),  "difficulty/normal",  { 0.5, 0.5, 1.0, 1.0 } },
+	{ N_("Hard"),    "difficulty/hard",    { 1.0, 0.5, 0.5, 1.0 } },
+	{ N_("Lunatic"), "difficulty/lunatic", { 1.0, 0.5, 1.0, 1.0 } },
 
 	// TODO: sprite for this
 	{ "Extra",   "difficulty/lunatic", { 0.5, 1.0, 1.0, 1.0 } },
@@ -37,7 +38,7 @@ static inline DiffDef *get_diff_def(Difficulty diff) {
 
 const char *difficulty_name(Difficulty diff) {
 	DiffDef *d = get_diff_def(diff);
-	return d ? d->name : "Unknown";
+	return d ? _(d->name) : _("Unknown");
 }
 
 const char *difficulty_sprite_name(Difficulty diff) {
