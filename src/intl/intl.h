@@ -8,25 +8,14 @@
 
 #pragma once
 
-#include "hashtable.h"
-
-typedef struct IntlTranslation {
-	char *text;
-	char *plural;
-} IntlTranslation;
-
-// text can be either "text" or "plural\0singular"
-void intl_translation_create(IntlTranslation *translation, const char *text, int length);
-void intl_translation_destroy(IntlTranslation *translation);
+typedef struct ht_str2trans_t ht_str2trans_t;
 
 typedef struct IntlTextDomain {
-	int number_of_strings;
-	IntlTranslation *translated_strings;
-
-	ht_str2ptr_ts_t table;
+	char *strings;
+	ht_str2trans_t *table;
 } IntlTextDomain;
 
-IntlTextDomain *intl_textdomain_new(int number_of_strings, char **original_strings, IntlTranslation* translated_strings);
+IntlTextDomain *intl_read_mo(const char* path);
 void intl_textdomain_destroy(IntlTextDomain *textdomain);
 
 void intl_set_textdomain(IntlTextDomain *textdomain);
