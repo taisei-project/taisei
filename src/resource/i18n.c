@@ -7,7 +7,6 @@
  */
 
 #include "intl/intl.h"
-#include "intl/mo.h"
 #include "resource.h"
 #include "util/io.h"
 
