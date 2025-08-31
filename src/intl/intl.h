@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "util/compat.h"
 typedef struct ht_str2trans_t ht_str2trans_t;
 
 typedef struct IntlTextDomain {
@@ -15,16 +16,31 @@ typedef struct IntlTextDomain {
 	ht_str2trans_t *table;
 } IntlTextDomain;
 
+extern IntlTextDomain *_intl_current_textdomain;
+
 IntlTextDomain *intl_read_mo(const char* path);
 void intl_textdomain_destroy(IntlTextDomain *textdomain);
 
 void intl_set_textdomain(IntlTextDomain *textdomain);
 
-const char *intl_gettext(IntlTextDomain *domain, const char *msgid);
-const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char *msgid2, unsigned long int n);
+const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash);
+const char *_intl_ngettext_prehashed(IntlTextDomain *domain, const char *msgid1, hash_t hash1, const char *msgid2, unsigned long int n);
 
-const char *gettext(const char *msgid);
-const char *ngettext(const char *msgid1, const char *msgid2, unsigned long int n);
+INLINE const char *intl_gettext(IntlTextDomain *domain, const char *msgid) {
+	return _intl_gettext_prehashed(domain, msgid, htutil_hashfunc_string(msgid));
+}
+INLINE const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char *msgid2, unsigned long int n) {
+	return _intl_ngettext_prehashed(domain, msgid1, htutil_hashfunc_string(msgid1), msgid2, n);
+}
+
+INLINE const char *gettext(const char *msgid) {
+	return intl_gettext(_intl_current_textdomain, msgid);
+}
+
+INLINE const char *ngettext(const char *msgid1, const char *msgid2, unsigned long int n) {
+	return intl_ngettext(_intl_current_textdomain, msgid1, msgid2, n);
+}
+
 #define pgettext(msgctxt, msgid) gettext(msgctxt "\004" msgid)
 
 #define _(str) gettext(str)
