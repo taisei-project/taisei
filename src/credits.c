@@ -127,6 +127,7 @@ static void credits_fill(void) {
 		"https://twitter.com/violet_fantasia\n\n"
 		"Dialogue writing (Hina, Kurumi)"
 	), ENTRY_TIME);
+
 	credits_add((
 		"Swordsdeer\n"
 		"剑客小鹿\n"
