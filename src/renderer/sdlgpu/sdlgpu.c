@@ -203,7 +203,7 @@ void sdlgpu_renew_swapchain_texture(void) {
 		}
 	} else {
 		auto scratch = acquire_scratch_arena();
-		auto error = marena_strdup(acquire_scratch_arena(), SDL_GetError());
+		auto error = marena_strdup(scratch, SDL_GetError());
 		log_sdl_error(LOG_ERROR, "SDL_WaitAndAcquireGPUSwapchainTexture");
 		sdlgpu_cmdbuf_debug(sdlgpu.frame.cbuf, "Swapchain acquisition failed: %s", error);
 		release_scratch_arena(scratch);
