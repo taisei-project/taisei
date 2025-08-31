@@ -1,9 +1,8 @@
 i18n = import('i18n')
-
+fs = import('fs')
 
 xgettext_args = [
 '--from-code=utf-8',
-'-kN_',
 '-kTITLE:2,3',
 '-kMSG:2',
 '-kT_NARRATOR',
@@ -25,3 +24,12 @@ xgettext_args = [
 
 i18n.gettext(meson.project_name(), install_dir: data_path / '00-taisei.pkgdir' / 'i18n', args: xgettext_args)
 
+quoted = []
+foreach l : fs.read('LINGUAS').strip().split(' ')
+    quoted += '"@0@"'.format(l)
+endforeach
+
+config.set(
+    'TAISEI_BUILDCONF_LANGUAGES',
+    '{@0@}'.format(', '.join(quoted))
+)

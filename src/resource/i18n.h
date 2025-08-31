@@ -17,5 +17,6 @@ extern ResourceHandler i18n_res_handler;
 #define I18N_PATH_PREFIX "res/i18n/"
 
 void i18n_init(ResourceGroup *rg);
+void i18n_set_textdomain_from_string(const char *name);
 
 DEFINE_OPTIONAL_RESOURCE_GETTER(IntlTextDomain, res_i18n, RES_I18N)

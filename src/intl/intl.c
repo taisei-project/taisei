@@ -148,6 +148,7 @@ IntlTextDomain *intl_read_mo(const char* path) {
 			log_error("%s: MO string missing NUL termination", path);
 			intl_textdomain_destroy(domain);
 			mem_free(content);
+			mem_free(domain);
 			return NULL;
 		}
 		int textlen = strlen(&domain->strings[translated_strings[i].offset-strings_offset]);
