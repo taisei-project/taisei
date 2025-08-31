@@ -51,6 +51,9 @@ ResourceHandler i18n_res_handler = {
 	},
 };
 
-void i18n_init(void) {
+void i18n_init(ResourceGroup *rg) {
+	res_group_preload(rg, RES_I18N, RESF_DEFAULT,
+		"zh_CN",
+	NULL);
 	intl_set_textdomain(res_i18n("zh_CN"));
 }
