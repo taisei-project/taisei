@@ -310,7 +310,7 @@ int main(int argc, char **argv);
 
 attr_used
 int main(int argc, char **argv) {
-	setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "C");
 
 	mem_install_sdl_callbacks();
 	thread_init();
