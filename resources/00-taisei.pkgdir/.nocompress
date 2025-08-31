@@ -1,1 +1,1 @@
-^.*\.(ttf|png|webp|ogg|opus|prog|basis|tex|font|num_slices)$
+^.*\.(ttf|ttc|png|webp|ogg|opus|prog|basis|tex|font|num_slices)$
