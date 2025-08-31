@@ -35,7 +35,7 @@ typedef struct Translation {
 #define HT_IMPL
 #include "hashtable_incproxy.inc.h"
 
-static IntlTextDomain *_current_textdomain = NULL;
+IntlTextDomain *_intl_current_textdomain = NULL;
 
 typedef struct MoHeader {
 	union {
@@ -172,29 +172,30 @@ void intl_textdomain_destroy(IntlTextDomain *domain) {
 }
 
 void intl_set_textdomain(IntlTextDomain *domain) {
-	_current_textdomain = domain;
+	_intl_current_textdomain = domain;
 }
 
-const char *intl_gettext(IntlTextDomain *domain, const char *msgid) {
+
+const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash) {
 	if(!domain) {
 		return msgid;
 	}
 
 	Translation no_translation = {};
-	Translation result = ht_str2trans_get(domain->table, msgid, no_translation);
+	Translation result = ht_str2trans_get_prehashed(domain->table, msgid, hash, no_translation);
 	if(!result.text) {
 		return msgid;
 	}
 	return result.text;
 }
 
-const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char *msgid2, unsigned long int n) {
+const char *_intl_ngettext_prehashed(IntlTextDomain *domain, const char *msgid1, hash_t hash1, const char *msgid2, unsigned long int n) {
 	if(!domain) {
 		return n == 1 ? msgid1 : msgid2;
 	}
 
 	Translation no_translation = {};
-	Translation result = ht_str2trans_get(domain->table, msgid1, no_translation);
+	Translation result = ht_str2trans_get_prehashed(domain->table, msgid1, hash1, no_translation);
 	if(!result.plural) {
 		log_fatal("i18n: plural original string '%s':'%s' has singular-only translation '%s'", msgid1, msgid2, result.text);
 	}
@@ -203,12 +204,4 @@ const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char
 	}
 
 	return n == 1 ? result.text : result.plural;
-}
-
-const char *gettext(const char *msgid) {
-	return intl_gettext(_current_textdomain, msgid);
-}
-
-const char *ngettext(const char *msgid1, const char *msgid2, unsigned long int n) {
-	return intl_ngettext(_current_textdomain, msgid1, msgid2, n);
 }
