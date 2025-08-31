@@ -14,6 +14,7 @@
 
 #include "video.h"
 #include "stageinfo.h"
+#include "intl/intl.h"
 
 static void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
@@ -43,7 +44,7 @@ MenuData* create_stage_menu(void) {
 			add_menu_separator(m);
 		}
 
-		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s", stg->title, stg->subtitle);
+		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s ~ %s", _(stg->title), _(stg->subtitle), difficulty_name(stg->difficulty));
 		add_menu_entry(m, title, start_game, stg);
 
 		lastdiff = diff;

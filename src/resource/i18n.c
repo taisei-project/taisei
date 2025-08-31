@@ -98,10 +98,14 @@ void i18n_set_textdomain_from_string(const char *name) {
 		}
 	}
 
+	bool changed;
 	if(chosen >= 0) {
-		intl_set_textdomain(res_i18n(languages[chosen]));
+		changed = intl_set_textdomain(res_i18n(languages[chosen]));
 	} else {
-		intl_set_textdomain(NULL);
+		changed = intl_set_textdomain(NULL);
+	}
+	if(changed) {
+		stageinfo_reload();
 	}
 }
 
