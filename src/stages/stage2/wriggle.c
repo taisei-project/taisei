@@ -9,6 +9,7 @@
 #include "wriggle.h"
 
 #include "boss.h"
+#include "intl/intl.h"
 
 Boss *stage2_spawn_wriggle(cmplx pos) {
 	Boss *wriggle = create_boss(_("Wriggle"), "wriggle", pos);

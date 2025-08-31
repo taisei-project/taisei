@@ -8,6 +8,7 @@
 
 #include "stageinfo.h"
 #include "stages/stages.h"
+#include "intl/intl.h"
 
 #include "dynstage.h"
 
