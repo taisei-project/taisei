@@ -1,46 +1,37 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-29 21:22-0400\n"
+"POT-Creation-Date: 2025-08-31 17:08-0400\n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#(注:对话框每42个字节或21个汉字添加一个空格以换行)
-#(Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
-
-#: src/player.c:112
+# (注:对话框每42个字节或21个汉字添加一个空格以换行)
+# (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
+#: src/player.c:113
 msgid "Full Power!"
 msgstr ""
 
-#: src/player.c:730
+#: src/player.c:731
 msgid "Power Surge!"
 msgstr ""
 
-#: src/player.c:1580
+#: src/player.c:1581
 msgid " PIV"
 msgstr ""
 
-#: src/credits.c:70
+#: src/credits.c:71
 msgid ""
 "Taisei Project\n"
 "brought to you by…"
 msgstr ""
 
-#: src/credits.c:130
-msgid ""
-"Swordsdeer\n"
-"剑客小鹿\n"
-"TODO\n"
-"Chinese translation\n"
-msgstr ""
-
-#: src/credits.c:152
+#: src/credits.c:153
 msgid "Special Thanks"
 msgstr ""
 
-#: src/credits.c:197
+#: src/credits.c:198
 #, c-format
 msgid ""
 "Visit Us\n"
@@ -50,637 +41,200 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/credits.c:207
+#: src/credits.c:208
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
 msgstr ""
 
-#: src/camcontrol.c:210
+#: src/camcontrol.c:211
 msgid "Mouse input disabled "
 msgstr ""
 
-#: src/stageinfo.c:48
-#, c-format
-msgid "Spell %d"
+#: src/stageinfo.c:49
+msgid "Spell"
 msgstr ""
 
-#: src/stageinfo.c:130
-msgid "Stage 1"
-msgstr ""
-
-#: src/stageinfo.c:130
-msgid "Misty Lake Encounter"
-msgstr "雾之湖遭遇战"
-
-#: src/stageinfo.c:131
-msgid "Stage 2"
-msgstr ""
-
-#: src/stageinfo.c:131
-msgid "Riverside Hina-Nagashi"
-msgstr "河畔流雏"
-
-#: src/stageinfo.c:132
-msgid "Stage 3"
-msgstr ""
-
-#: src/stageinfo.c:132
-msgid "Crawly Mountain Ascent"
-msgstr "令人痒痒的登山之旅"
-
-#: src/stageinfo.c:133
-msgid "Stage 4"
-msgstr ""
-
-#: src/stageinfo.c:133
-msgid "Forgotten Mansion"
-msgstr "被遗忘的宅邸"
-
-#: src/stageinfo.c:134
-msgid "Stage 5"
-msgstr ""
-
-#: src/stageinfo.c:134
-msgid "Climbing the Tower of Babel"
-msgstr "巴别塔之攀"
-
-#: src/stageinfo.c:135
-msgid "Stage 6"
-msgstr ""
-
-#: src/stageinfo.c:135
-msgid "Roof of the World"
-msgstr "世界之脊"
-
-#: src/stageinfo.c:136
-msgid "Extra Stage"
-msgstr ""
-
-#: src/stageinfo.c:136
-msgid "Descent into Madness"
-msgstr ""
-
-#: src/gamepad.c:108
+#: src/gamepad.c:109
 msgid "Unknown device"
 msgstr "未知设备"
 
-#: src/gamepad.c:870
-msgid "A"
-msgstr ""
-
-#: src/gamepad.c:871
-msgid "B"
-msgstr ""
-
-#: src/gamepad.c:872
-msgid "X"
-msgstr ""
-
-#: src/gamepad.c:873
-msgid "Y"
-msgstr ""
-
-#: src/gamepad.c:874 src/menu/replayview.c:470 src/menu/media.c:59
-#: src/menu/options.c:811 src/menu/options.c:875 src/menu/options.c:1019
-#: src/menu/options.c:1128 src/menu/options.c:1208
-msgid "Back"
-msgstr ""
-
-#: src/gamepad.c:875
-msgid "Guide"
-msgstr ""
-
-#: src/gamepad.c:876
-#, fuzzy
-msgid "Start"
-msgstr ""
-
-#: src/gamepad.c:877
-msgid "Left Stick"
-msgstr "左摇杆"
-
-#: src/gamepad.c:878
-msgid "Right Stick"
-msgstr "右摇杆"
-
-#: src/gamepad.c:879
-msgid "Left Bumper"
-msgstr ""
-
-#: src/gamepad.c:880
-msgid "Right Bumper"
-msgstr ""
-
-#: src/gamepad.c:881
-msgid "Up"
-msgstr ""
-
-#: src/gamepad.c:882
-msgid "Down"
-msgstr ""
-
-#: src/gamepad.c:883
-msgid "Left"
-msgstr ""
-
-#: src/gamepad.c:884
-msgid "Right"
-msgstr ""
-
-#: src/gamepad.c:885
-msgid "Misc"
-msgstr ""
-
-#: src/gamepad.c:886
-msgid "P1"
-msgstr ""
-
-#: src/gamepad.c:887
-msgid "P2"
-msgstr ""
-
-#: src/gamepad.c:888
-msgid "P3"
-msgstr ""
-
-#: src/gamepad.c:889
-msgid "P4"
-msgstr ""
-
-#: src/gamepad.c:890
-msgid "Touchpad"
-msgstr ""
-
-#: src/gamepad.c:891
-msgid "Misc 2"
-msgstr ""
-
-#: src/gamepad.c:892
-msgid "Misc 3"
-msgstr ""
-
-#: src/gamepad.c:893
-msgid "Misc 4"
-msgstr ""
-
-#: src/gamepad.c:894
-msgid "Misc 5"
-msgstr ""
-
-#: src/gamepad.c:895
-msgid "Misc 6"
-msgstr ""
-
-#: src/gamepad.c:901 src/gamepad.c:916
-msgid "Left Trigger"
-msgstr ""
-
-#: src/gamepad.c:902 src/gamepad.c:917
-msgid "Right Trigger"
-msgstr ""
-
-#: src/gamepad.c:903
-msgid "Stick Up"
-msgstr ""
-
-#: src/gamepad.c:904
-msgid "Stick Down"
-msgstr ""
-
-#: src/gamepad.c:905
-msgid "Stick Left"
-msgstr ""
-
-#: src/gamepad.c:906
-msgid "Stick Right"
-msgstr ""
-
-#: src/gamepad.c:912
-msgid "Left X"
-msgstr ""
-
-#: src/gamepad.c:913
-msgid "Left Y"
-msgstr ""
-
-#: src/gamepad.c:914
-msgid "Right X"
-msgstr ""
-
-#: src/gamepad.c:915
-msgid "Right Y"
-msgstr ""
-
-#: src/gamepad.c:938 src/gamepad.c:949 src/menu/options.c:1346
-msgid "Unknown"
-msgstr ""
-
-#: src/boss.c:415
+#: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
 msgstr ""
 
-#: src/boss.c:981
+#: src/boss.c:982
 msgid "Clear bonus"
 msgstr ""
 
-#: src/boss.c:982
+#: src/boss.c:983
 msgid "Time bonus"
 msgstr ""
 
-#: src/boss.c:983
+#: src/boss.c:984
 msgid "Survival bonus"
 msgstr ""
 
-#: src/boss.c:984
+#: src/boss.c:985
 msgid "Endurance bonus"
 msgstr ""
 
-#: src/boss.c:986
+#: src/boss.c:987
 msgid "Diff. multiplier"
 msgstr ""
 
-#: src/boss.c:987
+#: src/boss.c:988
 msgid "Total"
 msgstr ""
 
-#: src/stage.c:621
+#: src/difficulty.c:41 src/menu/options.c:1347
+msgid "Unknown"
+msgstr ""
+
+#: src/stage.c:622
 #, c-format
 msgid "BGM: %s"
 msgstr ""
 
-#: src/menu/ingamemenu.c:132
+#: src/menu/spellpractice.c:21 src/menu/mainmenu.c:123
+msgid "Spell Practice"
+msgstr ""
+
+#: src/menu/spellpractice.c:67 src/menu/replayview.c:471 src/menu/media.c:60
+#: src/menu/options.c:812 src/menu/options.c:876 src/menu/options.c:1020
+#: src/menu/options.c:1129 src/menu/options.c:1209
+msgid "Back"
+msgstr ""
+
+#: src/menu/ingamemenu.c:133
 msgid "Game Paused"
 msgstr "游戏暂停"
 
-#: src/menu/ingamemenu.c:134 src/menu/ingamemenu.c:160 src/menu/mainmenu.c:129
-#: src/menu/options.c:1134
+#: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
+#: src/menu/options.c:1135
 msgid "Options"
 msgstr ""
 
-#: src/menu/ingamemenu.c:135
+#: src/menu/ingamemenu.c:136
 msgid "Return to Game"
 msgstr "返回游戏"
 
-#: src/menu/ingamemenu.c:136 src/menu/gameovermenu.c:81
+#: src/menu/ingamemenu.c:137 src/menu/gameovermenu.c:82
 msgid "Restart the Game"
 msgstr "推把"
 
-#: src/menu/ingamemenu.c:137
+#: src/menu/ingamemenu.c:138
 msgid "Stop the Game"
 msgstr "退出游戏"
 
-#: src/menu/ingamemenu.c:158
+#: src/menu/ingamemenu.c:159
 msgid "Replay Paused"
 msgstr "Replay暂停"
 
-#: src/menu/ingamemenu.c:161
+#: src/menu/ingamemenu.c:162
 msgid "Continue Watching"
 msgstr "继续观看"
 
-#: src/menu/ingamemenu.c:162
+#: src/menu/ingamemenu.c:163
 msgid "Restart the Stage"
 msgstr "重放关卡"
 
-#: src/menu/ingamemenu.c:163
+#: src/menu/ingamemenu.c:164
 msgid "Skip the Stage"
 msgstr "跳过关卡"
 
-#: src/menu/ingamemenu.c:164
+#: src/menu/ingamemenu.c:165
 msgid "Stop Watching"
 msgstr "退出观看"
 
-#: src/menu/charprofile.c:61
-msgid "Hakurei Reimu"
-msgstr ""
-
-#: src/menu/charprofile.c:62
-msgid "Shrine Maiden of Fantasy"
-msgstr "幻想的巫女"
-
-#: src/menu/charprofile.c:63 src/menu/charprofile.c:73
-msgid "Human"
-msgstr "人类"
-
-#: src/menu/charprofile.c:64
-msgid "Literature (Fiction)"
-msgstr "文学(小说)"
-
-#: src/menu/charprofile.c:65
-msgid ""
-"The incredibly particular shrine maiden.\n"
-"\n"
-"She’s taking a break from her busy novel-reading schedule to take care of an "
-"incident.\n"
-"\n"
-"Mostly, she has a vague feeling of sentimentality for a bygone era.\n"
-"\n"
-"Regardless, when the residents of Yōkai Mountain show up sobbing at her "
-"door, she has no choice but to put her book down and spring into action."
-msgstr ""
-
-#: src/menu/charprofile.c:71
-msgid "Kirisame Marisa"
-msgstr ""
-
-#: src/menu/charprofile.c:72
-msgid "Unbelievably Ordinary Magician"
-msgstr ""
-
-#: src/menu/charprofile.c:74
-msgid "Eclecticism"
-msgstr ""
-
-#: src/menu/charprofile.c:75
-msgid ""
-"The confident, hyperactive witch.\n"
-"\n"
-"Curious as ever about the limits of magic and the nature of reality, and "
-"when she hears about “eldritch lunacy,” her curiosity gets the better of "
-"her.\n"
-"\n"
-"But maybe this “grimoire” is best left unread?\n"
-"\n"
-"Not that a warning like that would stop her anyways. So, off she goes."
-msgstr ""
-
-#: src/menu/charprofile.c:81
-msgid "Konpaku Yōmu"
-msgstr ""
-
-#: src/menu/charprofile.c:82
-msgid "Swordswoman Between Worlds"
-msgstr ""
-
-#: src/menu/charprofile.c:83
-msgid "Half-Human, Half-Phantom"
-msgstr ""
-
-#: src/menu/charprofile.c:84
-msgid "Fencing"
-msgstr ""
-
-#: src/menu/charprofile.c:85
-msgid ""
-"The swordswoman of the somewhat-dead.\n"
-"\n"
-"“While you were playing games, I was studying the blade” … is probably what "
-"she’d say.\n"
-"\n"
-"Entirely too serious about everything, and utterly terrified of (half of) "
-"her own existence.\n"
-"\n"
-"Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
-"doesn’t let it get to her head."
-msgstr ""
-
-#: src/menu/charprofile.c:91 src/stages/stage1/cirno.c:26
-#: src/dialog/dialog_macros.h:69
-msgid "Cirno"
-msgstr "琪露诺"
-
-#: src/menu/charprofile.c:92 src/dialog/dialog_macros.h:69
-msgid "Thermodynamic Ice Fairy"
-msgstr ""
-
-#: src/menu/charprofile.c:93
-msgid "Fairy"
-msgstr ""
-
-#: src/menu/charprofile.c:94
-msgid "Thermodynamics"
-msgstr ""
-
-#: src/menu/charprofile.c:95
-msgid ""
-"The lovably-foolish ice fairy.\n"
-"\n"
-"Perhaps she’s a bit dissatisfied after her recent duels with secret gods and "
-"hellish fairies?\n"
-"\n"
-"Consider going easy on her."
-msgstr ""
-
-#: src/menu/charprofile.c:106
-msgid ""
-"Guardian of Yōkai Mountain. Her angular momentum is out of this world!\n"
-"\n"
-"She seems awfully concerned with your health and safety, to the point of "
-"being quite overbearing.\n"
-"\n"
-"You’re old enough to decide your own path in life, though."
-msgstr ""
-
-#: src/menu/charprofile.c:113 src/stages/stage3/scuttle.c:36
-msgid "Scuttle"
-msgstr ""
-
-#: src/menu/charprofile.c:114
-msgid "Agile Insect Engineer"
-msgstr ""
-
-#: src/menu/charprofile.c:115
-msgid "Bombardier Beetle"
-msgstr ""
-
-#: src/menu/charprofile.c:116
-msgid "Full Stack 'Web' Development"
-msgstr ""
-
-#: src/menu/charprofile.c:117
-msgid ""
-"Not all things are computable, and this bug seems to sneak in at a decisive "
-"fork in your commute to the true culprit.\n"
-"\n"
-"The majority of insects do not scheme grand revolutions, yet their presence "
-"alone is enough to upset the course of events."
-msgstr ""
-
-#: src/menu/charprofile.c:124 src/dialog/dialog_macros.h:71
-msgid "Wriggle Nightbug"
-msgstr "莉格露·奈特巴格"
-
-#: src/menu/charprofile.c:125 src/dialog/dialog_macros.h:71
-msgid "Insect Rights Activist"
-msgstr ""
-
-#: src/menu/charprofile.c:126
-msgid "Insect"
-msgstr ""
-
-#: src/menu/charprofile.c:127
-msgid "Evolutionary Socio-Entomology"
-msgstr ""
-
-#: src/menu/charprofile.c:128
-msgid ""
-"A bright bug - or was it insect? - far from her usual stomping grounds.\n"
-"\n"
-"She feels that Insects have lost their “rightful place” in history, whatever "
-"that means.\n"
-"\n"
-"If she thinks she has a raw evolutionary deal, someone ought to tell her "
-"about the trilobites…"
-msgstr ""
-
-#: src/menu/charprofile.c:136 src/dialog/dialog_macros.h:72
-msgid "High-Society Phlebotomist"
-msgstr ""
-
-#: src/menu/charprofile.c:137
-msgid "Vampire"
-msgstr ""
-
-#: src/menu/charprofile.c:138
-msgid "Hematology"
-msgstr ""
-
-#: src/menu/charprofile.c:139
-msgid ""
-"Vampiric blast from the past. Doesn’t she know Gensōkyō already has new "
-"bloodsuckers in town?\n"
-"\n"
-"Sucking blood is what she’s good at, but her current job is a gatekeeper, "
-"and her true passion is high fashion.\n"
-"\n"
-"Everyone’s got multiple side-hustles these days…"
-msgstr ""
-
-#: src/menu/charprofile.c:147 src/dialog/dialog_macros.h:73
-msgid "Fulminologist of the Heavens"
-msgstr ""
-
-#: src/menu/charprofile.c:148
-msgid "Oarfish"
-msgstr ""
-
-#: src/menu/charprofile.c:149
-msgid "Meteorology (Fulminology)"
-msgstr ""
-
-#: src/menu/charprofile.c:150
-msgid ""
-"Messenger from the clouds, and an amateur meteorologist.\n"
-"\n"
-"Seems to have been reading a few too many outdated psychiatry textbooks in "
-"recent times.\n"
-"\n"
-"Despite being so formal and stuffy, she seems to be the only one who knows "
-"what’s going on."
-msgstr ""
-
-#: src/menu/charprofile.c:161
-msgid ""
-"Slightly upset over being forgotten.\n"
-"\n"
-"Has apparently gotten herself a tutor in the “dark art” of theoretical "
-"physics. Her side-hustle is megalomania.\n"
-"\n"
-"Literally on top of the world, without a care to spare for those beneath "
-"her. Try not to let too many stones crush the innocent yōkai below when her "
-"Tower of Babel starts to crumble."
-msgstr ""
-
-#: src/menu/charprofile.c:168
-msgid "Locked"
-msgstr ""
-
-#: src/menu/charprofile.c:172
-msgid "You have not unlocked this character yet!"
-msgstr ""
-
-#: src/menu/charprofile.c:192
+#: src/menu/charprofile.c:193
 msgid "Species"
 msgstr ""
 
-#: src/menu/charprofile.c:193
+#: src/menu/charprofile.c:194
 msgid "Area of Study"
 msgstr ""
 
-#: src/menu/charprofile.c:269
+#: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
 msgstr ""
 
-#: src/menu/replayview.c:86
+#: src/menu/replayview.c:87
 msgid "Failed to load replay events"
 msgstr ""
 
-#: src/menu/replayview.c:95
+#: src/menu/replayview.c:96
 #, c-format
 msgid "Can't replay this stage: unknown stage ID %X"
 msgstr ""
 
-#: src/menu/replayview.c:102
+#: src/menu/replayview.c:103
 #, c-format
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
 msgstr ""
 
-#: src/menu/replayview.c:135
+#: src/menu/replayview.c:136
 #, c-format
 msgid "Unknown stage %X"
 msgstr ""
 
-#: src/menu/replayview.c:357 src/menu/mainmenu.c:127
+#: src/menu/replayview.c:358 src/menu/mainmenu.c:128
 msgid "Replays"
 msgstr ""
 
-#: src/menu/replayview.c:465
+#: src/menu/replayview.c:466
 msgid "No replays available. Play the game and record some!"
 msgstr ""
 
-#: src/menu/replayview.c:467
+#: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
 msgstr ""
 
-#: src/menu/mainmenu.c:118
+#: src/menu/mainmenu.c:119
 msgid "Start Story"
 msgstr "开始故事"
 
-#: src/menu/mainmenu.c:119
+#: src/menu/mainmenu.c:120
 msgid "Start Extra"
 msgstr ""
 
-#: src/menu/mainmenu.c:120
+#: src/menu/mainmenu.c:121
 msgid "Stage Practice"
 msgstr ""
 
-#: src/menu/mainmenu.c:122
-msgid "Spell Practice"
-msgstr ""
-
-#: src/menu/mainmenu.c:125
+#: src/menu/mainmenu.c:126
 msgid "Select Stage"
 msgstr ""
 
-#: src/menu/mainmenu.c:128 src/menu/media.c:33
+#: src/menu/mainmenu.c:129 src/menu/media.c:34
 msgid "Media Room"
 msgstr ""
 
-#: src/menu/mainmenu.c:132
+#: src/menu/mainmenu.c:133
 msgid "Quit"
 msgstr ""
 
-#: src/menu/charselect.c:165
+#: src/menu/charselect.c:166
 msgid "Intuition"
 msgstr ""
 
-#: src/menu/charselect.c:166
+#: src/menu/charselect.c:167
 msgid "Science"
 msgstr ""
 
-#: src/menu/charselect.c:173
+#: src/menu/charselect.c:174
 msgid "Select Character"
 msgstr ""
 
-#: src/menu/musicroom.c:123
+#: src/menu/musicroom.c:124
 msgid "Now playing"
 msgstr ""
 
-#: src/menu/musicroom.c:135 src/menu/media.c:56
+#: src/menu/musicroom.c:136 src/menu/media.c:57
 msgid "Music Room"
 msgstr ""
 
-#: src/menu/musicroom.c:169
+#: src/menu/musicroom.c:170
 msgid ""
 "\n"
 "You have not unlocked this track yet!\n"
@@ -688,606 +242,451 @@ msgid ""
 "If you wish to hear it anyway, please select it again to confirm."
 msgstr ""
 
-#: src/menu/musicroom.c:177
+#: src/menu/musicroom.c:178
 msgid ""
 "\n"
 "No comment available"
 msgstr ""
 
-#: src/menu/musicroom.c:233
+#: src/menu/musicroom.c:234
 msgid "Unknown track"
 msgstr ""
 
-#: src/menu/difficultyselect.c:43
+#: src/menu/difficultyselect.c:44
 msgid ""
 "For those just beginning\n"
 "their academic careers"
 msgstr ""
 
-#: src/menu/difficultyselect.c:44
+#: src/menu/difficultyselect.c:45
 msgid ""
 "All those years of study\n"
 "have finally paid off"
 msgstr ""
 
-#: src/menu/difficultyselect.c:45
+#: src/menu/difficultyselect.c:46
 msgid ""
 "You must really\n"
 "love books"
 msgstr ""
 
-#: src/menu/difficultyselect.c:46
+#: src/menu/difficultyselect.c:47
 msgid ""
 "You either die a student,\n"
 "or live long enough to\n"
 "become a professor"
 msgstr ""
 
-#: src/menu/difficultyselect.c:64
+#: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
 msgstr ""
 
-#: src/menu/gameovermenu.c:35
+#: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
 msgstr ""
 
-#: src/menu/gameovermenu.c:61
+#: src/menu/gameovermenu.c:62
 msgid "Spell Failed"
 msgstr ""
 
-#: src/menu/gameovermenu.c:63
+#: src/menu/gameovermenu.c:64
 msgid "Restart"
 msgstr ""
 
-#: src/menu/gameovermenu.c:65 src/menu/gameovermenu.c:83
+#: src/menu/gameovermenu.c:66 src/menu/gameovermenu.c:84
 msgid "Give up"
 msgstr ""
 
-#: src/menu/gameovermenu.c:68
+#: src/menu/gameovermenu.c:69
 msgid "Game Over"
 msgstr ""
 
-#: src/menu/gameovermenu.c:75
+#: src/menu/gameovermenu.c:76
 #, c-format
 msgid "Continue (%i)"
 msgstr ""
 
-#: src/menu/gameovermenu.c:77
+#: src/menu/gameovermenu.c:78
 #, c-format
 msgid "Continue"
 msgstr ""
 
-#: src/menu/gameovermenu.c:83
+#: src/menu/gameovermenu.c:84
 msgid "Return to Title"
 msgstr ""
 
-#: src/menu/media.c:55
+#: src/menu/media.c:56
 msgid "Character Profiles"
 msgstr ""
 
-#: src/menu/media.c:57
+#: src/menu/media.c:58
 msgid "Replay Cutscenes"
 msgstr ""
 
-#: src/menu/options.c:493
-msgid "Reset all settings to defaults?"
-msgstr ""
-
-#: src/menu/options.c:499
-msgid "Reset all settings to the last saved values?"
-msgstr ""
-
-#: src/menu/options.c:700
+#: src/menu/options.c:701
 msgid "Yes"
 msgstr ""
 
-#: src/menu/options.c:701
-#, fuzzy
+#: src/menu/options.c:702
 msgid "No"
 msgstr ""
 
-#: src/menu/options.c:729
+#: src/menu/options.c:730
 msgid "Video Options"
 msgstr ""
 
-#: src/menu/options.c:732
+#: src/menu/options.c:733
 msgid "Fullscreen"
 msgstr ""
 
-#: src/menu/options.c:737
+#: src/menu/options.c:738
 msgid "Display"
 msgstr ""
 
-#: src/menu/options.c:741
+#: src/menu/options.c:742
 msgid "Window size"
 msgstr ""
 
-#: src/menu/options.c:746
+#: src/menu/options.c:747
 msgid "Renderer resolution"
 msgstr ""
 
-#: src/menu/options.c:751
+#: src/menu/options.c:752
 msgid "Resizable window"
 msgstr ""
 
-#: src/menu/options.c:758
+#: src/menu/options.c:759
 msgid "Pause the game when not focused"
 msgstr ""
 
-#: src/menu/options.c:762
+#: src/menu/options.c:763
 msgid "Vertical synchronization"
 msgstr ""
 
-#: src/menu/options.c:771
+#: src/menu/options.c:772
 msgid "Skip frames"
 msgstr "跳帧"
 
-#: src/menu/options.c:779
+#: src/menu/options.c:780
 msgid "Overall rendering quality"
 msgstr ""
 
-#: src/menu/options.c:783
+#: src/menu/options.c:784
 msgid "Draw background"
 msgstr ""
 
-#: src/menu/options.c:787
+#: src/menu/options.c:788
 msgid "Background rendering quality"
 msgstr ""
 
-#: src/menu/options.c:794
+#: src/menu/options.c:795
 msgid "Anti-aliasing"
 msgstr ""
 
-#: src/menu/options.c:799
+#: src/menu/options.c:800
 msgid "Particle effects"
 msgstr ""
 
-#: src/menu/options.c:804
+#: src/menu/options.c:805
 msgid "Postprocessing effects"
 msgstr ""
 
-#: src/menu/options.c:832
+#: src/menu/options.c:833
 msgid "Gamepad Controls"
 msgstr ""
 
-#: src/menu/options.c:834 src/menu/options.c:1027
+#: src/menu/options.c:835 src/menu/options.c:1028
 msgid "Move up"
 msgstr ""
 
-#: src/menu/options.c:838 src/menu/options.c:1031
+#: src/menu/options.c:839 src/menu/options.c:1032
 msgid "Move down"
 msgstr ""
 
-#: src/menu/options.c:842 src/menu/options.c:1035
+#: src/menu/options.c:843 src/menu/options.c:1036
 msgid "Move left"
 msgstr ""
 
-#: src/menu/options.c:846 src/menu/options.c:1039
+#: src/menu/options.c:847 src/menu/options.c:1040
 msgid "Move right"
 msgstr ""
 
-#: src/menu/options.c:852 src/menu/options.c:1045
+#: src/menu/options.c:853 src/menu/options.c:1046
 msgid "Shoot"
 msgstr ""
 
-#: src/menu/options.c:856 src/menu/options.c:1049
+#: src/menu/options.c:857 src/menu/options.c:1050
 msgid "Focus"
 msgstr ""
 
-#: src/menu/options.c:860 src/menu/options.c:1053
+#: src/menu/options.c:861 src/menu/options.c:1054
 msgid "Use Spell Card"
 msgstr ""
 
-#: src/menu/options.c:864 src/menu/options.c:1057
+#: src/menu/options.c:865 src/menu/options.c:1058
 msgid "Power Surge / Discharge"
 msgstr ""
 
-#: src/menu/options.c:870 src/menu/options.c:1071
+#: src/menu/options.c:871 src/menu/options.c:1072
 msgid "Skip dialog"
 msgstr ""
 
-#: src/menu/options.c:948
+#: src/menu/options.c:949
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr ""
 
-#: src/menu/options.c:951
+#: src/menu/options.c:952
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr ""
 
-#: src/menu/options.c:964
+#: src/menu/options.c:965
 msgid "Gamepad Options"
 msgstr ""
 
-#: src/menu/options.c:975
+#: src/menu/options.c:976
 msgid "Enable Gamepad/Joystick support"
 msgstr ""
 
-#: src/menu/options.c:979
+#: src/menu/options.c:980
 msgid "Device"
 msgstr ""
 
-#: src/menu/options.c:985 src/menu/options.c:1196
+#: src/menu/options.c:986 src/menu/options.c:1197
 msgid "Customize controls…"
 msgstr ""
 
-#: src/menu/options.c:989
+#: src/menu/options.c:990
 msgid "Remap square input into circular"
 msgstr ""
 
-#: src/menu/options.c:995
+#: src/menu/options.c:996
 msgid "Direction snap factor"
 msgstr ""
 
-#: src/menu/options.c:999
+#: src/menu/options.c:1000
 msgid "Diagonal bias"
 msgstr ""
 
-#: src/menu/options.c:1006
+#: src/menu/options.c:1007
 msgid "Dead zone"
 msgstr ""
 
-#: src/menu/options.c:1010
+#: src/menu/options.c:1011
 msgid "Maximum zone"
 msgstr ""
 
-#: src/menu/options.c:1014
+#: src/menu/options.c:1015
 msgid "Sensitivity"
 msgstr ""
 
-#: src/menu/options.c:1025
+#: src/menu/options.c:1026
 msgid "Controls"
 msgstr ""
 
-#: src/menu/options.c:1063
+#: src/menu/options.c:1064
 msgid "Toggle fullscreen"
 msgstr ""
 
-#: src/menu/options.c:1067
+#: src/menu/options.c:1068
 msgid "Take a screenshot"
 msgstr ""
 
-#: src/menu/options.c:1077
+#: src/menu/options.c:1078
 msgid "Toggle audio"
 msgstr ""
 
-#: src/menu/options.c:1083
+#: src/menu/options.c:1084
 msgid "Stop the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1087
+#: src/menu/options.c:1088
 msgid "Restart the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1091
+#: src/menu/options.c:1092
 msgid "Quick save"
 msgstr ""
 
-#: src/menu/options.c:1095
+#: src/menu/options.c:1096
 msgid "Quick load"
 msgstr ""
 
-#: src/menu/options.c:1102
+#: src/menu/options.c:1103
 msgid "Toggle God mode"
 msgstr ""
 
-#: src/menu/options.c:1106
+#: src/menu/options.c:1107
 msgid "Skip stage"
 msgstr ""
 
-#: src/menu/options.c:1110
+#: src/menu/options.c:1111
 msgid "Power up"
 msgstr ""
 
-#: src/menu/options.c:1114
+#: src/menu/options.c:1115
 msgid "Power down"
 msgstr ""
 
-#: src/menu/options.c:1118
+#: src/menu/options.c:1119
 msgid "Disable background rendering (HoM effect)"
 msgstr ""
 
-#: src/menu/options.c:1122
+#: src/menu/options.c:1123
 msgid "Toggle collision areas overlay"
 msgstr ""
 
-#: src/menu/options.c:1138
+#: src/menu/options.c:1139
 msgid "Player name"
 msgstr ""
 
-#: src/menu/options.c:1145
+#: src/menu/options.c:1146
 msgid "Save replays"
 msgstr ""
 
-#: src/menu/options.c:1151
+#: src/menu/options.c:1152
 msgid "Auto-restart in Spell Practice"
 msgstr ""
 
-#: src/menu/options.c:1155
+#: src/menu/options.c:1156
 msgid "Power in Spell and Stage Practice"
 msgstr ""
 
-#: src/menu/options.c:1163
+#: src/menu/options.c:1164
 msgid "Shoot by default"
 msgstr ""
 
-#: src/menu/options.c:1167
+#: src/menu/options.c:1168
 msgid "Automatic Power Surge activation"
 msgstr ""
 
-#: src/menu/options.c:1171
+#: src/menu/options.c:1172
 msgid "Boss healthbar style"
 msgstr ""
 
-#: src/menu/options.c:1176
+#: src/menu/options.c:1177
 msgid "Floating score text visibility"
 msgstr ""
 
-#: src/menu/options.c:1182
+#: src/menu/options.c:1183
 msgid "SFX Volume"
 msgstr ""
 
-#: src/menu/options.c:1186
+#: src/menu/options.c:1187
 msgid "BGM Volume"
 msgstr ""
 
-#: src/menu/options.c:1190
+#: src/menu/options.c:1191
 msgid "Mute audio"
 msgstr ""
 
-#: src/menu/options.c:1195
+#: src/menu/options.c:1196
 msgid "Video options…"
 msgstr "显示选项"
 
-#: src/menu/options.c:1197
+#: src/menu/options.c:1198
 msgid "Gamepad & Joystick options…"
 msgstr ""
 
-#: src/menu/options.c:1201
+#: src/menu/options.c:1202
 msgid "Reload from last saved"
 msgstr ""
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1205
 msgid "Reset to defaults"
 msgstr ""
 
-#: src/menu/options.c:1337
+#: src/menu/options.c:1338
 msgid "Press a key to assign, ESC to cancel"
 msgstr ""
 
-#: src/menu/options.c:1377
+#: src/menu/options.c:1378
 msgid "All devices"
 msgstr ""
 
-#: src/menu/options.c:1383
+#: src/menu/options.c:1384
 msgid "No devices available"
 msgstr ""
 
-#: src/menu/options.c:1425
+#: src/menu/options.c:1426
 msgid "Move an axis to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1426
+#: src/menu/options.c:1427
 msgid "Press a button to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1442
+#: src/menu/options.c:1443
 msgid "Unbound"
 msgstr ""
 
-#: src/stages/stage1/stage1.c:29
-msgid "Freeze Sign “Perfect Freeze”"
-msgstr "冻符「Perfect Freeze」(完美冻结)"
+#: src/stages/stage1/cirno.c:27 src/dialog/dialog_macros.h:71
+msgid "Cirno"
+msgstr "琪露诺"
 
-#: src/stages/stage1/stage1.c:37
-msgid "Freeze Sign “Crystal Rain”"
-msgstr "冻符「Crystal Rain」(水晶之雨)"
-
-#: src/stages/stage1/stage1.c:42
-msgid "Winter Sign “Snow Halation”"
-msgstr "冬符「Snow Halation」(雪晕)"
-
-#: src/stages/stage1/stage1.c:47
-msgid "Doom Sign “Icicle Cascade”"
-msgstr "灭符「Icicle Cascade」(冰瀑)"
-
-#: src/stages/stage1/stage1.c:54
-msgid "Frost Sign “Crystal Blizzard”"
-msgstr "霜符「Crystal Blizzard」(水晶风暴)"
-
-#: src/stages/stage1/spells/snow_halation.c:186
+#: src/stages/stage1/spells/snow_halation.c:187
 #, fuzzy
 msgid "What are you doing??"
 msgstr "泥在干神马？"
 
-#: src/stages/stage1/spells/snow_halation.c:187
+#: src/stages/stage1/spells/snow_halation.c:188
 msgid "Dodge it properly!"
 msgstr "好好躲避吧！"
 
-#: src/stages/stage1/spells/snow_halation.c:188
+#: src/stages/stage1/spells/snow_halation.c:189
 msgid "I bet you can’t do it! Idiot!"
 msgstr "咱敢打赌你做不到！baka！"
 
-#: src/stages/stage1/spells/snow_halation.c:189
+#: src/stages/stage1/spells/snow_halation.c:190
 msgid "I spent so much time on this attack!"
 msgstr "咱可沉淀了很久的！"
 
-#: src/stages/stage1/spells/snow_halation.c:190
+#: src/stages/stage1/spells/snow_halation.c:191
 msgid "Maybe it is too smart for secondaries!"
 msgstr ""
 
-#: src/stages/stage1/spells/snow_halation.c:191
+#: src/stages/stage1/spells/snow_halation.c:192
 msgid "I think you don’t even understand the timer!"
 msgstr ""
 
-#: src/stages/stage1/spells/snow_halation.c:192
+#: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
 msgstr "泥、泥个大baka!!!!!"
 
-#: src/stages/stage4/stage4.c:29
-msgid "Bloodless “Gate of Walachia”"
-msgstr "无血「瓦拉几亚之门」"
-
-#: src/stages/stage4/stage4.c:34
-msgid "Bloodless “Dry Fountain”"
-msgstr "无血「干枯的喷泉」"
-
-#: src/stages/stage4/stage4.c:39
-msgid "Bloodless “Red Spike”"
-msgstr "无血「红色尖刺」"
-
-#: src/stages/stage4/stage4.c:47
-msgid "Limit “Animate Wall”"
-msgstr "界限「Animate Wall」（生命高墙）"
-
-#: src/stages/stage4/stage4.c:52
-msgid "Summoning “Demon Wall”"
-msgstr "召唤「Demon Wall」（恶魔高墙）"
-
-#: src/stages/stage4/stage4.c:57
-msgid "Power Sign “Blow the Walls”"
-msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
-
-#: src/stages/stage4/stage4.c:62
-msgid "Predation “Vampiric Vapor”"
-msgstr "力符「炸翻高墙」"
-
-#: src/stages/stage4/stage4.c:69
-msgid "Blood Magic “Vlad’s Army”"
-msgstr "血魔法「吸血鬼大军」"
-
-#: src/stages/stage4/kurumi.c:56 src/dialog/dialog_macros.h:72
-#: src/cutscenes/scene_impl.h:70
+#: src/stages/stage4/kurumi.c:57 src/dialog/dialog_macros.h:74
 msgid "Kurumi"
 msgstr "胡桃"
 
-#: src/stages/stage2/hina.c:40 src/dialog/dialog_macros.h:70
+#: src/stages/stage2/hina.c:41 src/dialog/dialog_macros.h:72
 msgid "Kagiyama Hina"
 msgstr "键山雏"
 
-#: src/stages/stage2/wriggle.c:14
+#: src/stages/stage2/wriggle.c:15
 #, fuzzy
 msgid "Wriggle"
 msgstr "莉格露·奈特巴格"
 
-#: src/stages/stage2/stage2.c:24
-msgid "Shard “Amulet of Harm”"
-msgstr "碎片「破裂的护符」"
-
-#: src/stages/stage2/stage2.c:29
-msgid "Lottery Sign “Bad Pick”"
-msgstr "运符「Bad Pick」（错误的选择）"
-
-#: src/stages/stage2/stage2.c:34
-msgid "Lottery Sign “Wheel of Fortune”"
-msgstr "运符「Wheel of Fortune」(命运之轮)"
-
-#: src/stages/stage2/stage2.c:41
-msgid "Lottery Sign “Monty Hall Danmaku”"
-msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
-
-#: src/stages/stage3/wriggle.c:30
+#: src/stages/stage3/wriggle.c:31
 #, fuzzy
 msgid "Wriggle EX"
 msgstr "莉格露·奈特巴格"
 
-#: src/stages/stage3/stage3.c:31
-msgid "Disruption “Logic Bomb”"
-msgstr "崩解「Logic Bomb」(逻辑炸弹)"
+#: src/stages/stage3/scuttle.c:37
+msgid "Scuttle"
+msgstr ""
 
-#: src/stages/stage3/stage3.c:39
-msgid "Firefly Sign “Moonlight Rocket”"
-msgstr "萤符「Moonlight Rocket」(月光火箭)"
-
-#: src/stages/stage3/stage3.c:44
-msgid "Attractor “Moths to a Flame”"
-msgstr "诱引「Moths to a Flame」(飞蛾扑火)"
-
-#: src/stages/stage3/stage3.c:49
-msgid "Bug Sign “Firefly Storm”"
-msgstr "虫符「Firefly Storm」（飞萤风暴）"
-
-#: src/stages/stage3/stage3.c:56
-msgid "Lamp Sign “Light Singularity”"
-msgstr "灯符「Light Singularity」（奇异之光）"
-
-#: src/stages/stage5/iku.c:107 src/dialog/dialog_macros.h:73
+#: src/stages/stage5/iku.c:108 src/dialog/dialog_macros.h:75
 msgid "Nagae Iku"
 msgstr "永江衣玖"
 
-#: src/stages/stage5/stage5.c:24
-msgid "High Voltage “Static Bomb”"
-msgstr "高压「Static Bomb」(静态炸弹)"
-
-#: src/stages/stage5/stage5.c:32
-msgid "High Voltage “Atmospheric Discharge”"
-msgstr "高压「Atmospheric Discharge」(大气释能)"
-
-#: src/stages/stage5/stage5.c:37
-msgid "Charge Sign “Artificial Lightning”"
-msgstr "充符「Artificial Lightning」(人造闪电)"
-
-#: src/stages/stage5/stage5.c:42
-msgid "Current Sign “Induction Field”"
-msgstr "流符「Induction Field」(磁感领域)"
-
-#: src/stages/stage5/stage5.c:47
-msgid "Current Sign “Inductive Resonance”"
-msgstr "流符「电感谐振」"
-
-#: src/stages/stage5/stage5.c:52
-msgid "Spark Sign “Natural Cathode”"
-msgstr "星火之御札「Natural Cathode」(自然阴极)"
-
-#: src/stages/stage5/stage5.c:59
-msgid "Circuit Sign “Overload”"
-msgstr "电路之御札「超负荷」"
-
-#: src/stages/stage5/timeline.c:33
+#: src/stages/stage5/timeline.c:34
 msgid "Bombs?"
 msgstr ""
 
-#: src/stages/stage6/elly.c:28 src/dialog/dialog_macros.h:74
-#: src/cutscenes/scene_impl.h:69
+#: src/stages/stage6/elly.c:29 src/dialog/dialog_macros.h:76
 msgid "Elly"
 msgstr ""
-
-#: src/stages/stage6/stage6.c:28
-msgid "Newton Sign “Occam’s Razor”"
-msgstr "牛顿之御札「Occam's Razor」(奥卡姆剃刀)"
-
-#: src/stages/stage6/stage6.c:33
-msgid "Kepler Sign “Orbital Clockwork”"
-msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
-
-#: src/stages/stage6/stage6.c:38
-msgid "Maxwell Sign “Wave Theory”"
-msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
-
-#: src/stages/stage6/stage6.c:46
-msgid "Eigenstate “Many-World Interpretation”"
-msgstr "本征态「多世界诠释」"
-
-#: src/stages/stage6/stage6.c:51
-msgid "de Broglie Sign “Wave-Particle Duality”"
-msgstr "德布罗意之御札「波粒二象性」"
-
-#: src/stages/stage6/stage6.c:56
-msgid "Ricci Sign “Spacetime Curvature”"
-msgstr "里奇之御札「时空曲率」"
-
-#: src/stages/stage6/stage6.c:61
-msgid "LHC “Higgs Boson Uncovered”"
-msgstr "L.H.C.「希格斯玻色子发现」"
-
-#: src/stages/stage6/stage6.c:69
-msgid "Forgotten Universe “Curvature Domination”"
-msgstr "遗忘之宙「Curvature Domination」(操弄曲率)"
-
-#: src/stages/stage6/stage6.c:77
-msgid "Tower of Truth “Theory of Everything”"
-msgstr "真理之塔「Theory of Everything」(万物之理论)"
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
@@ -1530,7 +929,7 @@ msgstr "那你又是谁？"
 msgid "Oi, that’s what I should be asking!"
 msgstr "哎呀，这不是我的台词吗！"
 
-#: src/dialog/reimu.c:282 src/dialog/youmu.c:321
+#: src/dialog/reimu.c:282 src/dialog/youmu.c:322
 msgid "…?"
 msgstr "……？"
 
@@ -2169,6 +1568,7 @@ msgstr "你好，雾雨小姐。"
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
 msgstr "你看起来还是和以往一样鲁莽。我建议你最好回头。"
+
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
 msgstr "谢谢你的建议！不过我会无视的DA☆ZE"
@@ -2193,8 +1593,7 @@ msgstr "我就当这是在夸我了。"
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
-msgstr ""
-"那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
+msgstr "那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
@@ -2227,9 +1626,7 @@ msgstr "这辈子我已经受够那种事了。"
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
-msgstr ""
-"天啊，我越往上走，大家就越癫了. "
-"这到底是怎么回事？"
+msgstr "天啊，我越往上走，大家就越癫了. 这到底是怎么回事？"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
@@ -2303,9 +1700,7 @@ msgstr "第四——!"
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
-msgstr ""
-"行行行挺有意思的，但我还有更重要的事 "
-"要办。"
+msgstr "行行行挺有意思的，但我还有更重要的事 要办。"
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
@@ -2317,9 +1712,7 @@ msgstr "也许我知道的比你想象的要多。"
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
-msgstr ""
-"但我绝不会把这些告诉你们这群窃取昆虫 "
-"荣耀的篡位者！"
+msgstr "但我绝不会把这些告诉你们这群窃取昆虫 荣耀的篡位者！"
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
@@ -2331,9 +1724,7 @@ msgstr "话说，你那些新招式是在哪儿学来的？"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
-msgstr ""
-"啊这……那是我们辉煌昆虫祖先的伟大幻象 "
-"告诉我的！"
+msgstr "啊这……那是我们辉煌昆虫祖先的伟大幻象 告诉我的！"
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
@@ -2347,15 +1738,11 @@ msgstr "「辉煌的昆虫祖先」？「碳素时代」？"
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
-msgstr ""
-"哦，你该不会是说石炭纪吧？就是那个巨型虫子—— "
-"呃，巨型昆虫横行的时期。"
+msgstr "哦，你该不会是说石炭纪吧？就是那个巨型虫子—— 呃，巨型昆虫横行的时期。"
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
-msgstr ""
-"我记得那位永远亭的医生曾经滔滔不绝地讲解 "
-"这段历史。"
+msgstr "我记得那位永远亭的医生曾经滔滔不绝地讲解 这段历史。"
 
 #: src/dialog/marisa.c:217
 msgid "Only time I’d seen her so excited…"
@@ -2919,7 +2306,7 @@ msgstr ""
 msgid "Master Spark’s good ‘n all, but it’ll only get me so far in life…"
 msgstr ""
 
-#: src/dialog/marisa.c:594 src/dialog/youmu.c:225 src/dialog/youmu.c:541
+#: src/dialog/marisa.c:594 src/dialog/youmu.c:226 src/dialog/youmu.c:542
 msgid "…"
 msgstr ""
 
@@ -3062,837 +2449,837 @@ msgid ""
 "Your pitiful magic amounts to nothing against the true nature of reality!"
 msgstr ""
 
-#: src/dialog/youmu.c:23
+#: src/dialog/youmu.c:24
 msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
 msgstr ""
 
-#: src/dialog/youmu.c:26
+#: src/dialog/youmu.c:27
 msgid "Hey!"
 msgstr ""
 
-#: src/dialog/youmu.c:29
+#: src/dialog/youmu.c:30
 msgid "I’m cooler than you, so get off my lake!"
 msgstr ""
 
-#: src/dialog/youmu.c:31
+#: src/dialog/youmu.c:32
 msgid "I can see you’re quite cold, yes."
 msgstr ""
 
-#: src/dialog/youmu.c:33
+#: src/dialog/youmu.c:34
 msgid ""
 "I tend to dislike dueling those weaker than myself, so I’d appreciate it if "
 "you’d step aside."
 msgstr ""
 
-#: src/dialog/youmu.c:36
+#: src/dialog/youmu.c:37
 msgid "Hah! Maybe YOU should step aside, then!"
 msgstr ""
 
-#: src/dialog/youmu.c:39
+#: src/dialog/youmu.c:40
 msgid ""
 "I suppose it’s as good a time as any to practice my Snowflake-Destruction "
 "Technique."
 msgstr ""
 
-#: src/dialog/youmu.c:43
+#: src/dialog/youmu.c:44
 msgid ""
 "But if I turn you into a snowflake, you’ll have to chop yourself in half!"
 msgstr ""
 
-#: src/dialog/youmu.c:57
+#: src/dialog/youmu.c:58
 msgid "The cold is no good for such fine blades…"
 msgstr ""
 
-#: src/dialog/youmu.c:59
+#: src/dialog/youmu.c:60
 msgid "Y-you should be careful with t-those!"
 msgstr ""
 
-#: src/dialog/youmu.c:62
+#: src/dialog/youmu.c:63
 msgid "Yes, that’s what I was just saying."
 msgstr ""
 
-#: src/dialog/youmu.c:79
+#: src/dialog/youmu.c:80
 msgid "So this is Yōkai Mountain…"
 msgstr ""
 
-#: src/dialog/youmu.c:80
+#: src/dialog/youmu.c:81
 msgid "A shame, I’ve heard this is usually quite a lovely place."
 msgstr ""
 
-#: src/dialog/youmu.c:83
+#: src/dialog/youmu.c:84
 msgid "Oh my, what’s this? A new face?"
 msgstr ""
 
-#: src/dialog/youmu.c:85
+#: src/dialog/youmu.c:86
 msgid "And who might you be, dear?"
 msgstr ""
 
-#: src/dialog/youmu.c:87
+#: src/dialog/youmu.c:88
 msgid "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate—"
 msgstr ""
 
-#: src/dialog/youmu.c:90
+#: src/dialog/youmu.c:91
 msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
 msgstr ""
 
-#: src/dialog/youmu.c:93
+#: src/dialog/youmu.c:94
 msgid ""
 "Young girls such as yourself shouldn’t be sent to do such dangerous errands!"
 msgstr ""
 
-#: src/dialog/youmu.c:96
+#: src/dialog/youmu.c:97
 msgid "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—"
 msgstr ""
 
-#: src/dialog/youmu.c:97
+#: src/dialog/youmu.c:98
 msgid "—having mastered my technique over *decades*—"
 msgstr ""
 
-#: src/dialog/youmu.c:98
+#: src/dialog/youmu.c:99
 msgid "—dare I say even the best in Gensōkyō—"
 msgstr ""
 
-#: src/dialog/youmu.c:101
+#: src/dialog/youmu.c:102
 msgid ""
 "Aww… but you’re so adorable! No way someone like you could be into that."
 msgstr ""
 
-#: src/dialog/youmu.c:102
+#: src/dialog/youmu.c:103
 msgid ""
 "Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage "
 "phase?"
 msgstr ""
 
-#: src/dialog/youmu.c:105
+#: src/dialog/youmu.c:106
 msgid "It’s not a PHASE, mo—"
 msgstr ""
 
-#: src/dialog/youmu.c:107
+#: src/dialog/youmu.c:108
 msgid "…!!"
 msgstr ""
 
-#: src/dialog/youmu.c:122
+#: src/dialog/youmu.c:123
 msgid "Did you just call me ‘mom’…?"
 msgstr ""
 
-#: src/dialog/youmu.c:125
+#: src/dialog/youmu.c:126
 msgid "I did not."
 msgstr ""
 
-#: src/dialog/youmu.c:126
+#: src/dialog/youmu.c:127
 msgid "It must be the madness overcoming you."
 msgstr ""
 
-#: src/dialog/youmu.c:127
+#: src/dialog/youmu.c:128
 msgid "Yes, indeed."
 msgstr ""
 
-#: src/dialog/youmu.c:130
+#: src/dialog/youmu.c:131
 msgid "My, my…~"
 msgstr ""
 
-#: src/dialog/youmu.c:133
+#: src/dialog/youmu.c:134
 msgid "Don’t you dare."
 msgstr ""
 
-#: src/dialog/youmu.c:149
+#: src/dialog/youmu.c:150
 msgid "The further I go into this forest, the more restless I feel."
 msgstr ""
 
-#: src/dialog/youmu.c:151
+#: src/dialog/youmu.c:152
 msgid "Something is definitely amiss."
 msgstr ""
 
-#: src/dialog/youmu.c:154
+#: src/dialog/youmu.c:155
 msgid "Amiss?"
 msgstr ""
 
-#: src/dialog/youmu.c:156
+#: src/dialog/youmu.c:157
 msgid "Perhaps you’re frightened by our growing, overwhelming influence?"
 msgstr ""
 
-#: src/dialog/youmu.c:159
+#: src/dialog/youmu.c:160
 msgid "Bugs do not concern me at the moment."
 msgstr ""
 
-#: src/dialog/youmu.c:162
+#: src/dialog/youmu.c:163
 msgid "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!"
 msgstr ""
 
-#: src/dialog/youmu.c:164
+#: src/dialog/youmu.c:165
 msgid "Ever heard of beetles? Flies? Show us some respect!"
 msgstr ""
 
-#: src/dialog/youmu.c:167
+#: src/dialog/youmu.c:168
 msgid "Apologies, I meant no offense."
 msgstr ""
 
-#: src/dialog/youmu.c:169
+#: src/dialog/youmu.c:170
 msgid ""
 "I am on a mission from Lady Yuyuko to end whatever is causing the disturbance"
 "—"
 msgstr ""
 
-#: src/dialog/youmu.c:172
+#: src/dialog/youmu.c:173
 msgid "Oh, oh, I understand now."
 msgstr ""
 
-#: src/dialog/youmu.c:174
+#: src/dialog/youmu.c:175
 msgid ""
 "The power wielded by an army of giant insects would surely raise some "
 "concerns."
 msgstr ""
 
-#: src/dialog/youmu.c:176
+#: src/dialog/youmu.c:177
 msgid "Simply put, we want to restore our rightful place in history!"
 msgstr ""
 
-#: src/dialog/youmu.c:177
+#: src/dialog/youmu.c:178
 msgid ""
 "It’s only natural that the lower inhabitants of the mountain would get "
 "nervous in the face of our natural dominance."
 msgstr ""
 
-#: src/dialog/youmu.c:179
+#: src/dialog/youmu.c:180
 msgid "Your apology is accepted. You shall not fear our wrath—"
 msgstr ""
 
-#: src/dialog/youmu.c:182
+#: src/dialog/youmu.c:183
 msgid "… no, no, bugs alone wouldn’t cause this kind of disturbance…"
 msgstr ""
 
-#: src/dialog/youmu.c:184
+#: src/dialog/youmu.c:185
 msgid "All they’re capable of is ruining my carefully manicured garden."
 msgstr ""
 
-#: src/dialog/youmu.c:186
+#: src/dialog/youmu.c:187
 msgid "Did you just say you’re…"
 msgstr ""
 
-#: src/dialog/youmu.c:188
+#: src/dialog/youmu.c:189
 msgid "… a gardener?!"
 msgstr ""
 
-#: src/dialog/youmu.c:193
+#: src/dialog/youmu.c:194
 msgid "Your true face is finally revealed!"
 msgstr ""
 
-#: src/dialog/youmu.c:194
+#: src/dialog/youmu.c:195
 msgid ""
 "My light shines brighter than ever now! I shall teach this lowly usurper due "
 "respect!"
 msgstr ""
 
-#: src/dialog/youmu.c:195
+#: src/dialog/youmu.c:196
 msgid "So that we may live above beyond your green thumb once and for all!"
 msgstr ""
 
-#: src/dialog/youmu.c:209
+#: src/dialog/youmu.c:210
 msgid "Are you aware of the legend of the Tonbokiri?"
 msgstr ""
 
-#: src/dialog/youmu.c:210
+#: src/dialog/youmu.c:211
 msgid ""
 "It was said its blade could cut insects in half simply by them landing on it."
 msgstr ""
 
-#: src/dialog/youmu.c:212
+#: src/dialog/youmu.c:213
 msgid "Undoubtedly, that is what has transpired today."
 msgstr ""
 
-#: src/dialog/youmu.c:214
+#: src/dialog/youmu.c:215
 msgid "That’s not the past I saw…"
 msgstr ""
 
-#: src/dialog/youmu.c:216
+#: src/dialog/youmu.c:217
 msgid "How unfortunate for you."
 msgstr ""
 
-#: src/dialog/youmu.c:218
+#: src/dialog/youmu.c:219
 msgid ""
 "Fear not. I will end your delusional madness and restore justice and order "
 "to the—"
 msgstr ""
 
-#: src/dialog/youmu.c:220
+#: src/dialog/youmu.c:221
 msgid "… ugh, that’s a little much, even for me, isn’t it?"
 msgstr ""
 
-#: src/dialog/youmu.c:222
+#: src/dialog/youmu.c:223
 msgid "Seems about right, honestly…"
 msgstr ""
 
-#: src/dialog/youmu.c:241
+#: src/dialog/youmu.c:242
 msgid "A-ha, I must be close to the true entrance now."
 msgstr ""
 
-#: src/dialog/youmu.c:243
+#: src/dialog/youmu.c:244
 msgid "This tower… I can already feel it…"
 msgstr ""
 
-#: src/dialog/youmu.c:245
+#: src/dialog/youmu.c:246
 msgid "Could this be a challenge worthy of my skills…?!"
 msgstr ""
 
-#: src/dialog/youmu.c:249
+#: src/dialog/youmu.c:250
 msgid "Really? This mansion is actually pretty trashy, though."
 msgstr ""
 
-#: src/dialog/youmu.c:251
+#: src/dialog/youmu.c:252
 msgid "Who might you be?"
 msgstr ""
 
-#: src/dialog/youmu.c:255
+#: src/dialog/youmu.c:256
 msgid "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!"
 msgstr ""
 
-#: src/dialog/youmu.c:256
+#: src/dialog/youmu.c:257
 msgid "You better remember that!"
 msgstr ""
 
-#: src/dialog/youmu.c:259
+#: src/dialog/youmu.c:260
 msgid "Perhaps I will."
 msgstr ""
 
-#: src/dialog/youmu.c:261
+#: src/dialog/youmu.c:262
 msgid "Are you an associate of this… mansion-tower’s denizens, then?"
 msgstr ""
 
-#: src/dialog/youmu.c:264
+#: src/dialog/youmu.c:265
 msgid "Of course not! Who do you take me for?!"
 msgstr ""
 
-#: src/dialog/youmu.c:265
+#: src/dialog/youmu.c:266
 msgid ""
 "No WAY I’d want to associate myself with the dweebs running this mansion!"
 msgstr ""
 
-#: src/dialog/youmu.c:266
+#: src/dialog/youmu.c:267
 msgid "They dress like they’ve fallen out of a bad 80s anime!"
 msgstr ""
 
-#: src/dialog/youmu.c:269
+#: src/dialog/youmu.c:270
 msgid "I see. I have no immediate reason to distrust you."
 msgstr ""
 
-#: src/dialog/youmu.c:271
+#: src/dialog/youmu.c:272
 msgid "… what’s an ‘80s anime’, though, if I may ask?"
 msgstr ""
 
-#: src/dialog/youmu.c:274
+#: src/dialog/youmu.c:275
 msgid "I don’t know, don’t ask me!"
 msgstr ""
 
-#: src/dialog/youmu.c:275
+#: src/dialog/youmu.c:276
 msgid ""
 "The lady in the tower talks about it a lot, so it must be something horrible "
 "for sure."
 msgstr ""
 
-#: src/dialog/youmu.c:278
+#: src/dialog/youmu.c:279
 msgid "Didn’t you just say you weren’t associated with them?"
 msgstr ""
 
-#: src/dialog/youmu.c:280
+#: src/dialog/youmu.c:281
 msgid "Yeah, but I was lying to see how gullible you were."
 msgstr ""
 
-#: src/dialog/youmu.c:283
+#: src/dialog/youmu.c:284
 msgid "O-of course. I-I knew that."
 msgstr ""
 
-#: src/dialog/youmu.c:285
+#: src/dialog/youmu.c:286
 msgid "I wanted to see if you’d come clean."
 msgstr ""
 
-#: src/dialog/youmu.c:287
+#: src/dialog/youmu.c:288
 msgid "My true challenge lies beyond you. Step aside."
 msgstr ""
 
-#: src/dialog/youmu.c:291
+#: src/dialog/youmu.c:292
 msgid "Nope. You’ve got a dance with a gorgeous vampire scheduled first!"
 msgstr ""
 
-#: src/dialog/youmu.c:292
+#: src/dialog/youmu.c:293
 msgid "En garde, brooding swordsgirl!"
 msgstr ""
 
-#: src/dialog/youmu.c:306
+#: src/dialog/youmu.c:307
 msgid "Despite your inferior technique, I must thank you."
 msgstr ""
 
-#: src/dialog/youmu.c:307
+#: src/dialog/youmu.c:308
 msgid ""
 "‘Dancing’ with you has been a pleasant distraction on the path to completing "
 "my mission."
 msgstr ""
 
-#: src/dialog/youmu.c:309
+#: src/dialog/youmu.c:310
 msgid "Tell your ‘leader’ that I am coming for them."
 msgstr ""
 
-#: src/dialog/youmu.c:311
+#: src/dialog/youmu.c:312
 msgid "(She earnestly talks like a manga anti-hero…)"
 msgstr ""
 
-#: src/dialog/youmu.c:313
+#: src/dialog/youmu.c:314
 msgid "O-Oh, okay then!"
 msgstr ""
 
-#: src/dialog/youmu.c:315
+#: src/dialog/youmu.c:316
 msgid "I’m sick of guarding this creepy, spooky mansion anyways."
 msgstr ""
 
-#: src/dialog/youmu.c:318
+#: src/dialog/youmu.c:319
 msgid "S-… spooky?"
 msgstr ""
 
-#: src/dialog/youmu.c:323
+#: src/dialog/youmu.c:324
 msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
 msgstr ""
 
-#: src/dialog/youmu.c:326
+#: src/dialog/youmu.c:327
 msgid "G-…"
 msgstr ""
 
-#: src/dialog/youmu.c:327
+#: src/dialog/youmu.c:328
 msgid "GHOSTS?!"
 msgstr ""
 
-#: src/dialog/youmu.c:329
+#: src/dialog/youmu.c:330
 msgid "Scary vengeful ghosts! Trying to kill you, even!"
 msgstr ""
 
-#: src/dialog/youmu.c:330
+#: src/dialog/youmu.c:331
 msgid "But surely a strong swordsgirl like yourself could handle it."
 msgstr ""
 
-#: src/dialog/youmu.c:333
+#: src/dialog/youmu.c:334
 msgid "B-Bring it on! Nothing will stand in my way!"
 msgstr ""
 
-#: src/dialog/youmu.c:336
+#: src/dialog/youmu.c:337
 msgid "(Teehee, so gullible.)"
 msgstr ""
 
-#: src/dialog/youmu.c:353
+#: src/dialog/youmu.c:354
 msgid "Incredible. Truly astounding."
 msgstr ""
 
-#: src/dialog/youmu.c:355
+#: src/dialog/youmu.c:356
 msgid "Yes, the final battle approaches. I can feel it."
 msgstr ""
 
-#: src/dialog/youmu.c:357
+#: src/dialog/youmu.c:358
 msgid ""
 "Will it be a legendary duel? One to go down in the history of Gensōkyō?!"
 msgstr ""
 
-#: src/dialog/youmu.c:360
+#: src/dialog/youmu.c:361
 msgid "Oh, the gardener from the Netherworld?"
 msgstr ""
 
-#: src/dialog/youmu.c:362
+#: src/dialog/youmu.c:363
 msgid "It’s no surprise to see you here."
 msgstr ""
 
-#: src/dialog/youmu.c:363
+#: src/dialog/youmu.c:364
 msgid "Your mistress has been taken by the Tower’s presence, I assume?"
 msgstr ""
 
-#: src/dialog/youmu.c:366
+#: src/dialog/youmu.c:367
 msgid "Lady Yuyuko is in a safe, undisclosed location."
 msgstr ""
 
-#: src/dialog/youmu.c:368
+#: src/dialog/youmu.c:369
 msgid "The Hakurei Shrine, I presume?"
 msgstr ""
 
-#: src/dialog/youmu.c:371
+#: src/dialog/youmu.c:372
 msgid "Wh-who told you?! Are you in league with them too?!"
 msgstr ""
 
-#: src/dialog/youmu.c:374
+#: src/dialog/youmu.c:375
 msgid "Of course not, but where else would she be at a time like this?"
 msgstr ""
 
-#: src/dialog/youmu.c:377
+#: src/dialog/youmu.c:378
 msgid "Hmph. Perhaps we have become too predictable."
 msgstr ""
 
-#: src/dialog/youmu.c:378
+#: src/dialog/youmu.c:379
 msgid "I am here to settle this matter. You need not concern yourself—"
 msgstr ""
 
-#: src/dialog/youmu.c:381
+#: src/dialog/youmu.c:382
 msgid "On the contrary, I would say."
 msgstr ""
 
-#: src/dialog/youmu.c:384
+#: src/dialog/youmu.c:385
 msgid "I decided to do some research on my own."
 msgstr ""
 
-#: src/dialog/youmu.c:385
+#: src/dialog/youmu.c:386
 msgid "This tower is controlled by a machine…"
 msgstr ""
 
-#: src/dialog/youmu.c:387
+#: src/dialog/youmu.c:388
 msgid ""
 "… and the machine’s effects seem to go well beyond Gensōkyō’s boundaries."
 msgstr ""
 
-#: src/dialog/youmu.c:390
+#: src/dialog/youmu.c:391
 msgid "Including the heavens, I presume? I see."
 msgstr ""
 
-#: src/dialog/youmu.c:392
+#: src/dialog/youmu.c:393
 msgid "Fear not. I will allow nothing to stand in my way."
 msgstr ""
 
-#: src/dialog/youmu.c:394
+#: src/dialog/youmu.c:395
 msgid ""
 "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this "
 "incident once and—"
 msgstr ""
 
-#: src/dialog/youmu.c:397
+#: src/dialog/youmu.c:398
 msgid ""
 "It seems that the machine has also overinflated your ego, Swordswoman of "
 "Hakugyokurō."
 msgstr ""
 
-#: src/dialog/youmu.c:399
+#: src/dialog/youmu.c:400
 msgid "Would caution not be prudent in this situation?"
 msgstr ""
 
-#: src/dialog/youmu.c:402
+#: src/dialog/youmu.c:403
 msgid "Overinflated ego? Nonsense."
 msgstr ""
 
-#: src/dialog/youmu.c:403
+#: src/dialog/youmu.c:404
 msgid ""
 "During my recent battles, I have achieved a flow state most blademasters "
 "only dream of!"
 msgstr ""
 
-#: src/dialog/youmu.c:405
+#: src/dialog/youmu.c:406
 msgid ""
 "Through that, I have realized the true form of my previously-incomplete "
 "yōkai-vanquishing technique!"
 msgstr ""
 
-#: src/dialog/youmu.c:408
+#: src/dialog/youmu.c:409
 msgid "Is that so?"
 msgstr ""
 
-#: src/dialog/youmu.c:411
+#: src/dialog/youmu.c:412
 msgid "More doubt from ignorant skeptics, I see."
 msgstr ""
 
-#: src/dialog/youmu.c:413
+#: src/dialog/youmu.c:414
 msgid "Shall we duel so that I may demonstrate to your satisfaction?!"
 msgstr ""
 
-#: src/dialog/youmu.c:416
+#: src/dialog/youmu.c:417
 msgid "W-wait, that is not what I meant, I simply—"
 msgstr ""
 
-#: src/dialog/youmu.c:418
+#: src/dialog/youmu.c:419
 msgid "I can see it in your expression! The doubt! The fear!"
 msgstr ""
 
-#: src/dialog/youmu.c:419
+#: src/dialog/youmu.c:420
 msgid ""
 "But I have become one with my swords, achieving a perfection that no other "
 "before me has been able—"
 msgstr ""
 
-#: src/dialog/youmu.c:423
+#: src/dialog/youmu.c:424
 msgid "Ah, I haven’t the time for this nonsense!"
 msgstr ""
 
-#: src/dialog/youmu.c:424
+#: src/dialog/youmu.c:425
 msgid "I will not allow you to march onwards to your demise!"
 msgstr ""
 
-#: src/dialog/youmu.c:426
+#: src/dialog/youmu.c:427
 msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
 msgstr ""
 
-#: src/dialog/youmu.c:452
+#: src/dialog/youmu.c:453
 msgid "All according to plan."
 msgstr ""
 
-#: src/dialog/youmu.c:454
+#: src/dialog/youmu.c:455
 msgid "Your logic is so twisted…"
 msgstr ""
 
-#: src/dialog/youmu.c:455
+#: src/dialog/youmu.c:456
 msgid ""
 "Alas, it cannot be helped. You have likely been affected since before your "
 "arrival."
 msgstr ""
 
-#: src/dialog/youmu.c:456
+#: src/dialog/youmu.c:457
 msgid "I have no choice but to let you through, despite my reservations."
 msgstr ""
 
-#: src/dialog/youmu.c:457
+#: src/dialog/youmu.c:458
 msgid "Perhaps pure intentions lurk behind that ego of yours."
 msgstr ""
 
-#: src/dialog/youmu.c:459
+#: src/dialog/youmu.c:460
 msgid "And perhaps I truly have gone mad. What of it?"
 msgstr ""
 
-#: src/dialog/youmu.c:460
+#: src/dialog/youmu.c:461
 msgid "My mission is crystal clear:"
 msgstr ""
 
-#: src/dialog/youmu.c:462
+#: src/dialog/youmu.c:463
 msgid ""
 "… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all "
 "connected realms!"
 msgstr ""
 
-#: src/dialog/youmu.c:463
+#: src/dialog/youmu.c:464
 msgid "I will not fail!"
 msgstr ""
 
-#: src/dialog/youmu.c:465
+#: src/dialog/youmu.c:466
 msgid "I-I see."
 msgstr ""
 
-#: src/dialog/youmu.c:466
+#: src/dialog/youmu.c:467
 msgid ""
 "Ascend the staircase. You will find the perpetrator waiting for you there."
 msgstr ""
 
-#: src/dialog/youmu.c:467
+#: src/dialog/youmu.c:468
 msgid ""
 "Be prepared. The technology she possesses is from a so-called ‘parallel "
 "universe’."
 msgstr ""
 
-#: src/dialog/youmu.c:468
+#: src/dialog/youmu.c:469
 msgid ""
 "It is unlike anything any of us have encountered before. Even I am not sure "
 "of its specifics."
 msgstr ""
 
-#: src/dialog/youmu.c:471
+#: src/dialog/youmu.c:472
 msgid ""
 "Fear not, I will slice her infernal machine in half like an invasive weed."
 msgstr ""
 
-#: src/dialog/youmu.c:488
+#: src/dialog/youmu.c:489
 msgid "Ah."
 msgstr ""
 
-#: src/dialog/youmu.c:490
+#: src/dialog/youmu.c:491
 msgid "Ahaha."
 msgstr ""
 
-#: src/dialog/youmu.c:492
+#: src/dialog/youmu.c:493
 msgid "Ah-hahaha!"
 msgstr ""
 
-#: src/dialog/youmu.c:493
+#: src/dialog/youmu.c:494
 msgid "Yes. Yes! This is it!"
 msgstr ""
 
-#: src/dialog/youmu.c:494
+#: src/dialog/youmu.c:495
 msgid "What a magnificent arena for a heroic final battle!!"
 msgstr ""
 
-#: src/dialog/youmu.c:497
+#: src/dialog/youmu.c:498
 msgid "Nothing seems to slow you down, hmm?"
 msgstr ""
 
-#: src/dialog/youmu.c:500
+#: src/dialog/youmu.c:501
 msgid ""
 "Such an annoyance. But that’s to be expected of the folk of this Gensōkyō."
 msgstr ""
 
-#: src/dialog/youmu.c:502
+#: src/dialog/youmu.c:503
 msgid "And I see that you’re a master of the blade, a shinigami no less!"
 msgstr ""
 
-#: src/dialog/youmu.c:504
+#: src/dialog/youmu.c:505
 msgid "Absolutely splendid!"
 msgstr ""
 
-#: src/dialog/youmu.c:507
+#: src/dialog/youmu.c:508
 msgid "Ah, I’m no shinigami, especially not now."
 msgstr ""
 
-#: src/dialog/youmu.c:510
+#: src/dialog/youmu.c:511
 msgid ""
 "The scythe is a rather particular weapon, you must understand. Forgive me "
 "presumptiveness."
 msgstr ""
 
-#: src/dialog/youmu.c:512
+#: src/dialog/youmu.c:513
 msgid ""
 "I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō."
 msgstr ""
 
-#: src/dialog/youmu.c:514
+#: src/dialog/youmu.c:515
 msgid "Now, it will be the sigil of a new era!"
 msgstr ""
 
-#: src/dialog/youmu.c:516
+#: src/dialog/youmu.c:517
 msgid "One that we, the ‘forgotten’, will reign over!"
 msgstr ""
 
-#: src/dialog/youmu.c:518
+#: src/dialog/youmu.c:519
 msgid "Such an unwieldy weapon… for anyone to choose it willingly…"
 msgstr ""
 
-#: src/dialog/youmu.c:519
+#: src/dialog/youmu.c:520
 msgid "Either you’re incredibly skilled, or incredibly foolish."
 msgstr ""
 
-#: src/dialog/youmu.c:521
+#: src/dialog/youmu.c:522
 msgid "I wish to find that out!"
 msgstr ""
 
-#: src/dialog/youmu.c:522
+#: src/dialog/youmu.c:523
 msgid "After our duel, let us meet and discuss our techniques!"
 msgstr ""
 
-#: src/dialog/youmu.c:525
+#: src/dialog/youmu.c:526
 msgid "Techniques? Hah!"
 msgstr ""
 
-#: src/dialog/youmu.c:526
+#: src/dialog/youmu.c:527
 msgid "I’m sure our existence means nothing to you! And the feeling is mutual!"
 msgstr ""
 
-#: src/dialog/youmu.c:529
+#: src/dialog/youmu.c:530
 msgid "On the contrary, scythe-bearer!"
 msgstr ""
 
-#: src/dialog/youmu.c:530
+#: src/dialog/youmu.c:531
 msgid "You’ve created an impeccable stage for our final confrontation."
 msgstr ""
 
-#: src/dialog/youmu.c:532
+#: src/dialog/youmu.c:533
 msgid ""
 "But first, please, tell me: what is your mission? What is it you desire?"
 msgstr ""
 
-#: src/dialog/youmu.c:534
+#: src/dialog/youmu.c:535
 msgid ""
 "For us to share this… intimate moment, I desire to know everything about you."
 msgstr ""
 
-#: src/dialog/youmu.c:537
+#: src/dialog/youmu.c:538
 msgid "…!"
 msgstr ""
 
-#: src/dialog/youmu.c:538
+#: src/dialog/youmu.c:539
 msgid "O-Our mission, is t-to—"
 msgstr ""
 
-#: src/dialog/youmu.c:543
+#: src/dialog/youmu.c:544
 msgid "… is to avenge our forgotten f-friends!"
 msgstr ""
 
-#: src/dialog/youmu.c:544
+#: src/dialog/youmu.c:545
 msgid ""
 "We will create a new era of Gensōkyō, where the truly forgotten can live "
 "another day!"
 msgstr ""
 
-#: src/dialog/youmu.c:545
+#: src/dialog/youmu.c:546
 msgid ""
 "Soon, the residents of this land will be driven mad beyond comprehension, "
 "and be ripe to conquer!"
 msgstr ""
 
-#: src/dialog/youmu.c:547
+#: src/dialog/youmu.c:548
 msgid "So you wish to avenge your fallen compatriots… how noble…"
 msgstr ""
 
-#: src/dialog/youmu.c:548
+#: src/dialog/youmu.c:549
 msgid "I can feel it move me to tears…"
 msgstr ""
 
-#: src/dialog/youmu.c:550
+#: src/dialog/youmu.c:551
 msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
 msgstr ""
 
-#: src/dialog/youmu.c:551
+#: src/dialog/youmu.c:552
 msgid ""
 "I cannot allow you to drive my compatriots mad, or to subjugate my home!"
 msgstr ""
 
-#: src/dialog/youmu.c:553
+#: src/dialog/youmu.c:554
 msgid "Perhaps, in another time and place, we could have been friends!"
 msgstr ""
 
-#: src/dialog/youmu.c:556
+#: src/dialog/youmu.c:557
 msgid ""
 "B-Being friends with you h-heartless folk would be a sin! I could never!"
 msgstr ""
 
-#: src/dialog/youmu.c:559
+#: src/dialog/youmu.c:560
 msgid "What a tragedy!"
 msgstr ""
 
-#: src/dialog/youmu.c:562
+#: src/dialog/youmu.c:563
 msgid "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?!"
 msgstr ""
 
-#: src/dialog/youmu.c:564
+#: src/dialog/youmu.c:565
 msgid ""
 "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!"
 msgstr ""
 
-#: src/dialog/youmu.c:566
+#: src/dialog/youmu.c:567
 msgid "We’re not so different, you and I."
 msgstr ""
 
-#: src/dialog/youmu.c:569
+#: src/dialog/youmu.c:570
 msgid "Your courage is admirable, I’ll give you that."
 msgstr ""
 
-#: src/dialog/youmu.c:571
+#: src/dialog/youmu.c:572
 msgid "But there’s an enormous difference between us, swordswoman."
 msgstr ""
 
-#: src/dialog/youmu.c:577
+#: src/dialog/youmu.c:578
 msgid "For I possess the knowledge of science and rationality!"
 msgstr ""
 
-#: src/dialog/youmu.c:578
+#: src/dialog/youmu.c:579
 msgid ""
 "In a magic-filled world like this, they cut through delusional opponents "
 "with unparalleled precision!"
 msgstr ""
 
-#: src/dialog/youmu.c:579
+#: src/dialog/youmu.c:580
 msgid ""
 "Let’s see what good your swords do you when you fall prey to true "
 "enlightenment!"
 msgstr ""
 
-#: src/dialog/youmu.c:593
+#: src/dialog/youmu.c:594
 msgid "Impressive! You’ve pushed me to 10% of my true power!"
 msgstr ""
 
-#: src/dialog/youmu.c:595
+#: src/dialog/youmu.c:596
 msgid "Your despicable pride will be your downfall!"
 msgstr ""
 
-#: src/dialog/youmu.c:597
+#: src/dialog/youmu.c:598
 msgid "Behold, your judgement before the true nature of reality!"
 msgstr ""
 
@@ -3907,16 +3294,32 @@ msgstr ""
 msgid "Taisei Project"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:70
+#: src/dialog/dialog_macros.h:71
+msgid "Thermodynamic Ice Fairy"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:72
 msgid "Gyroscopic Pestilence God"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:74
-msgid "The Theoretical Reaper"
+#: src/dialog/dialog_macros.h:73
+msgid "Wriggle Nightbug"
+msgstr "莉格露·奈特巴格"
+
+#: src/dialog/dialog_macros.h:73
+msgid "Insect Rights Activist"
 msgstr ""
 
-#: src/cutscenes/marisa_bad_end.inc.h:2
-msgid "Marisa (Bad Ending)"
+#: src/dialog/dialog_macros.h:74
+msgid "High-Society Phlebotomist"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:75
+msgid "Fulminologist of the Heavens"
+msgstr ""
+
+#: src/dialog/dialog_macros.h:76
+msgid "The Theoretical Reaper"
 msgstr ""
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
@@ -4245,58 +3648,6 @@ msgid ""
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
 
-#: src/cutscenes/scene_impl.h:60
-msgid "Reimu"
-msgstr "灵梦"
-
-#: src/cutscenes/scene_impl.h:61
-msgid "Marisa"
-msgstr "魔理沙"
-
-#: src/cutscenes/scene_impl.h:62
-msgid "Yōmu"
-msgstr "妖梦"
-
-#: src/cutscenes/scene_impl.h:63
-msgid "Yukari"
-msgstr "紫"
-
-#: src/cutscenes/scene_impl.h:64
-msgid "Kanako"
-msgstr "神奈子"
-
-#: src/cutscenes/scene_impl.h:65
-msgid "Suwako"
-msgstr "诹访子"
-
-#: src/cutscenes/scene_impl.h:66
-msgid "Sanae"
-msgstr "早苗"
-
-#: src/cutscenes/scene_impl.h:67
-msgid "Sumireko"
-msgstr "堇子"
-
-#: src/cutscenes/scene_impl.h:68
-msgid "Yuyuko"
-msgstr "幽幽子"
-
-#: src/cutscenes/scene_impl.h:71
-msgid "Remilia"
-msgstr "蕾米莉亚"
-
-#: src/cutscenes/scene_impl.h:72
-msgid "Flandre"
-msgstr "芙兰朵露"
-
-#: src/cutscenes/scene_impl.h:73
-msgid "Patchouli"
-msgstr "帕秋莉"
-
-#: src/cutscenes/reimu_good_end.inc.h:2
-msgid "Reimu (Good Ending)"
-msgstr ""
-
 #: src/cutscenes/reimu_good_end.inc.h:7 src/cutscenes/reimu_extra_intro.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
@@ -4460,10 +3811,6 @@ msgstr ""
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
-msgstr ""
-
-#: src/cutscenes/marisa_good_end.inc.h:2
-msgid "Marisa (Good Ending)"
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:7
@@ -4706,10 +4053,6 @@ msgid ""
 "suddenly spring to life again…"
 msgstr ""
 
-#: src/cutscenes/youmu_bad_end.inc.h:2
-msgid "Yōmu (Bad Ending)"
-msgstr ""
-
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
 msgstr ""
@@ -4832,10 +4175,6 @@ msgstr ""
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
-msgstr ""
-
-#: src/cutscenes/marisa_extra_intro.inc.h:2
-msgid "Marisa (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
@@ -5042,10 +4381,6 @@ msgstr ""
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
-msgstr ""
-
-#: src/cutscenes/reimu_extra_intro.inc.h:2
-msgid "Reimu (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:8
@@ -5270,10 +4605,6 @@ msgid ""
 "Reimu flew off to meet her next challenge…"
 msgstr ""
 
-#: src/cutscenes/youmu_good_end.inc.h:2
-msgid "Yōmu (Good Ending)"
-msgstr ""
-
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
 msgstr ""
@@ -5432,10 +4763,6 @@ msgid ""
 "discussed details of an ancient future’s past…"
 msgstr ""
 
-#: src/cutscenes/youmu_extra_intro.inc.h:2
-msgid "Yōmu (Extra Stage Intro)"
-msgstr ""
-
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
 msgstr ""
@@ -5581,10 +4908,6 @@ msgid ""
 "After bidding Elly and Lady Yuyuko farewell, Yōmu returned to Gensōkyō, and "
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
-msgstr ""
-
-#: src/cutscenes/reimu_bad_end.inc.h:2
-msgid "Reimu (Bad Ending)"
 msgstr ""
 
 #: src/cutscenes/reimu_bad_end.inc.h:9
@@ -5884,8 +5207,8 @@ msgstr ""
 "\n"
 "好同学们，我们今天都学到了些什么？\n"
 "\n"
-"啊没错：知识恰如禁果；孕育光明亦滋生黑暗。 "
-"下课下课，自机们也是时候去放松一下开香槟了。"
+"啊没错：知识恰如禁果；孕育光明亦滋生黑暗。 下课下课，自机们也是时候去放松一下"
+"开香槟了。"
 
 #: po/extra_strings.c:46
 msgid "Summit of Revelations"
@@ -5929,8 +5252,8 @@ msgid ""
 "Iku provides the first tribulation."
 msgstr ""
 "永江衣玖的主题曲。\n"
-"这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. "
-"想象一下, 在猛烈的雷雨中攀登高塔, 还要努力不感到疲惫.\n"
+"这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. 想象一下, 在猛烈的雷雨中攀"
+"登高塔, 还要努力不感到疲惫.\n"
 "\n"
 "而衣玖, 便是千刀万剐之始."
 
@@ -5976,8 +5299,8 @@ msgstr ""
 "你别给咱上压力呀……\n"
 "\n"
 "咳咳咳……没错，这是一首结算分数和满身疮痍界面的主题曲。\n"
-"它融合了最终Boss主题曲和神奈子主题曲的部分内容，就像 "
-"其他Player Score主题曲一样。\n"
+"它融合了最终Boss主题曲和神奈子主题曲的部分内容，就像 其他Player Score主题曲一"
+"样。\n"
 "你在期待什么？"
 
 #: po/extra_strings.c:66
@@ -5998,8 +5321,8 @@ msgstr ""
 "\n"
 "这一次，她觉得自己一如既往的勇敢，且更为强大。\n"
 "\n"
-"然而嘛，她其实只是个小麻烦，就有点冷且吹弹可破。 "
-"主角们对这家伙的恶作剧置之不理，继续前进。"
+"然而嘛，她其实只是个小麻烦，就有点冷且吹弹可破。 主角们对这家伙的恶作剧置之不"
+"理，继续前进。"
 
 #: po/extra_strings.c:70
 msgid "Speak Not Falsely ~ Excitation Field"
@@ -6022,12 +5345,10 @@ msgstr ""
 "\n"
 "又回来了……那首歌怎么唱的？“No reason to get excited…”\n"
 "\n"
-"老实说，这歌其实是如今东西方影响力交融的产物。 "
-"如果说之前的BGM风格像钟摆般两极摆动, 那么这曲就如同 "
-"交流电般持续振荡。\n"
+"老实说，这歌其实是如今东西方影响力交融的产物。 如果说之前的BGM风格像钟摆般两"
+"极摆动, 那么这曲就如同 交流电般持续振荡。\n"
 "\n"
-"在此塔上, 攀登者须防失足之险, 故当目视顶峰, "
-"步步为营, 行差踏错半步不得. "
+"在此塔上, 攀登者须防失足之险, 故当目视顶峰, 步步为营, 行差踏错半步不得. "
 
 #: po/extra_strings.c:74
 msgid "Evidence of Ki Domestication"
@@ -6077,5 +5398,188 @@ msgid ""
 msgstr ""
 "开幕过场动画的主题曲。\n"
 "\n"
-"噼噼啪啪，闪闪发亮，这就是「世界之外的知识」. "
-"可能带着些许险恶，是否值得信赖尚不明确. "
+"噼噼啪啪，闪闪发亮，这就是「世界之外的知识」. 可能带着些许险恶，是否值得信赖"
+"尚不明确. "
+
+#~ msgid "Misty Lake Encounter"
+#~ msgstr "雾之湖遭遇战"
+
+#~ msgid "Riverside Hina-Nagashi"
+#~ msgstr "河畔流雏"
+
+#~ msgid "Crawly Mountain Ascent"
+#~ msgstr "令人痒痒的登山之旅"
+
+#~ msgid "Forgotten Mansion"
+#~ msgstr "被遗忘的宅邸"
+
+#~ msgid "Climbing the Tower of Babel"
+#~ msgstr "巴别塔之攀"
+
+#~ msgid "Roof of the World"
+#~ msgstr "世界之脊"
+
+#~ msgid "Left Stick"
+#~ msgstr "左摇杆"
+
+#~ msgid "Right Stick"
+#~ msgstr "右摇杆"
+
+#~ msgid "Shrine Maiden of Fantasy"
+#~ msgstr "幻想的巫女"
+
+#~ msgid "Human"
+#~ msgstr "人类"
+
+#~ msgid "Literature (Fiction)"
+#~ msgstr "文学(小说)"
+
+#~ msgid "Freeze Sign “Perfect Freeze”"
+#~ msgstr "冻符「Perfect Freeze」(完美冻结)"
+
+#~ msgid "Freeze Sign “Crystal Rain”"
+#~ msgstr "冻符「Crystal Rain」(水晶之雨)"
+
+#~ msgid "Winter Sign “Snow Halation”"
+#~ msgstr "冬符「Snow Halation」(雪晕)"
+
+#~ msgid "Doom Sign “Icicle Cascade”"
+#~ msgstr "灭符「Icicle Cascade」(冰瀑)"
+
+#~ msgid "Frost Sign “Crystal Blizzard”"
+#~ msgstr "霜符「Crystal Blizzard」(水晶风暴)"
+
+#~ msgid "Bloodless “Gate of Walachia”"
+#~ msgstr "无血「瓦拉几亚之门」"
+
+#~ msgid "Bloodless “Dry Fountain”"
+#~ msgstr "无血「干枯的喷泉」"
+
+#~ msgid "Bloodless “Red Spike”"
+#~ msgstr "无血「红色尖刺」"
+
+#~ msgid "Limit “Animate Wall”"
+#~ msgstr "界限「Animate Wall」（生命高墙）"
+
+#~ msgid "Summoning “Demon Wall”"
+#~ msgstr "召唤「Demon Wall」（恶魔高墙）"
+
+#~ msgid "Power Sign “Blow the Walls”"
+#~ msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
+
+#~ msgid "Predation “Vampiric Vapor”"
+#~ msgstr "力符「炸翻高墙」"
+
+#~ msgid "Blood Magic “Vlad’s Army”"
+#~ msgstr "血魔法「吸血鬼大军」"
+
+#~ msgid "Shard “Amulet of Harm”"
+#~ msgstr "碎片「破裂的护符」"
+
+#~ msgid "Lottery Sign “Bad Pick”"
+#~ msgstr "运符「Bad Pick」（错误的选择）"
+
+#~ msgid "Lottery Sign “Wheel of Fortune”"
+#~ msgstr "运符「Wheel of Fortune」(命运之轮)"
+
+#~ msgid "Lottery Sign “Monty Hall Danmaku”"
+#~ msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
+
+#~ msgid "Disruption “Logic Bomb”"
+#~ msgstr "崩解「Logic Bomb」(逻辑炸弹)"
+
+#~ msgid "Firefly Sign “Moonlight Rocket”"
+#~ msgstr "萤符「Moonlight Rocket」(月光火箭)"
+
+#~ msgid "Attractor “Moths to a Flame”"
+#~ msgstr "诱引「Moths to a Flame」(飞蛾扑火)"
+
+#~ msgid "Bug Sign “Firefly Storm”"
+#~ msgstr "虫符「Firefly Storm」（飞萤风暴）"
+
+#~ msgid "Lamp Sign “Light Singularity”"
+#~ msgstr "灯符「Light Singularity」（奇异之光）"
+
+#~ msgid "High Voltage “Static Bomb”"
+#~ msgstr "高压「Static Bomb」(静态炸弹)"
+
+#~ msgid "High Voltage “Atmospheric Discharge”"
+#~ msgstr "高压「Atmospheric Discharge」(大气释能)"
+
+#~ msgid "Charge Sign “Artificial Lightning”"
+#~ msgstr "充符「Artificial Lightning」(人造闪电)"
+
+#~ msgid "Current Sign “Induction Field”"
+#~ msgstr "流符「Induction Field」(磁感领域)"
+
+#~ msgid "Current Sign “Inductive Resonance”"
+#~ msgstr "流符「电感谐振」"
+
+#~ msgid "Spark Sign “Natural Cathode”"
+#~ msgstr "星火之御札「Natural Cathode」(自然阴极)"
+
+#~ msgid "Circuit Sign “Overload”"
+#~ msgstr "电路之御札「超负荷」"
+
+#~ msgid "Newton Sign “Occam’s Razor”"
+#~ msgstr "牛顿之御札「Occam's Razor」(奥卡姆剃刀)"
+
+#~ msgid "Kepler Sign “Orbital Clockwork”"
+#~ msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
+
+#~ msgid "Maxwell Sign “Wave Theory”"
+#~ msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
+
+#~ msgid "Eigenstate “Many-World Interpretation”"
+#~ msgstr "本征态「多世界诠释」"
+
+#~ msgid "de Broglie Sign “Wave-Particle Duality”"
+#~ msgstr "德布罗意之御札「波粒二象性」"
+
+#~ msgid "Ricci Sign “Spacetime Curvature”"
+#~ msgstr "里奇之御札「时空曲率」"
+
+#~ msgid "LHC “Higgs Boson Uncovered”"
+#~ msgstr "L.H.C.「希格斯玻色子发现」"
+
+#~ msgid "Forgotten Universe “Curvature Domination”"
+#~ msgstr "遗忘之宙「Curvature Domination」(操弄曲率)"
+
+#~ msgid "Tower of Truth “Theory of Everything”"
+#~ msgstr "真理之塔「Theory of Everything」(万物之理论)"
+
+#~ msgid "Reimu"
+#~ msgstr "灵梦"
+
+#~ msgid "Marisa"
+#~ msgstr "魔理沙"
+
+#~ msgid "Yōmu"
+#~ msgstr "妖梦"
+
+#~ msgid "Yukari"
+#~ msgstr "紫"
+
+#~ msgid "Kanako"
+#~ msgstr "神奈子"
+
+#~ msgid "Suwako"
+#~ msgstr "诹访子"
+
+#~ msgid "Sanae"
+#~ msgstr "早苗"
+
+#~ msgid "Sumireko"
+#~ msgstr "堇子"
+
+#~ msgid "Yuyuko"
+#~ msgstr "幽幽子"
+
+#~ msgid "Remilia"
+#~ msgstr "蕾米莉亚"
+
+#~ msgid "Flandre"
+#~ msgstr "芙兰朵露"
+
+#~ msgid "Patchouli"
+#~ msgstr "帕秋莉"
