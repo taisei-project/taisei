@@ -175,7 +175,6 @@ void intl_set_textdomain(IntlTextDomain *domain) {
 	_intl_current_textdomain = domain;
 }
 
-
 const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash) {
 	if(!domain) {
 		return msgid;
