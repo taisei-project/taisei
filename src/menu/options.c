@@ -1369,7 +1369,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						}
 					}
 
-					char *txt;
+					const char *txt;
 					char buf[64];
 
 					if(bind->valrange_max >= 0) {
@@ -1422,7 +1422,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				bool is_axis = (bind->type == BT_GamepadAxisBinding);
 
 				if(bind->blockinput) {
-					char *text = is_axis ? _("Move an axis to assign, Back to cancel")
+					const char *text = is_axis ? _("Move an axis to assign, Back to cancel")
 											: _("Press a button to assign, Back to cancel");
 
 					text_draw(text, &(TextParams) {
