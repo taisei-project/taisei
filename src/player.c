@@ -12,6 +12,7 @@
 #include "entity.h"
 #include "gamepad.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "projectile.h"
 #include "replay/stage.h"

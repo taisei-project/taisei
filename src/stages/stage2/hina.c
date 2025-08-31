@@ -10,6 +10,7 @@
 
 #include "global.h"
 #include "renderer/api.h"
+#include "intl/intl.h"
 
 void stage2_draw_hina_spellbg(Boss *h, int time) {
 	SpriteParams sp = { 0 };

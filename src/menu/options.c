@@ -14,6 +14,7 @@
 #include "mainmenu.h"
 #include "menu.h"
 
+#include "intl/intl.h"
 #include "audio/audio.h"
 #include "gamepad.h"
 #include "renderer/api.h"

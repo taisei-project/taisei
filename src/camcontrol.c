@@ -10,6 +10,7 @@
 
 #include "events.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "stagetext.h"
 #include "util/glm.h"
 #include "video.h"
