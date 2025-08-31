@@ -204,7 +204,6 @@ dep_zip         = dependency('libzip',         version : '>=1.5.0', required : o
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
 dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
-dep_intl        = dependency('intl', required : true)
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -229,7 +228,6 @@ taisei_deps = [
     dep_zip,
     dep_zlib,
     dep_zstd,
-    dep_intl,
     # don't add glad here
 ]
 
