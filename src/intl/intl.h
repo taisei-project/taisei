@@ -26,18 +26,18 @@ void intl_set_textdomain(IntlTextDomain *textdomain);
 const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash);
 const char *_intl_ngettext_prehashed(IntlTextDomain *domain, const char *msgid1, hash_t hash1, const char *msgid2, unsigned long int n);
 
-INLINE const char *intl_gettext(IntlTextDomain *domain, const char *msgid) {
+attr_format_arg(2) INLINE  const char *intl_gettext(IntlTextDomain *domain, const char *msgid) {
 	return _intl_gettext_prehashed(domain, msgid, htutil_hashfunc_string(msgid));
 }
-INLINE const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char *msgid2, unsigned long int n) {
+attr_format_arg(2) INLINE const char *intl_ngettext(IntlTextDomain *domain, const char *msgid1, const char *msgid2, unsigned long int n) {
 	return _intl_ngettext_prehashed(domain, msgid1, htutil_hashfunc_string(msgid1), msgid2, n);
 }
 
-INLINE const char *gettext(const char *msgid) {
+attr_format_arg(1) INLINE const char *gettext(const char *msgid) {
 	return intl_gettext(_intl_current_textdomain, msgid);
 }
 
-INLINE const char *ngettext(const char *msgid1, const char *msgid2, unsigned long int n) {
+attr_format_arg(1) INLINE const char *ngettext(const char *msgid1, const char *msgid2, unsigned long int n) {
 	return intl_ngettext(_intl_current_textdomain, msgid1, msgid2, n);
 }
 

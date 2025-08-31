@@ -233,6 +233,10 @@ typedef _Complex double cmplx;
 #define attr_nodiscard \
 	__attribute__ ((warn_unused_result))
 
+// The function takes a format string argument and returns a modified format string
+#define attr_format_arg(n) \
+	__attribute__ ((format_arg(n)))
+
 // Function takes a printf-style format string and variadic arguments.
 #define attr_printf(fmt_index, firstarg_index) \
 	__attribute__ ((format(FORMAT_ATTR, fmt_index, firstarg_index)))
