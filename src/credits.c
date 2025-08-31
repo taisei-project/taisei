@@ -58,7 +58,7 @@ static struct {
 #define HEADER_TIME 300
 #define YUKKURI_TIME 200
 
-static void credits_add(char *data, int time);
+static void credits_add(const char *data, int time);
 
 static void credits_fill(void) {
 	// In case the shortened URLs break,
@@ -207,9 +207,10 @@ static void credits_fill(void) {
 	credits_add(_("*\nAnd don't forget to take it easy!"), YUKKURI_TIME);
 }
 
-static void credits_add(char *data, int time) {
+static void credits_add(const char *data, int time) {
 	CreditsEntry *e;
-	char *c, buf[256];
+	const char *c;
+	char buf[256];
 	int l = 0, i = 0;
 
 	assert(time > CREDITS_ENTRY_FADEOUT);

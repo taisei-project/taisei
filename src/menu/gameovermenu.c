@@ -23,7 +23,7 @@ static void set_action(MenuData *m, void *arg) {
 	*ctx->output = (uintptr_t)arg;
 }
 
-static MenuEntry *add_action_entry(MenuData *m, char *text, GameoverMenuAction action, bool enabled) {
+static MenuEntry *add_action_entry(MenuData *m, const char *text, GameoverMenuAction action, bool enabled) {
 	return add_menu_entry(m, text, enabled ? set_action : NULL, (void*)action);
 }
 
