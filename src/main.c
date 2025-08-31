@@ -423,12 +423,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	});
 	filewatch_init();
 	res_init();
-	i18n_init();
 	r_models_init();
 	r_sprite_batch_init();
 	r_post_init();
 
 	res_group_init(&ctx->rg);
+	i18n_init(&ctx->rg);
 
 	draw_loading_screen();
 	dynstage_init_monitoring();
