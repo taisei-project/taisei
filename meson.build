@@ -671,8 +671,8 @@ subdir('external')
 subdir('doc')
 subdir('xdg')
 subdir('atlas')
-subdir('src')
 subdir('po')
+subdir('src')
 subdir('test')
 
 if macos_app_bundle
