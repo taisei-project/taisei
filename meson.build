@@ -469,7 +469,6 @@ if is_relocatable_install
         bundle_datadir = join_paths('Contents', 'Resources')
         bundle_bindir = join_paths('Contents', 'MacOS')
         bundle_libdir = bundle_bindir
-        bundle_localedir = join_paths(bunlde_datadir, 'locale')
 
         datadir = join_paths(bundle_dir, bundle_datadir)
         bindir = join_paths(bundle_dir, bundle_bindir)
