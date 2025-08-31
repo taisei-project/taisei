@@ -462,7 +462,6 @@ if is_relocatable_install
     doc_path = '.'  # Meson bug https://github.com/mesonbuild/meson/issues/4295
     xdg_path = 'freedesktop.org'
     lib_path = '.'
-    locale_path = 'locale'
 
     if macos_app_bundle
         bundle_dir = 'Taisei.app'
