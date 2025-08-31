@@ -46,13 +46,11 @@ static void add_spellpractice_stage(
 ) {
 	uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
 
-	char *title = strfmt(_("Spell %d"), ++(*spellnum));
-	char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
+	char *title = strfmt("%s %d", _("Spell"), ++(*spellnum));
 
-	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
+	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, a->name, a, diff);
 
 	mem_free(title);
-	mem_free(subtitle);
 }
 
 static void add_spellpractice_stages(
@@ -128,13 +126,13 @@ static void stageinfo_fill(StagesExports *e) {
 	int spellnum = 0;
 
 //	         id  procs            type           title          subtitle                       spells                       diff
-	add_stage(1, e->stage1.procs, STAGE_STORY,   _("Stage 1"),     _("Misty Lake Encounter"),        e->stage1.spells, D_Any);
-	add_stage(2, e->stage2.procs, STAGE_STORY,   _("Stage 2"),     _("Riverside Hina-Nagashi"),      e->stage2.spells, D_Any);
-	add_stage(3, e->stage3.procs, STAGE_STORY,   _("Stage 3"),     _("Crawly Mountain Ascent"),      e->stage3.spells, D_Any);
-	add_stage(4, e->stage4.procs, STAGE_STORY,   _("Stage 4"),     _("Forgotten Mansion"),           e->stage4.spells, D_Any);
-	add_stage(5, e->stage5.procs, STAGE_STORY,   _("Stage 5"),     _("Climbing the Tower of Babel"), e->stage5.spells, D_Any);
-	add_stage(6, e->stage6.procs, STAGE_STORY,   _("Stage 6"),     _("Roof of the World"),           e->stage6.spells, D_Any);
-	add_stage(7, e->stagex.procs, STAGE_SPECIAL, _("Extra Stage"), _("Descent into Madness"),        e->stagex.spells, D_Extra);
+	add_stage(1, e->stage1.procs, STAGE_STORY,   N_("Stage 1"),     N_("Misty Lake Encounter"),        e->stage1.spells, D_Any);
+	add_stage(2, e->stage2.procs, STAGE_STORY,   N_("Stage 2"),     N_("Riverside Hina-Nagashi"),      e->stage2.spells, D_Any);
+	add_stage(3, e->stage3.procs, STAGE_STORY,   N_("Stage 3"),     N_("Crawly Mountain Ascent"),      e->stage3.spells, D_Any);
+	add_stage(4, e->stage4.procs, STAGE_STORY,   N_("Stage 4"),     N_("Forgotten Mansion"),           e->stage4.spells, D_Any);
+	add_stage(5, e->stage5.procs, STAGE_STORY,   N_("Stage 5"),     N_("Climbing the Tower of Babel"), e->stage5.spells, D_Any);
+	add_stage(6, e->stage6.procs, STAGE_STORY,   N_("Stage 6"),     N_("Roof of the World"),           e->stage6.spells, D_Any);
+	add_stage(7, e->stagex.procs, STAGE_SPECIAL, N_("Extra Stage"), N_("Descent into Madness"),        e->stagex.spells, D_Extra);
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 	add_stage(0x40|0, e->testing.dps_single, STAGE_SPECIAL, "DPS Test", "Single target",    NULL, D_Normal);

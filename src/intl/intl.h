@@ -21,7 +21,7 @@ extern IntlTextDomain *_intl_current_textdomain;
 IntlTextDomain *intl_read_mo(const char* path);
 void intl_textdomain_destroy(IntlTextDomain *textdomain);
 
-void intl_set_textdomain(IntlTextDomain *textdomain);
+bool intl_set_textdomain(IntlTextDomain *textdomain);
 
 const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash);
 const char *_intl_ngettext_prehashed(IntlTextDomain *domain, const char *msgid1, hash_t hash1, const char *msgid2, unsigned long int n);
