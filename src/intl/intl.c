@@ -20,12 +20,11 @@ typedef struct Translation {
 } Translation;
 
 #define HT_SUFFIX                      str2trans
-#define HT_KEY_TYPE                    char*
+#define HT_KEY_TYPE                    const char*
 #define HT_VALUE_TYPE                  Translation
-#define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
-#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (src))
 #define HT_KEY_FMT                     "s"
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   "s"
@@ -45,7 +44,6 @@ typedef struct MoHeader {
 			uint32_t number_of_strings;
 			uint32_t original_strings_offset;
 			uint32_t translated_strings_offset;
-			uint32_t hashtable_offset;
 		};
 		uint32_t u32_array[6];
 	};
@@ -76,14 +74,12 @@ IntlTextDomain *intl_read_mo(const char* path) {
 		return NULL;
 	}
 
-	int filesize = SDL_GetIOSize(stream);
-	void *content = mem_alloc(filesize);
-	if(SDL_ReadIO(stream, content, filesize) != filesize) {
+	size_t filesize;
+	void *content = SDL_LoadFile_IO(stream, &filesize, true);
+	if(!content) {
 		log_error("%s: error reading MO file: %s", path, SDL_GetError());
-		SDL_CloseIO(stream);
 		return NULL;
 	}
-	SDL_CloseIO(stream);
 
 	MoHeader *header = content;
 	bool flip_endian;
@@ -93,7 +89,7 @@ IntlTextDomain *intl_read_mo(const char* path) {
 		flip_endian = true;
 	} else {
 		log_error("%s is not a MO file: magic number mismatch", path);
-		mem_free(content);
+		SDL_free(content);
 		return NULL;
 	}
 
@@ -101,14 +97,14 @@ IntlTextDomain *intl_read_mo(const char* path) {
 
 	if(header->revision != 0) {
 		log_error("%s: Unsupported MO version", path);
-		mem_free(content);
+		SDL_free(content);
 		return NULL;
 	}
 
 	if(header->original_strings_offset + sizeof(MoStringDescriptor) * header->number_of_strings > filesize
 	|| header->translated_strings_offset + sizeof(MoStringDescriptor) * header->number_of_strings > filesize) {
 		log_error("%s: MO file has nonsense offsets", path);
-		mem_free(content);
+		SDL_free(content);
 		return NULL;
 	}
 
@@ -122,13 +118,14 @@ IntlTextDomain *intl_read_mo(const char* path) {
 	int strings_offset = filesize;
 	int max_offset = 0;
 	for(int i = 0; i < header->number_of_strings; i++) {
+		strings_offset = min(strings_offset, original_strings[i].offset);
 		strings_offset = min(strings_offset, translated_strings[i].offset);
 		max_offset = max(max_offset, translated_strings[i].offset + translated_strings[i].length + 1);
 		max_offset = max(max_offset, original_strings[i].offset + original_strings[i].length + 1);
 	}
 	if(max_offset > filesize) {
 		log_error("%s: MO file has nonsense string offsets", path);
-		mem_free(content);
+		SDL_free(content);
 		return NULL;
 	}
 
@@ -136,18 +133,16 @@ IntlTextDomain *intl_read_mo(const char* path) {
 	domain->strings = memdup(content + strings_offset, filesize - strings_offset);
 	domain->table = ht_str2trans_new();
 
-	char *strcontent = content;
-
 	for(int i = 0; i < header->number_of_strings; i++) {
 		Translation t;
 		MoStringDescriptor *ostr = &original_strings[i];
 		MoStringDescriptor *tstr = &translated_strings[i];
 
-		if(strcontent[ostr->offset + ostr->length] != '\0'
-		|| strcontent[tstr->offset + tstr->length] != '\0') {
+		if(domain->strings[ostr->offset + ostr->length - strings_offset] != '\0'
+		|| domain->strings[tstr->offset + tstr->length - strings_offset] != '\0') {
 			log_error("%s: MO string missing NUL termination", path);
 			intl_textdomain_destroy(domain);
-			mem_free(content);
+			SDL_free(content);
 			mem_free(domain);
 			return NULL;
 		}
@@ -159,10 +154,10 @@ IntlTextDomain *intl_read_mo(const char* path) {
 			t.text = &domain->strings[tstr->offset - strings_offset];
 		}
 
-		ht_str2trans_set(domain->table, &strcontent[ostr->offset], t);
+		ht_str2trans_set(domain->table, &domain->strings[ostr->offset - strings_offset], t);
 	}
 
-	mem_free(content);
+	SDL_free(content);
 	return domain;
 }
 
@@ -181,26 +176,26 @@ const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, h
 		return msgid;
 	}
 
-	Translation no_translation = {};
-	Translation result = ht_str2trans_get_prehashed(domain->table, msgid, hash, no_translation);
-	if(!result.text) {
-		return msgid;
-	}
-	return result.text;
+	Translation result;
+	bool exists = ht_str2trans_lookup_prehashed(domain->table, msgid, hash, &result);
+	return exists ? result.text : msgid;
 }
 
 const char *_intl_ngettext_prehashed(IntlTextDomain *domain, const char *msgid1, hash_t hash1, const char *msgid2, unsigned long int n) {
+	const char *fallback = n == 1 ? msgid1 : msgid2;
 	if(!domain) {
-		return n == 1 ? msgid1 : msgid2;
+		return fallback;
 	}
 
-	Translation no_translation = {};
-	Translation result = ht_str2trans_get_prehashed(domain->table, msgid1, hash1, no_translation);
-	if(!result.plural) {
-		log_fatal("i18n: plural original string '%s':'%s' has singular-only translation '%s'", msgid1, msgid2, result.text);
+	Translation result;
+	bool exists = ht_str2trans_lookup_prehashed(domain->table, msgid1, hash1, &result);
+	if(!exists) {
+		return fallback;
 	}
-	if(!result.text) {
-		return n == 1 ? msgid1 : msgid2;
+
+	if(!result.plural) {
+		log_error("i18n: plural original string '%s':'%s' has singular-only translation '%s'", msgid1, msgid2, result.text);
+		return fallback;
 	}
 
 	return n == 1 ? result.text : result.plural;
