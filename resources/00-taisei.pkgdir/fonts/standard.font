@@ -1,7 +1,8 @@
 
-source = res/fonts/SourceHanSans-Regular.ttc
+source = res/fonts/Exo2-Regular-Taisei.ttf
 size = 17
 
 border_inner = 0.4
 border_outer = 1.25
 
+fallbacks = standard_cjk

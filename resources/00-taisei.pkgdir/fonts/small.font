@@ -5,3 +5,4 @@ size = 12
 border_inner = 0.2
 border_outer = 1.5
 
+fallbacks = small_cjk, small_cjk
