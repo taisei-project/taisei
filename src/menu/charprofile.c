@@ -221,7 +221,7 @@ static void charprofile_draw(MenuData *m) {
 	CharProfileContext *ctx = m->context;
 
 	draw_main_menu_bg(m, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * m->drawdata[1]), "menu/mainmenubg", profiles[m->cursor].background);
-	draw_menu_title(m, "Character Profiles");
+	draw_menu_title(m, _("Character Profiles"));
 
 
 	// background behind description text
@@ -286,7 +286,7 @@ static void charprofile_draw(MenuData *m) {
 		r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
 	}
 
-	text_draw(profiles[selected].fullname, &(TextParams) {
+	text_draw(_(profiles[selected].fullname), &(TextParams) {
 		.align = ALIGN_CENTER,
 		.font = "big",
 		.shader_ptr = res_shader("text_default"),
@@ -300,7 +300,7 @@ static void charprofile_draw(MenuData *m) {
 		o = 1;
 	}
 
-	text_draw(profiles[selected].title, &(TextParams) {
+	text_draw(_(profiles[selected].title), &(TextParams) {
 		.align = ALIGN_CENTER,
 		.pos = { 20*(1-o), 30 },
 		.shader_ptr = res_shader("text_default"),

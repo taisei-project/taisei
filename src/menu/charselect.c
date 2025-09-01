@@ -184,8 +184,8 @@ void draw_char_menu(MenuData *menu) {
 		assert(pchar->id == i);
 
 		Sprite *spr = portrait_get_base_sprite(pchar->lower_name, NULL);  // TODO cache this
-		const char *name = pchar->full_name;
-		const char *title = pchar->title;
+		const char *name = _(pchar->full_name);
+		const char *title = _(pchar->title);
 
 		if(menu->cursor == i) {
 			current_char = pchar->id;
