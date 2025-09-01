@@ -118,6 +118,7 @@ struct Font {
 	FontMetrics metrics;
 	bool kerning;
 
+	char **fallbacks;
 #ifdef DEBUG
 	char debug_label[64];
 #endif
@@ -733,7 +734,16 @@ static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 		// log_debug("Glyph for charcode 0x%08lx not cached", cp);
 
 		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
-			log_debug("Font has no glyph for charcode 0x%08lx", cp);
+			if(fnt->fallbacks) {
+				for(char **fallback = fnt->fallbacks; *fallback != NULL; fallback++) {
+					glyph = get_glyph(res_font(*fallback), cp);
+					if(glyph) {
+						return glyph;
+					}
+				}
+			}
+
+			log_debug("Font or fallbacks have no glyph for charcode 0x%08lx", cp);
 			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
 			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
 		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
@@ -789,6 +799,11 @@ static void free_font_resources(Font *font) {
 		FT_Stroker_Done(font->stroker);
 	}
 
+	if(font->fallbacks) {
+		mem_free(font->fallbacks[0]);
+		mem_free(font->fallbacks);
+	}
+
 	wipe_glyph_cache(font);
 
 	ht_destroy(&font->charcodes_to_glyph_ofs);
@@ -799,6 +814,26 @@ static void free_font_resources(Font *font) {
 }
 
 static void finish_reload(ResourceLoadState *st);
+
+static char **parse_fallbacks(char *commalist) {
+	char **fallbacks = NULL;
+	int num_fallbacks = 0;
+	if(commalist) {
+		for(char *p = commalist; *p != '\0'; p++) {
+			if(*p == ',') {
+				num_fallbacks++;
+				*p = '\0';
+			}
+		}
+		num_fallbacks++;
+		fallbacks = ALLOC_ARRAY(num_fallbacks + 1, char *);
+		fallbacks[0] = commalist;
+		for(int i = 1; i < num_fallbacks; i++) {
+			fallbacks[i] = fallbacks[i-1] + strlen(fallbacks[i-1]) + 1;
+		}
+	}
+	return fallbacks;
+}
 
 void load_font(ResourceLoadState *st) {
 	Font font = {
@@ -814,14 +849,19 @@ void load_font(ResourceLoadState *st) {
 		return;
 	}
 
+	char *fallbacks = NULL;
+
 	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
 		{ "source",        .out_str   = &font.source_path },
 		{ "size",          .out_int   = &font.base_size },
 		{ "face",          .out_long  = &font.base_face_idx },
 		{ "border_inner",  .out_float = &font.base_border_inner, },
 		{ "border_outer",  .out_float = &font.base_border_outer, },
+		{ "fallbacks",     .out_str   = &fallbacks, },
 		{}
 	});
+
+	font.fallbacks = parse_fallbacks(fallbacks);
 
 	SDL_CloseIO(rw);
 
