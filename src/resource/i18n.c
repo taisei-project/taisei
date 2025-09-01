@@ -104,9 +104,6 @@ void i18n_set_textdomain_from_string(const char *name) {
 	} else {
 		changed = intl_set_textdomain(NULL);
 	}
-	if(changed) {
-		stageinfo_reload();
-	}
 }
 
 void i18n_init(ResourceGroup *rg) {
