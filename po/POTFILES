@@ -86,6 +86,7 @@ src/memory/backend_mimalloc.c
 src/memory/backend_libc.c
 src/resource/sfxbgm_common.c
 src/resource/resource.c
+src/resource/i18n.c
 src/resource/font.c
 src/resource/shader_program.c
 src/resource/sfx.c
@@ -285,6 +286,7 @@ src/stages/stage6/nonspells/boss_nonspell_2.c
 src/stages/stage6/nonspells/boss_nonspell_6.c
 src/stages/stage6/nonspells/boss_nonspell_5.c
 src/stages/stage6/nonspells/boss_nonspell_3.c
+src/intl/intl.c
 src/lasers/laser.c
 src/lasers/rules.c
 src/lasers/draw.c
@@ -448,6 +450,7 @@ src/resource/shader_object.h
 src/resource/shader_program.h
 src/resource/material.h
 src/resource/font.h
+src/resource/i18n.h
 src/resource/sfx.h
 src/resource/resource.h
 src/resource/animation.h
@@ -602,6 +605,7 @@ src/stages/stage6/background_anim.h
 src/stages/stage6/draw.h
 src/stages/stage6/spells/spells.h
 src/stages/stage6/nonspells/nonspells.h
+src/intl/intl.h
 src/lasers/draw.h
 src/lasers/rules.h
 src/lasers/internal.h
