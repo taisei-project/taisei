@@ -167,10 +167,8 @@ void intl_textdomain_destroy(IntlTextDomain *domain) {
 	mem_free(domain->strings);
 }
 
-bool intl_set_textdomain(IntlTextDomain *domain) {
-	bool changed = domain != _intl_current_textdomain;
+void intl_set_textdomain(IntlTextDomain *domain) {
 	_intl_current_textdomain = domain;
-	return changed;
 }
 
 const char *_intl_gettext_prehashed(IntlTextDomain *domain, const char *msgid, hash_t hash) {
