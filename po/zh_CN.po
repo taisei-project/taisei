@@ -569,7 +569,7 @@ msgstr ""
 "\n"
 "她坚信昆虫在演化长河中失去了“应有的地位”。\n"
 "\n"
-"如果她真的自认遭受进化的不公，应该来个人给她科普一点三叶虫的历史……\n"
+"如果她真的自认遭受进化的不公，应该来个人给她科普一点三叶虫的历史……"
 
 #: src/menu/charprofile.c:136 src/stages/stage4/kurumi.c:57
 #: src/dialog/dialog_macros.h:74 src/cutscenes/scene_impl.h:70
