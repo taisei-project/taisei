@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-31 17:08-0400\n"
+"POT-Creation-Date: 2025-09-01 07:38-0400\n"
 "Last-Translator: Swordsdeer\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,11 +27,11 @@ msgid ""
 "brought to you by…"
 msgstr ""
 
-#: src/credits.c:153
+#: src/credits.c:154
 msgid "Special Thanks"
 msgstr ""
 
-#: src/credits.c:198
+#: src/credits.c:199
 #, c-format
 msgid ""
 "Visit Us\n"
@@ -41,7 +41,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/credits.c:208
+#: src/credits.c:209
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
@@ -55,9 +55,222 @@ msgstr ""
 msgid "Spell"
 msgstr ""
 
+#: src/stageinfo.c:129
+msgid "Stage 1"
+msgstr ""
+
+#: src/stageinfo.c:129
+msgid "Misty Lake Encounter"
+msgstr "雾之湖遭遇战"
+
+#: src/stageinfo.c:130
+msgid "Stage 2"
+msgstr ""
+
+#: src/stageinfo.c:130
+msgid "Riverside Hina-Nagashi"
+msgstr "河畔流雏"
+
+#: src/stageinfo.c:131
+msgid "Stage 3"
+msgstr ""
+
+#: src/stageinfo.c:131
+msgid "Crawly Mountain Ascent"
+msgstr "令人痒痒的登山之旅"
+
+#: src/stageinfo.c:132
+msgid "Stage 4"
+msgstr ""
+
+#: src/stageinfo.c:132
+msgid "Forgotten Mansion"
+msgstr "被遗忘的宅邸"
+
+#: src/stageinfo.c:133
+msgid "Stage 5"
+msgstr ""
+
+#: src/stageinfo.c:133
+msgid "Climbing the Tower of Babel"
+msgstr "巴别塔之攀"
+
+#: src/stageinfo.c:134
+msgid "Stage 6"
+msgstr ""
+
+#: src/stageinfo.c:134
+msgid "Roof of the World"
+msgstr "世界之脊"
+
+#: src/stageinfo.c:135
+msgid "Extra Stage"
+msgstr ""
+
+#: src/stageinfo.c:135
+msgid "Descent into Madness"
+msgstr ""
+
 #: src/gamepad.c:109
 msgid "Unknown device"
 msgstr "未知设备"
+
+#: src/gamepad.c:871
+msgid "A"
+msgstr ""
+
+#: src/gamepad.c:872
+msgid "B"
+msgstr ""
+
+#: src/gamepad.c:873
+msgid "X"
+msgstr ""
+
+#: src/gamepad.c:874
+msgid "Y"
+msgstr ""
+
+#: src/gamepad.c:875 src/menu/spellpractice.c:67 src/menu/replayview.c:471
+#: src/menu/media.c:60 src/menu/options.c:812 src/menu/options.c:876
+#: src/menu/options.c:1020 src/menu/options.c:1129 src/menu/options.c:1209
+msgid "Back"
+msgstr ""
+
+#: src/gamepad.c:876
+msgid "Guide"
+msgstr ""
+
+#: src/gamepad.c:877
+#, fuzzy
+msgid "Start"
+msgstr "开始故事"
+
+#: src/gamepad.c:878
+msgid "Left Stick"
+msgstr "左摇杆"
+
+#: src/gamepad.c:879
+msgid "Right Stick"
+msgstr "右摇杆"
+
+#: src/gamepad.c:880
+msgid "Left Bumper"
+msgstr ""
+
+#: src/gamepad.c:881
+msgid "Right Bumper"
+msgstr ""
+
+#: src/gamepad.c:882
+msgid "Up"
+msgstr ""
+
+#: src/gamepad.c:883
+msgid "Down"
+msgstr ""
+
+#: src/gamepad.c:884
+msgid "Left"
+msgstr ""
+
+#: src/gamepad.c:885
+#, fuzzy
+msgid "Right"
+msgstr "右摇杆"
+
+#: src/gamepad.c:886
+msgid "Misc"
+msgstr ""
+
+#: src/gamepad.c:887
+msgid "P1"
+msgstr ""
+
+#: src/gamepad.c:888
+msgid "P2"
+msgstr ""
+
+#: src/gamepad.c:889
+msgid "P3"
+msgstr ""
+
+#: src/gamepad.c:890
+msgid "P4"
+msgstr ""
+
+#: src/gamepad.c:891
+msgid "Touchpad"
+msgstr ""
+
+#: src/gamepad.c:892
+msgid "Misc 2"
+msgstr ""
+
+#: src/gamepad.c:893
+msgid "Misc 3"
+msgstr ""
+
+#: src/gamepad.c:894
+msgid "Misc 4"
+msgstr ""
+
+#: src/gamepad.c:895
+msgid "Misc 5"
+msgstr ""
+
+#: src/gamepad.c:896
+msgid "Misc 6"
+msgstr ""
+
+#: src/gamepad.c:902 src/gamepad.c:917
+msgid "Left Trigger"
+msgstr ""
+
+#: src/gamepad.c:903 src/gamepad.c:918
+msgid "Right Trigger"
+msgstr ""
+
+#: src/gamepad.c:904
+msgid "Stick Up"
+msgstr ""
+
+#: src/gamepad.c:905
+msgid "Stick Down"
+msgstr ""
+
+#: src/gamepad.c:906
+msgid "Stick Left"
+msgstr ""
+
+#: src/gamepad.c:907
+msgid "Stick Right"
+msgstr ""
+
+#: src/gamepad.c:913
+#, fuzzy
+msgid "Left X"
+msgstr "左摇杆"
+
+#: src/gamepad.c:914
+#, fuzzy
+msgid "Left Y"
+msgstr "左摇杆"
+
+#: src/gamepad.c:915
+#, fuzzy
+msgid "Right X"
+msgstr "右摇杆"
+
+#: src/gamepad.c:916
+#, fuzzy
+msgid "Right Y"
+msgstr "右摇杆"
+
+#: src/gamepad.c:939 src/gamepad.c:950 src/difficulty.c:41
+#: src/menu/options.c:1347
+msgid "Unknown"
+msgstr ""
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -87,8 +300,20 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/difficulty.c:41 src/menu/options.c:1347
-msgid "Unknown"
+#: src/difficulty.c:20
+msgid "Easy"
+msgstr ""
+
+#: src/difficulty.c:21
+msgid "Normal"
+msgstr ""
+
+#: src/difficulty.c:22
+msgid "Hard"
+msgstr ""
+
+#: src/difficulty.c:23
+msgid "Lunatic"
 msgstr ""
 
 #: src/stage.c:622
@@ -98,12 +323,6 @@ msgstr ""
 
 #: src/menu/spellpractice.c:21 src/menu/mainmenu.c:123
 msgid "Spell Practice"
-msgstr ""
-
-#: src/menu/spellpractice.c:67 src/menu/replayview.c:471 src/menu/media.c:60
-#: src/menu/options.c:812 src/menu/options.c:876 src/menu/options.c:1020
-#: src/menu/options.c:1129 src/menu/options.c:1209
-msgid "Back"
 msgstr ""
 
 #: src/menu/ingamemenu.c:133
@@ -147,13 +366,327 @@ msgstr "跳过关卡"
 msgid "Stop Watching"
 msgstr "退出观看"
 
+#: src/menu/charprofile.c:62
+msgid "Hakurei Reimu"
+msgstr ""
+
+#: src/menu/charprofile.c:63
+msgid "Shrine Maiden of Fantasy"
+msgstr "幻想的巫女"
+
+#: src/menu/charprofile.c:64 src/menu/charprofile.c:74
+msgid "Human"
+msgstr "人类"
+
+#: src/menu/charprofile.c:65
+msgid "Literature (Fiction)"
+msgstr "文学(小说)"
+
+#: src/menu/charprofile.c:66
+msgid ""
+"The incredibly particular shrine maiden.\n"
+"\n"
+"She’s taking a break from her busy novel-reading schedule to take care of an "
+"incident.\n"
+"\n"
+"Mostly, she has a vague feeling of sentimentality for a bygone era.\n"
+"\n"
+"Regardless, when the residents of Yōkai Mountain show up sobbing at her "
+"door, she has no choice but to put her book down and spring into action."
+msgstr ""
+
+#: src/menu/charprofile.c:72
+msgid "Kirisame Marisa"
+msgstr ""
+
+#: src/menu/charprofile.c:73
+msgid "Unbelievably Ordinary Magician"
+msgstr ""
+
+#: src/menu/charprofile.c:75
+msgid "Eclecticism"
+msgstr ""
+
+#: src/menu/charprofile.c:76
+msgid ""
+"The confident, hyperactive witch.\n"
+"\n"
+"Curious as ever about the limits of magic and the nature of reality, and "
+"when she hears about “eldritch lunacy,” her curiosity gets the better of "
+"her.\n"
+"\n"
+"But maybe this “grimoire” is best left unread?\n"
+"\n"
+"Not that a warning like that would stop her anyways. So, off she goes."
+msgstr ""
+
+#: src/menu/charprofile.c:82
+msgid "Konpaku Yōmu"
+msgstr ""
+
+#: src/menu/charprofile.c:83
+msgid "Swordswoman Between Worlds"
+msgstr ""
+
+#: src/menu/charprofile.c:84
+msgid "Half-Human, Half-Phantom"
+msgstr ""
+
+#: src/menu/charprofile.c:85
+msgid "Fencing"
+msgstr ""
+
+#: src/menu/charprofile.c:86
+msgid ""
+"The swordswoman of the somewhat-dead.\n"
+"\n"
+"“While you were playing games, I was studying the blade” … is probably what "
+"she’d say.\n"
+"\n"
+"Entirely too serious about everything, and utterly terrified of (half of) "
+"her own existence.\n"
+"\n"
+"Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
+"doesn’t let it get to her head."
+msgstr ""
+
+#: src/menu/charprofile.c:92 src/stages/stage1/cirno.c:27
+#: src/dialog/dialog_macros.h:71
+msgid "Cirno"
+msgstr "琪露诺"
+
+#: src/menu/charprofile.c:93 src/dialog/dialog_macros.h:71
+msgid "Thermodynamic Ice Fairy"
+msgstr ""
+
+#: src/menu/charprofile.c:94
+msgid "Fairy"
+msgstr "妖精"
+
+#: src/menu/charprofile.c:95
+msgid "Thermodynamics"
+msgstr "热力学"
+
+#: src/menu/charprofile.c:96
+msgid ""
+"The lovably-foolish ice fairy.\n"
+"\n"
+"Perhaps she’s a bit dissatisfied after her recent duels with secret gods and "
+"hellish fairies?\n"
+"\n"
+"Consider going easy on her."
+msgstr ""
+"呆萌可爱的冰之妖精。\n"
+"\n"
+"可能她最近在和秘神与地狱妖精的决斗后感到不太开心？\n"
+"\n"
+"还是对她手下留情吧。"
+
+#: src/menu/charprofile.c:103 src/stages/stage2/hina.c:41
+#: src/dialog/dialog_macros.h:72
+msgid "Kagiyama Hina"
+msgstr "键山雏"
+
+#: src/menu/charprofile.c:104 src/dialog/dialog_macros.h:72
+msgid "Gyroscopic Pestilence God"
+msgstr ""
+
+#: src/menu/charprofile.c:105
+msgid "Pestilence God"
+msgstr "厄神"
+
+#: src/menu/charprofile.c:106
+msgid "Gyroscopic Stabilization"
+msgstr "陀螺稳定性"
+
+#: src/menu/charprofile.c:107
+msgid ""
+"Guardian of Yōkai Mountain. Her angular momentum is out of this world!\n"
+"\n"
+"She seems awfully concerned with your health and safety, to the point of "
+"being quite overbearing.\n"
+"\n"
+"You’re old enough to decide your own path in life, though."
+msgstr ""
+"妖怪之山的守护者，她的角动量突破天际！\n"
+"\n"
+"她可能有些过分担忧你的健康和安全，甚至到了令人窒息的程度。\n"
+"\n"
+"然而，你已经到了该选择自己人生道路的年龄了。"
+
+#: src/menu/charprofile.c:114 src/stages/stage3/scuttle.c:37
+msgid "Scuttle"
+msgstr ""
+
+#: src/menu/charprofile.c:115
+msgid "Agile Insect Engineer"
+msgstr ""
+
+#: src/menu/charprofile.c:116
+msgid "Bombardier Beetle"
+msgstr ""
+
+#: src/menu/charprofile.c:117
+msgid "Full Stack 'Web' Development"
+msgstr ""
+
+#: src/menu/charprofile.c:118
+msgid ""
+"Not all things are computable, and this bug seems to sneak in at a decisive "
+"fork in your commute to the true culprit.\n"
+"\n"
+"The majority of insects do not scheme grand revolutions, yet their presence "
+"alone is enough to upset the course of events."
+msgstr ""
+
+#: src/menu/charprofile.c:125 src/dialog/dialog_macros.h:73
+msgid "Wriggle Nightbug"
+msgstr "莉格露·奈特巴格"
+
+#: src/menu/charprofile.c:126 src/dialog/dialog_macros.h:73
+msgid "Insect Rights Activist"
+msgstr ""
+
+#: src/menu/charprofile.c:127
+msgid "Insect"
+msgstr "昆虫"
+
+#: src/menu/charprofile.c:128
+msgid "Evolutionary Socio-Entomology"
+msgstr "演化社会昆虫学"
+
+#: src/menu/charprofile.c:129
+msgid ""
+"A bright bug - or was it insect? - far from her usual stomping grounds.\n"
+"\n"
+"She feels that Insects have lost their “rightful place” in history, whatever "
+"that means.\n"
+"\n"
+"If she thinks she has a raw evolutionary deal, someone ought to tell her "
+"about the trilobites…"
+msgstr ""
+"一只发光的小虫子——或者说昆虫？——远离了她惯常出没的领地。\n"
+"\n"
+"她坚信昆虫在演化长河中失去了“应有的地位”。\n"
+"\n"
+"如果她真的自认遭受进化的不公，应该来个人给她科普一点三叶虫的历史……\n"
+
+#: src/menu/charprofile.c:136 src/stages/stage4/kurumi.c:57
+#: src/dialog/dialog_macros.h:74 src/cutscenes/scene_impl.h:70
+msgid "Kurumi"
+msgstr "胡桃"
+
+#: src/menu/charprofile.c:137 src/dialog/dialog_macros.h:74
+msgid "High-Society Phlebotomist"
+msgstr ""
+
+#: src/menu/charprofile.c:138
+msgid "Vampire"
+msgstr "吸血鬼"
+
+#: src/menu/charprofile.c:139
+msgid "Hematology"
+msgstr "血液学"
+
+#: src/menu/charprofile.c:140
+msgid ""
+"Vampiric blast from the past. Doesn’t she know Gensōkyō already has new "
+"bloodsuckers in town?\n"
+"\n"
+"Sucking blood is what she’s good at, but her current job is a gatekeeper, "
+"and her true passion is high fashion.\n"
+"\n"
+"Everyone’s got multiple side-hustles these days…"
+msgstr ""
+"来自过去的吸血鬼异变。难道她不知道幻想乡已经有了新的吸血鬼了吗？\n"
+"\n"
+"她擅长吸血，但她现在的工作倒是当门卫，而且实际更热衷于买衣服。\n"
+"\n"
+"现在谁还没有几份副业呢……"
+
+#: src/menu/charprofile.c:147 src/stages/stage5/iku.c:108
+#: src/dialog/dialog_macros.h:75
+msgid "Nagae Iku"
+msgstr "永江衣玖"
+
+#: src/menu/charprofile.c:148 src/dialog/dialog_macros.h:75
+msgid "Fulminologist of the Heavens"
+msgstr ""
+
+#: src/menu/charprofile.c:149
+msgid "Oarfish"
+msgstr "桨鱼"
+
+#: src/menu/charprofile.c:150
+msgid "Meteorology (Fulminology)"
+msgstr "学(雷电学)"
+
+#: src/menu/charprofile.c:151
+msgid ""
+"Messenger from the clouds, and an amateur meteorologist.\n"
+"\n"
+"Seems to have been reading a few too many outdated psychiatry textbooks in "
+"recent times.\n"
+"\n"
+"Despite being so formal and stuffy, she seems to be the only one who knows "
+"what’s going on."
+msgstr ""
+"云端的信使，同时是一个业余气象学家。\n"
+"\n"
+"她最近似乎读了太多过时的精神病学教材。\n"
+"\n"
+"尽管举止刻板拘谨，她却是唯一洞悉全局之人。"
+
+#: src/menu/charprofile.c:158 src/stages/stage6/elly.c:29
+#: src/dialog/dialog_macros.h:76 src/cutscenes/scene_impl.h:69
+msgid "Elly"
+msgstr "艾丽"
+
+#: src/menu/charprofile.c:159 src/dialog/dialog_macros.h:76
+msgid "The Theoretical Reaper"
+msgstr ""
+
+#: src/menu/charprofile.c:160
+msgid "Shinigami(?)"
+msgstr "死神(?)"
+
+#: src/menu/charprofile.c:161
+msgid "Theoretical Physics / Forensic Pathology (dual-major)"
+msgstr "理论物理 / 法医病理学(双学位)"
+
+#: src/menu/charprofile.c:162
+msgid ""
+"Slightly upset over being forgotten.\n"
+"\n"
+"Has apparently gotten herself a tutor in the “dark art” of theoretical "
+"physics. Her side-hustle is megalomania.\n"
+"\n"
+"Literally on top of the world, without a care to spare for those beneath "
+"her. Try not to let too many stones crush the innocent yōkai below when her "
+"Tower of Babel starts to crumble."
+msgstr ""
+"对自己被遗忘稍感沮丧。\n"
+"\n"
+"她显然给自己找了一位在理论物理的“暗之艺术”领域的导师。她的副业是个自大狂。\n"
+"\n"
+"她真正地立于世界之巅，没有闲心去理会她脚下的一切。当她的通天之塔开始倾颓时，"
+"还望莫让坠落的砖石伤及下方无辜的妖怪。"
+
+#: src/menu/charprofile.c:169
+msgid "Locked"
+msgstr ""
+
+#: src/menu/charprofile.c:173
+msgid "You have not unlocked this character yet!"
+msgstr ""
+
 #: src/menu/charprofile.c:193
 msgid "Species"
-msgstr ""
+msgstr "种族"
 
 #: src/menu/charprofile.c:194
 msgid "Area of Study"
-msgstr ""
+msgstr "研究领域"
 
 #: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
@@ -321,6 +854,14 @@ msgstr ""
 
 #: src/menu/media.c:58
 msgid "Replay Cutscenes"
+msgstr ""
+
+#: src/menu/options.c:494
+msgid "Reset all settings to defaults?"
+msgstr ""
+
+#: src/menu/options.c:500
+msgid "Reset all settings to the last saved values?"
 msgstr ""
 
 #: src/menu/options.c:701
@@ -621,9 +1162,25 @@ msgstr ""
 msgid "Unbound"
 msgstr ""
 
-#: src/stages/stage1/cirno.c:27 src/dialog/dialog_macros.h:71
-msgid "Cirno"
-msgstr "琪露诺"
+#: src/stages/stage1/stage1.c:30
+msgid "Freeze Sign “Perfect Freeze”"
+msgstr "冻符「Perfect Freeze」(完美冻结)"
+
+#: src/stages/stage1/stage1.c:38
+msgid "Freeze Sign “Crystal Rain”"
+msgstr "冻符「Crystal Rain」(水晶之雨)"
+
+#: src/stages/stage1/stage1.c:43
+msgid "Winter Sign “Snow Halation”"
+msgstr "冬符「Snow Halation」(雪晕)"
+
+#: src/stages/stage1/stage1.c:48
+msgid "Doom Sign “Icicle Cascade”"
+msgstr "灭符「Icicle Cascade」(冰瀑)"
+
+#: src/stages/stage1/stage1.c:55
+msgid "Frost Sign “Crystal Blizzard”"
+msgstr "霜符「Crystal Blizzard」(水晶风暴)"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 #, fuzzy
@@ -654,39 +1211,151 @@ msgstr ""
 msgid "You- You Idiootttt!"
 msgstr "泥、泥个大baka!!!!!"
 
-#: src/stages/stage4/kurumi.c:57 src/dialog/dialog_macros.h:74
-msgid "Kurumi"
-msgstr "胡桃"
+#: src/stages/stage4/stage4.c:30
+msgid "Bloodless “Gate of Walachia”"
+msgstr "无血「瓦拉几亚之门」"
 
-#: src/stages/stage2/hina.c:41 src/dialog/dialog_macros.h:72
-msgid "Kagiyama Hina"
-msgstr "键山雏"
+#: src/stages/stage4/stage4.c:35
+msgid "Bloodless “Dry Fountain”"
+msgstr "无血「干枯的喷泉」"
+
+#: src/stages/stage4/stage4.c:40
+msgid "Bloodless “Red Spike”"
+msgstr "无血「红色尖刺」"
+
+#: src/stages/stage4/stage4.c:48
+msgid "Limit “Animate Wall”"
+msgstr "界限「Animate Wall」（生命高墙）"
+
+#: src/stages/stage4/stage4.c:53
+msgid "Summoning “Demon Wall”"
+msgstr "召唤「Demon Wall」（恶魔高墙）"
+
+#: src/stages/stage4/stage4.c:58
+msgid "Power Sign “Blow the Walls”"
+msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
+
+#: src/stages/stage4/stage4.c:63
+msgid "Predation “Vampiric Vapor”"
+msgstr "力符「炸翻高墙」"
+
+#: src/stages/stage4/stage4.c:70
+msgid "Blood Magic “Vlad’s Army”"
+msgstr "血魔法「吸血鬼大军」"
 
 #: src/stages/stage2/wriggle.c:15
 #, fuzzy
 msgid "Wriggle"
 msgstr "莉格露·奈特巴格"
 
+#: src/stages/stage2/stage2.c:25
+msgid "Shard “Amulet of Harm”"
+msgstr "碎片「破裂的护符」"
+
+#: src/stages/stage2/stage2.c:30
+msgid "Lottery Sign “Bad Pick”"
+msgstr "运符「Bad Pick」（错误的选择）"
+
+#: src/stages/stage2/stage2.c:35
+msgid "Lottery Sign “Wheel of Fortune”"
+msgstr "运符「Wheel of Fortune」(命运之轮)"
+
+#: src/stages/stage2/stage2.c:42
+msgid "Lottery Sign “Monty Hall Danmaku”"
+msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
+
 #: src/stages/stage3/wriggle.c:31
 #, fuzzy
 msgid "Wriggle EX"
 msgstr "莉格露·奈特巴格"
 
-#: src/stages/stage3/scuttle.c:37
-msgid "Scuttle"
-msgstr ""
+#: src/stages/stage3/stage3.c:32
+msgid "Disruption “Logic Bomb”"
+msgstr "崩解「Logic Bomb」(逻辑炸弹)"
 
-#: src/stages/stage5/iku.c:108 src/dialog/dialog_macros.h:75
-msgid "Nagae Iku"
-msgstr "永江衣玖"
+#: src/stages/stage3/stage3.c:40
+msgid "Firefly Sign “Moonlight Rocket”"
+msgstr "萤符「Moonlight Rocket」(月光火箭)"
+
+#: src/stages/stage3/stage3.c:45
+msgid "Attractor “Moths to a Flame”"
+msgstr "诱引「Moths to a Flame」(飞蛾扑火)"
+
+#: src/stages/stage3/stage3.c:50
+msgid "Bug Sign “Firefly Storm”"
+msgstr "虫符「Firefly Storm」（飞萤风暴）"
+
+#: src/stages/stage3/stage3.c:57
+msgid "Lamp Sign “Light Singularity”"
+msgstr "灯符「Light Singularity」（奇异之光）"
+
+#: src/stages/stage5/stage5.c:25
+msgid "High Voltage “Static Bomb”"
+msgstr "高压「Static Bomb」(静态炸弹)"
+
+#: src/stages/stage5/stage5.c:33
+msgid "High Voltage “Atmospheric Discharge”"
+msgstr "高压「Atmospheric Discharge」(大气释能)"
+
+#: src/stages/stage5/stage5.c:38
+msgid "Charge Sign “Artificial Lightning”"
+msgstr "充符「Artificial Lightning」(人造闪电)"
+
+#: src/stages/stage5/stage5.c:43
+msgid "Current Sign “Induction Field”"
+msgstr "流符「Induction Field」(磁感领域)"
+
+#: src/stages/stage5/stage5.c:48
+msgid "Current Sign “Inductive Resonance”"
+msgstr "流符「电感谐振」"
+
+#: src/stages/stage5/stage5.c:53
+msgid "Spark Sign “Natural Cathode”"
+msgstr "星火之御札「Natural Cathode」(自然阴极)"
+
+#: src/stages/stage5/stage5.c:60
+msgid "Circuit Sign “Overload”"
+msgstr "电路之御札「超负荷」"
 
 #: src/stages/stage5/timeline.c:34
 msgid "Bombs?"
 msgstr ""
 
-#: src/stages/stage6/elly.c:29 src/dialog/dialog_macros.h:76
-msgid "Elly"
-msgstr ""
+#: src/stages/stage6/stage6.c:29
+msgid "Newton Sign “Occam’s Razor”"
+msgstr "牛顿之御札「Occam's Razor」(奥卡姆剃刀)"
+
+#: src/stages/stage6/stage6.c:34
+msgid "Kepler Sign “Orbital Clockwork”"
+msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
+
+#: src/stages/stage6/stage6.c:39
+msgid "Maxwell Sign “Wave Theory”"
+msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
+
+#: src/stages/stage6/stage6.c:47
+msgid "Eigenstate “Many-World Interpretation”"
+msgstr "本征态「多世界诠释」"
+
+#: src/stages/stage6/stage6.c:52
+msgid "de Broglie Sign “Wave-Particle Duality”"
+msgstr "德布罗意之御札「波粒二象性」"
+
+#: src/stages/stage6/stage6.c:57
+msgid "Ricci Sign “Spacetime Curvature”"
+msgstr "里奇之御札「时空曲率」"
+
+#: src/stages/stage6/stage6.c:62
+msgid "LHC “Higgs Boson Uncovered”"
+msgstr "L.H.C.「希格斯玻色子发现」"
+
+#: src/stages/stage6/stage6.c:70
+msgid "Forgotten Universe “Curvature Domination”"
+msgstr "遗忘之宙「Curvature Domination」(操弄曲率)"
+
+#: src/stages/stage6/stage6.c:78
+msgid "Tower of Truth “Theory of Everything”"
+msgstr "真理之塔「Theory of Everything」(万物之理论)"
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
@@ -3294,32 +3963,8 @@ msgstr ""
 msgid "Taisei Project"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:71
-msgid "Thermodynamic Ice Fairy"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:72
-msgid "Gyroscopic Pestilence God"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:73
-msgid "Wriggle Nightbug"
-msgstr "莉格露·奈特巴格"
-
-#: src/dialog/dialog_macros.h:73
-msgid "Insect Rights Activist"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:74
-msgid "High-Society Phlebotomist"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:75
-msgid "Fulminologist of the Heavens"
-msgstr ""
-
-#: src/dialog/dialog_macros.h:76
-msgid "The Theoretical Reaper"
+#: src/cutscenes/marisa_bad_end.inc.h:2
+msgid "Marisa (Bad Ending)"
 msgstr ""
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
@@ -3648,6 +4293,58 @@ msgid ""
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
 
+#: src/cutscenes/scene_impl.h:60
+msgid "Reimu"
+msgstr "灵梦"
+
+#: src/cutscenes/scene_impl.h:61
+msgid "Marisa"
+msgstr "魔理沙"
+
+#: src/cutscenes/scene_impl.h:62
+msgid "Yōmu"
+msgstr "妖梦"
+
+#: src/cutscenes/scene_impl.h:63
+msgid "Yukari"
+msgstr "紫"
+
+#: src/cutscenes/scene_impl.h:64
+msgid "Kanako"
+msgstr "神奈子"
+
+#: src/cutscenes/scene_impl.h:65
+msgid "Suwako"
+msgstr "诹访子"
+
+#: src/cutscenes/scene_impl.h:66
+msgid "Sanae"
+msgstr "早苗"
+
+#: src/cutscenes/scene_impl.h:67
+msgid "Sumireko"
+msgstr "堇子"
+
+#: src/cutscenes/scene_impl.h:68
+msgid "Yuyuko"
+msgstr "幽幽子"
+
+#: src/cutscenes/scene_impl.h:71
+msgid "Remilia"
+msgstr "蕾米莉亚"
+
+#: src/cutscenes/scene_impl.h:72
+msgid "Flandre"
+msgstr "芙兰朵露"
+
+#: src/cutscenes/scene_impl.h:73
+msgid "Patchouli"
+msgstr "帕秋莉"
+
+#: src/cutscenes/reimu_good_end.inc.h:2
+msgid "Reimu (Good Ending)"
+msgstr ""
+
 #: src/cutscenes/reimu_good_end.inc.h:7 src/cutscenes/reimu_extra_intro.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
@@ -3811,6 +4508,10 @@ msgstr ""
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:2
+msgid "Marisa (Good Ending)"
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:7
@@ -4053,6 +4754,10 @@ msgid ""
 "suddenly spring to life again…"
 msgstr ""
 
+#: src/cutscenes/youmu_bad_end.inc.h:2
+msgid "Yōmu (Bad Ending)"
+msgstr ""
+
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
 msgstr ""
@@ -4175,6 +4880,10 @@ msgstr ""
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
+msgstr ""
+
+#: src/cutscenes/marisa_extra_intro.inc.h:2
+msgid "Marisa (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
@@ -4381,6 +5090,10 @@ msgstr ""
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
+msgstr ""
+
+#: src/cutscenes/reimu_extra_intro.inc.h:2
+msgid "Reimu (Extra Stage Intro)"
 msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:8
@@ -4605,6 +5318,10 @@ msgid ""
 "Reimu flew off to meet her next challenge…"
 msgstr ""
 
+#: src/cutscenes/youmu_good_end.inc.h:2
+msgid "Yōmu (Good Ending)"
+msgstr ""
+
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
 msgstr ""
@@ -4763,6 +5480,10 @@ msgid ""
 "discussed details of an ancient future’s past…"
 msgstr ""
 
+#: src/cutscenes/youmu_extra_intro.inc.h:2
+msgid "Yōmu (Extra Stage Intro)"
+msgstr ""
+
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
 msgstr ""
@@ -4908,6 +5629,10 @@ msgid ""
 "After bidding Elly and Lady Yuyuko farewell, Yōmu returned to Gensōkyō, and "
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
+msgstr ""
+
+#: src/cutscenes/reimu_bad_end.inc.h:2
+msgid "Reimu (Bad Ending)"
 msgstr ""
 
 #: src/cutscenes/reimu_bad_end.inc.h:9
@@ -5400,186 +6125,3 @@ msgstr ""
 "\n"
 "噼噼啪啪，闪闪发亮，这就是「世界之外的知识」. 可能带着些许险恶，是否值得信赖"
 "尚不明确. "
-
-#~ msgid "Misty Lake Encounter"
-#~ msgstr "雾之湖遭遇战"
-
-#~ msgid "Riverside Hina-Nagashi"
-#~ msgstr "河畔流雏"
-
-#~ msgid "Crawly Mountain Ascent"
-#~ msgstr "令人痒痒的登山之旅"
-
-#~ msgid "Forgotten Mansion"
-#~ msgstr "被遗忘的宅邸"
-
-#~ msgid "Climbing the Tower of Babel"
-#~ msgstr "巴别塔之攀"
-
-#~ msgid "Roof of the World"
-#~ msgstr "世界之脊"
-
-#~ msgid "Left Stick"
-#~ msgstr "左摇杆"
-
-#~ msgid "Right Stick"
-#~ msgstr "右摇杆"
-
-#~ msgid "Shrine Maiden of Fantasy"
-#~ msgstr "幻想的巫女"
-
-#~ msgid "Human"
-#~ msgstr "人类"
-
-#~ msgid "Literature (Fiction)"
-#~ msgstr "文学(小说)"
-
-#~ msgid "Freeze Sign “Perfect Freeze”"
-#~ msgstr "冻符「Perfect Freeze」(完美冻结)"
-
-#~ msgid "Freeze Sign “Crystal Rain”"
-#~ msgstr "冻符「Crystal Rain」(水晶之雨)"
-
-#~ msgid "Winter Sign “Snow Halation”"
-#~ msgstr "冬符「Snow Halation」(雪晕)"
-
-#~ msgid "Doom Sign “Icicle Cascade”"
-#~ msgstr "灭符「Icicle Cascade」(冰瀑)"
-
-#~ msgid "Frost Sign “Crystal Blizzard”"
-#~ msgstr "霜符「Crystal Blizzard」(水晶风暴)"
-
-#~ msgid "Bloodless “Gate of Walachia”"
-#~ msgstr "无血「瓦拉几亚之门」"
-
-#~ msgid "Bloodless “Dry Fountain”"
-#~ msgstr "无血「干枯的喷泉」"
-
-#~ msgid "Bloodless “Red Spike”"
-#~ msgstr "无血「红色尖刺」"
-
-#~ msgid "Limit “Animate Wall”"
-#~ msgstr "界限「Animate Wall」（生命高墙）"
-
-#~ msgid "Summoning “Demon Wall”"
-#~ msgstr "召唤「Demon Wall」（恶魔高墙）"
-
-#~ msgid "Power Sign “Blow the Walls”"
-#~ msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
-
-#~ msgid "Predation “Vampiric Vapor”"
-#~ msgstr "力符「炸翻高墙」"
-
-#~ msgid "Blood Magic “Vlad’s Army”"
-#~ msgstr "血魔法「吸血鬼大军」"
-
-#~ msgid "Shard “Amulet of Harm”"
-#~ msgstr "碎片「破裂的护符」"
-
-#~ msgid "Lottery Sign “Bad Pick”"
-#~ msgstr "运符「Bad Pick」（错误的选择）"
-
-#~ msgid "Lottery Sign “Wheel of Fortune”"
-#~ msgstr "运符「Wheel of Fortune」(命运之轮)"
-
-#~ msgid "Lottery Sign “Monty Hall Danmaku”"
-#~ msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
-
-#~ msgid "Disruption “Logic Bomb”"
-#~ msgstr "崩解「Logic Bomb」(逻辑炸弹)"
-
-#~ msgid "Firefly Sign “Moonlight Rocket”"
-#~ msgstr "萤符「Moonlight Rocket」(月光火箭)"
-
-#~ msgid "Attractor “Moths to a Flame”"
-#~ msgstr "诱引「Moths to a Flame」(飞蛾扑火)"
-
-#~ msgid "Bug Sign “Firefly Storm”"
-#~ msgstr "虫符「Firefly Storm」（飞萤风暴）"
-
-#~ msgid "Lamp Sign “Light Singularity”"
-#~ msgstr "灯符「Light Singularity」（奇异之光）"
-
-#~ msgid "High Voltage “Static Bomb”"
-#~ msgstr "高压「Static Bomb」(静态炸弹)"
-
-#~ msgid "High Voltage “Atmospheric Discharge”"
-#~ msgstr "高压「Atmospheric Discharge」(大气释能)"
-
-#~ msgid "Charge Sign “Artificial Lightning”"
-#~ msgstr "充符「Artificial Lightning」(人造闪电)"
-
-#~ msgid "Current Sign “Induction Field”"
-#~ msgstr "流符「Induction Field」(磁感领域)"
-
-#~ msgid "Current Sign “Inductive Resonance”"
-#~ msgstr "流符「电感谐振」"
-
-#~ msgid "Spark Sign “Natural Cathode”"
-#~ msgstr "星火之御札「Natural Cathode」(自然阴极)"
-
-#~ msgid "Circuit Sign “Overload”"
-#~ msgstr "电路之御札「超负荷」"
-
-#~ msgid "Newton Sign “Occam’s Razor”"
-#~ msgstr "牛顿之御札「Occam's Razor」(奥卡姆剃刀)"
-
-#~ msgid "Kepler Sign “Orbital Clockwork”"
-#~ msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
-
-#~ msgid "Maxwell Sign “Wave Theory”"
-#~ msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
-
-#~ msgid "Eigenstate “Many-World Interpretation”"
-#~ msgstr "本征态「多世界诠释」"
-
-#~ msgid "de Broglie Sign “Wave-Particle Duality”"
-#~ msgstr "德布罗意之御札「波粒二象性」"
-
-#~ msgid "Ricci Sign “Spacetime Curvature”"
-#~ msgstr "里奇之御札「时空曲率」"
-
-#~ msgid "LHC “Higgs Boson Uncovered”"
-#~ msgstr "L.H.C.「希格斯玻色子发现」"
-
-#~ msgid "Forgotten Universe “Curvature Domination”"
-#~ msgstr "遗忘之宙「Curvature Domination」(操弄曲率)"
-
-#~ msgid "Tower of Truth “Theory of Everything”"
-#~ msgstr "真理之塔「Theory of Everything」(万物之理论)"
-
-#~ msgid "Reimu"
-#~ msgstr "灵梦"
-
-#~ msgid "Marisa"
-#~ msgstr "魔理沙"
-
-#~ msgid "Yōmu"
-#~ msgstr "妖梦"
-
-#~ msgid "Yukari"
-#~ msgstr "紫"
-
-#~ msgid "Kanako"
-#~ msgstr "神奈子"
-
-#~ msgid "Suwako"
-#~ msgstr "诹访子"
-
-#~ msgid "Sanae"
-#~ msgstr "早苗"
-
-#~ msgid "Sumireko"
-#~ msgstr "堇子"
-
-#~ msgid "Yuyuko"
-#~ msgstr "幽幽子"
-
-#~ msgid "Remilia"
-#~ msgstr "蕾米莉亚"
-
-#~ msgid "Flandre"
-#~ msgstr "芙兰朵露"
-
-#~ msgid "Patchouli"
-#~ msgstr "帕秋莉"
