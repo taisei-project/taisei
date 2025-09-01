@@ -368,7 +368,7 @@ msgstr "退出观看"
 
 #: src/menu/charprofile.c:62
 msgid "Hakurei Reimu"
-msgstr ""
+msgstr "博丽 灵梦"
 
 #: src/menu/charprofile.c:63
 msgid "Shrine Maiden of Fantasy"
@@ -394,18 +394,25 @@ msgid ""
 "Regardless, when the residents of Yōkai Mountain show up sobbing at her "
 "door, she has no choice but to put her book down and spring into action."
 msgstr ""
+"极其特别的巫女。\n"
+"\n"
+"她正从她繁忙的小说阅读日程中抽身去解决异变。\n"
+"\n"
+"大体上，她对过去的时代有一种模糊的感伤。\n"
+"\n"
+"不管怎样，当妖怪之山的住民们啜泣着登门求助时，她也只能暂且搁下书卷，整装出发了。"
 
 #: src/menu/charprofile.c:72
 msgid "Kirisame Marisa"
-msgstr ""
+msgstr "雾雨 魔理沙"
 
 #: src/menu/charprofile.c:73
 msgid "Unbelievably Ordinary Magician"
-msgstr ""
+msgstr "非常非常普通的魔法使"
 
 #: src/menu/charprofile.c:75
 msgid "Eclecticism"
-msgstr ""
+msgstr "折衷主义"
 
 #: src/menu/charprofile.c:76
 msgid ""
@@ -419,22 +426,29 @@ msgid ""
 "\n"
 "Not that a warning like that would stop her anyways. So, off she goes."
 msgstr ""
+"自信而活跃的魔女。\n"
+"\n"
+"对魔法的极限与现实的本质的好奇一如既往，而当她听闻“诡异疯狂”的传闻时，她的好奇便占据了上风。\n"
+"\n"
+"但可能这本“魔法书”还是永远没人去读才更好?\n"
+"\n"
+"区区这样的警告才不会阻拦她的脚步，就这样踏上征程。"
 
 #: src/menu/charprofile.c:82
 msgid "Konpaku Yōmu"
-msgstr ""
+msgstr "魂魄 妖梦"
 
 #: src/menu/charprofile.c:83
 msgid "Swordswoman Between Worlds"
-msgstr ""
+msgstr "二世之间的少女剑客"
 
 #: src/menu/charprofile.c:84
 msgid "Half-Human, Half-Phantom"
-msgstr ""
+msgstr "半人半灵"
 
 #: src/menu/charprofile.c:85
 msgid "Fencing"
-msgstr ""
+msgstr "剑术"
 
 #: src/menu/charprofile.c:86
 msgid ""
@@ -449,6 +463,13 @@ msgid ""
 "Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
 "doesn’t let it get to her head."
 msgstr ""
+"某种意义上生死之间的少女剑客。\n"
+"\n"
+"“当你们在玩游戏时，我在研习剑术。”——这大概会是她的台词。\n"
+"\n"
+"性格对什么事都认真过头，但还很害怕自己的另外一半(半灵)。\n"
+"\n"
+"尽管如此，她还是被幽幽子大人委以重任，希望她不会因此被冲昏头脑。"
 
 #: src/menu/charprofile.c:92 src/stages/stage1/cirno.c:27
 #: src/dialog/dialog_macros.h:71
