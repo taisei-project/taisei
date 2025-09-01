@@ -428,7 +428,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	r_post_init();
 
 	res_group_init(&ctx->rg);
-	i18n_init(&ctx->rg);
+	i18n_init();
 
 	draw_loading_screen();
 	dynstage_init_monitoring();

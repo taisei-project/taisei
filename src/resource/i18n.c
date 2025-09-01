@@ -14,6 +14,8 @@
 
 #define I18N_PATH_SUFFIX "/LC_MESSAGES/taisei.mo"
 
+static ResourceGroup i18n_resources;
+
 static char *i18n_path(const char *name) {
 	return try_path(I18N_PATH_PREFIX, name, I18N_PATH_SUFFIX);
 }
@@ -98,6 +100,7 @@ void i18n_set_textdomain_from_string(const char *name) {
 		}
 	}
 
+	res_group_preload(&i18n_resources, RES_I18N, RESF_OPTIONAL, languages[chosen], NULL);
 	if(chosen >= 0) {
 		intl_set_textdomain(res_i18n(languages[chosen]));
 	} else {
@@ -105,13 +108,8 @@ void i18n_set_textdomain_from_string(const char *name) {
 	}
 }
 
-void i18n_init(ResourceGroup *rg) {
-	const char *languages[] = TAISEI_BUILDCONF_LANGUAGES;
-	for(int i = 0; i < ARRAY_SIZE(languages); i++) {
-		res_group_preload(rg, RES_I18N, RESF_DEFAULT,
-			languages[i],
-		NULL);
-	}
+void i18n_init(void) {
+	res_group_init(&i18n_resources);
 
 	i18n_set_textdomain_from_string(config_get_str(CONFIG_LANGUAGE));
 }
