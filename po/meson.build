@@ -4,7 +4,6 @@ fs = import('fs')
 xgettext_args = [
 '--from-code=utf-8',
 '-kN_',
-'-kTITLE:2,3',
 '-kMSG:2',
 '-kT_NARRATOR',
 '-kT_REIMU',
