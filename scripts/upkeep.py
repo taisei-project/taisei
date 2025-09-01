@@ -28,6 +28,7 @@ def main(args):
     tasks = (
         ['fixup-source-files', 'check-rng-usage'],
         'update-glsl-sources',
+        'gen-potfiles',
     )
 
     with ThreadPoolExecutor() as ex:
