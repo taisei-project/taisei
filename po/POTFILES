@@ -42,7 +42,6 @@ src/coroutine/cosched.h
 src/coroutine/cotask.c
 src/coroutine/cotask.h
 src/coroutine/cotask_internal.h
-src/coroutine/promise.c
 src/coroutine/taskdsl.c
 src/coroutine/taskdsl.h
 src/credits.c
