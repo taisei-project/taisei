@@ -5,6 +5,7 @@ xgettext_args = [
 '--from-code=utf-8',
 '-kN_',
 '-kMSG:2',
+'-kMSG_UNSKIPPABLE:3',
 '-kT_NARRATOR',
 '-kT_REIMU',
 '-kT_MARISA',

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 22:49+0200\n"
+"POT-Creation-Date: 2025-09-02 23:58+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -2563,6 +2563,10 @@ msgstr ""
 msgid "Allow me to put that into practice for you!"
 msgstr ""
 
+#: src/dialog/marisa.c:479
+msgid "So this place runs on electricity, eh? Hmm…"
+msgstr ""
+
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
 msgstr ""
@@ -3459,6 +3463,10 @@ msgstr ""
 msgid "Allow me to test your resistance to their infuriating machine!"
 msgstr ""
 
+#: src/dialog/reimu.c:489
+msgid "Thunder clouds? Are we really that high up?"
+msgstr ""
+
 #: src/dialog/reimu.c:502
 msgid "Ah…"
 msgstr ""
@@ -4263,6 +4271,10 @@ msgstr ""
 
 #: src/dialog/youmu.c:427
 msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
+msgstr ""
+
+#: src/dialog/youmu.c:439
+msgid "Lightning? Hmph. I can outrun it with ease."
 msgstr ""
 
 #: src/dialog/youmu.c:453
