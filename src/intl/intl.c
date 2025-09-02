@@ -6,12 +6,13 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "hashtable.h"
 #include "intl.h"
-#include "util.h"
+
 #include "log.h"
+#include "util.h"
 #include "util/miscmath.h"
 #include "vfs/public.h"
+
 #include <SDL3/SDL_iostream.h>
 
 typedef struct Translation {
@@ -33,6 +34,11 @@ typedef struct Translation {
 #define HT_DECL
 #define HT_IMPL
 #include "hashtable_incproxy.inc.h"
+
+struct IntlTextDomain {
+	char *strings;
+	ht_str2trans_t *table;
+};
 
 IntlTextDomain *_intl_current_textdomain = NULL;
 
