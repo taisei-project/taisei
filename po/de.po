@@ -1,15 +1,20 @@
 msgid ""
 msgstr ""
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-01 07:38-0400\n"
+"PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
+"Language-Team: \n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.6\n"
 
 #: src/player.c:113
 msgid "Full Power!"
-msgstr ""
+msgstr "Volle Power!"
 
 #: src/player.c:731
 msgid "Power Surge!"
@@ -24,10 +29,12 @@ msgid ""
 "Taisei Project\n"
 "brought to you by…"
 msgstr ""
+"Taisei Project\n"
+"präsentiert von…"
 
 #: src/credits.c:154
 msgid "Special Thanks"
-msgstr ""
+msgstr "Besonderer Dank"
 
 #: src/credits.c:199
 #, c-format
@@ -38,21 +45,27 @@ msgid ""
 "And join our Discord server\n"
 "%s"
 msgstr ""
+"Besuch uns auf\n"
+"%s\n"
+"\n"
+"Und komm zu Discord\n"
+"%s"
 
 #: src/credits.c:209
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
 msgstr ""
+"*\n"
+"Und vergiss nicht: immer locker bleiben!"
 
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
-msgstr ""
+msgstr "Mauseingabe deaktiviert "
 
 #: src/stageinfo.c:49
-#, fuzzy
 msgid "Spell"
-msgstr "Spell-Training"
+msgstr ""
 
 #: src/stageinfo.c:129
 msgid "Stage 1"
@@ -60,7 +73,7 @@ msgstr ""
 
 #: src/stageinfo.c:129
 msgid "Misty Lake Encounter"
-msgstr ""
+msgstr "Begegnung am Nebelsee"
 
 #: src/stageinfo.c:130
 msgid "Stage 2"
@@ -68,7 +81,7 @@ msgstr ""
 
 #: src/stageinfo.c:130
 msgid "Riverside Hina-Nagashi"
-msgstr ""
+msgstr "Flussufer Hina-Nagashi"
 
 #: src/stageinfo.c:131
 msgid "Stage 3"
@@ -76,7 +89,7 @@ msgstr ""
 
 #: src/stageinfo.c:131
 msgid "Crawly Mountain Ascent"
-msgstr ""
+msgstr "Krabbeliger Bergpfad"
 
 #: src/stageinfo.c:132
 msgid "Stage 4"
@@ -84,7 +97,7 @@ msgstr ""
 
 #: src/stageinfo.c:132
 msgid "Forgotten Mansion"
-msgstr ""
+msgstr "Vergessenes Anwesen"
 
 #: src/stageinfo.c:133
 msgid "Stage 5"
@@ -92,7 +105,7 @@ msgstr ""
 
 #: src/stageinfo.c:133
 msgid "Climbing the Tower of Babel"
-msgstr ""
+msgstr "Aufstieg des Babelturms"
 
 #: src/stageinfo.c:134
 msgid "Stage 6"
@@ -100,20 +113,19 @@ msgstr ""
 
 #: src/stageinfo.c:134
 msgid "Roof of the World"
-msgstr ""
+msgstr "Dach der Welt"
 
 #: src/stageinfo.c:135
-#, fuzzy
 msgid "Extra Stage"
-msgstr "Stage auswählen"
+msgstr ""
 
 #: src/stageinfo.c:135
 msgid "Descent into Madness"
-msgstr ""
+msgstr "Abstieg in den Wahnsinn"
 
 #: src/gamepad.c:109
 msgid "Unknown device"
-msgstr ""
+msgstr "Unbekanntes Gerät"
 
 #: src/gamepad.c:871
 msgid "A"
@@ -135,52 +147,51 @@ msgstr ""
 #: src/menu/media.c:60 src/menu/options.c:812 src/menu/options.c:876
 #: src/menu/options.c:1020 src/menu/options.c:1129 src/menu/options.c:1209
 msgid "Back"
-msgstr ""
+msgstr "Zurück"
 
 #: src/gamepad.c:876
 msgid "Guide"
 msgstr ""
 
 #: src/gamepad.c:877
-#, fuzzy
 msgid "Start"
-msgstr "Abenteuer beginnen"
+msgstr ""
 
 #: src/gamepad.c:878
 msgid "Left Stick"
-msgstr ""
+msgstr "Linker Stick"
 
 #: src/gamepad.c:879
 msgid "Right Stick"
-msgstr ""
+msgstr "Rechter Stick"
 
 #: src/gamepad.c:880
 msgid "Left Bumper"
-msgstr ""
+msgstr "Linker Bumper"
 
 #: src/gamepad.c:881
 msgid "Right Bumper"
-msgstr ""
+msgstr "Rechter Bumper"
 
 #: src/gamepad.c:882
 msgid "Up"
-msgstr ""
+msgstr "Hoch"
 
 #: src/gamepad.c:883
 msgid "Down"
-msgstr ""
+msgstr "Runter"
 
 #: src/gamepad.c:884
 msgid "Left"
-msgstr ""
+msgstr "Links"
 
 #: src/gamepad.c:885
 msgid "Right"
-msgstr ""
+msgstr "Rechts"
 
 #: src/gamepad.c:886
 msgid "Misc"
-msgstr ""
+msgstr "Sonstiges"
 
 #: src/gamepad.c:887
 msgid "P1"
@@ -224,88 +235,88 @@ msgstr ""
 
 #: src/gamepad.c:902 src/gamepad.c:917
 msgid "Left Trigger"
-msgstr ""
+msgstr "Linker Trigger"
 
 #: src/gamepad.c:903 src/gamepad.c:918
 msgid "Right Trigger"
-msgstr ""
+msgstr "Rechter Trigger"
 
 #: src/gamepad.c:904
 msgid "Stick Up"
-msgstr ""
+msgstr "Stick Hoch"
 
 #: src/gamepad.c:905
 msgid "Stick Down"
-msgstr ""
+msgstr "Stick Runter"
 
 #: src/gamepad.c:906
 msgid "Stick Left"
-msgstr ""
+msgstr "Stick Links"
 
 #: src/gamepad.c:907
 msgid "Stick Right"
-msgstr ""
+msgstr "Stick Rechts"
 
 #: src/gamepad.c:913
 msgid "Left X"
-msgstr ""
+msgstr "Linkes X"
 
 #: src/gamepad.c:914
 msgid "Left Y"
-msgstr ""
+msgstr "Linkes Y"
 
 #: src/gamepad.c:915
 msgid "Right X"
-msgstr ""
+msgstr "Rechtes X"
 
 #: src/gamepad.c:916
 msgid "Right Y"
-msgstr ""
+msgstr "Rechtes Y"
 
 #: src/gamepad.c:939 src/gamepad.c:950 src/difficulty.c:41
 #: src/menu/options.c:1347
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
-msgstr ""
+msgstr "~ Spell Card Attacke! ~"
 
 #: src/boss.c:982
 msgid "Clear bonus"
-msgstr ""
+msgstr "Clear-Bonus"
 
 #: src/boss.c:983
 msgid "Time bonus"
-msgstr ""
+msgstr "Zeit-Bonus"
 
 #: src/boss.c:984
 msgid "Survival bonus"
-msgstr ""
+msgstr "Survival-Bonus"
 
 #: src/boss.c:985
 msgid "Endurance bonus"
-msgstr ""
+msgstr "Durchhalte-Bonus"
 
 #: src/boss.c:987
 msgid "Diff. multiplier"
-msgstr ""
+msgstr "Schw. Faktor"
 
 #: src/boss.c:988
 msgid "Total"
-msgstr ""
+msgstr "Summe"
 
 #: src/difficulty.c:20
 msgid "Easy"
-msgstr ""
+msgstr "Einfach"
 
 #: src/difficulty.c:21
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: src/difficulty.c:22
 msgid "Hard"
-msgstr ""
+msgstr "Schwer"
 
 #: src/difficulty.c:23
 msgid "Lunatic"
@@ -322,7 +333,7 @@ msgstr "Spell-Training"
 
 #: src/menu/ingamemenu.c:133
 msgid "Game Paused"
-msgstr ""
+msgstr "Spiel pausiert"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
 #: src/menu/options.c:1135
@@ -331,37 +342,35 @@ msgstr "Optionen"
 
 #: src/menu/ingamemenu.c:136
 msgid "Return to Game"
-msgstr ""
+msgstr "Zurück zum Spiel"
 
 #: src/menu/ingamemenu.c:137 src/menu/gameovermenu.c:82
 msgid "Restart the Game"
-msgstr ""
+msgstr "Spiel neustarten"
 
 #: src/menu/ingamemenu.c:138
 msgid "Stop the Game"
-msgstr ""
+msgstr "Spiel stoppen"
 
 #: src/menu/ingamemenu.c:159
-#, fuzzy
 msgid "Replay Paused"
-msgstr "Replays"
+msgstr "Replay pausiert"
 
 #: src/menu/ingamemenu.c:162
 msgid "Continue Watching"
-msgstr ""
+msgstr "Weiter abspielen"
 
 #: src/menu/ingamemenu.c:163
 msgid "Restart the Stage"
-msgstr ""
+msgstr "Stage neustarten"
 
 #: src/menu/ingamemenu.c:164
-#, fuzzy
 msgid "Skip the Stage"
-msgstr "Stage auswählen"
+msgstr "Stage überspringen"
 
 #: src/menu/ingamemenu.c:165
 msgid "Stop Watching"
-msgstr ""
+msgstr "Wiedergabe stoppen"
 
 #: src/menu/charprofile.c:62
 msgid "Hakurei Reimu"
@@ -369,15 +378,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:63
 msgid "Shrine Maiden of Fantasy"
-msgstr ""
+msgstr "Miko der Fantasie"
 
 #: src/menu/charprofile.c:64 src/menu/charprofile.c:74
 msgid "Human"
-msgstr ""
+msgstr "Mensch"
 
 #: src/menu/charprofile.c:65
 msgid "Literature (Fiction)"
-msgstr ""
+msgstr "Literatur (Belletristik)"
 
 #: src/menu/charprofile.c:66
 msgid ""
@@ -391,6 +400,15 @@ msgid ""
 "Regardless, when the residents of Yōkai Mountain show up sobbing at her "
 "door, she has no choice but to put her book down and spring into action."
 msgstr ""
+"Die unglaublich spezielle Miko\n"
+"\n"
+"Sie macht eine Pause von ihrem vollen Leseplan um einen Zwischenfall in "
+"Ordnung zu bringen.\n"
+"\n"
+"Im Wesentlichen hat sie eine vage Sympathie für vergangene Zeiten.\n"
+"\n"
+"Trotzdem, wenn die Bewohner des Yōkai-Bergs weinend vor ihrer Tür stehen, "
+"muss sie ihr Buch zur Seite legen und startet durch."
 
 #: src/menu/charprofile.c:72
 msgid "Kirisame Marisa"
@@ -398,11 +416,11 @@ msgstr ""
 
 #: src/menu/charprofile.c:73
 msgid "Unbelievably Ordinary Magician"
-msgstr ""
+msgstr "Unglaublich gewöhnliche Magierin"
 
 #: src/menu/charprofile.c:75
 msgid "Eclecticism"
-msgstr ""
+msgstr "Eklektizismus"
 
 #: src/menu/charprofile.c:76
 msgid ""
@@ -416,6 +434,14 @@ msgid ""
 "\n"
 "Not that a warning like that would stop her anyways. So, off she goes."
 msgstr ""
+"Die hyperaktive Hexe mit viel Selbstvertrauen.\n"
+"\n"
+"Neugierig wie immer, über die Grenzen der Magie und die Natur der Realität. "
+"Wenn sie “überirdischer Wahnsinn” hört, kann sie sich nicht mehr stoppen.\n"
+"\n"
+"Aber vielleicht bleibt dieses “Grimoire” besser ungelesen?\n"
+"\n"
+"Nicht dass Warnungen sie je stoppen würden. Also los geht sie."
 
 #: src/menu/charprofile.c:82
 msgid "Konpaku Yōmu"
@@ -423,15 +449,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:83
 msgid "Swordswoman Between Worlds"
-msgstr ""
+msgstr "Schwertmeisterin zwischen Welten"
 
 #: src/menu/charprofile.c:84
 msgid "Half-Human, Half-Phantom"
-msgstr ""
+msgstr "Halb-Mensch, Halb-Phantom"
 
 #: src/menu/charprofile.c:85
 msgid "Fencing"
-msgstr ""
+msgstr "Fechten"
 
 #: src/menu/charprofile.c:86
 msgid ""
@@ -446,6 +472,18 @@ msgid ""
 "Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
 "doesn’t let it get to her head."
 msgstr ""
+"Die Schwertmeisterin der Irgendwie-Toten.\n"
+"\n"
+"“Während du Spiele gespielt hast, habe ich das Schwert studiert” … würde sie "
+"wohl sagen.\n"
+"\n"
+"\n"
+"Komplett zu ernst in allem, in Angst versetzt von (einer Hälfte) ihrer "
+"eigenen Existenz.\n"
+"\n"
+"\n"
+"Trotzdem, Lady Yuyuko gab ihr einen wichtigen Auftrag. Hoffentlich steigert "
+"sie sich nicht rein."
 
 #: src/menu/charprofile.c:92 src/stages/stage1/cirno.c:27
 #: src/dialog/dialog_macros.h:71
@@ -454,15 +492,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:93 src/dialog/dialog_macros.h:71
 msgid "Thermodynamic Ice Fairy"
-msgstr ""
+msgstr "Thermodynamische Eisfee"
 
 #: src/menu/charprofile.c:94
 msgid "Fairy"
-msgstr ""
+msgstr "Fee"
 
 #: src/menu/charprofile.c:95
 msgid "Thermodynamics"
-msgstr ""
+msgstr "Thermodynamik"
 
 #: src/menu/charprofile.c:96
 msgid ""
@@ -473,6 +511,12 @@ msgid ""
 "\n"
 "Consider going easy on her."
 msgstr ""
+"Die drollig-törichte Eisfee.\n"
+"\n"
+"Vielleicht ist sie etwas unzufrieden nach ihrem letzten Duell mit geheimen "
+"Göttern und höllischen Feen?\n"
+"\n"
+"Mach es nicht so schwer für sie."
 
 #: src/menu/charprofile.c:103 src/stages/stage2/hina.c:41
 #: src/dialog/dialog_macros.h:72
@@ -481,15 +525,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:104 src/dialog/dialog_macros.h:72
 msgid "Gyroscopic Pestilence God"
-msgstr ""
+msgstr "Gyroskopische Pestgottheit"
 
 #: src/menu/charprofile.c:105
 msgid "Pestilence God"
-msgstr ""
+msgstr "Pestgottheit"
 
 #: src/menu/charprofile.c:106
 msgid "Gyroscopic Stabilization"
-msgstr ""
+msgstr "Gyroskopische Stabilisation"
 
 #: src/menu/charprofile.c:107
 msgid ""
@@ -500,6 +544,12 @@ msgid ""
 "\n"
 "You’re old enough to decide your own path in life, though."
 msgstr ""
+"Wächter des Yōkaibergs. Ihr Drehmoment ist nicht von dieser Welt.\n"
+"\n"
+"Sie ist sehr mit deiner Gesundheit und Sicherheit beschäftigt. So sehr, dass "
+"es ziemlich aufdringlich wird.\n"
+"\n"
+"Aber, du bist alt genug, deinen eigenen Lebensweg zu wählen."
 
 #: src/menu/charprofile.c:114 src/stages/stage3/scuttle.c:37
 msgid "Scuttle"
@@ -507,15 +557,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:115
 msgid "Agile Insect Engineer"
-msgstr ""
+msgstr "Agiler Insektenentwickler"
 
 #: src/menu/charprofile.c:116
 msgid "Bombardier Beetle"
-msgstr ""
+msgstr "Bombadierkäfer"
 
 #: src/menu/charprofile.c:117
 msgid "Full Stack 'Web' Development"
-msgstr ""
+msgstr "Full Stack ‘Web’-Entwicklung"
 
 #: src/menu/charprofile.c:118
 msgid ""
@@ -525,6 +575,11 @@ msgid ""
 "The majority of insects do not scheme grand revolutions, yet their presence "
 "alone is enough to upset the course of events."
 msgstr ""
+"Nicht alles ist berechenbar und dieser Käfer erscheint an einer "
+"entscheidenden Weggabelung auf deiner Reise zum wahren Übeltäter.\n"
+"\n"
+"Die Mehrheit der Insekten planen keine großen Revolutionen, aber ihre "
+"Präsens allein ist genug um den Lauf der Dinge zu ändern."
 
 #: src/menu/charprofile.c:125 src/dialog/dialog_macros.h:73
 msgid "Wriggle Nightbug"
@@ -532,15 +587,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:126 src/dialog/dialog_macros.h:73
 msgid "Insect Rights Activist"
-msgstr ""
+msgstr "Insektenrechtsaktivist"
 
 #: src/menu/charprofile.c:127
 msgid "Insect"
-msgstr ""
+msgstr "Insekt"
 
 #: src/menu/charprofile.c:128
 msgid "Evolutionary Socio-Entomology"
-msgstr ""
+msgstr "Evolutionäre Sozioentomologie"
 
 #: src/menu/charprofile.c:129
 msgid ""
@@ -552,6 +607,14 @@ msgid ""
 "If she thinks she has a raw evolutionary deal, someone ought to tell her "
 "about the trilobites…"
 msgstr ""
+"Ein helles Käferchen – oder war es Insekt? – Weit von ihrem normalen "
+"Habitat.\n"
+"\n"
+"Sie fühlt dass die Insekten ihren “verdienten Platz” in der Geschichte "
+"verloren haben, was auch immer das heißt.\n"
+"\n"
+"Falls sie denkt sie hat evolutionär den Kürzeren gezogen, sollte ihr jemand "
+"über die Trilobiten erzählen…"
 
 #: src/menu/charprofile.c:136 src/stages/stage4/kurumi.c:57
 #: src/dialog/dialog_macros.h:74 src/cutscenes/scene_impl.h:70
@@ -560,15 +623,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:137 src/dialog/dialog_macros.h:74
 msgid "High-Society Phlebotomist"
-msgstr ""
+msgstr "Fachkraft für Blutentnahme"
 
 #: src/menu/charprofile.c:138
 msgid "Vampire"
-msgstr ""
+msgstr "Vampir"
 
 #: src/menu/charprofile.c:139
 msgid "Hematology"
-msgstr ""
+msgstr "Hämatologie"
 
 #: src/menu/charprofile.c:140
 msgid ""
@@ -580,6 +643,13 @@ msgid ""
 "\n"
 "Everyone’s got multiple side-hustles these days…"
 msgstr ""
+"Vampirischer Blast from the Past. Weiß sie nicht, dass Gensōkyō bereits neue "
+"Blutsauger hat?\n"
+"\n"
+"Blutsaugen ist ihre Stärke, aber ihr Job ist jetzt Türsteher und ihre "
+"Passion ist Haute Couture.\n"
+"\n"
+"Jeder hat mehrere Nebenjobs heutzutage…"
 
 #: src/menu/charprofile.c:147 src/stages/stage5/iku.c:108
 #: src/dialog/dialog_macros.h:75
@@ -588,15 +658,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:148 src/dialog/dialog_macros.h:75
 msgid "Fulminologist of the Heavens"
-msgstr ""
+msgstr "Fulminologin des Himmels"
 
 #: src/menu/charprofile.c:149
 msgid "Oarfish"
-msgstr ""
+msgstr "Riemenfisch"
 
 #: src/menu/charprofile.c:150
 msgid "Meteorology (Fulminology)"
-msgstr ""
+msgstr "Meteorologie (Fulminologie)"
 
 #: src/menu/charprofile.c:151
 msgid ""
@@ -608,6 +678,13 @@ msgid ""
 "Despite being so formal and stuffy, she seems to be the only one who knows "
 "what’s going on."
 msgstr ""
+"Bote aus den Wolken, außerdem Hobby-Meteorologin.\n"
+"\n"
+"Scheint in letzter Zeit ein paar zu viele veraltete Psychiatriebücher "
+"gelesen zu haben.\n"
+"\n"
+"Obwohl sie so formal und aufgeblasen ist, ist sie scheinbar die Einzige, die "
+"weiß was vor sich geht."
 
 #: src/menu/charprofile.c:158 src/stages/stage6/elly.c:29
 #: src/dialog/dialog_macros.h:76 src/cutscenes/scene_impl.h:69
@@ -616,15 +693,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:159 src/dialog/dialog_macros.h:76
 msgid "The Theoretical Reaper"
-msgstr ""
+msgstr "Die Theoretische Sensenfrau"
 
 #: src/menu/charprofile.c:160
 msgid "Shinigami(?)"
-msgstr ""
+msgstr "Shinigami(?)"
 
 #: src/menu/charprofile.c:161
 msgid "Theoretical Physics / Forensic Pathology (dual-major)"
-msgstr ""
+msgstr "Theoretische Physik / Forensische Pathologie"
 
 #: src/menu/charprofile.c:162
 msgid ""
@@ -637,45 +714,53 @@ msgid ""
 "her. Try not to let too many stones crush the innocent yōkai below when her "
 "Tower of Babel starts to crumble."
 msgstr ""
+"Etwas verärgert, vergessen worden zu sein.\n"
+"\n"
+"Hat sich wohl einen Lehrer in den “dunklen Künsten” der theoretischen Physik "
+"besorgt. Ihr Nebenjob ist Größenwahn.\n"
+"\n"
+"Im wahrsten Sinne ganz oben, und keine Gedanken über für die, die weiter "
+"unten stehen. Versuch nicht allzuviele Steine auf unschuldige Yōkai stürzen "
+"zu lassen, wenn ihr Babelturm anfängt zu bröckeln."
 
 #: src/menu/charprofile.c:169
 msgid "Locked"
-msgstr ""
+msgstr "Gesperrt"
 
 #: src/menu/charprofile.c:173
 msgid "You have not unlocked this character yet!"
-msgstr ""
+msgstr "Dieser Charakter ist noch nicht freigeschaltet!"
 
 #: src/menu/charprofile.c:193
 msgid "Species"
-msgstr ""
+msgstr "Spezies"
 
 #: src/menu/charprofile.c:194
 msgid "Area of Study"
-msgstr ""
+msgstr "Studienfach"
 
 #: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
-msgstr ""
+msgstr "Drücke [Feuer] für alternative Gesichtsausdrücke"
 
 #: src/menu/replayview.c:87
 msgid "Failed to load replay events"
-msgstr ""
+msgstr "Laden von Replay-Events fehlgeschlagen"
 
 #: src/menu/replayview.c:96
 #, c-format
 msgid "Can't replay this stage: unknown stage ID %X"
-msgstr ""
+msgstr "Kann Stage nicht wiedergeben: unbekannte Stage ID %X"
 
 #: src/menu/replayview.c:103
 #, c-format
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
-msgstr ""
+msgstr "Kann Stage nicht wiedergeben: unbekannter Spielercharakter/modus %X/%X"
 
 #: src/menu/replayview.c:136
 #, c-format
 msgid "Unknown stage %X"
-msgstr ""
+msgstr "Unbekannte stage %X"
 
 #: src/menu/replayview.c:358 src/menu/mainmenu.c:128
 msgid "Replays"
@@ -683,11 +768,11 @@ msgstr "Replays"
 
 #: src/menu/replayview.c:466
 msgid "No replays available. Play the game and record some!"
-msgstr ""
+msgstr "Keine Replays verfügbar. Spiele das Spiel und nimm welche auf!"
 
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
-msgstr ""
+msgstr "Es gab ein Problem beim Laden der Replayliste :("
 
 #: src/menu/mainmenu.c:119
 msgid "Start Story"
@@ -719,21 +804,19 @@ msgstr ""
 
 #: src/menu/charselect.c:167
 msgid "Science"
-msgstr ""
+msgstr "Wissenschaft"
 
 #: src/menu/charselect.c:174
-#, fuzzy
 msgid "Select Character"
-msgstr "Stage auswählen"
+msgstr "Charakter auswählen"
 
 #: src/menu/musicroom.c:124
 msgid "Now playing"
-msgstr ""
+msgstr "Läuft"
 
 #: src/menu/musicroom.c:136 src/menu/media.c:57
-#, fuzzy
 msgid "Music Room"
-msgstr "Media-Raum"
+msgstr "Musik-Raum"
 
 #: src/menu/musicroom.c:170
 msgid ""
@@ -742,34 +825,46 @@ msgid ""
 "\n"
 "If you wish to hear it anyway, please select it again to confirm."
 msgstr ""
+"\n"
+"Du hast diesen Track noch nicht freigeschaltet!\n"
+"\n"
+"Wenn du ihn trotzdem hören willst, wähle ihn erneut aus."
 
 #: src/menu/musicroom.c:178
 msgid ""
 "\n"
 "No comment available"
 msgstr ""
+"\n"
+"Kein Kommentar verfügbar"
 
 #: src/menu/musicroom.c:234
 msgid "Unknown track"
-msgstr ""
+msgstr "Unbekannter Track"
 
 #: src/menu/difficultyselect.c:44
 msgid ""
 "For those just beginning\n"
 "their academic careers"
 msgstr ""
+"Für jene am Anfang ihrer\n"
+"akademischen Laufbahn"
 
 #: src/menu/difficultyselect.c:45
 msgid ""
 "All those years of study\n"
 "have finally paid off"
 msgstr ""
+"All die Studienjahre\n"
+"waren es endlich wert"
 
 #: src/menu/difficultyselect.c:46
 msgid ""
 "You must really\n"
 "love books"
 msgstr ""
+"Du musst Bücher\n"
+"wirklich lieben."
 
 #: src/menu/difficultyselect.c:47
 msgid ""
@@ -777,27 +872,29 @@ msgid ""
 "or live long enough to\n"
 "become a professor"
 msgstr ""
+"Du stirbst entweder als Student\n"
+"oder lebst lang genug\n"
+"um Professor zu werden."
 
 #: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
-msgstr ""
+msgstr "Schwierigkeitsgrad"
 
 #: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
-msgstr ""
+msgstr "Schnellladen"
 
 #: src/menu/gameovermenu.c:62
-#, fuzzy
 msgid "Spell Failed"
-msgstr "Spell-Training"
+msgstr "Spell fehlgeschlagen"
 
 #: src/menu/gameovermenu.c:64
 msgid "Restart"
-msgstr ""
+msgstr "Neustart"
 
 #: src/menu/gameovermenu.c:66 src/menu/gameovermenu.c:84
 msgid "Give up"
-msgstr ""
+msgstr "Aufgeben"
 
 #: src/menu/gameovermenu.c:69
 msgid "Game Over"
@@ -806,134 +903,132 @@ msgstr ""
 #: src/menu/gameovermenu.c:76
 #, c-format
 msgid "Continue (%i)"
-msgstr ""
+msgstr "Weiterspielen (%i)"
 
 #: src/menu/gameovermenu.c:78
 #, c-format
 msgid "Continue"
-msgstr ""
+msgstr "Weiterspielen"
 
 #: src/menu/gameovermenu.c:84
 msgid "Return to Title"
-msgstr ""
+msgstr "Zurück zum Hauptmenü"
 
 #: src/menu/media.c:56
 msgid "Character Profiles"
-msgstr ""
+msgstr "Charakter-Profile"
 
 #: src/menu/media.c:58
-#, fuzzy
 msgid "Replay Cutscenes"
-msgstr "Replays"
+msgstr "Cutscenes ansehen"
 
 #: src/menu/options.c:494
 msgid "Reset all settings to defaults?"
-msgstr ""
+msgstr "Auf Werkseinstellungen zurücksetzen?"
 
 #: src/menu/options.c:500
 msgid "Reset all settings to the last saved values?"
-msgstr ""
+msgstr "Alle Einstellungen auf zuletzt gespeicherte Werte setzen?"
 
 #: src/menu/options.c:701
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: src/menu/options.c:702
 msgid "No"
-msgstr ""
+msgstr "Nein"
 
 #: src/menu/options.c:730
-#, fuzzy
 msgid "Video Options"
-msgstr "Optionen"
+msgstr "Videooptionen"
 
 #: src/menu/options.c:733
 msgid "Fullscreen"
-msgstr ""
+msgstr "Vollbild"
 
 #: src/menu/options.c:738
 msgid "Display"
-msgstr ""
+msgstr "Anzeige"
 
 #: src/menu/options.c:742
 msgid "Window size"
-msgstr ""
+msgstr "Fenstergröße"
 
 #: src/menu/options.c:747
 msgid "Renderer resolution"
-msgstr ""
+msgstr "Darstellungsauflösung"
 
 #: src/menu/options.c:752
 msgid "Resizable window"
-msgstr ""
+msgstr "Skalierbares Fenster"
 
 #: src/menu/options.c:759
 msgid "Pause the game when not focused"
-msgstr ""
+msgstr "Spiel pausieren wenn unfokussiert"
 
 #: src/menu/options.c:763
 msgid "Vertical synchronization"
-msgstr ""
+msgstr "Vertikale Synchronisation"
 
 #: src/menu/options.c:772
 msgid "Skip frames"
-msgstr ""
+msgstr "Frames überspringen"
 
 #: src/menu/options.c:780
 msgid "Overall rendering quality"
-msgstr ""
+msgstr "Allgemeine Darstellungsqualität"
 
 #: src/menu/options.c:784
 msgid "Draw background"
-msgstr ""
+msgstr "Hintergrund darstellen"
 
 #: src/menu/options.c:788
 msgid "Background rendering quality"
-msgstr ""
+msgstr "Hintegrundqualität"
 
 #: src/menu/options.c:795
 msgid "Anti-aliasing"
-msgstr ""
+msgstr "Kantenglättung"
 
 #: src/menu/options.c:800
 msgid "Particle effects"
-msgstr ""
+msgstr "Partikeleffekte"
 
 #: src/menu/options.c:805
 msgid "Postprocessing effects"
-msgstr ""
+msgstr "Postprocessing-Effekte"
 
 #: src/menu/options.c:833
 msgid "Gamepad Controls"
-msgstr ""
+msgstr "Gamepad Steuerung"
 
 #: src/menu/options.c:835 src/menu/options.c:1028
 msgid "Move up"
-msgstr ""
+msgstr "Hoch"
 
 #: src/menu/options.c:839 src/menu/options.c:1032
 msgid "Move down"
-msgstr ""
+msgstr "Runter"
 
 #: src/menu/options.c:843 src/menu/options.c:1036
 msgid "Move left"
-msgstr ""
+msgstr "Nach links"
 
 #: src/menu/options.c:847 src/menu/options.c:1040
 msgid "Move right"
-msgstr ""
+msgstr "Nach rechts"
 
 #: src/menu/options.c:853 src/menu/options.c:1046
 msgid "Shoot"
-msgstr ""
+msgstr "Schießen"
 
 #: src/menu/options.c:857 src/menu/options.c:1050
 msgid "Focus"
-msgstr ""
+msgstr "Fokus"
 
 #: src/menu/options.c:861 src/menu/options.c:1054
 msgid "Use Spell Card"
-msgstr ""
+msgstr "Spell-Card benutzen"
 
 #: src/menu/options.c:865 src/menu/options.c:1058
 msgid "Power Surge / Discharge"
@@ -941,280 +1036,277 @@ msgstr ""
 
 #: src/menu/options.c:871 src/menu/options.c:1072
 msgid "Skip dialog"
-msgstr ""
+msgstr "Dialog überspringen"
 
 #: src/menu/options.c:949
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
-msgstr ""
+msgstr "Drücke einen Gamepad-Button, um den Joystick Testmodus zu verlassen"
 
 #: src/menu/options.c:952
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
-msgstr ""
+msgstr "Drücke %s auf dem Gamepad um Joystick Testmodus zu aktivieren"
 
 #: src/menu/options.c:965
-#, fuzzy
 msgid "Gamepad Options"
-msgstr "Optionen"
+msgstr "Gamepad-Optionen"
 
 #: src/menu/options.c:976
 msgid "Enable Gamepad/Joystick support"
-msgstr ""
+msgstr "Gamepad/Joystick-Unterstützung aktivieren"
 
 #: src/menu/options.c:980
 msgid "Device"
-msgstr ""
+msgstr "Gerät"
 
 #: src/menu/options.c:986 src/menu/options.c:1197
 msgid "Customize controls…"
-msgstr ""
+msgstr "Steuerung konfigurieren…"
 
 #: src/menu/options.c:990
 msgid "Remap square input into circular"
-msgstr ""
+msgstr "Quadratische Eingabe auf Kreiseingabe abbilden"
 
 #: src/menu/options.c:996
 msgid "Direction snap factor"
-msgstr ""
+msgstr "Richtungseinrastungsfaktor"
 
 #: src/menu/options.c:1000
 msgid "Diagonal bias"
-msgstr ""
+msgstr "Diagonales Bias"
 
 #: src/menu/options.c:1007
 msgid "Dead zone"
-msgstr ""
+msgstr "Tote Zone"
 
 #: src/menu/options.c:1011
 msgid "Maximum zone"
-msgstr ""
+msgstr "Maximale Zone"
 
 #: src/menu/options.c:1015
 msgid "Sensitivity"
-msgstr ""
+msgstr "Empfindlichkeit"
 
 #: src/menu/options.c:1026
 msgid "Controls"
-msgstr ""
+msgstr "Kontrollen"
 
 #: src/menu/options.c:1064
 msgid "Toggle fullscreen"
-msgstr ""
+msgstr "Vollbild umschalten"
 
 #: src/menu/options.c:1068
 msgid "Take a screenshot"
-msgstr ""
+msgstr "Bildschirmschnappschuss"
 
 #: src/menu/options.c:1078
 msgid "Toggle audio"
-msgstr ""
+msgstr "Audio umschalten"
 
 #: src/menu/options.c:1084
 msgid "Stop the game immediately"
-msgstr ""
+msgstr "Spiel sofort beenden"
 
 #: src/menu/options.c:1088
 msgid "Restart the game immediately"
-msgstr ""
+msgstr "Spiel sofort neustarten"
 
 #: src/menu/options.c:1092
 msgid "Quick save"
-msgstr ""
+msgstr "Schnellspeichern"
 
 #: src/menu/options.c:1096
 msgid "Quick load"
-msgstr ""
+msgstr "Schnellladen"
 
 #: src/menu/options.c:1103
 msgid "Toggle God mode"
-msgstr ""
+msgstr "Gottmodus umschalten"
 
 #: src/menu/options.c:1107
 msgid "Skip stage"
-msgstr ""
+msgstr "Stage überspringen"
 
 #: src/menu/options.c:1111
 msgid "Power up"
-msgstr ""
+msgstr "Power erhöhen"
 
 #: src/menu/options.c:1115
 msgid "Power down"
-msgstr ""
+msgstr "Power verringern"
 
 #: src/menu/options.c:1119
 msgid "Disable background rendering (HoM effect)"
-msgstr ""
+msgstr "Hintergrund deaktivieren (HoM Effekt)"
 
 #: src/menu/options.c:1123
 msgid "Toggle collision areas overlay"
-msgstr ""
+msgstr "Kollisionsoverlay umschalten"
 
 #: src/menu/options.c:1139
 msgid "Player name"
-msgstr ""
+msgstr "Spielername"
 
 #: src/menu/options.c:1146
-#, fuzzy
 msgid "Save replays"
-msgstr "Replays"
+msgstr "Replays speichern"
 
 #: src/menu/options.c:1152
-#, fuzzy
 msgid "Auto-restart in Spell Practice"
-msgstr "Spell-Training"
+msgstr "Automatischer Neustart im Spell-Training"
 
 #: src/menu/options.c:1156
 msgid "Power in Spell and Stage Practice"
-msgstr ""
+msgstr "Power in Spell- und Stage-Training"
 
 #: src/menu/options.c:1164
 msgid "Shoot by default"
-msgstr ""
+msgstr "Immer Schießen"
 
 #: src/menu/options.c:1168
 msgid "Automatic Power Surge activation"
-msgstr ""
+msgstr "Power Surge automatisch aktivieren"
 
 #: src/menu/options.c:1172
 msgid "Boss healthbar style"
-msgstr ""
+msgstr "Boss Gesundheitsanzeige"
 
 #: src/menu/options.c:1177
 msgid "Floating score text visibility"
-msgstr ""
+msgstr "Schwebende Punktetext Lesbarkeit"
 
 #: src/menu/options.c:1183
 msgid "SFX Volume"
-msgstr ""
+msgstr "SFX Lautstärke"
 
 #: src/menu/options.c:1187
 msgid "BGM Volume"
-msgstr ""
+msgstr "BGM Lautstärke"
 
 #: src/menu/options.c:1191
 msgid "Mute audio"
-msgstr ""
+msgstr "Stummschalten"
 
 #: src/menu/options.c:1196
 msgid "Video options…"
-msgstr ""
+msgstr "Videooptionen…"
 
 #: src/menu/options.c:1198
 msgid "Gamepad & Joystick options…"
-msgstr ""
+msgstr "Gamepad- & Joystick-Optionen…"
 
 #: src/menu/options.c:1202
 msgid "Reload from last saved"
-msgstr ""
+msgstr "Vom letzten Speicherstand laden"
 
 #: src/menu/options.c:1205
 msgid "Reset to defaults"
-msgstr ""
+msgstr "Auf Werkseinstellungen setzen"
 
 #: src/menu/options.c:1338
 msgid "Press a key to assign, ESC to cancel"
-msgstr ""
+msgstr "Drücke Taste zum Zuweisen, ESC zum Abbrechen"
 
 #: src/menu/options.c:1378
 msgid "All devices"
-msgstr ""
+msgstr "Alle Geräte"
 
 #: src/menu/options.c:1384
 msgid "No devices available"
-msgstr ""
+msgstr "Keine Geräte verfügbar"
 
 #: src/menu/options.c:1426
 msgid "Move an axis to assign, Back to cancel"
-msgstr ""
+msgstr "Bewege eine Achse zum Zuweisen, Zurück zum Abbrechen"
 
 #: src/menu/options.c:1427
 msgid "Press a button to assign, Back to cancel"
-msgstr ""
+msgstr "Drücke eine Taste zum Zuweisen, Zurück zum Abbrechen"
 
 #: src/menu/options.c:1443
 msgid "Unbound"
-msgstr ""
+msgstr "Nicht zugewiesen"
 
 #: src/stages/stage1/stage1.c:30
 msgid "Freeze Sign “Perfect Freeze”"
-msgstr ""
+msgstr "Frierzeichen “Perfekter Frost”"
 
 #: src/stages/stage1/stage1.c:38
 msgid "Freeze Sign “Crystal Rain”"
-msgstr ""
+msgstr "Frierzeichen “Kristallregen”"
 
 #: src/stages/stage1/stage1.c:43
 msgid "Winter Sign “Snow Halation”"
-msgstr ""
+msgstr "Winterzeichen “Snow Halation”"
 
 #: src/stages/stage1/stage1.c:48
 msgid "Doom Sign “Icicle Cascade”"
-msgstr ""
+msgstr "Untergangszeichen “Zapfenkaskade”"
 
 #: src/stages/stage1/stage1.c:55
 msgid "Frost Sign “Crystal Blizzard”"
-msgstr ""
+msgstr "Frostzeichen “Kristallblizzard”"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "What are you doing??"
-msgstr ""
+msgstr "Was tust du??"
 
 #: src/stages/stage1/spells/snow_halation.c:188
 msgid "Dodge it properly!"
-msgstr ""
+msgstr "Weiche richtig aus!"
 
 #: src/stages/stage1/spells/snow_halation.c:189
 msgid "I bet you can’t do it! Idiot!"
-msgstr ""
+msgstr "Ich wette du kannst es nicht! Idiot!"
 
 #: src/stages/stage1/spells/snow_halation.c:190
 msgid "I spent so much time on this attack!"
-msgstr ""
+msgstr "Ich hab so lange hier dran gearbeitet!"
 
 #: src/stages/stage1/spells/snow_halation.c:191
 msgid "Maybe it is too smart for secondaries!"
-msgstr ""
+msgstr "Vielleicht ist es zu schlau für Sekundärfans."
 
 #: src/stages/stage1/spells/snow_halation.c:192
 msgid "I think you don’t even understand the timer!"
-msgstr ""
+msgstr "Ich glaub du verstehst nicht mal den Timer!"
 
 #: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
-msgstr ""
+msgstr "Du- Du Idiootttt!"
 
 #: src/stages/stage4/stage4.c:30
 msgid "Bloodless “Gate of Walachia”"
-msgstr ""
+msgstr "Blutleer “Tor der Walachei”"
 
 #: src/stages/stage4/stage4.c:35
 msgid "Bloodless “Dry Fountain”"
-msgstr ""
+msgstr "Blutleer “Trockener Brunnen”"
 
 #: src/stages/stage4/stage4.c:40
 msgid "Bloodless “Red Spike”"
-msgstr ""
+msgstr "Blutleer “Roter Pflock”"
 
 #: src/stages/stage4/stage4.c:48
 msgid "Limit “Animate Wall”"
-msgstr ""
+msgstr "Limit “Belebte Wand”"
 
 #: src/stages/stage4/stage4.c:53
 msgid "Summoning “Demon Wall”"
-msgstr ""
+msgstr "Beschwörung “Dämonenwand”"
 
 #: src/stages/stage4/stage4.c:58
 msgid "Power Sign “Blow the Walls”"
-msgstr ""
+msgstr "Kraftzeichen “Wandbruch”"
 
 #: src/stages/stage4/stage4.c:63
 msgid "Predation “Vampiric Vapor”"
-msgstr ""
+msgstr "Prädation “Vampirischer Dunst”"
 
 #: src/stages/stage4/stage4.c:70
 msgid "Blood Magic “Vlad’s Army”"
-msgstr ""
+msgstr "Blutmagie “Vlad’s Armee”"
 
 #: src/stages/stage2/wriggle.c:15
 msgid "Wriggle"
@@ -1222,19 +1314,19 @@ msgstr ""
 
 #: src/stages/stage2/stage2.c:25
 msgid "Shard “Amulet of Harm”"
-msgstr ""
+msgstr "Scherbe “Amulett des Schadens”"
 
 #: src/stages/stage2/stage2.c:30
 msgid "Lottery Sign “Bad Pick”"
-msgstr ""
+msgstr "Lottozeichen “Schlechte Wahl”"
 
 #: src/stages/stage2/stage2.c:35
 msgid "Lottery Sign “Wheel of Fortune”"
-msgstr ""
+msgstr "Lottozeichen “Glücksrad”"
 
 #: src/stages/stage2/stage2.c:42
 msgid "Lottery Sign “Monty Hall Danmaku”"
-msgstr ""
+msgstr "Lottozeichen “Monty-Hall Danmaku”"
 
 #: src/stages/stage3/wriggle.c:31
 msgid "Wriggle EX"
@@ -1242,99 +1334,99 @@ msgstr ""
 
 #: src/stages/stage3/stage3.c:32
 msgid "Disruption “Logic Bomb”"
-msgstr ""
+msgstr "Disruption “Logik-Bombe”"
 
 #: src/stages/stage3/stage3.c:40
 msgid "Firefly Sign “Moonlight Rocket”"
-msgstr ""
+msgstr "Glühwurm “Moondlicht-Rakete”"
 
 #: src/stages/stage3/stage3.c:45
 msgid "Attractor “Moths to a Flame”"
-msgstr ""
+msgstr "Attraktor “Motte zur Flamme”"
 
 #: src/stages/stage3/stage3.c:50
 msgid "Bug Sign “Firefly Storm”"
-msgstr ""
+msgstr "Käferzeichen “Glühwürmchensturm”"
 
 #: src/stages/stage3/stage3.c:57
 msgid "Lamp Sign “Light Singularity”"
-msgstr ""
+msgstr "Lampenzeichen “Lichtsingularität”"
 
 #: src/stages/stage5/stage5.c:25
 msgid "High Voltage “Static Bomb”"
-msgstr ""
+msgstr "Hochspannung “Statische Bombe”"
 
 #: src/stages/stage5/stage5.c:33
 msgid "High Voltage “Atmospheric Discharge”"
-msgstr ""
+msgstr "Hochspannung “Atmosphärische Entladung”"
 
 #: src/stages/stage5/stage5.c:38
 msgid "Charge Sign “Artificial Lightning”"
-msgstr ""
+msgstr "Ladungszeichen “Künstlicher Blitz”"
 
 #: src/stages/stage5/stage5.c:43
 msgid "Current Sign “Induction Field”"
-msgstr ""
+msgstr "Stromzeichen “Induktionsfeld”"
 
 #: src/stages/stage5/stage5.c:48
 msgid "Current Sign “Inductive Resonance”"
-msgstr ""
+msgstr "Stromzeichen “Induktive Resonanz”"
 
 #: src/stages/stage5/stage5.c:53
 msgid "Spark Sign “Natural Cathode”"
-msgstr ""
+msgstr "Funkenzeichen “Natürliche Kathode”"
 
 #: src/stages/stage5/stage5.c:60
 msgid "Circuit Sign “Overload”"
-msgstr ""
+msgstr "Stromkreis “Überladung”"
 
 #: src/stages/stage5/timeline.c:34
 msgid "Bombs?"
-msgstr ""
+msgstr "Bomben?"
 
 #: src/stages/stage6/stage6.c:29
 msgid "Newton Sign “Occam’s Razor”"
-msgstr ""
+msgstr "Newton-Zeichen “Occam’s Messer”"
 
 #: src/stages/stage6/stage6.c:34
 msgid "Kepler Sign “Orbital Clockwork”"
-msgstr ""
+msgstr "Kepler-Zeichen “Orbitales Uhrwerk”"
 
 #: src/stages/stage6/stage6.c:39
 msgid "Maxwell Sign “Wave Theory”"
-msgstr ""
+msgstr "Maxwell-Zeichen “Wellentheorie”"
 
 #: src/stages/stage6/stage6.c:47
 msgid "Eigenstate “Many-World Interpretation”"
-msgstr ""
+msgstr "Eigenzustand “Viele-Welten-Interpretation”"
 
 #: src/stages/stage6/stage6.c:52
 msgid "de Broglie Sign “Wave-Particle Duality”"
-msgstr ""
+msgstr "de Broglie-Zeichen “Wellen-Teilchen Dualität”"
 
 #: src/stages/stage6/stage6.c:57
 msgid "Ricci Sign “Spacetime Curvature”"
-msgstr ""
+msgstr "Ricci-Zeichen “Raumzeitkrümmung”"
 
 #: src/stages/stage6/stage6.c:62
 msgid "LHC “Higgs Boson Uncovered”"
-msgstr ""
+msgstr "LHC “Higgs Boson Entdeckung”"
 
 #: src/stages/stage6/stage6.c:70
 msgid "Forgotten Universe “Curvature Domination”"
-msgstr ""
+msgstr "Vergessenes Universum “Krümmungsdominanz”"
 
 #: src/stages/stage6/stage6.c:78
 msgid "Tower of Truth “Theory of Everything”"
-msgstr ""
+msgstr "Turm der Wahrheit “Weltformel”"
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
-msgstr ""
+msgstr "Schnee im Sommer? Kommt mir bekannt vor…"
 
 #: src/dialog/reimu.c:52
 msgid "Nobody can stop me now!"
-msgstr ""
+msgstr "Niemand kann mich jetzt noch aufhalten!"
 
 #: src/dialog/reimu.c:56
 msgid "Mwahahaha!"
@@ -1342,215 +1434,231 @@ msgstr ""
 
 #: src/dialog/reimu.c:59
 msgid "What’s gotten into you all of a sudden?"
-msgstr ""
+msgstr "Was ist denn mit dir los?"
 
 #: src/dialog/reimu.c:63
 msgid "Gah! Y-you again?! Are you here to get in the way of my plans?!"
-msgstr ""
+msgstr "Gah! D-du schon wieder?! Bist du hier um meine Pläne zu durchkreuzen?"
 
 #: src/dialog/reimu.c:65
 msgid "What ‘plans'? Freezing frogs?"
-msgstr ""
+msgstr "Welche ‘Pläne’? Frösche einfrieren?"
 
 #: src/dialog/reimu.c:67
 msgid "Anyway, I don’t really care. So if you could just—"
-msgstr ""
+msgstr "Ach, ist mir egal. Also, wenn du bitte—"
 
 #: src/dialog/reimu.c:71
 msgid "I’ll never tell you! Prepare to be chilled to the bone!"
 msgstr ""
+"Ich werde sie dir niemals sagen! Mach dich bereit für eine Schockfrostung!"
 
 #: src/dialog/reimu.c:90
 msgid "Chill out! I didn’t mean it like that!"
-msgstr ""
+msgstr "Entspann dich! Das meinte ich doch gar nicht so!"
 
 #: src/dialog/reimu.c:92
 msgid "You could have just let me through, you know."
-msgstr ""
+msgstr "Du hättest mich einfach durchlassen können, weißt du?"
 
 #: src/dialog/reimu.c:93
 msgid "Not fair! You broke the rules! I wasn’t ready yet…"
-msgstr ""
+msgstr "NIcht fair! Du hast die Regeln gebrochen! Ich war noch nicht bereit…"
 
 #: src/dialog/reimu.c:112
 msgid ""
 "With those loudmouthed kappa gone, the mountain feels practically deserted."
-msgstr ""
+msgstr "Ohne diese lauten Kappas fühlt der Berg sich praktisch verlassen an."
 
 #: src/dialog/reimu.c:114
 msgid "I almost miss them."
-msgstr ""
+msgstr "Ich vermisse sie fast."
 
 #: src/dialog/reimu.c:117
 msgid "Ah, it’s Ms. Hakurei."
-msgstr ""
+msgstr "Oh es ist Fräulein Hakurei."
 
 #: src/dialog/reimu.c:121
 msgid "I thought you might come."
-msgstr ""
+msgstr "Ich dachte schon du würdest kommen."
 
 #: src/dialog/reimu.c:123
 msgid "But once again, you’re trying to go places you shouldn’t."
-msgstr ""
+msgstr "Aber mal wieder willst du an einen Ort, von dem du besser fernbliebst."
 
 #: src/dialog/reimu.c:124
 msgid "What a troubled girl…"
-msgstr ""
+msgstr "Was ein schwieriges Mädchen…"
 
 #: src/dialog/reimu.c:127
 msgid "So much for ‘deserted’…"
-msgstr ""
+msgstr "So viel zu ‘verlassen’…"
 
 #: src/dialog/reimu.c:129
 msgid "Do you even know what you’re protecting me from this time?"
-msgstr ""
+msgstr "Weißt du überhaupt, wovor du mich dieses Mal beschützt?"
 
 #: src/dialog/reimu.c:134
 msgid ""
 "A bright girl like you should know that Yōkai Mountain is especially "
 "dangerous today."
 msgstr ""
+"Ein schlaues Mädchen wie du solte wissen dass der Yōkaiberg heute besonders "
+"gefährlich ist."
 
 #: src/dialog/reimu.c:136
 msgid "You ought to turn back now, my dear."
-msgstr ""
+msgstr "Du solltest jetzt umkehren, meine Liebe."
 
 #: src/dialog/reimu.c:139
 msgid "(She… she completely ignored my question.)"
-msgstr ""
+msgstr "(Sie… sie hat meine Frage komplett ignoriert.)"
 
 #: src/dialog/reimu.c:141
 msgid "Does it matter that the Gods asked me to come this time?"
 msgstr ""
+"Macht es einen unterschied dass ich diesmal von den Göttern geschickt wurde?"
 
 #: src/dialog/reimu.c:145
 msgid "I know better than the mountain Gods this time."
-msgstr ""
+msgstr "Ich weiß es diesmal besser als die Berggötter."
 
 #: src/dialog/reimu.c:146
 msgid "If you do not turn back immediately, I’ll have to repel you by force."
-msgstr ""
+msgstr "Wenn du nicht sofort umkehrst, muss ich dich zwingen."
 
 #: src/dialog/reimu.c:149
 msgid "So annoying…"
-msgstr ""
+msgstr "So nervig…"
 
 #: src/dialog/reimu.c:166
 msgid "So I lost… you can keep going then, I suppose."
-msgstr ""
+msgstr "Also habe ich verloren… du kannst weitergehen, denke ich mal."
 
 #: src/dialog/reimu.c:168
 msgid ""
 "You should know by now that I can handle it. Why are you being so "
 "overbearing?"
 msgstr ""
+"Du solltest langsam wissen, dass ich schon klarkomme. Warum bist du so "
+"aufdringlich?"
 
 #: src/dialog/reimu.c:169
 msgid ""
 "Just don’t say I didn’t warn you, when you inevitably get mauled by "
 "whatever’s out there…"
 msgstr ""
+"Sag nur nicht, dass ich dich nicht gewarnt hätte, wenn du unwiderbringlich "
+"zerfleischt wirst von was auch immer dort auf dich wartet."
 
 #: src/dialog/reimu.c:172
 msgid "(Ignored again…)"
-msgstr ""
+msgstr "(Wieder ignoriert…)"
 
 #: src/dialog/reimu.c:188
 msgid ""
 "Aside from everyone being whipped up into a frenzy, I can’t see anything "
 "abnormal yet."
 msgstr ""
+"Abgesehen davon, dass alle wahnsinnig sind, kann ich noch nichts abnormales "
+"erkennen."
 
 #: src/dialog/reimu.c:191
 msgid "Well, to your human eyes, insects may seem ‘normal’…"
-msgstr ""
+msgstr "Nun, für deine Menschenaugen mögen Insekten ‘normal’ erscheinen…"
 
 #: src/dialog/reimu.c:195
 msgid "… but there was a time when we reigned supreme!"
-msgstr ""
+msgstr "… aber es gab eine Zeit als wir die Herrscher waren!"
 
 #: src/dialog/reimu.c:198
 msgid "Eh? You? Aren’t you a bit far from home?"
-msgstr ""
+msgstr "Hä? Du? Bist du nicht etwas weit von zu Hause?"
 
 #: src/dialog/reimu.c:199
 msgid ""
 "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
 msgstr ""
+"Außerdem, ‘Herrscher’? Ich hab noch nie gehört, dass Insekten über Gensōkyō "
+"geherrscht hätten."
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
 msgstr ""
+"‘Weit von zu Hause’? Aber du bist doch in mein Geheimversteck eingebrochen!"
 
 #: src/dialog/reimu.c:205
 msgid "Haven’t you heard of the Car—…"
-msgstr ""
+msgstr "Hast du noch nie gehört vom Kar—…"
 
 #: src/dialog/reimu.c:206
 msgid "Carb—…"
-msgstr ""
+msgstr "Karb—…"
 
 #: src/dialog/reimu.c:208
 msgid "That period of history?"
-msgstr ""
+msgstr "Diese Periode?"
 
 #: src/dialog/reimu.c:209
 msgid "It was the greatest time, everyone should’ve heard of it by now!"
-msgstr ""
+msgstr "Das war die beste Zeit, jeder sollte davon gehört haben!"
 
 #: src/dialog/reimu.c:211
 msgid ""
 "Seems pretty far-fetched to me, honestly. But you yōkai are always coming up "
 "with the craziest theories…"
 msgstr ""
+"Klingt etwas weithergeholt, ehrlicherweise. Aber Yōkai haben immer die "
+"verrücktesten Theorien…"
 
 #: src/dialog/reimu.c:214
 msgid "Don’t lump us great insects in with common yōkai!"
-msgstr ""
+msgstr "Verwechsle uns großartige Insekten nicht mit gemeinen Yōkai!"
 
 #: src/dialog/reimu.c:216
 msgid "I’m going to restore us to our rightful glory of old!"
-msgstr ""
+msgstr "Ich werde uns zu unserem gebührenden Ruhm der Urzeit zurückverhelfen."
 
 #: src/dialog/reimu.c:219
 msgid "Giant insects? But you’re tiny."
-msgstr ""
+msgstr "Gigantische Insekten? Aber du bist winzig."
 
 #: src/dialog/reimu.c:221
 msgid "And I still don’t know what you mean by ‘glory of old.’"
-msgstr ""
+msgstr "Und ich weiß immer noch nicht was du mit ‘Ruhm der Urzeit’ meinst."
 
 #: src/dialog/reimu.c:225
 msgid "You don’t seem very educated about our history."
-msgstr ""
+msgstr "Du scheinst sehr ungebildet in Geschichte zu sein."
 
 #: src/dialog/reimu.c:226
 msgid "Allow me to be your teacher!"
-msgstr ""
+msgstr "Lass mich deine Lehrerin sein!"
 
 #: src/dialog/reimu.c:240
 msgid "Giant insects roaming Gensōkyō, huh?"
-msgstr ""
+msgstr "Gigantische Insekten in Gensōkyō, huh?"
 
 #: src/dialog/reimu.c:241
 msgid "Sounds like one of Sanae’s ‘nuclear’ experiments."
-msgstr ""
+msgstr "Klingt wie eins von Sanae’s ‘nuklearen’ Experimenten."
 
 #: src/dialog/reimu.c:243
 msgid "B-but I saw it clearly… the glorious past of insectkind…"
 msgstr ""
+"A-aer ich habe es klar gesehen… die ruhmreiche Vergangenheit der Insekten…"
 
 #: src/dialog/reimu.c:246
 msgid "Don’t you have a pretty sweet deal as it is, though?"
-msgstr ""
+msgstr "Aber habt ihr nicht jetzt schon eine ziemlich gute Stellung?"
 
 #: src/dialog/reimu.c:247
 msgid "You practically own Gensōkyō’s forests."
-msgstr ""
+msgstr "Euch gehören praktisch Gensōkyō’ Wälder."
 
 #: src/dialog/reimu.c:249
 msgid "But can’t we ever hope for more…?"
-msgstr ""
+msgstr "Aber dürfen wir nie auf mehr hoffen…?"
 
 #: src/dialog/reimu.c:267
 msgid "Huh? There’s a mansion jutting out of this tower?"
