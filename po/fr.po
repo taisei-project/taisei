@@ -914,10 +914,6 @@ msgstr "Weiterspielen"
 msgid "Return to Title"
 msgstr "Zurück zum Hauptmenü"
 
-#: src/cutscenes/marisa_good_end.inc.h:73
-msgid "Oh, that’s easy. Mushrooms!"
-msgstr "Oh, c'est facile. Les champignons!"
-
 #: src/menu/media.c:58
 msgid "Replay Cutscenes"
 msgstr "Cutscenes ansehen"
