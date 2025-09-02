@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/reimu.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 #include "util/graphics.h"
@@ -709,9 +710,9 @@ static void reimu_dream_preload(ResourceGroup *rg) {
 }
 
 PlayerMode plrmode_reimu_b = {
-	.name = "Dream Shaper",
-	.description = "Turn your understanding of reality upside-down, and tie the boundaries of spacetime into knots as easily as the ribbons in your hair.",
-	.spellcard_name = "Dream Sign “Ethereal Boundary Rupture”",
+	.name = N_("Dream Shaper"),
+	.description = N_("Turn your understanding of reality upside-down, and tie the boundaries of spacetime into knots as easily as the ribbons in your hair."),
+	.spellcard_name = N_("Dream Sign “Ethereal Boundary Rupture”"),
 	.character = &character_reimu,
 	.dialog = &dialog_tasks_reimu,
 	.shot_mode = PLR_SHOT_REIMU_DREAM,

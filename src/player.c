@@ -248,7 +248,7 @@ void player_draw_overlay(Player *plr) {
 
 	r_mat_mv_push();
 	r_mat_mv_scale(2 - 1 * spell_opacity, 2 - 1 * spell_opacity, 1);
-	text_draw(plr->mode->spellcard_name, &tp);
+	text_draw(_(plr->mode->spellcard_name), &tp);
 	r_mat_mv_pop();
 
 	r_mat_mv_pop();

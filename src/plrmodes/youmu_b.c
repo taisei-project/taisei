@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "dialog/youmu.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "stage.h"
 #include "util/glm.h"
@@ -616,9 +617,9 @@ static void youmu_haunting_preload(ResourceGroup *rg) {
 }
 
 PlayerMode plrmode_youmu_b = {
-	.name = "Haunting Revelation",
-	.description = "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you happen to stand in the way of a determined sword-wielding lady…",
-	.spellcard_name = "Aegis Sword “Saigyō Omnidirectional Slash”",
+	.name = N_("Haunting Revelation"),
+	.description = N_("Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you happen to stand in the way of a determined sword-wielding lady…"),
+	.spellcard_name = N_("Aegis Sword “Saigyō Omnidirectional Slash”"),
 	.character = &character_youmu,
 	.dialog = &dialog_tasks_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,
