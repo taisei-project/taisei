@@ -23,6 +23,7 @@ xgettext_args = [
 ]
 
 i18n_pkg_name = '10-i18n'
+i18n_build_dir = meson.current_build_dir()
 
 i18n_mo_targets = i18n.gettext(meson.project_name(),
     install : not package_data,
@@ -34,7 +35,7 @@ if package_data
     i18n_pkg_zip = '@0@.zip'.format(i18n_pkg_name)
     bindist_deps += custom_target(i18n_pkg_zip,
         command : [pack_command,
-            meson.current_build_dir(),
+            i18n_build_dir,
             '@OUTPUT@',
             '--prefix', 'i18n',
             '--exclude', '*.zip',
