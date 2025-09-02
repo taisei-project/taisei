@@ -16,7 +16,7 @@ from taiseilib.common import (
 )
 
 def bgm_tags(filename):
-    result = subprocess.run(['ffprobe', '-output_format', 'json', '-show_entries', 'stream_tags', filename], capture_output=True, text=True, check=True)
+    result = subprocess.run(['ffprobe', '-print_format', 'json', '-show_entries', 'stream_tags', filename], capture_output=True, text=True, check=True)
 
     return json.loads(result.stdout)['streams'][0]['tags']
 
