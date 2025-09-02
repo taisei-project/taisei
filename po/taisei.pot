@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-01 07:38-0400\n"
+"POT-Creation-Date: 2025-09-02 06:21-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -659,6 +659,10 @@ msgstr ""
 msgid "Area of Study"
 msgstr ""
 
+#: src/menu/charprofile.c:224 src/menu/media.c:56
+msgid "Character Profiles"
+msgstr ""
+
 #: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
 msgstr ""
@@ -817,10 +821,6 @@ msgstr ""
 
 #: src/menu/gameovermenu.c:84
 msgid "Return to Title"
-msgstr ""
-
-#: src/menu/media.c:56
-msgid "Character Profiles"
 msgstr ""
 
 #: src/menu/media.c:58
@@ -1131,6 +1131,90 @@ msgstr ""
 
 #: src/menu/options.c:1443
 msgid "Unbound"
+msgstr ""
+
+#: src/plrmodes/youmu_a.c:708
+msgid "Soul Reflection"
+msgstr ""
+
+#: src/plrmodes/youmu_a.c:709
+msgid ""
+"Human and phantom act together towards a singular purpose. Your inner "
+"duality shall lend you a hand… or a tail."
+msgstr ""
+
+#: src/plrmodes/youmu_a.c:710
+msgid "Soul Sign “Reality-Piercing Apparition”"
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:897
+msgid "Yōkai Buster"
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:898
+msgid ""
+"The tried-and-true: homing amulets and sharp needles. You don’t have the "
+"luxury of time to think about aiming."
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:899
+msgid "Spirit Sign “Fantasy Seal —Burst—”"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:759
+msgid "Illusion Laser"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:760
+msgid ""
+"Magic missiles and lasers — simple and to the point. They’ve never let you "
+"down before, so why stop now?"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:761
+msgid "Pure Love “Galactic Spark”"
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:713
+msgid "Dream Shaper"
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:714
+msgid ""
+"Turn your understanding of reality upside-down, and tie the boundaries of "
+"spacetime into knots as easily as the ribbons in your hair."
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:715
+msgid "Dream Sign “Ethereal Boundary Rupture”"
+msgstr ""
+
+#: src/plrmodes/youmu_b.c:620
+msgid "Haunting Revelation"
+msgstr ""
+
+#: src/plrmodes/youmu_b.c:621
+msgid ""
+"Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
+"happen to stand in the way of a determined sword-wielding lady…"
+msgstr ""
+
+#: src/plrmodes/youmu_b.c:622
+msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:554
+msgid "Stellar Vortex"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:555
+msgid ""
+"As many bullets as there are stars in the sky. Some of them are bound to "
+"hit. That's called “homing”, right?"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:556
+msgid "Magic Sign “Stellar Vortex”"
 msgstr ""
 
 #: src/stages/stage1/stage1.c:30

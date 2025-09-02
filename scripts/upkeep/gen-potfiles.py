@@ -53,6 +53,8 @@ def main(args):
     files += glob.glob('src/**/*.h', root_dir=args.rootdir, recursive=True)
     files += [str(extra_strings)]
 
+    files = [f for f in files if f != 'src/intl/intl.h']
+
     data = '\n'.join(files) + '\n'
     update_text_file(args.rootdir / podir / 'POTFILES', data)
 
