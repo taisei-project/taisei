@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/marisa.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
@@ -755,9 +756,9 @@ static void marisa_laser_preload(ResourceGroup *rg) {
 }
 
 PlayerMode plrmode_marisa_a = {
-	.name = "Illusion Laser",
-	.description = "Magic missiles and lasers — simple and to the point. They’ve never let you down before, so why stop now?",
-	.spellcard_name = "Pure Love “Galactic Spark”",
+	.name = N_("Illusion Laser"),
+	.description = N_("Magic missiles and lasers — simple and to the point. They’ve never let you down before, so why stop now?"),
+	.spellcard_name = N_("Pure Love “Galactic Spark”"),
 	.character = &character_marisa,
 	.dialog = &dialog_tasks_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,

@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/reimu.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 #include "util/graphics.h"
@@ -893,9 +894,9 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 }
 
 PlayerMode plrmode_reimu_a = {
-	.name = "Yōkai Buster",
-	.description = "The tried-and-true: homing amulets and sharp needles. You don’t have the luxury of time to think about aiming.",
-	.spellcard_name = "Spirit Sign “Fantasy Seal —Burst—”",
+	.name = N_("Yōkai Buster"),
+	.description = N_("The tried-and-true: homing amulets and sharp needles. You don’t have the luxury of time to think about aiming."),
+	.spellcard_name = N_("Spirit Sign “Fantasy Seal —Burst—”"),
 	.character = &character_reimu,
 	.dialog = &dialog_tasks_reimu,
 	.shot_mode = PLR_SHOT_REIMU_SPIRIT,
