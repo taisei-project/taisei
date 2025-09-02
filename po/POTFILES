@@ -605,7 +605,6 @@ src/stages/stage6/background_anim.h
 src/stages/stage6/draw.h
 src/stages/stage6/spells/spells.h
 src/stages/stage6/nonspells/nonspells.h
-src/intl/intl.h
 src/lasers/draw.h
 src/lasers/rules.h
 src/lasers/internal.h

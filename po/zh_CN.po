@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-01 07:38-0400\n"
+"POT-Creation-Date: 2025-09-02 06:21-0400\n"
 "Last-Translator: Swordsdeer\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -142,7 +142,6 @@ msgid "Guide"
 msgstr ""
 
 #: src/gamepad.c:877
-#, fuzzy
 msgid "Start"
 msgstr ""
 
@@ -175,7 +174,6 @@ msgid "Left"
 msgstr ""
 
 #: src/gamepad.c:885
-#, fuzzy
 msgid "Right"
 msgstr ""
 
@@ -400,7 +398,8 @@ msgstr ""
 "\n"
 "大体上，她对过去的时代有一种模糊的感伤。\n"
 "\n"
-"不管怎样，当妖怪之山的住民们啜泣着登门求助时，她也只能暂且搁下书卷，整装出发了。"
+"不管怎样，当妖怪之山的住民们啜泣着登门求助时，她也只能暂且搁下书卷，整装出发"
+"了。"
 
 #: src/menu/charprofile.c:72
 msgid "Kirisame Marisa"
@@ -428,7 +427,8 @@ msgid ""
 msgstr ""
 "自信而活跃的魔女。\n"
 "\n"
-"对魔法的极限与现实的本质的好奇一如既往，而当她听闻“诡异疯狂”的传闻时，她的好奇便占据了上风。\n"
+"对魔法的极限与现实的本质的好奇一如既往，而当她听闻“诡异疯狂”的传闻时，她的好"
+"奇便占据了上风。\n"
 "\n"
 "但可能这本“魔法书”还是永远没人去读才更好?\n"
 "\n"
@@ -709,6 +709,10 @@ msgstr "种族"
 msgid "Area of Study"
 msgstr "研究领域"
 
+#: src/menu/charprofile.c:224 src/menu/media.c:56
+msgid "Character Profiles"
+msgstr ""
+
 #: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
 msgstr "按[Fire]键查看差分"
@@ -867,10 +871,6 @@ msgstr ""
 
 #: src/menu/gameovermenu.c:84
 msgid "Return to Title"
-msgstr ""
-
-#: src/menu/media.c:56
-msgid "Character Profiles"
 msgstr ""
 
 #: src/menu/media.c:58
@@ -1182,6 +1182,92 @@ msgstr ""
 #: src/menu/options.c:1443
 msgid "Unbound"
 msgstr ""
+
+#: src/plrmodes/youmu_a.c:708
+msgid "Soul Reflection"
+msgstr ""
+
+#: src/plrmodes/youmu_a.c:709
+msgid ""
+"Human and phantom act together towards a singular purpose. Your inner "
+"duality shall lend you a hand… or a tail."
+msgstr ""
+
+#: src/plrmodes/youmu_a.c:710
+msgid "Soul Sign “Reality-Piercing Apparition”"
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:897
+msgid "Yōkai Buster"
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:898
+msgid ""
+"The tried-and-true: homing amulets and sharp needles. You don’t have the "
+"luxury of time to think about aiming."
+msgstr ""
+
+#: src/plrmodes/reimu_a.c:899
+msgid "Spirit Sign “Fantasy Seal —Burst—”"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:759
+msgid "Illusion Laser"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:760
+msgid ""
+"Magic missiles and lasers — simple and to the point. They’ve never let you "
+"down before, so why stop now?"
+msgstr ""
+
+#: src/plrmodes/marisa_a.c:761
+msgid "Pure Love “Galactic Spark”"
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:713
+msgid "Dream Shaper"
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:714
+msgid ""
+"Turn your understanding of reality upside-down, and tie the boundaries of "
+"spacetime into knots as easily as the ribbons in your hair."
+msgstr ""
+
+#: src/plrmodes/reimu_b.c:715
+msgid "Dream Sign “Ethereal Boundary Rupture”"
+msgstr ""
+
+#: src/plrmodes/youmu_b.c:620
+#, fuzzy
+msgid "Haunting Revelation"
+msgstr "启示之巅"
+
+#: src/plrmodes/youmu_b.c:621
+msgid ""
+"Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
+"happen to stand in the way of a determined sword-wielding lady…"
+msgstr ""
+
+#: src/plrmodes/youmu_b.c:622
+msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:554
+msgid "Stellar Vortex"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:555
+msgid ""
+"As many bullets as there are stars in the sky. Some of them are bound to "
+"hit. That's called “homing”, right?"
+msgstr ""
+
+#: src/plrmodes/marisa_b.c:556
+#, fuzzy
+msgid "Magic Sign “Stellar Vortex”"
+msgstr "里奇之御札「时空曲率」"
 
 #: src/stages/stage1/stage1.c:30
 msgid "Freeze Sign “Perfect Freeze”"
@@ -4138,9 +4224,7 @@ msgstr "你俩怎么都这么郁闷？是因为咱把茶搞砸了吗？"
 msgid ""
 "\n"
 "Reimu and Yōmu shared a knowing glance.\n"
-msgstr ""
-"/n"
-"灵梦和妖梦互换了一下眼神。\n"
+msgstr "/n灵梦和妖梦互换了一下眼神。\n"
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
