@@ -458,15 +458,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:83
 msgid "Swordswoman Between Worlds"
-msgstr "Schwertmeisterin zwischen Welten"
+msgstr "La guerrière entre deux mondes"
 
 #: src/menu/charprofile.c:84
 msgid "Half-Human, Half-Phantom"
-msgstr "Halb-Mensch, Halb-Phantom"
+msgstr "Mi-humain, mi-fantôme"
 
 #: src/menu/charprofile.c:85
 msgid "Fencing"
-msgstr "Fechten"
+msgstr "Escrime"
 
 #: src/menu/charprofile.c:86
 msgid ""
@@ -481,18 +481,18 @@ msgid ""
 "Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
 "doesn’t let it get to her head."
 msgstr ""
-"Die Schwertmeisterin der Irgendwie-Toten.\n"
+"La guerrière des morts-vivants.\n"
 "\n"
-"“Während du Spiele gespielt hast, habe ich das Schwert studiert” … würde sie "
-"wohl sagen.\n"
-"\n"
-"\n"
-"Komplett zu ernst in allem, in Angst versetzt von (einer Hälfte) ihrer "
-"eigenen Existenz.\n"
+"“Pendant que tu jouais, j'étudiais le maniement de l'épée” … C'est probablement "
+"ce qu'elle dirait.\n"
 "\n"
 "\n"
-"Trotzdem, Lady Yuyuko gab ihr einen wichtigen Auftrag. Hoffentlich steigert "
-"sie sich nicht rein."
+"Elle prend tout beaucoup trop au sérieux et est terrifiée par (la moitié de) "
+"sa propre existence.\n"
+"\n"
+"\n"
+"Elle s'est tout de même vu confier une mission importante par Dame Yuyuko. "
+"Espérons qu'elle ne se laissera pas griser par le succès."
 
 #: src/menu/charprofile.c:92 src/stages/stage1/cirno.c:27
 #: src/dialog/dialog_macros.h:71
@@ -501,15 +501,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:93 src/dialog/dialog_macros.h:71
 msgid "Thermodynamic Ice Fairy"
-msgstr "Thermodynamische Eisfee"
+msgstr "Fée Glacial Thermodynamique"
 
 #: src/menu/charprofile.c:94
 msgid "Fairy"
-msgstr "Fee"
+msgstr "Fée"
 
 #: src/menu/charprofile.c:95
 msgid "Thermodynamics"
-msgstr "Thermodynamik"
+msgstr "Thermodynamiques"
 
 #: src/menu/charprofile.c:96
 msgid ""
@@ -520,12 +520,12 @@ msgid ""
 "\n"
 "Consider going easy on her."
 msgstr ""
-"Die drollig-törichte Eisfee.\n"
+"L'adorable et naïve fée des glaces.\n"
 "\n"
-"Vielleicht ist sie etwas unzufrieden nach ihrem letzten Duell mit geheimen "
-"Göttern und höllischen Feen?\n"
+"Peut-être est-elle un peu mécontente après ses récents duels avec des dieux "
+"secrets et des fées infernales ?\n"
 "\n"
-"Mach es nicht so schwer für sie."
+"Envisagez de la ménager."
 
 #: src/menu/charprofile.c:103 src/stages/stage2/hina.c:41
 #: src/dialog/dialog_macros.h:72
@@ -534,15 +534,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:104 src/dialog/dialog_macros.h:72
 msgid "Gyroscopic Pestilence God"
-msgstr "Gyroskopische Pestgottheit"
+msgstr "Dieu Gyroscopique de la Peste"
 
 #: src/menu/charprofile.c:105
 msgid "Pestilence God"
-msgstr "Pestgottheit"
+msgstr "Dieu de la Peste"
 
 #: src/menu/charprofile.c:106
 msgid "Gyroscopic Stabilization"
-msgstr "Gyroskopische Stabilisation"
+msgstr "Stabilisation Gyroscopique"
 
 #: src/menu/charprofile.c:107
 msgid ""
