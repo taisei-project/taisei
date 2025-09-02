@@ -100,8 +100,8 @@ void i18n_set_textdomain_from_string(const char *name) {
 		}
 	}
 
-	res_group_preload(&i18n_resources, RES_I18N, RESF_OPTIONAL, languages[chosen], NULL);
 	if(chosen >= 0) {
+		res_group_preload(&i18n_resources, RES_I18N, RESF_OPTIONAL, languages[chosen], NULL);
 		intl_set_textdomain(res_i18n(languages[chosen]));
 	} else {
 		intl_set_textdomain(NULL);
