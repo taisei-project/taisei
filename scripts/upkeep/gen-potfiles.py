@@ -51,6 +51,7 @@ def main(args):
 
     files = glob.glob('src/**/*.c', root_dir=args.rootdir, recursive=True)
     files += glob.glob('src/**/*.h', root_dir=args.rootdir, recursive=True)
+    files.sort()
     files += [str(extra_strings)]
 
     files = [f for f in files if f != 'src/intl/intl.h']
