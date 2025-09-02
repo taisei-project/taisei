@@ -106,7 +106,7 @@ static void update_char_menu(MenuData *menu) {
 
 	Font *font = res_font("standard");
 	char buf[256] = {};
-	text_wrap(font, m->description, DESCRIPTION_WIDTH, buf, sizeof(buf));
+	text_wrap(font, _(m->description), DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
 	fapproach_asymptotic_p(&menu->drawdata[0], SELECTED_SUBSHOT(menu) - PLR_SHOT_A, 0.1, 1e-5);
@@ -293,7 +293,7 @@ void draw_char_menu(MenuData *menu) {
 		}
 
 		char buf[64];
-		snprintf(buf, sizeof(buf), "%s: %s", prefixes[shot - PLR_SHOT_A], mode->name);
+		snprintf(buf, sizeof(buf), "%s: %s", prefixes[shot - PLR_SHOT_A], _(mode->name));
 
 		double y = 200 + (100-70*f)*shotidx-20*f;
 		text_draw(buf, &(TextParams) {
@@ -304,7 +304,7 @@ void draw_char_menu(MenuData *menu) {
 
 		if(shot == current_subshot) {
 			r_color4(o, o, o, o);
-			text_draw_wrapped(mode->description, DESCRIPTION_WIDTH, &(TextParams) {
+			text_draw_wrapped(_(mode->description), DESCRIPTION_WIDTH, &(TextParams) {
 				.align = ALIGN_CENTER,
 				.pos = { 0, y + 30 },
 				.shader_ptr = res_shader("text_default"),

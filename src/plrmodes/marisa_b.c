@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/marisa.h"
 #include "global.h"
+#include "intl/intl.h"
 #include "plrmodes.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
@@ -550,9 +551,9 @@ static void marisa_star_preload(ResourceGroup *rg) {
 }
 
 PlayerMode plrmode_marisa_b = {
-	.name = "Stellar Vortex",
-	.description = "As many bullets as there are stars in the sky. Some of them are bound to hit. That's called “homing”, right?",
-	.spellcard_name = "Magic Sign “Stellar Vortex”",
+	.name = N_("Stellar Vortex"),
+	.description = N_("As many bullets as there are stars in the sky. Some of them are bound to hit. That's called “homing”, right?"),
+	.spellcard_name = N_("Magic Sign “Stellar Vortex”"),
 	.character = &character_marisa,
 	.dialog = &dialog_tasks_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
