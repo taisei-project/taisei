@@ -9,13 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "util/compat.h"
-typedef struct ht_str2trans_t ht_str2trans_t;
+#include "hashtable.h"
 
-typedef struct IntlTextDomain {
-	char *strings;
-	ht_str2trans_t *table;
-} IntlTextDomain;
+typedef struct IntlTextDomain IntlTextDomain;
 
 extern IntlTextDomain *_intl_current_textdomain;
 
