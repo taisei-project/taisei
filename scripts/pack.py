@@ -23,7 +23,7 @@ from zipfile import (
     compressor_names,
 )
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from taiseilib.common import (
     DirPathType,
@@ -124,18 +124,27 @@ def pack(args):
     dependencies = []
 
     with ZipFile(str(args.output), 'w', comp_type, **zkwargs) as zf:
+        def add_directory_entry(name, realpath):
+            zi = ZipInfo(name, datetime.fromtimestamp(realpath.stat().st_mtime).timetuple())
+            zi.compress_type = ZIP_STORED
+            zi.external_attr = 0o40755 << 16  # drwxr-xr-x
+            log_file(realpath, zi.filename)
+            zf.writestr(zi, '')
+
+        prefix = ''
+        for part in args.prefix.parts:
+            prefix += part + '/'
+            add_directory_entry(prefix, args.directory)
+        prefix = PurePosixPath(prefix)
+
         for path in sorted(args.directory.glob('**/*')):
             if path.name[0] == '.' or any(path.match(x) for x in args.exclude):
                 continue
 
-            relpath = path.relative_to(args.directory)
+            relpath = prefix / path.relative_to(args.directory)
 
             if path.is_dir():
-                zi = ZipInfo(str(relpath) + "/", datetime.fromtimestamp(path.stat().st_mtime).timetuple())
-                zi.compress_type = ZIP_STORED
-                zi.external_attr = 0o40755 << 16  # drwxr-xr-x
-                log_file(path, zi.filename)
-                zf.writestr(zi, '')
+                add_directory_entry(str(relpath) + '/', path)
             else:
                 dependencies.append(path)
 
@@ -177,6 +186,12 @@ def main(args):
         action='append',
         default=[],
         help='file exclusion pattern'
+    )
+
+    parser.add_argument('--prefix',
+        type=PurePosixPath,
+        default='',
+        help='subdirectory within the archive to place everything into'
     )
 
     add_common_args(parser, depfile=True)
