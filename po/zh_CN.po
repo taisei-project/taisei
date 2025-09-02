@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 22:49+0200\n"
+"POT-Creation-Date: 2025-09-02 23:58+0200\n"
 "Last-Translator: Swordsdeer\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2549,6 +2549,10 @@ msgstr ""
 msgid "Allow me to put that into practice for you!"
 msgstr ""
 
+#: src/dialog/marisa.c:479
+msgid "So this place runs on electricity, eh? Hmm…"
+msgstr ""
+
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
 msgstr ""
@@ -3430,6 +3434,10 @@ msgstr "看来你的决心坚定不移。那么，来吧。"
 msgid "Allow me to test your resistance to their infuriating machine!"
 msgstr "以这松果弹抖闪电鞭，检验你那不变的决心！"
 
+#: src/dialog/reimu.c:489
+msgid "Thunder clouds? Are we really that high up?"
+msgstr ""
+
 #: src/dialog/reimu.c:502
 msgid "Ah…"
 msgstr "啊……"
@@ -4234,6 +4242,10 @@ msgstr ""
 
 #: src/dialog/youmu.c:427
 msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
+msgstr ""
+
+#: src/dialog/youmu.c:439
+msgid "Lightning? Hmph. I can outrun it with ease."
 msgstr ""
 
 #: src/dialog/youmu.c:453
