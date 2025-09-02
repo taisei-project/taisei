@@ -23,7 +23,7 @@ def bgm_tags(filename):
 def collect_bgm_tags(filenames):
     tags = []
 
-    for filename in filenames:
+    for filename in sorted(filenames):
         r = bgm_tags(filename)
         tags.append(r['TITLE'])
         tags.append(r['ARTIST'])
