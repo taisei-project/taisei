@@ -109,7 +109,7 @@ msgstr ""
 
 #: src/stageinfo.c:135
 msgid "Descent into Madness"
-msgstr ""
+msgstr "堕入疯狂"
 
 #: src/gamepad.c:109
 msgid "Unknown device"
@@ -144,7 +144,7 @@ msgstr ""
 #: src/gamepad.c:877
 #, fuzzy
 msgid "Start"
-msgstr "开始故事"
+msgstr ""
 
 #: src/gamepad.c:878
 msgid "Left Stick"
@@ -177,7 +177,7 @@ msgstr ""
 #: src/gamepad.c:885
 #, fuzzy
 msgid "Right"
-msgstr "右摇杆"
+msgstr ""
 
 #: src/gamepad.c:886
 msgid "Misc"
@@ -695,11 +695,11 @@ msgstr ""
 
 #: src/menu/charprofile.c:169
 msgid "Locked"
-msgstr ""
+msgstr "锁定"
 
 #: src/menu/charprofile.c:173
 msgid "You have not unlocked this character yet!"
-msgstr ""
+msgstr "你还没解锁这个角色呢！"
 
 #: src/menu/charprofile.c:193
 msgid "Species"
@@ -711,11 +711,11 @@ msgstr "研究领域"
 
 #: src/menu/charprofile.c:270
 msgid "Press [Fire] for alternate expressions"
-msgstr ""
+msgstr "按[Fire]键查看差分"
 
 #: src/menu/replayview.c:87
 msgid "Failed to load replay events"
-msgstr ""
+msgstr "无法加载Replay事件"
 
 #: src/menu/replayview.c:96
 #, c-format
@@ -746,7 +746,7 @@ msgstr ""
 
 #: src/menu/mainmenu.c:119
 msgid "Start Story"
-msgstr "开始故事"
+msgstr ""
 
 #: src/menu/mainmenu.c:120
 msgid "Start Extra"
@@ -770,11 +770,11 @@ msgstr ""
 
 #: src/menu/charselect.c:166
 msgid "Intuition"
-msgstr ""
+msgstr "直觉"
 
 #: src/menu/charselect.c:167
 msgid "Science"
-msgstr ""
+msgstr "科学"
 
 #: src/menu/charselect.c:174
 msgid "Select Character"
@@ -907,23 +907,23 @@ msgstr ""
 
 #: src/menu/options.c:742
 msgid "Window size"
-msgstr ""
+msgstr "窗口尺寸"
 
 #: src/menu/options.c:747
 msgid "Renderer resolution"
-msgstr ""
+msgstr "渲染分辨率"
 
 #: src/menu/options.c:752
 msgid "Resizable window"
-msgstr ""
+msgstr "可调整大小窗口"
 
 #: src/menu/options.c:759
 msgid "Pause the game when not focused"
-msgstr ""
+msgstr "不聚焦窗口时暂停游戏"
 
 #: src/menu/options.c:763
 msgid "Vertical synchronization"
-msgstr ""
+msgstr "垂直同步"
 
 #: src/menu/options.c:772
 msgid "Skip frames"
@@ -931,27 +931,27 @@ msgstr "跳帧"
 
 #: src/menu/options.c:780
 msgid "Overall rendering quality"
-msgstr ""
+msgstr "整体渲染质量"
 
 #: src/menu/options.c:784
 msgid "Draw background"
-msgstr ""
+msgstr "背景绘制"
 
 #: src/menu/options.c:788
 msgid "Background rendering quality"
-msgstr ""
+msgstr "背景渲染质量"
 
 #: src/menu/options.c:795
 msgid "Anti-aliasing"
-msgstr ""
+msgstr "抗锯齿"
 
 #: src/menu/options.c:800
 msgid "Particle effects"
-msgstr ""
+msgstr "粒子质量"
 
 #: src/menu/options.c:805
 msgid "Postprocessing effects"
-msgstr ""
+msgstr "后处理效果"
 
 #: src/menu/options.c:833
 msgid "Gamepad Controls"
@@ -1659,7 +1659,7 @@ msgstr "你……立刻停下你正在做的这一切。"
 
 #: src/dialog/reimu.c:301
 msgid "Once you get some fashion sense, maybe I will!"
-msgstr "但凡你这家伙有点时尚潮流，也许我就照搬了！"
+msgstr "但凡你这家伙有点时尚潮流，也许我就照办了！"
 
 #: src/dialog/reimu.c:304
 msgid "… so you *are* behind this, huh?"
@@ -1675,7 +1675,7 @@ msgstr "你**是巫女？"
 
 #: src/dialog/reimu.c:311
 msgid "More like… BRINE maiden!"
-msgstr "我看你像唱，跳，RAP的个人练习生！"
+msgstr "我看你像歌姬吧！"
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
@@ -1776,7 +1776,7 @@ msgstr "但不知为何，这么熟悉……"
 msgid ""
 "This feeling is annoying, whatever it is. Make it stop, or tell me how to "
 "make it stop."
-msgstr "算了不管它是什么，现在让它停下来，或者告诉我怎么让它停止。"
+msgstr "算了不管它是什么，现在让它停下来，或者告诉 我怎么让它停止。"
 
 #: src/dialog/reimu.c:372
 msgid "Huh? I-I don’t know! I barely remember anything!"
@@ -1800,7 +1800,7 @@ msgstr "我有一种不祥的预感……"
 
 #: src/dialog/reimu.c:396
 msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
-msgstr "但也许我只是对这座塔的跟转转一样转个不停感到恶心。"
+msgstr "但也许我只是对这座塔跟转转一样转个不停 感到恶心。"
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
@@ -1834,7 +1834,7 @@ msgstr "这塔确实与众不同呢。"
 msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
-msgstr "自从消息传遍云端后，我得知罪魁祸首与“平行宇宙”有关。"
+msgstr "自从消息传遍云端后，我得知罪魁祸首与“平行 宇宙”有关。"
 
 #: src/dialog/reimu.c:421
 msgid ""
@@ -1845,7 +1845,7 @@ msgstr "你是说其他世界？这在今天也不算什么稀奇事。"
 msgid ""
 "This feels different though. It’s like the walls are sucking up faith into a "
 "void."
-msgstr "但这次似乎不一样，就好像高墙把信仰吸到了「虚空」一样。"
+msgstr "但这次似乎不一样，就好像高墙把信仰吸到了 「虚空」一样。"
 
 #: src/dialog/reimu.c:424
 msgid "I’m surprised the fairies are surviving at all…"
@@ -1885,7 +1885,7 @@ msgstr "（别人对我就这么没信心吗……？）"
 
 #: src/dialog/reimu.c:446
 msgid "As more minds began to fall prey, I considered a theory…"
-msgstr "随着越来越多的人开始陷入这种状态，我想出了一个理论……"
+msgstr "随着越来越多的人开始陷入这种状态，我想出了 一个理论……"
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
@@ -1966,7 +1966,7 @@ msgstr "我现在知道我不可能打败她。"
 msgid ""
 "Since you’re still able to think clearly, perhaps Gensōkyō will be saved "
 "after all."
-msgstr "既然你还能清醒地思考，或许幻想乡终究还是能得救的。"
+msgstr "既然你还能清醒地思考，或许幻想乡终究还是 能得救的。"
 
 #: src/dialog/reimu.c:515
 msgid "Finally."
@@ -2044,7 +2044,7 @@ msgstr "所以就直说吧。"
 msgid ""
 "This tower is a recent invention. Its mere existence is revolutionary in "
 "several scientific fields."
-msgstr "这座塔是近期发明的。它的存在本身就对多个科学领域产生了革命性的影响。"
+msgstr "这座塔是近期发明的。它的存在本身就对多个 科学领域产生了革命性的影响。"
 
 #: src/dialog/reimu.c:569
 msgid ""
@@ -4114,85 +4114,87 @@ msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
-msgstr ""
+msgstr "— 博丽神社\n"
 
 #: src/cutscenes/intro.inc.h:8 src/cutscenes/reimu_bad_end.inc.h:8
 msgid "The shrine at the border of fantasy and reality.\n"
-msgstr ""
+msgstr "一座位于幻想与现实境界的神社。\n"
 
 #: src/cutscenes/intro.inc.h:9
 msgid ""
 "Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
 "summer.\n"
-msgstr ""
+msgstr "夏末一个平静的日子里，有三个幻想乡的少女坐着喝茶。\n"
 
 #: src/cutscenes/intro.inc.h:10
 msgid "There was something unsettling in the air—"
-msgstr ""
+msgstr "空气中弥漫着某种令人不安的气氛——"
 
 #: src/cutscenes/intro.inc.h:14
 msgid "What’s got ya both so down? Did I mess up the tea?"
-msgstr ""
+msgstr "你俩怎么都这么郁闷？是因为咱把茶搞砸了吗？"
 
 #: src/cutscenes/intro.inc.h:15
 msgid ""
 "\n"
 "Reimu and Yōmu shared a knowing glance.\n"
 msgstr ""
+"/n"
+"灵梦和妖梦互换了一下眼神。\n"
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
-msgstr ""
+msgstr "茶没问题，我只是觉得很奇怪，不好形容那种感觉。"
 
 #: src/cutscenes/intro.inc.h:17
 msgid "I’m feeling something similar, I’m afraid."
-msgstr ""
+msgstr "我也差不多……有点害怕。"
 
 #: src/cutscenes/intro.inc.h:21
 msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
-msgstr ""
+msgstr "神社外的铃声响起，有人往赛钱箱塞了钱。\n"
 
 #: src/cutscenes/intro.inc.h:22
 msgid "A minute later, there was another.\n"
-msgstr ""
+msgstr "一分钟后，又响了一声，\n"
 
 #: src/cutscenes/intro.inc.h:23
 msgid "And another."
-msgstr ""
+msgstr "接着又是一声。"
 
 #: src/cutscenes/intro.inc.h:27
 msgid "Something’s definitely not right…"
-msgstr ""
+msgstr "肯定有些不对劲的地方……"
 
 #: src/cutscenes/intro.inc.h:28
 msgid "Isn’t it normally comforting for the shrine to receive donations?"
-msgstr ""
+msgstr "你的神社有人奉纳不是个好事情吗？"
 
 #: src/cutscenes/intro.inc.h:29
 msgid "Normally it *would* be comforting, but…"
-msgstr ""
+msgstr "一般情况确实如此，但……"
 
 #: src/cutscenes/intro.inc.h:33
 msgid ""
 "Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
 "after another.\n"
-msgstr ""
+msgstr "神社之外，几乎所有妖怪之山的居民，纷纷排起长队。\n"
 
 #: src/cutscenes/intro.inc.h:34
 msgid "Everyone seemed vaguely fearful."
-msgstr ""
+msgstr "每个人似乎都隐隐约约地感到恐惧。"
 
 #: src/cutscenes/intro.inc.h:38
 msgid "Eh? What’s all this, then?"
-msgstr ""
+msgstr "额……到底发生了什么？"
 
 #: src/cutscenes/intro.inc.h:39
 msgid "We’ve come to ask a favour."
-msgstr ""
+msgstr "我们是来请人帮忙的。"
 
 #: src/cutscenes/intro.inc.h:40
 msgid "What kinda favour?"
-msgstr ""
+msgstr "什么忙？"
 
 #: src/cutscenes/intro.inc.h:44
 msgid ""
