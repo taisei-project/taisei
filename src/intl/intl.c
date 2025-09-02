@@ -30,7 +30,6 @@ typedef struct Translation {
 #define HT_KEY_PRINTABLE(key)          (key)
 #define HT_VALUE_FMT                   "s"
 #define HT_VALUE_PRINTABLE(val)        (none)
-#define HT_KEY_CONST
 #define HT_DECL
 #define HT_IMPL
 #include "hashtable_incproxy.inc.h"
