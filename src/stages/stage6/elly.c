@@ -14,7 +14,7 @@
 #include "stagedraw.h"
 #include "util/glm.h"
 #include "util/graphics.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 TASK(elly_animate_colors, { BoxedBoss boss; }) {
 	auto boss = TASK_BIND(ARGS.boss);

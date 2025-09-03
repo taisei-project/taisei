@@ -11,7 +11,7 @@
 #include "background_anim.h"
 #include "cirno.h"
 #include "draw.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "timeline.h"        // IWYU pragma: keep
 #include "spells/spells.h"   // IWYU pragma: keep
 

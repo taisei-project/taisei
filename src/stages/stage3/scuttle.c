@@ -9,7 +9,7 @@
 #include "scuttle.h"
 
 #include "common_tasks.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 void stage3_draw_scuttle_spellbg(Boss *h, int time) {
 	float a = 1.0;

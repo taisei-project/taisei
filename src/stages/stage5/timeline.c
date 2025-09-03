@@ -9,7 +9,7 @@
 #include "timeline.h"
 
 #include "background_anim.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "nonspells/nonspells.h"
 #include "stage5.h"
 

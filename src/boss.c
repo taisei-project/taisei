@@ -12,7 +12,7 @@
 #include "dynstage.h"
 #include "entity.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "portrait.h"
 #include "stage.h"
 #include "stagedraw.h"

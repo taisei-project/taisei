@@ -710,7 +710,7 @@ endif
 
 meson.add_devenv({
     'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
-    'TAISEI_I18N_PATH': i18n_build_dir,
+    'TAISEI_LOCALE_PATH': l10n_build_dir,
     'TAISEI_GL_DEBUG': '1',
     # TODO: Add support for this in libkoishi
     'ASAN_OPTIONS': 'detect_stack_use_after_return=false:abort_on_error=1',

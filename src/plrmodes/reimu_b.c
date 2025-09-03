@@ -12,7 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/reimu.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 #include "util/graphics.h"
