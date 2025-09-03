@@ -82,91 +82,99 @@ msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
-msgstr ""
+msgstr "— Le sanctuaire Hakurei\n"
 
 #: src/cutscenes/intro.inc.h:8 src/cutscenes/reimu_bad_end.inc.h:8
 msgid "The shrine at the border of fantasy and reality.\n"
-msgstr ""
+msgstr "Le sanctuaire à la frontière entre fantaisie et réalité.\n"
 
 #: src/cutscenes/intro.inc.h:9
 msgid ""
 "Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
 "summer.\n"
 msgstr ""
+"Trois héroïnes de Gensōkyō étaient assises en train de "
+"boire du thé par une journée calme à la fin de l'été.\n"
 
 #: src/cutscenes/intro.inc.h:10
 msgid "There was something unsettling in the air—"
-msgstr ""
+msgstr "Il y avait quelque chose de troublant dans l'air…"
 
 #: src/cutscenes/intro.inc.h:14
 msgid "What’s got ya both so down? Did I mess up the tea?"
-msgstr ""
+msgstr "Qu'est-ce qui vous déprime autant? J'ai raté le thé?"
 
 #: src/cutscenes/intro.inc.h:15
 msgid ""
 "\n"
 "Reimu and Yōmu shared a knowing glance.\n"
 msgstr ""
+"\n"
+"Reimu et Yōmu échangèrent un regard complice.\n"
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
-msgstr ""
+msgstr "Le thé est bon. Je me sens juste bizarre. Je n'arrive pas à mettre le doigt dessus."
 
 #: src/cutscenes/intro.inc.h:17
 msgid "I’m feeling something similar, I’m afraid."
-msgstr ""
+msgstr "Je ressens quelque chose de similaire, j'en ai bien peur."
 
 #: src/cutscenes/intro.inc.h:21
 msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
-msgstr ""
+msgstr "Les cloches du sanctuaire sonnaient à l'extérieur. Quelqu'un avait fait un don.\n"
 
 #: src/cutscenes/intro.inc.h:22
 msgid "A minute later, there was another.\n"
-msgstr ""
+msgstr "Une minute plus tard, il y en eut un autre.\n"
 
 #: src/cutscenes/intro.inc.h:23
 msgid "And another."
-msgstr ""
+msgstr "Et encore un autre."
 
 #: src/cutscenes/intro.inc.h:27
 msgid "Something’s definitely not right…"
-msgstr ""
+msgstr "Il y a clairement quelque chose qui cloche…"
 
 #: src/cutscenes/intro.inc.h:28
 msgid "Isn’t it normally comforting for the shrine to receive donations?"
-msgstr ""
+msgstr "N'est-il pas normal que le sanctuaire reçoive des dons?"
 
 #: src/cutscenes/intro.inc.h:29
 msgid "Normally it *would* be comforting, but…"
-msgstr ""
+msgstr "Normalement, cela *devrait* être réconfortant, mais…"
 
 #: src/cutscenes/intro.inc.h:33
 msgid ""
 "Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
 "after another.\n"
 msgstr ""
+"À l'extérieur du sanctuaire, presque tous les habitants de la montagne "
+"Yōkai étaient alignés les uns derrière les autres.\n"
 
 #: src/cutscenes/intro.inc.h:34
 msgid "Everyone seemed vaguely fearful."
-msgstr ""
+msgstr "Tout le monde semblait vaguement inquiet."
 
 #: src/cutscenes/intro.inc.h:38
 msgid "Eh? What’s all this, then?"
-msgstr ""
+msgstr "Hein? Qu'est-ce que tout ça veut dire?"
 
 #: src/cutscenes/intro.inc.h:39
 msgid "We’ve come to ask a favour."
-msgstr ""
+msgstr "Nous sommes venus vous demander une faveur."
 
 #: src/cutscenes/intro.inc.h:40
 msgid "What kinda favour?"
-msgstr ""
+msgstr "Quel genre de faveur ?"
 
 #: src/cutscenes/intro.inc.h:44
 msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
 msgstr ""
+"Une force mystérieuse poussait lentement les yōkai et les humains "
+"à succomber à un intense sentiment de ”tout savoir”.\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -174,218 +182,265 @@ msgid ""
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
 msgstr ""
+"Il commencerait par résoudre les problèmes triviaux auxquels "
+"ils étaient confrontés : un problème technique avec une machine ou trouver "
+"le titre parfait pour un article de journal.\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
 msgstr ""
+"Mais au fur et à mesure que cela progressait, "
+"ils en étaient devenus complètement fascinés, "
+"incapables d'agir rationnellement.\n"
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
 "Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
 "she had been carried away into madness."
 msgstr ""
+"La montagne Yōkai était généralement protégée par la prêtresse du sanctuaire Moriya, "
+"mais même elle avait été emportée par la folie."
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
-msgstr ""
+msgstr "Sanae ne cesse de parler de ’consoles de jeux vidéo’."
 
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
 msgstr ""
+"Hein ? Comme ces jouets que l'on branche à la télévision, "
+"ceux que l'on trouve chez Kōrindō ?"
 
 #: src/cutscenes/intro.inc.h:53
 msgid ""
 "Right, but she just won’t stop. I’ve seen her excited, but not like this."
 msgstr ""
+"Oui, mais elle n'arrête pas. Je l'ai déjà vue enthousiaste, mais pas à ce point."
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
-msgstr ""
+msgstr "Hmm. Très intéressant."
 
 #: src/cutscenes/intro.inc.h:58
 msgid "Where the heck did *you* come from?!"
-msgstr ""
+msgstr "Mais d'où tu sors, *toi* ?!"
 
 #: src/cutscenes/intro.inc.h:59
 msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
 msgstr ""
+"Je n'ai pas pu m'empêcher d'entendre votre conversation. "
+"D'après mon intuition et ce que vous avez décrit, la réponse est évidente."
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
-msgstr ""
+msgstr "Vraiment? Vous voulez bien nous en faire part?"
 
 #: src/cutscenes/intro.inc.h:64
 msgid ""
 "Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
 "in all directions from a singular point, given how indiscriminate it is."
 msgstr ""
+"Une entité présente sur le mont Yōkai émet une puissante folie surnaturelle, "
+"probablement dans toutes les directions à partir d'un point unique, "
+" étant donné son caractère aveugle."
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
 msgstr ""
+"Trop de connaissances d'un seul coup..."
+"mm, mm, cela peut potentiellement être fatal, "
+"au moins pour ceux qui ont l'esprit faible."
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
-msgstr ""
+msgstr "Hé, tu veux t'en occuper alors, Sumi?"
 
 #: src/cutscenes/intro.inc.h:67
 msgid ""
 "A-ah, n-no, you all know the lay of the land better, a-after all, and with "
 "it being such a dire situation—"
 msgstr ""
+"A-ah, n-non, vous connaissez tous mieux la situation, après tout, "
+"et vu que c'est une situation si grave…"
 
 #: src/cutscenes/intro.inc.h:71
 msgid ""
 "Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
 "the Moriya Gods.\n"
 msgstr ""
+"Yōmu fut distrait à la vue de Dame Yuyuko qui jetait un œil derrière les dieux Moriya.\n"
 
 #: src/cutscenes/intro.inc.h:72
 msgid "Lady Yuyuko, why are you—?"
-msgstr ""
+msgstr "Dame Yuyuko, pourquoi faites-vous cela?"
 
 #: src/cutscenes/intro.inc.h:73
 msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
 msgstr ""
+"Les esprits semblent également attirés par la montagne Yōkai, "
+"comme s'ils aspiraient à quelque chose. "
+"Il devient de plus en plus difficile de les apaiser tous…"
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr ""
+msgstr "Je vois. Dois-je enquêter également?"
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
-msgstr ""
+msgstr "Je vous en prie."
 
 #: src/cutscenes/intro.inc.h:79
 msgid ""
 "Elsewhere at the shrine, the kappa were all huddled into a group, talking "
 "intensely in hushed tones…\n"
 msgstr ""
+"Ailleurs dans le sanctuaire, les kappa étaient tous regroupés, "
+"discutant intensément à voix basse…"
 
 #: src/cutscenes/intro.inc.h:80
 msgid ""
 "And the tengu were furiously scribbling on their notepads, as if they’d just "
 "gotten the scoop of their careers.\n"
 msgstr ""
+"Et les tengu griffonnaient furieusement sur leurs blocs-notes, "
+"comme s'ils venaient de décrocher le scoop de leur carrière.\n"
 
 #: src/cutscenes/intro.inc.h:81
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
+"Même ici, loin de la montagne Yōkai, les effets de ce qu'on appelle "
+"la ’folie surnaturelle’ semblaient toucher tout le monde…"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
-msgstr ""
+msgstr "Marisa (Mauvaise Fin)"
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr ""
+msgstr "— Le manoir du diabolique de Scarlet\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr ""
+msgstr "Un manoir occidental singulier dans un pays des merveilles oriental.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
 "A nervous witch sat flipping through endless stacks of books, drinking tea "
 "instead of her usual sake…\n"
 msgstr ""
+"Une sorcière nerveuse était assise, feuilletant des piles interminables de "
+"livres, en buvant du thé au lieu de son saké habituel…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:13
 msgid "Hey Patchy, do ya got any more books on Magitech?"
-msgstr ""
+msgstr "Hé Patchy, t'as d'autres livres sur Magitech?"
 
 #: src/cutscenes/marisa_bad_end.inc.h:14
 msgid ""
 "Yes, but I doubt they’ll be of much use. That machine is beyond that subject "
 "entirely."
 msgstr ""
+"Oui, mais je doute qu'ils soient d'une grande utilité."
+"Cette machine est complètement hors sujet."
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr ""
+msgstr "Ugh, t'as probablement raison, comme d'habitude."
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
-msgstr ""
+msgstr "Marisa ferma le livre et le laissa tomber bruyamment sur le sol."
 
 #: src/cutscenes/marisa_bad_end.inc.h:20
 msgid "Mind your manners! That’s a very old tome!"
-msgstr ""
+msgstr "Surveillez vos manières! C'est un très vieux livre!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:21
 msgid ""
 "It’s so irritatin’! I thought I solved everything but now that Tower’s just "
 "sittin’ there, ‘n the whole Mountain’s been quarantined…!"
 msgstr ""
+"C'est tellement énervant ! Je pensais avoir tout réglé, mais maintenant Tower"
+"est juste assis là, alors que toute la montagne a été mise en quarantaine…!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:22
 msgid "It just ain’t satisfyin’, y’know?"
-msgstr ""
+msgstr "C'est pas satisfaisant, tu vois?"
 
 #: src/cutscenes/marisa_bad_end.inc.h:26
 msgid "I could destroy it! Make it go BOOM!"
-msgstr ""
+msgstr "Je pourrais le détruire! Le faire exploser!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
-msgstr ""
+msgstr "Aah! … Qu'est-ce que j'ai dit à propos de surprendre les gens, Flan?"
 
 #: src/cutscenes/marisa_bad_end.inc.h:28
 msgid "Sorry!"
-msgstr ""
+msgstr "Pardon!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:29
 msgid "Thank you for the offer, Flandre, but no."
-msgstr ""
+msgstr "Merci pour ton offre, Flandre, mais non."
 
 #: src/cutscenes/marisa_bad_end.inc.h:30
 msgid "Awww… how boring…"
-msgstr ""
+msgstr "Arhh… quel ennui…"
 
 #: src/cutscenes/marisa_bad_end.inc.h:34
 msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
 msgstr ""
+"Après avoir pris le thé avec eux, Marisa a déambulé entre les rayons, "
+"à la recherche d'inspiration.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
 "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
 "flat on her face.\n"
 msgstr ""
+"Soudain, elle eut l'impression d'avoir marché dans un nid-de-poule, "
+"trébucha et tomba à plat ventre.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:36
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
 msgstr ""
+"Quand elle regarda à nouveau le sol, "
+"elle ne vit rien d'autre que les rangées parfaitement organisées d'étagères immaculées.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
-msgstr ""
+msgstr "Puis, elle remarqua quelque chose de froid et de fin sous sa main."
 
 #: src/cutscenes/marisa_bad_end.inc.h:41
 msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
 msgstr ""
+"Au bout d'un certain temps, elle comprit qu'il s'agissait d'une sorte ‘d'appareil intelligent‘, "
+"comme un ordinateur de poche."
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
 msgstr ""
+"Celui-ci était bien plus avancé que tous ceux qu'elle avait vus dans le monde extérieur, "
+"y compris celui du jeune occultiste.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
@@ -393,12 +448,18 @@ msgid ""
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
 msgstr ""
+"Il se comportait à la fois comme un solide et un liquide, "
+"capable de changer rapidement de forme en appliquant une pression sur certains côtés, "
+"pour prendre différentes formes : un téléphone, un livre, "
+"une machine à écrire numérique avec un clavier…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
 "Once Marisa worked out how to make it display something, the title of a book "
 "appeared on its dim screen…"
 msgstr ""
+"Une fois que Marisa eut compris comment faire apparaître quelque chose à l'écran, "
+"le titre d'un livre s'afficha sur son écran sombre…"
 
 #: src/cutscenes/marisa_bad_end.inc.h:48
 msgid ""
