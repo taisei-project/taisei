@@ -9,7 +9,7 @@
 #include "iku.h"
 
 #include "common_tasks.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 static void iku_slave_draw(EntityInterface *e) {
 	IkuSlave *slave = ENT_CAST(e, IkuSlave);
