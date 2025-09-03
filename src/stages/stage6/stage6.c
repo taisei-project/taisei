@@ -11,7 +11,7 @@
 #include "background_anim.h"
 #include "draw.h"
 #include "elly.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "spells/spells.h"
 #include "timeline.h"
 

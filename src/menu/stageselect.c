@@ -14,7 +14,7 @@
 
 #include "video.h"
 #include "stageinfo.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 static void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);

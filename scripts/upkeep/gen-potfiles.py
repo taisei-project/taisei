@@ -54,7 +54,7 @@ def main(args):
     files.sort()
     files += [str(extra_strings)]
 
-    files = [f for f in files if f != 'src/intl/intl.h']
+    files = [f for f in files if f != 'src/i18n/i18n.h']
 
     data = '\n'.join(files) + '\n'
     update_text_file(args.rootdir / podir / 'POTFILES', data)

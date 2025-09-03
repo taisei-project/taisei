@@ -13,7 +13,7 @@
 #include "eventloop/eventloop.h"
 #include "events.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "menu/menu.h"
 #include "renderer/api.h"
 #include "replay/demoplayer.h"

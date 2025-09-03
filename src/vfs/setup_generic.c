@@ -19,7 +19,7 @@ void vfs_setup(CallChain next) {
 	const char *res_path = env_get_string_nonempty("TAISEI_RES_PATH", vfs_platformpath_resroot());
 	const char *storage_path = env_get_string_nonempty("TAISEI_STORAGE_PATH", vfs_platformpath_storage());
 	const char *cache_path = env_get_string_nonempty("TAISEI_CACHE_PATH", vfs_platformpath_cache());
-	const char *i18n_path = env_get_string_nonempty("TAISEI_I18N_PATH", NULL);
+	const char *locale_path = env_get_string_nonempty("TAISEI_LOCALE_PATH", NULL);
 	char *cache_path_allocated = NULL;
 	char *local_res_path = NULL;
 
@@ -119,18 +119,18 @@ void vfs_setup(CallChain next) {
 	vfs_unmount("resdirs");
 	vfs_unmount("respkgs");
 
-	// If we have a custom i18n path, mount it as an overlay over res/i18n
-	if(i18n_path) {
-		attr_unused bool ok = vfs_mkdir("i18n-virtual-pkg");
+	// If we have a custom locale path, mount it as an overlay over res/locale
+	if(locale_path) {
+		attr_unused bool ok = vfs_mkdir("l10n-virtual-pkg");
 		assert(ok);
 
-		if(!vfs_mount_syspath("i18n-virtual-pkg/i18n", i18n_path, VFS_SYSPATH_MOUNT_READONLY)) {
-			log_error("Failed to mount '%s': %s", i18n_path, vfs_get_error());
+		if(!vfs_mount_syspath("l10n-virtual-pkg/locale", locale_path, VFS_SYSPATH_MOUNT_READONLY)) {
+			log_error("Failed to mount '%s': %s", locale_path, vfs_get_error());
 		} else {
-			vfs_mount_alias("res", "i18n-virtual-pkg");
+			vfs_mount_alias("res", "l10n-virtual-pkg");
 		}
 
-		vfs_unmount("i18n-virtual-pkg");
+		vfs_unmount("l10n-virtual-pkg");
 	}
 
 	run_call_chain(&next, NULL);

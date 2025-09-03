@@ -10,7 +10,7 @@
 
 #include "common.h"
 #include "difficulty.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "mainmenu.h"
 #include "progress.h"
 #include "resource/font.h"

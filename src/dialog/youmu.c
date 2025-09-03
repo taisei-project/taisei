@@ -7,7 +7,7 @@
  */
 
 #include "dialog_macros.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 /*
  * Stage 1

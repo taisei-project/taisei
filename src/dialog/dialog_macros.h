@@ -13,7 +13,7 @@
 #include "stage.h"  // IWYU pragma: export
 #include "portrait.h"  // IWYU pragma: export
 
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 #define DIALOG_BEGIN(_interface) \
 	if(ARGS.called_for_preload) { \

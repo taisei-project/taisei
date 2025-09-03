@@ -7,7 +7,7 @@
  */
 
 #include "difficulty.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "resource/resource.h"
 
 typedef struct DiffDef {
