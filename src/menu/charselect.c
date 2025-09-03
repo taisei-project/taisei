@@ -11,7 +11,7 @@
 #include "audio/audio.h"
 #include "common.h"
 #include "events.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "menu.h"
 #include "menu/mainmenu.h"
 #include "plrmodes.h"
