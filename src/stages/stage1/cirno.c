@@ -9,7 +9,7 @@
 #include "cirno.h"
 
 #include "common_tasks.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 void stage1_draw_cirno_spellbg(Boss *c, int time) {
 	r_color4(0.5, 0.5, 0.5, 1.0);

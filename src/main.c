@@ -22,7 +22,7 @@
 #include "progress.h"
 #include "renderer/common/models.h"
 #include "renderer/common/sprite_batch.h"
-#include "resource/i18n.h"
+#include "i18n/i18n.h"
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
@@ -60,6 +60,7 @@ static void taisei_shutdown(void) {
 		progress_save();
 	}
 
+	i18n_shutdown();
 	r_release_resources();
 	res_shutdown();
 
