@@ -466,34 +466,36 @@ msgid ""
 "Practical & Advanced Computational Applications of the Grand Unified Theory\n"
 "\n"
 msgstr ""
+"Applications pratiques et avancées de la théorie de la grande unification en informatique\n"
+"\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:49
 msgid "— by Usami Renko"
-msgstr ""
+msgstr "— par Usami Renko"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
-msgstr ""
+msgstr "Marisa (Extra Stage Intro)"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
 msgid "A haunted western mansion in an eastern wonderland."
-msgstr ""
+msgstr "Un manoir hanté de l'Ouest dans un pays des merveilles oriental."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:12
 msgid "I get such a nervous feeling around the newcomers…"
-msgstr ""
+msgstr "Je me sens tellement nerveux en présence des nouveaux arrivants…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:13
 msgid "They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"
-msgstr ""
+msgstr "Ils vont bien, ils vont bien! Regarde-la, elle est mignonne, non?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:14
 msgid "Sure, but… you said you knew them, from another world?"
-msgstr ""
+msgstr "Bien sûr, mais… tu as dit que tu les connaissais, qu'ils venaient d'un autre monde?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:15
 msgid "Well, another me knew another them in another world."
-msgstr ""
+msgstr "Eh bien, un autre moi connaissait un autre eux dans un autre monde."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:19
 msgid ""
@@ -501,20 +503,25 @@ msgid ""
 "infinity, folding onto ourselves, kinda like a really incredible katana "
 "gettin’ forged. It was intense!"
 msgstr ""
+"En fait, j'ai vu toutes les itérations possibles de moi-même, s'étendant à l'infini, "
+"se repliant sur elles-mêmes, un peu comme un katana vraiment incroyable "
+"en cours de forgeage. C'était intense!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:20
 msgid "It’s just like you to accidentally see the Time Knife…"
-msgstr ""
+msgstr "C'est tout à fait toi de voir accidentellement le Couteau du Temps…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:21
 msgid "The what-now?"
-msgstr ""
+msgstr "Quoi ?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:25
 msgid ""
 "Marisa had just finished accompanying Kurumi to do some ‘service’ on the "
 "Tower of Babel.\n"
 msgstr ""
+"Marisa venait juste de finir d'accompagner Kurumi pour faire un peu de "
+"’service’ sur la Tour de Babel."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:26
 msgid ""
@@ -522,71 +529,78 @@ msgid ""
 "amongst themselves off to the side of the library, laughing cheerfully over… "
 "tea?\n"
 msgstr ""
+"Kurumi et Remilia, la maîtresse du manoir, bavardaient bruyamment "
+"entre elles à l'écart de la bibliothèque, riant joyeusement autour d'une tasse de thé.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:27
 msgid "Marisa hoped it was tea, at least."
-msgstr ""
+msgstr "Marisa espérait que c'était au moins du thé."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:31
 msgid "Ah, it’s so nice to have a fresh face around here!"
-msgstr ""
+msgstr "Ah, ça fait tellement plaisir d'avoir un nouveau visage par ici!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:32
 msgid ""
 "Yeah! It was so boring being around that egghead pseudo-gami all the time."
 msgstr ""
+"Oui! C'était tellement ennuyeux d'être tout le temps avec ce pseudo-gami à tête d'œuf."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:33
 msgid ""
 "And my younger sister is a tad too reclusive to spend much time with me, "
 "these days…"
 msgstr ""
+"Et ma petite sœur est un peu trop solitaire pour passer beaucoup "
+"de temps avec moi ces derniers temps…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:34
 msgid "Perhaps we could go out on the town sometime soon?"
-msgstr ""
+msgstr "Peut-être pourrions-nous sortir en ville prochainement?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:38
 msgid "Sure! Know any good spots? For, you know…"
-msgstr ""
+msgstr "Bien sûr! Tu connais des bons endroits? Pour, tu sais…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:39
 msgid "Oh yes, a few, but you must keep it down for now…"
-msgstr ""
+msgstr "Oh oui, quelques-uns, mais tu dois garder ça secret pour l'instant…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:40
 msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
-msgstr ""
+msgstr "Hé, je suis là! Pas question de comploter pour manger des humains, compris?!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:41
 msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
-msgstr ""
+msgstr "C'est tout à fait consensuel, chère Mme Kirisame, je vous l'assure."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:45
 msgid "Forgive the young witch, she’s such a spoil-sport at times."
-msgstr ""
+msgstr "Pardonnez à la jeune sorcière, elle est parfois tellement rabat-joie."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:46
 msgid "Mm, indeed~."
-msgstr ""
+msgstr "Mm, en effet~."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:47
 msgid "Ugh, and after I said y’all were cool…"
-msgstr ""
+msgstr "Et dire que je venais juste de dire que vous étiez cool..."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:51
 msgid ""
 "It was then that a low rumble echoed through the chambers of the mansion. "
 "Slowly at first, but then gaining in intensity."
 msgstr ""
+"C'est alors qu'un grondement sourd résonna dans les pièces du manoir. "
+"Lentement au début, puis de plus en plus fort."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:55
 msgid "Huh? What’s that?"
-msgstr ""
+msgstr "Hein ? Qu'est-ce que c'est ?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:56
 msgid "Perhaps the fairy maids are remodeling upstairs?"
-msgstr ""
+msgstr "Peut-être que les fées sont en train de rénover l'étage?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:57
 msgid ""
@@ -594,119 +608,139 @@ msgid ""
 "The mansion began to shake intense, as if down to its very foundation, "
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
+"\n"
+"Le manoir se mit à trembler violemment, comme si ses fondations mêmes étaient ébranlées, "
+"avant de s'arrêter aussi soudainement qu'il avait commencé.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
 "Before the dust had a chance to settle, an eerie, long siren began blaring "
 "in the distance outside the mansion."
 msgstr ""
+"Avant même que la poussière ait eu le temps de retomber, "
+"une sirène sinistre et interminable se mit à retentir au loin, à l'extérieur du manoir."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:62
 msgid "Huh?! That’s one of the sirens I had the kappa set up!"
-msgstr ""
+msgstr "Hein?! C'est l'une des sirènes que j'avais fait installer par les kappa!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:63
 msgid "Sirens?"
-msgstr ""
+msgstr "Sirènes?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:64
 msgid "Yeah, to monitor the Tower of Babel in case anything changed."
-msgstr ""
+msgstr "Oui, pour surveiller la Tour de Babel au cas où quelque chose changerait."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:65
 msgid "Ah heck, and I guess that means…"
-msgstr ""
+msgstr "Ah bon sang, et je suppose que cela signifie…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:69
 msgid "Y-you saw me back there, right?! You were there! I didn’t do anything!"
-msgstr ""
+msgstr "T-Tu m'as vu là-bas, n'est-ce pas?! Tu étais là! Je n'ai rien fait!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:70
 msgid ""
 "Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To "
 "keep the fairies out?"
 msgstr ""
+"Hé, personne ne t'accuse de quoi que ce soit. Tout ce que tu as fait, "
+"c'est fermer une porte, n'est-ce pas? Pour empêcher les fées d'entrer?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:71
 msgid ""
 "Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
 "opens'?"
 msgstr ""
+"O-oui ! Mais... mais c'est peut-être comme dans cette expression? "
+"« Une porte se ferme, une autre s'ouvre »?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:72
 msgid "What do ya mean?"
-msgstr ""
+msgstr "Qu'est-ce que tu veux dire?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:76
 msgid "Kurumi got rather pale, even for a vampire."
-msgstr ""
+msgstr "Kurumi pâlit, même pour une vampire."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:80
 msgid "Oh no…"
-msgstr ""
+msgstr "Oh non…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:81
 msgid ""
 "Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
 "up. We’ll just go back, get the kappa, and—"
 msgstr ""
+"Allez, crache le morceau. On ne t'en voudra pas si tu as fait une erreur. "
+"On va juste retourner chercher le kappa, et..."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
-msgstr ""
+msgstr "Hé, euh, tu devrais peut-être aller voir?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:83
 msgid "Like, alone? Because I'd just get in your way?"
-msgstr ""
+msgstr "Tout seul? Parce que je te gênerais?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:87
 msgid ""
 "But, uh, you know, there might be a really powerful enemy there now? So "
 "please be careful???"
 msgstr ""
+"Mais, euh, tu sais, il y a peut-être un ennemi très puissant là-bas maintenant? "
+"Alors fais attention, s'il te plaît???"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:88
 msgid "Aw, are ya worried about me? That’s cute."
-msgstr ""
+msgstr "Oh, tu t'inquiètes pour moi? C'est mignon."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:92
 msgid ""
 "Marisa grinned and magically summoned her broom, mounting it deftly, and "
 "shooting right out of an open window in a flash.\n"
 msgstr ""
+"Marisa sourit et fit apparaître son balai par magie, "
+"s'y installa habilement et s'envola en un éclair par la fenêtre ouverte.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:93
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
 msgstr ""
+"Son regard était fixé sur la tour qui se dressait et grondait au sommet de la montagne Yōkai..."
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
-msgstr ""
+msgstr "Marisa (Good Ending)"
 
 #: src/cutscenes/marisa_good_end.inc.h:7
 msgid "— The Moriya Shrine\n"
-msgstr ""
+msgstr "— Le sanctuaire Moriya\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:8
 msgid "A workaholic shrine at the top of of Yōkai Mountain."
-msgstr ""
+msgstr "Un sanctuaire dédié aux bourreaux de travail au sommet du mont Yōkai."
 
 #: src/cutscenes/marisa_good_end.inc.h:12
 msgid ""
 "Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"
 msgstr ""
+"Une fois vaincus, les nouveaux venus ont accepté de désactiver leur ’tour de Babel’.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
-msgstr ""
+msgstr "Elly et Kurumi ont été obligées de récurer les sols du sanctuaire Moriya…\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:14
 msgid ""
 "… which had become filthy from the local fairies partying non-stop, and some "
 "‘political demonstrations’ by the newly-formed ‘Insect Party’."
 msgstr ""
+"qui était devenu sale à cause des fées locales qui faisaient la fête sans "
+"arrêt et de certaines ’manifestations politiques’ organisées par le tout "
+"nouveau ’Parti des insectes’."
 
 #: src/cutscenes/marisa_good_end.inc.h:18
 msgid ""
@@ -714,174 +748,209 @@ msgid ""
 "vector processing capabilities. Combined with other improvements, such as "
 "its DVD drive—"
 msgstr ""
+"—qui était équipé d'un tout nouveau coprocesseur mathématique, "
+"lui conférant des capacités avancées de traitement vectoriel. "
+"Associé à d'autres améliorations, telles que son lecteur DVD—"
 
 #: src/cutscenes/marisa_good_end.inc.h:19
 msgid "Ah, I see. Fascinating. Wow. Incredible."
-msgstr ""
+msgstr "Ah, je vois. Fascinant. Ouah. Incroyable."
 
 #: src/cutscenes/marisa_good_end.inc.h:20
 msgid "You two having fun?"
-msgstr ""
+msgstr "Vous vous amusez bien tous les deux?"
 
 #: src/cutscenes/marisa_good_end.inc.h:21
 msgid "… y-yes, ma’am."
-msgstr ""
+msgstr "… Oui, madame."
 
 #: src/cutscenes/marisa_good_end.inc.h:25
 msgid ""
 "Seems like it’s taking a bit more time for the madness to wear off for her. "
 "How’s all that ‘knowledge’ working out for you, newcomer?"
 msgstr ""
+"On dirait que ça prend un peu plus de temps pour que la folie s'estompe chez elle. "
+"Comment ça marche pour toi, toute cette ’connaissance’, la nouvelle venue?"
 
 #: src/cutscenes/marisa_good_end.inc.h:26
 msgid ""
 "I remembered way more about retro video game consoles than I wanted to! And "
 "now *you’ve* gotta deal with it!"
 msgstr ""
+"Je me souvenais beaucoup plus que je ne l'aurais voulu des consoles de jeux "
+"vidéo rétro! Et maintenant, c'est à toi de t'en occuper!"
 
 #: src/cutscenes/marisa_good_end.inc.h:27
 msgid ""
 "\n"
 "Elly nodded and smiled politely, trying to hold back tears of boredom."
 msgstr ""
+"\n"
+"Elly acquiesça et sourit poliment, essayant de retenir ses larmes d'ennui."
 
 #: src/cutscenes/marisa_good_end.inc.h:31
 msgid ""
 "In the end, the newcomers seemed to calm down once the effects of the Tower "
 "had worn off, just like everyone else in Gensōkyō.\n"
 msgstr ""
+"Finalement, les nouveaux arrivants semblaient s'être calmés une fois "
+"que les effets de la Tour se furent dissipés, tout comme tout le monde à Gensōkyō.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:32
 msgid ""
 "During an early afternoon, Marisa arrived with a picnic basket and a grin on "
 "her face."
 msgstr ""
+"En début d'après-midi, Marisa est arrivée avec un panier de pique-nique "
+"et un grand sourire."
 
 #: src/cutscenes/marisa_good_end.inc.h:36
 msgid "Ah, Ms. Kirisame. Hello again."
-msgstr ""
+msgstr "Ah, Mme Kirisame. Bonjour à nouveau."
 
 #: src/cutscenes/marisa_good_end.inc.h:37
 msgid "Yo, Elly!"
-msgstr ""
+msgstr "Yo, Elly!"
 
 #: src/cutscenes/marisa_good_end.inc.h:38
 msgid "Do you… need something from me?"
-msgstr ""
+msgstr "Tu as… besoin de quelque chose?"
 
 #: src/cutscenes/marisa_good_end.inc.h:39
 msgid "Heck yeah I do! A drinkin’ partner!"
-msgstr ""
+msgstr "Bien sûr que oui! Un compagnon de beuverie!"
 
 #: src/cutscenes/marisa_good_end.inc.h:43
 msgid "Isn’t it a little early for that?"
-msgstr ""
+msgstr "N'est-ce pas un peu tôt pour ça?"
 
 #: src/cutscenes/marisa_good_end.inc.h:44
 msgid "Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"
-msgstr ""
+msgstr "Oh allez, il est midi quelque part dans l'infini multivers, non?"
 
 #: src/cutscenes/marisa_good_end.inc.h:45
 msgid ""
 "\n"
 "Elly laughed. She wanted an excuse for a break anyways.\n"
 msgstr ""
+"\n"
+"Elly rit. Elle cherchait de toute façon une excuse pour faire une pause.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:46
 msgid ""
 "And so, they drank, and caught up on alternate worlds, uncanny timelines, "
 "and the strangeness of their circumstances.\n"
 msgstr ""
+"Et ainsi, ils burent, discutèrent de mondes parallèles, "
+"de chronologies étranges et de l'étrangeté de leur situation.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:50
 msgid ""
 "I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. "
 "Don’t ya know about Isaac Newton?"
 msgstr ""
+"Je veux dire, bien sûr que tu as perdu. "
+"Les mathématiques ont toujours eu un faible pour la magie. "
+"Tu ne connais pas Isaac Newton?"
 
 #: src/cutscenes/marisa_good_end.inc.h:51
 msgid ""
 "The famous European mathematician? I studied his works, yes. But what about "
 "him?"
 msgstr ""
+"Le célèbre mathématicien européen ? J'ai étudié ses travaux, oui. "
+"Mais qu'en est-il de lui ?"
 
 #: src/cutscenes/marisa_good_end.inc.h:52
 msgid "He was an Alchemist!"
-msgstr ""
+msgstr "Il était alchimiste!"
 
 #: src/cutscenes/marisa_good_end.inc.h:53
 msgid "He was a… what?!"
-msgstr ""
+msgstr "Il était un… quoi?!"
 
 #: src/cutscenes/marisa_good_end.inc.h:57
 msgid ""
 "Yup. There’s even a copy of his occult book down at the library I frequent."
 msgstr ""
+"Oui. Il y a même un exemplaire de son livre sur l'occultisme à la "
+"bibliothèque où je vais souvent."
 
 #: src/cutscenes/marisa_good_end.inc.h:58
 msgid "He was into a lotta wild stuff."
-msgstr ""
+msgstr "Il aimait beaucoup les trucs dingues."
 
 #: src/cutscenes/marisa_good_end.inc.h:59
 msgid "Kinda funny ya hadn’t heard of that, actually."
-msgstr ""
+msgstr "C'est assez drôle que tu n'en aies jamais entendu parler, en fait."
 
 #: src/cutscenes/marisa_good_end.inc.h:60
 msgid ""
 "Hah. That… *is* kind of funny, actually. I never ran across any of *those* "
 "books of his…"
 msgstr ""
+"Ha. C'est… *assez* drôle, en fait. Je n'ai jamais vu aucun de *ces* livres…"
 
 #: src/cutscenes/marisa_good_end.inc.h:64
 msgid ""
 "Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
 msgstr ""
+"Oh, remontez-vous le moral, d'accord ? "
+"Vous pourrez vous détendre ici aussi longtemps que vous le souhaitez."
 
 #: src/cutscenes/marisa_good_end.inc.h:65
 msgid "But what if this Gensōkyō collapses, too…?"
-msgstr ""
+msgstr "Mais que se passerait-il si ce Gensōkyō s'effondrait lui aussi…?"
 
 #: src/cutscenes/marisa_good_end.inc.h:66
 msgid ""
 "It could! The Hakurei Barrier could fall tomorrow! But what’s the point in "
 "worryin’ about all that?"
 msgstr ""
+"C'est possible! La barrière Hakurei pourrait tomber demain! "
+"Mais à quoi bon s'inquiéter pour ça?"
 
 #: src/cutscenes/marisa_good_end.inc.h:67
 msgid "Right now, I say we enjoy what we got!"
-msgstr ""
+msgstr "Pour l'instant, je propose que nous profitions de ce que nous avons!"
 
 #: src/cutscenes/marisa_good_end.inc.h:71
 msgid "I suppose you’re right."
-msgstr ""
+msgstr "Je suppose que tu as raison."
 
 #: src/cutscenes/marisa_good_end.inc.h:72
 msgid "Although, I have to ask… how did you remember me?"
-msgstr ""
+msgstr "Mais je dois te demander… comment tu t'es souvenu de moi?"
 
 #: src/cutscenes/marisa_good_end.inc.h:73
 msgid "Oh, that’s easy. Mushrooms!"
-msgstr ""
+msgstr "Oh, c'est facile. Les champignons!"
 
 #: src/cutscenes/marisa_good_end.inc.h:74
 msgid "Mush… rooms? As in, mycelium?"
 msgstr ""
+"Champi… gnons ? Comme dans le mycélium ?"
 
 #: src/cutscenes/marisa_good_end.inc.h:78
 msgid ""
 "Yeah! A while ago, I was cookin’ up some especially powerful ones I found in "
 "a cave near the one-armed hermit’s house…"
 msgstr ""
+"Oui ! Il y a quelque temps, j'en ai préparé quelques-uns particulièrement "
+"puissants que j'ai trouvés dans une grotte près de la maison de l'ermite manchot…"
 
 #: src/cutscenes/marisa_good_end.inc.h:79
 msgid "And then, BOOM, there was a small explosion!"
-msgstr ""
+msgstr "Et puis, BOOM, il y a eu une petite explosion!"
 
 #: src/cutscenes/marisa_good_end.inc.h:80
 msgid ""
 "Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My "
 "lives were flashin’ before my eyes!"
 msgstr ""
+"Avant même de m'en rendre compte, "
+"je voyais toutes sortes de ‘versions‘ de moi-même apparaître. "
+"Ma vie défilait sous mes yeux!"
 
 #: src/cutscenes/marisa_good_end.inc.h:81
 msgid ""
