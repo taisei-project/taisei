@@ -1368,7 +1368,7 @@ msgid ""
 "this might happen…"
 msgstr ""
 "Alles klar, okay, sie ist ein großes böses Monster. Ich wusste, dass so was "
-"passieren wird."
+"passieren wird…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:82
 msgid "Before you go, Reimu…"
@@ -1417,7 +1417,7 @@ msgid ""
 "Reimu flew off to meet her next challenge…"
 msgstr ""
 "In der Ferne begann der Babelturm ein tiefes, beunruhigendes Grummeln, als "
-"Reimu losflug um ihrer nächsten Herausforderung zu begegnen."
+"Reimu losflug um ihrer nächsten Herausforderung zu begegnen…"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
@@ -1855,132 +1855,158 @@ msgid ""
 "The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
 "between the sakura trees of the ethereal realm.\n"
 msgstr ""
+"Die Klingenmeisterinnen Konpaku Y­ōmu und Elly erfreuten sich an einem Duell "
+"im Dämmerlicht zwischen Sakura-Kirschen und dem Jenseits.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:13
 msgid ""
 "The swordswoman was showing the scythe-bearer one of her favourite past-"
 "times: the mid-air bisecting sakura petals.\n"
 msgstr ""
+"Die Schwertmeisterin zeigte der Sensenträgerin eine ihrer "
+"Lieblingsbeschäftigungen: Das Halbieren von Kirschblütenblättern in der "
+"Luft.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:14
 msgid "Yōmu was quite proud of herself, and Elly equally as impressed."
 msgstr ""
+"Yōmu war ziemlich stolz auf sich selbst und auch Elly war gleichermaßen "
+"beeindruckt."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:18
 msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
 msgstr ""
+"Ihre Freude wurde unterbrochen als Elly ein kleines Gerät aus ihrer "
+"Kleidtasche fischte.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
 "It was a communication device of some sort that seemed to be vibrating "
 "vigorously, projecting an illusion into the air…\n"
 msgstr ""
+"Es war irgendein Kommunikator der wild zu vibrieren schien, während er eine "
+"Illusion in die Luft projizierte…\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:20
 msgid "Elly's expression suddenly ran cold."
-msgstr ""
+msgstr "Elly wurde plötzlich blass im Gesicht."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:24
 msgid "Hm? Is something the matter, my dear?"
-msgstr ""
+msgstr "Hm? Ist etwas los meine Liebe?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:25
 msgid "The Tower…! No, it can’t be! But I…!"
-msgstr ""
+msgstr "Der Turm…! Nein, das kann nicht sein! Aber ich…!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:26
 msgid "Has something changed?"
-msgstr ""
+msgstr "Hat sich etwas geändert?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:27
 msgid "It’s turning back on! In fact, at its current rate of power, it could—"
 msgstr ""
+"Er fährt wieder hoch! Um genau zu sein, wenn er so weitermacht, könnte er…"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:31
 msgid "… there’s no other explanation for this."
-msgstr ""
+msgstr "… es gibt keine andere Erklärung dafür."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:32
 msgid "It’s her… the one I told you about."
-msgstr ""
+msgstr "Sie ist es… die, von der ich dir erzählt habe."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:33
 msgid ""
 "The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
 "Tower from."
 msgstr ""
+"Die, die mich gerettet, aber auch manipuliert hat. Die, von der ich den Turm "
+"‘befreit’ habe."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:37
 msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
 msgstr ""
+"Yōmu holte tief Luft, steckte ihre Schwerte in die Scheide und seufzte.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:38
 msgid "I see. So, she’s arrived on her own after all."
-msgstr ""
+msgstr "Ich verstehe. Sie ist also persönlich gekommen."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:39
 msgid ""
 "I-I thought she would be imprisoned forever, until we were ready! But "
 "somehow, somehow she’s—"
 msgstr ""
+"I-Ich dachte sie wäre für immer eingesperrt, bis wir bereit wären! Aber "
+"irgendwie, irgendwie ist sie—"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:40
 msgid ""
 "… she’s freed herself from her prison, and she no doubt intends to finish "
 "what she started."
 msgstr ""
+"… sie hat sich aus ihrem Gefängnis befreit und will ohne Zweifel beenden, "
+"was sie angefangen hat."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:41
 msgid "I see. Then it appears we no longer possess the luxury of time."
-msgstr ""
+msgstr "Verstehe. Dann können wir es uns nicht mehr erlauben zu warten."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:45
 msgid "Yōmu took Elly's hands between her own, grinning confidently.\n"
-msgstr ""
+msgstr "Yōmu nahm Ellys Hände und grinste kämpferisch.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:46
 msgid "Elly! Let’s face her now, together!"
-msgstr ""
+msgstr "Elly! Lass uns ihr zusammen gegenübertreten!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:47
 msgid "I-I… I thought we'd have more time! It’s too soon!"
-msgstr ""
+msgstr "I-Ich… dachte wir hätten mehr Zeit! Es ist zu früh!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:48
 msgid ""
 "I’m worried the machine will influence me again! I can’t put you at risk "
 "again, and I can’t go with you!"
 msgstr ""
+"Ich mache mir Sorgen, dass die Maschine mich wieder beeinflussen wird! Ich "
+"kann dich nicht wieder einem Risiko aussetzen! Ich kann nicht mit dir gehen!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:49
 msgid "Please forgive me, Yōmu!"
-msgstr ""
+msgstr "Bitte vergib mir, Yōmu!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:53
 msgid "I completely understand."
-msgstr ""
+msgstr "Natürlich, ich verstehe."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:54
 msgid "You… do?"
-msgstr ""
+msgstr "Du… wirklich?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:55
 msgid ""
 "Yes, of course. There’s a time and place to face one’s fears. This is not "
 "your time or place, even somewhat literally."
 msgstr ""
+"Ja, natürlich. Es gibt eine Ort und eine Zeit um unsere Ängste zu "
+"konfrontieren. Dies ist nicht dein Ort oder deine Zeit, im wahrsten Sinne "
+"des Wortes."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:56
 msgid ""
 "However, don’t think you've gotten off so easily. When I return, it shall be "
 "your turn to pay for dinner. Understand?"
 msgstr ""
+"Aber denk nicht, dass du so einfach aus der Sache rauskommst. Wenn ich "
+"zurückkomme, bist du an der Reihe mir ein Abendessen auszugeben, verstanden?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:60
 msgid "Elly couldn’t help but laugh, despite her fears.\n"
-msgstr ""
+msgstr "Elly konnte sich ein Lachen nicht verkneifen, trotz ihrer Angst.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:61
 msgid ""
@@ -1988,168 +2014,216 @@ msgid ""
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
 msgstr ""
+"Nachdem sie sich von Elly und Lady Yuyuko verabschiedet hatte, kehrte Y­ōmu "
+"nach Gensōkyō zurück und begab sich zum infernalen Turm, welcher "
+"verhängnisvoll wackelte und grummelte…"
 
 #: src/cutscenes/youmu_good_end.inc.h:2
 msgid "Yōmu (Good Ending)"
-msgstr ""
+msgstr "Yōmu (Gutes Ende)"
 
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "Ein ehrenvoller Schrein auf der Spitze des Yōkai-Bergs."
 
 #: src/cutscenes/youmu_good_end.inc.h:12
 msgid ""
 "Atop the Mountain, the Tower of Babel stood silently, as if a sleeping giant."
-msgstr ""
+msgstr "Auf dem Berg stand still der Babelturm, wie ein schlafender Riese."
 
 #: src/cutscenes/youmu_good_end.inc.h:13
 msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
+"Darunter, am nicht so bescheidenen Moriya Schrein, tauschten sich zwei "
+"Klingenmeisterinnen über ihre Kampftechniken aus…"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
 "I’m sure you’re aware that the classic scythe was used by farmers, and was "
 "sometimes repurposed as a makeshift weapon—"
 msgstr ""
+"Wie du sicher weißt, wurde die klassische Sense von Bauern benutzt wurde und "
+"kam auch manchmal als improvisierte Waffe zum Einsatz—"
 
 #: src/cutscenes/youmu_good_end.inc.h:18
 msgid ""
 "Yes, of course. Some of the finest martial arts evolved from the practices "
 "of common folk—"
 msgstr ""
+"Ja, natürlich. Einige der besten Kampfkünste haben sich aus den Praktiken "
+"des einfachen Volks entwickelt—"
 
 #: src/cutscenes/youmu_good_end.inc.h:22
 msgid ""
 "After the incident, Elly and Kurumi agreed to surrender, and disabled the "
 "Tower's ability to ‘enlighten’.\n"
 msgstr ""
+"Nach dem Vorfall hatten Elly und Kurumi ihre Kapitulation erklärt und die "
+"‘Erleuchtungs’-Funktion des Turms abgestellt.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:23
 msgid ""
 "Their dispositions softened considerably, and they apologized profusely for "
 "what they had tried to do.\n"
 msgstr ""
+"Ihre Gesinnung wurde weitaus milder und sie entschuldigten sich durchgehend "
+"für das was sie versucht hatten zu tun.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:24
 msgid ""
 "But even as everyone else returned to their usual selves, it seemed that "
 "Konpaku Yōmu had retained nearly all of the newfound confidence…"
 msgstr ""
+"Aber selbst als alle wieder zu ihrem alten Ich zurückgekehrt waren, schien "
+"Konpaku Yōmu fast ihr gesamtes neues Selbstvertrauen zu behalten…"
 
 #: src/cutscenes/youmu_good_end.inc.h:28
 msgid "This Gensōkyō is so different compared to the one I was used to."
-msgstr ""
+msgstr "Dieses Gensōky­ō ist so anders als das, an das ich gewöhnt bin."
 
 #: src/cutscenes/youmu_good_end.inc.h:29
 msgid "What was your Gensōkyō like, if I may ask?"
-msgstr ""
+msgstr "Wie war dein Gensōky­ō, wenn ich fragen darf?"
 
 #: src/cutscenes/youmu_good_end.inc.h:30
 msgid ""
 "Mostly, a lot smaller. Practically barren compared to this one. It felt more "
 "like a road-side food stand."
 msgstr ""
+"Im wesentlichen viel kleiner. Fast komplett leer, verglichen mit diesem "
+"hier. Es fühlte sich mehr wie ein kleiner Imbiss am Straßenrand an."
 
 #: src/cutscenes/youmu_good_end.inc.h:31
 msgid "Hmm, fascinating…"
-msgstr ""
+msgstr "Hmm, faszinierend…"
 
 #: src/cutscenes/youmu_good_end.inc.h:35
 msgid ""
 "I know I said this before, but I still feel like a fool after everything."
 msgstr ""
+"Ich weiß, ich habe es schonmal gesagt, aber ich fühle mich wie ein Idiot "
+"nach allem was passiert ist."
 
 #: src/cutscenes/youmu_good_end.inc.h:36
 msgid "I was miserable about my home, but to go that far…"
-msgstr ""
+msgstr "Mir ging es miserable wegen meiner Heimat, aber so weit zu gehen…"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
 msgstr ""
+"Am Ende war ich selbst glaube ich die, die am meisten vom Wahnsinn "
+"überkommen wurde."
 
 #: src/cutscenes/youmu_good_end.inc.h:38
 msgid ""
 "I know everyone here accepted my apology, but I’m still truly sorry for what "
 "I did."
 msgstr ""
+"Ich weiß, dass jeder hier meine Entschuldigung angenommen hat, aber es tut "
+"mir immer noch wirklich leid."
 
 #: src/cutscenes/youmu_good_end.inc.h:42
 msgid "Your pain was legitimate, even if your expression of it was not."
-msgstr ""
+msgstr "Dein Schmerz war legitim, selbst wenn dein Handeln es nicht war."
 
 #: src/cutscenes/youmu_good_end.inc.h:43
 msgid ""
 "Now that you've recognized that, you are welcome here, like anyone else."
 msgstr ""
+"Nun, da du das erkannt hast, bist du hier willkommen, wie jeder andere."
 
 #: src/cutscenes/youmu_good_end.inc.h:44
 msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
 msgstr ""
+"Morgen, soweit Lady Yuyuko keine Aufgaben für mich hat, würde ich dir gerne "
+"zeigen, was das Jenseits und Gensōky­ō zu bieten haben!"
 
 #: src/cutscenes/youmu_good_end.inc.h:45
 msgid ""
 "Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
 "generous, so it shall be my treat!"
 msgstr ""
+"Vielleicht könnten wir sogar einen guten Ramenladen in der Umgebung "
+"besuchen. Ich lade dich ein!"
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
-msgstr ""
+msgstr "O-oh! G-gerne, das wäre wundervoll!"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
-msgstr ""
+msgstr "G-Gut, ich sollte zu meinen Pflichten am Schrein zurückkehren."
 
 #: src/cutscenes/youmu_good_end.inc.h:51
 msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
+"Ich hoffe die grünhaarige Miko wird mir nicht wieder das Ohr abplappern über "
+"irgendwelche veraltete Unterhaltungstechnik."
 
 #: src/cutscenes/youmu_good_end.inc.h:52
 msgid ""
 "I commend you for complying with your penance, despite its… cruel hardships."
 msgstr ""
+"Du hast meinen Respekt für deinen Umgang mit dieser Strafe, trotz ihrer… "
+"grausamen Aspekte."
 
 #: src/cutscenes/youmu_good_end.inc.h:53
 msgid ""
 "\n"
 "The pair of them laughed.\n"
 msgstr ""
+"\n"
+"Die beiden lachten.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:57
 msgid ""
 "The two blademasters had become practically inseparable in an incredibly "
 "short time.\n"
 msgstr ""
+"Zwei Klingenmeisterinnen waren in einer unglaublich kurzen Zeit praktisch "
+"unzertrennbar geworden.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:58
 msgid ""
 "As they spent many evenings dueling, practicing, and drinking merrily, many "
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
+"In den vielen Abenden an denen sie sich duellierten, trainierten und "
+"fröhlich tranken, merkten viele Leute an, dass sie Yōmu noch nie so "
+"begeistert gesehen haben."
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
 "Despite the incident being resolved, nobody had figured out how to remove "
 "the Tower, and most were too anxious to even think about it.\n"
 msgstr ""
+"Obwohl der Vorfall gelöst wurde, hatte niemand rausgefunden, wie man den "
+"Turm loswerden würde. Die meisten waren zu ängstlich um auch nur darüber "
+"nachzudenken.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:63
 msgid ""
 "And with its lingering, menacing visage blighting the skyline, many wondered "
 "if the Tower was truly inert and harmless.\n"
 msgstr ""
+"Und mit seiner verweilenden, bedrohlichen Visage, die den Horizont "
+"befleckte, wunderten sich viele, ob der Turm wirklich inaktiv und harmlos "
+"war.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:64
 msgid ""
 "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion "
 "discussed details of an ancient future’s past…"
 msgstr ""
+"Währenddessen diskutierten im Jenseits ein gewisser ‘Yōkai der Lücken’ und "
+"ihre geisterhafte Gefährtin die Details der Vergangenheit einer antiken "
+"Zukunft…"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:91
 #: src/stages/stage1/cirno.c:27
@@ -2196,158 +2270,162 @@ msgstr "Die Theoretische Sensenfrau"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr ""
+msgstr "Wieder Schnee? Ich hab grad erst meinen Wintermantel eingelagert."
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
-msgstr ""
+msgstr "…obwohl der Sommer schon halb rum ist"
 
 #: src/dialog/marisa.c:28
 msgid "Don’t you like the cold weather???"
-msgstr ""
+msgstr "Magst du kaltes wetter niicht???"
 
 #: src/dialog/marisa.c:32
 msgid "It should be winter all the time!"
-msgstr ""
+msgstr "Es sollte immer Winter sein!"
 
 #: src/dialog/marisa.c:35
 msgid "Mind paying to get my coat cleaned, then?"
-msgstr ""
+msgstr "Okay, bezahlst du die Reinigung für meinen Mantel?"
 
 #: src/dialog/marisa.c:37
 msgid "I was gonna get it done in the fall, but now…"
-msgstr ""
+msgstr "Ich wollte das im Herbst machen, aber jetzt…"
 
 #: src/dialog/marisa.c:40
 msgid "Why would I do that?! You’re never going to pay me back!"
-msgstr ""
+msgstr "Warum sollte ich?! Du zahlst mir das doch nie zurück!"
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr ""
+msgstr "Ich mache einen Eiswürfel aus dir!"
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr ""
+msgstr "Echt? Ich mag lieber Shaved Ice."
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
-msgstr ""
+msgstr "Warum gehst du nicht mit deinem neuen Freund aus der Hölle spielen?"
 
 #: src/dialog/marisa.c:61
 msgid "Maybe then it’d be more of a fair fight."
-msgstr ""
+msgstr "Vielleicht wäre es dann ein fairer Kampf?"
 
 #: src/dialog/marisa.c:63
 msgid "Ouch…"
-msgstr ""
+msgstr "Au…"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr ""
+msgstr "I-Ich mein, letztes mal hat sie verloren! Und nächstes mal du auch!"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
-msgstr ""
+msgstr "Ja klar."
 
 #: src/dialog/marisa.c:82
 msgid "Geez, this place is kinda sad now."
-msgstr ""
+msgstr "Mann, dieser Ort ist irgendwie traurig."
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr ""
+msgstr "Wegen was würden die Y­ōkai alle so seltsam werden?"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
-msgstr ""
+msgstr "Oh hallo, Fräulein Kirisame."
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
-msgstr ""
+msgstr "Du scheinst so waghalsig zu sein wie immer. Ich empfehle umzukehren."
 
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
-msgstr ""
+msgstr "Danke für den Hinweis! Ich ignoriere ihn aber einfach."
 
 #: src/dialog/marisa.c:93
 msgid "See ya."
-msgstr ""
+msgstr "Bis dann."
 
 #: src/dialog/marisa.c:97
 msgid "Oh my… you’re quite the rebellious one, aren’t you?"
-msgstr ""
+msgstr "Oh je… du bist echt eine kleine Rebellin, nicht?"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
-msgstr ""
+msgstr "So ein Selbstvertrauen, meine Warnung einfach zu ignorieren."
 
 #: src/dialog/marisa.c:101
 msgid "I’ll take that as a compliment."
-msgstr ""
+msgstr "Nehm ich als Kompliment."
 
 #: src/dialog/marisa.c:104
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
 msgstr ""
+"Und weißt du was mit schlechten Mädchen passiert, die nicht auf Erwachsene "
+"hören?"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
-msgstr ""
+msgstr "Sie werden jahrelang Unglück haben."
 
 #: src/dialog/marisa.c:118
 msgid "You’re way more snippy than usual today."
-msgstr ""
+msgstr "Du bist viel schnippischer als sonst heute."
 
 #: src/dialog/marisa.c:119
 msgid "It’s kinda annoyin’, honestly."
-msgstr ""
+msgstr "Nervt ein wenig, um ehrlich zu sein."
 
 #: src/dialog/marisa.c:121
 msgid "H-how mean…"
-msgstr ""
+msgstr "W-wie gemein…"
 
 #: src/dialog/marisa.c:122
 msgid "Don’t you see I was just trying to keep you safe…?"
-msgstr ""
+msgstr "Siehst du nicht, dass ich versucht hab dich zu beschützen…?"
 
 #: src/dialog/marisa.c:124
 msgid "Don’t get all motherly on me now."
-msgstr ""
+msgstr "Sprich nicht als wärst du meine Mutter."
 
 #: src/dialog/marisa.c:126
 msgid "I’ve had enough of that for a lifetime."
-msgstr ""
+msgstr "Davon hatte ich schon genug für ein ganzes Leben."
 
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
 msgstr ""
+"Mann, die Leute werden immer draufgängerischer, je höher ich komme. Was ist "
+"los?"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
-msgstr ""
+msgstr "Warte bis du ihre Anführerin triffst!"
 
 #: src/dialog/marisa.c:148
 msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
-msgstr ""
+msgstr "Ja, ich werde dieser Anführerin nen ganzen Haufen Fragen stellen."
 
 #: src/dialog/marisa.c:151
 msgid "Feel free to go ahead. I’m listening."
-msgstr ""
+msgstr "Schieß los, ich höre."
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr ""
+msgstr "Oh, du bist die Nachrichtenbotin?"
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
-msgstr ""
+msgstr "Kannst du was für mich ausrichten?"
 
 #: src/dialog/marisa.c:159
 msgid "Um, OBVIOUSLY I’m not the messenger!"
-msgstr ""
+msgstr "Äh, ich bin NATÜRLICH nicht die Nachrichtenbotin!"
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
@@ -6274,10 +6352,10 @@ msgid ""
 msgstr ""
 "Das Thema der Enden.\n"
 "\n"
-"Also Klasse, was haben wir heute gelernt?\n"
+"Also, Klasse, was haben wir heute gelernt?\n"
 "\n"
 "Wissen ist die verbotene Frucht; aus ihr stammen die Kräfte von Licht und "
-"Dunkel. Aber es ist auch Zeit, dass die Protagonistinnen einen Snack haben."
+"Dunkel. Aber jetzt ist erst mal Snackzeit für die Protagonistinnen."
 
 #: po/extra_strings.c:14
 msgid "Delta Conclusion"
@@ -6438,6 +6516,13 @@ msgid ""
 "It’s a little merciful sometimes, but you still have to do your best, no "
 "matter what. Gambling might be a poor stress-reliever…"
 msgstr ""
+"Hina Kagiyamas Thema.\n"
+"\n"
+"Dieses mal ist alles Zufall.\n"
+"\n"
+"Es ist ein bisschen gnädig manchmal, aber du wirst immer dein bestes geben "
+"müssen, komme was wolle. Glücksspiel ist eventuell nicht das beste Mittel "
+"gegen Stress…"
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
@@ -6452,6 +6537,13 @@ msgid ""
 "eyes. A fluttering little bug feels most at home in the dead of night, and "
 "most alive in a sea of light."
 msgstr ""
+"Das Thema der dritten Stage.\n"
+"\n"
+"Normalerweise ist es schwer im Dunkeln zu sehen. Es zieht dich hinein, "
+"umschlingt dich, wie eine sinneslöschende Flamme. Aber dieses mal ist es "
+"vielleicht das beste deine Augen zu schützen. Ein flatternder Käfer fühlt "
+"sich ganz zuhause in der Mitte der Nacht und sehr lebendig in einem Meer des "
+"Lichts."
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
@@ -6467,6 +6559,13 @@ msgid ""
 "\n"
 "Sounds a little “beach”-like in the introduction…"
 msgstr ""
+"Wriggle Nichtbugs Thema.\n"
+"\n"
+"Ein sehr motivierter Käfer. Sie ist die Königin der Welt! — Nein, das ist "
+"wer anders, sie ist in der Mitte eines Tunnels. Egal, sie weiß sie kann "
+"alles tun, wenn sie nur das richtige Mindset hat, richtig?\n"
+"\n"
+"Klingt etwas “strandig” in der Einleitung…"
 
 #: po/extra_strings.c:54
 msgid "Evidence of Ki Domestication"
@@ -6483,6 +6582,16 @@ msgid ""
 "\n"
 "Smells like rust."
 msgstr ""
+"Das Thema der vierten Stage.\n"
+"\n"
+"Noch ein Abstecher in den Orient… Wie ein Pendel das hin und zurück "
+"schwingt.\n"
+"\n"
+"Dieses Stück leiht sich Inspiration von einem besonders flüchtigen Musiker "
+"von der anderen Seite des Meeres, bekannt für die Chinesischen Einflüsse in "
+"seiner Musik.\n"
+"\n"
+"Riecht nach Rost."
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
@@ -6496,6 +6605,12 @@ msgid ""
 "more comfortable than a Lake of Blood, but this confrontation is anything "
 "but. A mix of fears make the walls feel like they’re closing in."
 msgstr ""
+"Kurumis Thema.\n"
+"\n"
+"Alte Gesichter mit neuen Träumen. Sie hat einen neues Zuhause, etwas "
+"komfortableres als einen See aus Blut. Doch diese Konfrontation ist alles "
+"andere als das. Ein Mix aus Ängsten lässt die Wände so aussehen als kämen "
+"sie näher."
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
@@ -6514,6 +6629,16 @@ msgid ""
 "Those who climb risk a long fall, so look to the top and don’t make a single "
 "dishonest step."
 msgstr ""
+"Das Thema der fünften Stage.\n"
+"\n"
+"And back again… Wie ging der Song noch gleich? “No reason to get excited…”\n"
+"\n"
+"Ehrlich gesagt ist das jetzt eine Kombination aus östlichen und westlichen "
+"Einflüssen. Wenn es bis jetzt ein Pendel war, wurde es durch einen "
+"Wechselstromkreis ersetzt.\n"
+"\n"
+"Jene die klettern, riskieren einen langen Fall. Also, sieh nach oben und "
+"mach nicht einen einzigen unehrlichen Schritt."
 
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
@@ -6529,6 +6654,13 @@ msgid ""
 "\n"
 "Iku provides the first tribulation."
 msgstr ""
+"Iku Nagaes Thema.\n"
+"\n"
+"Dieses Stück ging durch die Mangel. Vielleicht passt das für das was die "
+"Protagonistinnen durchmachen. Stell dir vor du kletterst einen Turm hoch "
+"während eines rasenden Gewitters und versuchst nicht müde zu werden.\n"
+"\n"
+"Iku sorgt für die erste Mühsal."
 
 #: po/extra_strings.c:70
 msgid "Summit of Revelations"
@@ -6543,6 +6675,13 @@ msgid ""
 "A grand architectural marvel may take thousands of years to complete… this "
 "song was no different! But the end result feels like a great discovery."
 msgstr ""
+"Das Thema der sechsten Stage.\n"
+"\n"
+"An der Spitze des Turms kannst du die Welt sehen, aber mit welchem Risiko?\n"
+"\n"
+"Ein Wunderwerk der Architektur mag tausend Jahre brauchen um fertig zu "
+"werden… dieser Song war nicht anders! Aber das Endergebnis fühlt sich an wie "
+"eine große Entdeckung."
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
@@ -6559,6 +6698,14 @@ msgid ""
 "She may have been a lowly gate guard the last time you saw her, but the "
 "apple’s fallen on her head. She’s a guard of a different kind of gate now."
 msgstr ""
+"Ellys erstes Thema.\n"
+"\n"
+"Eine alte Freundin. Ich war schon immer inspiriert von komplett "
+"unbedeutenden Charakteren, die aus vergessenen Zeiten wieder aufsteigen und "
+"Großes erreichen.\n"
+"\n"
+"Das letzte mal, mag sie zwar ein niederer Torwächter gewesen sein, aber ihr "
+"ist ein Apfel auf den Kopf gefallen. Jetzt bewacht sie eine andere Art Tor."
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
@@ -6574,6 +6721,15 @@ msgid ""
 "\n"
 "Elly is a new person now, so an arrange wouldn’t speak the truth."
 msgstr ""
+"Ellys zweites Thema.\n"
+"\n"
+"Die furchtbarsten und wunderbarsten Kräfte der Welt bleiben gerade außer "
+"Reichweite für unseren sterblichen Intellekt. Aber ein paar brilliante "
+"Menschen könnten eine Brücke zwischen ihrer Welt und unserer gefunden "
+"haben…\n"
+"\n"
+"Elly ist jetzt eine neue Person, also würde ein Arrangement nicht der "
+"Wahrheit entsprechen."
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
@@ -6590,3 +6746,11 @@ msgid ""
 "series of dark curtains to pull back, each new finding more magnificent and "
 "imperceptible than the last."
 msgstr ""
+"Ellys letzter Spell.\n"
+"\n"
+"Die ambitioniertesten und unmöglich nötigsten Aufgaben müssen absolut alles "
+"umfassen. Viele denken an Wissenschaft als eine Ansammlung von Wissen, eine "
+"versiegelte Blase, in der “große Entdeckungen” bereits gemacht wurden, aber "
+"das Gegenteil könnte nicht wahrer sein. Wissenschaft ist eine unendliche "
+"Reihe von dunklen Vorhängen zum Zurückziehen, und jeder Fund ist großartiger "
+"und weniger fassbar als der letzte."
