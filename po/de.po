@@ -320,7 +320,7 @@ msgstr ""
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
-msgstr "Marisa (Schlechtes Ending)"
+msgstr "Marisa (Schlechtes Ende)"
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
@@ -1431,157 +1431,194 @@ msgstr "Ein rivalisierender Schrein auf dem Gipfel des Yōkai-Bergs."
 msgid ""
 "Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
 msgstr ""
+"Hör zu, Sanae, ich weiß nicht, was ein ‘Speedrun’ ist und es ist mir auch "
+"echt egal!"
 
 #: src/cutscenes/reimu_good_end.inc.h:13
 msgid ""
 "You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
 "as quickly as possible, right?"
 msgstr ""
+"Du bist so eine Langweilerin, Reimu! Hey, du magst es doch Gensōky­ōs "
+"Probleme so schnell zu lösen wie möglich, oder?"
 
 #: src/cutscenes/reimu_good_end.inc.h:14
 msgid "It’s like that, except with video games!"
-msgstr ""
+msgstr "Es ist genau das, nur mit Videospielen!"
 
 #: src/cutscenes/reimu_good_end.inc.h:15
 msgid "I don’t know anything about ‘video games’, either!"
-msgstr ""
+msgstr "Ich weiß auch nichts über ‘Videospiele’!"
 
 #: src/cutscenes/reimu_good_end.inc.h:19
 msgid ""
 "The Tower had been shut down, ending the crisis of madness sweeping the "
 "land.\n"
 msgstr ""
+"Der Turm war heruntergefahren worden, was die Krise des sich ausbreitenden "
+"Wahnsinns beendet hatte.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:20
 msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
 msgstr ""
+"Fast jeder war jetzt wieder normal, obwohl ein paar Querköpfe dem Verlust "
+"ihres ‘Wissens’ nachtrauerten.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
+"Kurumi und Elly waren als Strafe dazu verdonnert worden die Wege des Moriya "
+"Schreins zu fegen.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr ""
+msgstr "Natürlich inklusive gelegentlicher Sonderwünsche der Moriya Götter…"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
-msgstr ""
+msgstr "Ich glaubs nicht! Ist Kernfusion wirklich so einfach?!"
 
 #: src/cutscenes/reimu_good_end.inc.h:27
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
 msgstr ""
+"J-Ja, man muss nur hier den Koeffizienten verändern und dann das magnetische "
+"Barrierefeld formen—"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
 "Of course! I was such a fool! I can’t believe I ever bothered attempting to "
 "harness the Yatagarasu!"
 msgstr ""
+"Natürlich! Ich war so dumm! Warum hab ich je versucht dafür den Yatagarasu "
+"zu benutzen!"
 
 #: src/cutscenes/reimu_good_end.inc.h:29
 msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
+"Endlich habe ich den Schlüssel zur Modernisierung Gensōkyō und Abwendung der "
+"Energiekrise von außerhalb. Fusionsenergie ist jetzt erreichbar!"
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
-msgstr ""
+msgstr "O-oh weih… sind Sie sicher, dass es Ihnen gut geht?"
 
 #: src/cutscenes/reimu_good_end.inc.h:34
 msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
-msgstr ""
+msgstr "Heh heh, keine Sorge, normaler gehts nicht für Kanako."
 
 #: src/cutscenes/reimu_good_end.inc.h:35
 msgid "‘Normal’? Really?"
-msgstr ""
+msgstr "‘Normal’? Echt?"
 
 #: src/cutscenes/reimu_good_end.inc.h:36
 msgid ""
 "Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
 "this?"
 msgstr ""
+"Kanako ist eine Grüne-Energie-Fanatikerin. Denkst du nicht, dass sie süß ist "
+"in diesem Zustand?"
 
 #: src/cutscenes/reimu_good_end.inc.h:40
 msgid ""
 "In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
 "claiming she was ‘keeping watch’."
 msgstr ""
+"Währenddessen verbrachte Reimu mehr Zeit auf dem Yōkai-Berg, offiziell um "
+"‘Wache zu halten’."
 
 #: src/cutscenes/reimu_good_end.inc.h:44
 msgid "Hey, Elly."
-msgstr ""
+msgstr "Hey, Elly."
 
 #: src/cutscenes/reimu_good_end.inc.h:45
 msgid "Ah, yes? Do you need something from me?"
-msgstr ""
+msgstr "Äh, ja? Brauchst du etwas von mir?"
 
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
 msgstr ""
+"Ich bin überrascht, dass du nicht mehr sauer auf alle best. Nicht mal ein "
+"bisschen."
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
-msgstr ""
+msgstr "Da oben hast du rumgeschrien wie ein Diktator."
 
 #: src/cutscenes/reimu_good_end.inc.h:51
 msgid ""
 "It seems that the Tower's influence got to me, in the end. I thought I was "
 "stronger than that, but…"
 msgstr ""
+"Es scheint als hätte der Einfluss des Turms am Ende auch mich erreicht. Ich "
+"dachte, ich wäre stärker, aber…"
 
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
 msgstr ""
+"Natürlich bin ich immer noch traurig über mein eigenes Gensŏkyŏ, aber so "
+"weit zu gehen…"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
 msgstr ""
+"Was für eine seltsame Maschine. Ich frage mich, was die Kappa darüber denken."
 
 #: src/cutscenes/reimu_good_end.inc.h:58
 msgid ""
 "The kappa won’t touch the thing, and even Kanako has talked herself out of "
 "it."
 msgstr ""
+"Die Kappa fassen das Ding nicht an. Sogar Kanako lässt ihre Finger davon."
 
 #: src/cutscenes/reimu_good_end.inc.h:59
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
 msgstr ""
+"Trotzdem seltsam, dass es irgendwelche vergessenen Y­ŏkai aus einem anderen "
+"Gensōky­ō gab…"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
-msgstr ""
+msgstr "Ach, was solls. Hauptsache es ist Ruhe."
 
 #: src/cutscenes/reimu_good_end.inc.h:64
 msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
 msgstr ""
+"Ohne die wahnsinnigmachenden Gefühle, schienen alle etwas mehr entspannt als "
+"sonst, als wäre eine Last von ihnen gefallen.\n"
+" \n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
 "But for some reason, Reimu in particular seemed to have a difficult time "
 "settling down.\n"
 msgstr ""
+"Aber aus irgendeinem Grund, konnte vor allem Reimu sich nicht entspannen.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:66
 msgid ""
 "And even as some grew to accept the Tower of Babel looming in the skyline, "
 "there were frequent mutterings over potentially getting rid of it entirely.\n"
 msgstr ""
+"Und sogar als manche anfingen den Babelturm am Horizont zu akzeptieren, gab "
+"es viel Gemunkel ob man vielleicht ihn nicht vielleicht doch ganz loswird.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
 msgstr ""
+"Nur wie, das wusste niemand. Vielleicht ein bestimmter ‘Yōkai der Lücken’…"
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
@@ -1643,114 +1680,141 @@ msgstr ""
 
 #: src/cutscenes/youmu_bad_end.inc.h:2
 msgid "Yōmu (Bad Ending)"
-msgstr ""
+msgstr "Yōmu (Schlechtes Ende)"
 
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
-msgstr ""
+msgstr "— Der Babelturm"
 
 #: src/cutscenes/youmu_bad_end.inc.h:8
 msgid "The infernal machine from another world."
-msgstr ""
+msgstr "Die infernale Maschine aus einer anderen Welt."
 
 #: src/cutscenes/youmu_bad_end.inc.h:12
 msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
-msgstr ""
+msgstr "Am Fuße des Turms der nun aus Gensōkyōs Horizont emporstach…"
 
 #: src/cutscenes/youmu_bad_end.inc.h:13
 msgid ""
 "…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, "
 "stood over a makeshift grave, praying.\n"
 msgstr ""
+"…stand die größte Schwertmeisterin ganz Gens­ōkyōs, Konpaku Yōmu, über einem "
+"improvisierten Grab und betete.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:14
 msgid ""
 "No, she hadn’t murdered her opponent. It was, perhaps, a little more "
 "troubling than that…"
 msgstr ""
+"Nein, sie hatte ihren Gegner nicht umgebracht. Es war, vielleicht, sogar "
+"noch etwas schlimmer…"
 
 #: src/cutscenes/youmu_bad_end.inc.h:18
 msgid "Tell me again… she simply vanished? In mid-air?"
-msgstr ""
+msgstr "Sag es noch einmal… sie ist einfach verschwunden? In der Luft?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:19
 msgid "Yes. One moment she was there, and the next, she was not."
-msgstr ""
+msgstr "Ja, in einem Moment war sie da und dann war sie weg."
 
 #: src/cutscenes/youmu_bad_end.inc.h:20
 msgid ""
 "The vampire girl from before also disappeared, in addition to all of the "
 "loitering fairies."
 msgstr ""
+"Die Vampirin von vorher ist auch verschwunden, zusammen mit all den "
+"herumlungernden Feen."
 
 #: src/cutscenes/youmu_bad_end.inc.h:21
 msgid ""
 "It was as if everything within it ceased to exist entirely, except myself."
 msgstr ""
+"Es war so als ob alles im Turm auf einmal aufhörte zu existieren, außer ich "
+"selbst."
 
 #: src/cutscenes/youmu_bad_end.inc.h:25
 msgid ""
 "Thus, I must assumed I have caused their demise in some way, despite my best "
 "intentions."
 msgstr ""
+"Darum muss ich annehmen, dass ich selbst für ihren Niedergang verantwortlich "
+"bin, trotz meiner guten Absicht."
 
 #: src/cutscenes/youmu_bad_end.inc.h:26
 msgid ""
 "That woman, Elly… we knew each other for such a short time, yet her passion "
 "and fury affected me so deeply."
 msgstr ""
+"Diese Frau, Elly… wir kannten uns für so eine kurze Zeit und trotzdem hat "
+"ihre Hingabe und Wut mich so tief bewegt."
 
 #: src/cutscenes/youmu_bad_end.inc.h:27
 msgid ""
 "Hmm… I don’t sense any lost souls here, and nobody liked that passed through "
 "the Netherworld."
 msgstr ""
+"Hmm… Ich spüre keine verlorenen Seelen hier und niemand dieser Art kam durch "
+"das Jenseits."
 
 #: src/cutscenes/youmu_bad_end.inc.h:28
 msgid ""
 "I doubt she has truly died, then… ah, but all this ‘parallel universes’ "
 "stuff is beyond me, hehehe."
 msgstr ""
+"Ich bezweifle, dass sie wirklich tot ist… ah, aber mit all diesem "
+"‘Paralleluniversum’ Zeug habe ich nichts zu tun, hehe."
 
 #: src/cutscenes/youmu_bad_end.inc.h:32
 msgid ""
 "The Tower had ceased functioning, returning the land and yōkai around it to "
 "some semblance of status quo.\n"
 msgstr ""
+"Der Turm hatte aufgehört zu funktionieren und das umliegende Land und dessen "
+"Y­ōkai kehrten zu irgendeiner Art Normalität zurück.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:33
 msgid ""
 "But the instigators were nowhere to be found. It was as if they had never "
 "existed.\n"
 msgstr ""
+"Aber die Übeltäter konnten nirgendwo gefunden werden. Es war so als hätten "
+"sie nie existiert.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:34
 msgid ""
 "Yōmu's newfound fearlessness had been tempered as well, replaced with a "
 "sense of loss."
 msgstr ""
+"Yōmus neugefundene Furchtlosigkeit hatte sich auch abgekühlt und wurde von "
+"einem Gefühl des Verlusts ersetzt."
 
 #: src/cutscenes/youmu_bad_end.inc.h:38
 msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
 msgstr ""
+"Danke für die Erfüllung eines Wunsches Eures bescheidenen Dieners, Lady "
+"Yuyuko."
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
-msgstr ""
+msgstr "Oh je, keine Ursache! Gute Arbeit!"
 
 #: src/cutscenes/youmu_bad_end.inc.h:40
 msgid ""
 "But since we’re in the neighbourhood… do you think the kappa are running one "
 "of their famous festival grill stands?"
 msgstr ""
+"Aber wo wir schon mal hier sind… denkst du die Kappa haben gerade einen "
+"ihrer berühmten Festival-Grillstände am laufen?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
-msgstr ""
+msgstr "Als Feier für die Überwindung einer Krise, vielleicht?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:42
 msgid "We could go on a fun date! And I’m feeling a bit peckish…"
 msgstr ""
+"Klingt nach einem spaßiges Date! Und ich fühle schon den kleinen Hunger…"
 
 #: src/cutscenes/youmu_bad_end.inc.h:46
 msgid ""
@@ -1758,29 +1822,33 @@ msgid ""
 "(From A Safe Distance)’ festival, to encourage human and yōkai tourism after "
 "everyone had been scared off by the Tower.\n"
 msgstr ""
+"Die Kappa des Yōkai-Bergs waren dabei ein ‘Beobachte den unglaublichen Turm "
+"(von weit weg)’ Fest zu feiern, um Menschen und Y­ōkai Tourismus nach der "
+"Krise wieder anzukurbeln.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:47
 msgid "Although, Yōmu found it difficult to enjoy herself, of course.\n"
-msgstr ""
+msgstr "Allerdings fand Yōmu es schwer dabei Spaß zu haben, natürlich.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:48
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
 msgstr ""
+"Irgendwie hoffte sie, dass die furios rechthaberische Sensenträgerin noch "
+"irgendwo da draußen auf eine Revanche wartete…"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:2
-#, fuzzy
 msgid "Yōmu (Extra Stage Intro)"
-msgstr "Stage auswählen"
+msgstr "Yōmu (Extra Stage Intro)"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
-msgstr ""
+msgstr "— Das Jenseits"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:8
 msgid "The nexus between life and death."
-msgstr ""
+msgstr "Der Nexus zwischen Leben und Tod."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:12
 msgid ""
