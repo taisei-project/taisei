@@ -276,11 +276,11 @@ msgstr "魔理沙 （坏结局）"
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr "—— 红魔馆"
+msgstr "—— 红魔馆\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr "一座位于东方幻想之地的宅邸。"
+msgstr "一座位于东方幻想之地的宅邸。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
