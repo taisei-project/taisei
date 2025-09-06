@@ -153,249 +153,249 @@ msgstr "什么忙？"
 msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
-msgstr ""
+msgstr "一股神秘的力量正逐渐让妖怪和人类都陷入一种 “无所不知” 的强烈感觉中。\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
 "It would start with figuring out trivial problems that they’d been "
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
-msgstr ""
+msgstr "起初, 他们会突然解开一些一直困扰自己的简单问题, 例如机器的技术故障, 又或是引人注目的新闻标题。\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
-msgstr ""
+msgstr "但随着事态进一步发展, 他们被这种 “无所不知” 的感觉完全遮蔽, 再也无法理性行事。\n"
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
 "Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
 "she had been carried away into madness."
-msgstr ""
+msgstr "妖怪之山通常受守矢神社的巫女保护, 但就连她也被搞得疯疯癫癫。"
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
-msgstr ""
+msgstr "早苗她现在一个劲儿地念叨着“游戏机”。"
 
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
-msgstr ""
+msgstr "诶? 就是那些你们在香霖堂找到的, 挂在电视机上的小玩具?"
 
 #: src/cutscenes/intro.inc.h:53
 msgid ""
 "Right, but she just won’t stop. I’ve seen her excited, but not like this."
-msgstr ""
+msgstr "没错，可她就是停不下来. 我见过她兴奋的样子，但从来没见过她这样。"
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
-msgstr ""
+msgstr "嗯……很着迷吗……"
 
 #: src/cutscenes/intro.inc.h:58
 msgid "Where the heck did *you* come from?!"
-msgstr ""
+msgstr "不是，你从哪里窜出来的?!"
 
 #: src/cutscenes/intro.inc.h:59
 msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
-msgstr ""
+msgstr "呐……刚才听到你们的谈话了而已啦. 凭我的直觉, 加上你们描述的情况, 答案已经很明显了。"
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
-msgstr ""
+msgstr "是…这样吗？愿意与我们分享一下吗？"
 
 #: src/cutscenes/intro.inc.h:64
 msgid ""
 "Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
 "in all directions from a singular point, given how indiscriminate it is."
-msgstr ""
+msgstr "妖怪之山上的某个存在正散发出强烈的诡异疯狂气息. 鉴于其无差别性, 显然是从某一点向四面八方扩散。"
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
-msgstr ""
+msgstr "瞬间涌入过多知识…… 嗯，嗯，这可能会致命, 至少对意志较弱的人而言。"
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
-msgstr ""
+msgstr "呵呵，那你自己要去退治吗，堇酱？"
 
 #: src/cutscenes/intro.inc.h:67
 msgid ""
 "A-ah, n-no, you all know the lay of the land better, a-after all, and with "
 "it being such a dire situation—"
-msgstr ""
+msgstr "啊、不了、您几位毕竟更熟悉这里的情况—— 况且事态都这么要命了——"
 
 #: src/cutscenes/intro.inc.h:71
 msgid ""
 "Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
 "the Moriya Gods.\n"
-msgstr ""
+msgstr "妖梦被从守矢神社的两尊大神后面探出头来的幽幽子大人吸引住了。\n"
 
 #: src/cutscenes/intro.inc.h:72
 msgid "Lady Yuyuko, why are you—?"
-msgstr ""
+msgstr "幽幽子大人, 你怎么——?"
 
 #: src/cutscenes/intro.inc.h:73
 msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
-msgstr ""
+msgstr "那些幽灵们似乎也被妖怪之山所吸引, 仿佛他们在渴望什么, 冥界越来越难以容纳它们......"
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr ""
+msgstr "明白，我也要去调查吗？"
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
-msgstr ""
+msgstr "请吧."
 
 #: src/cutscenes/intro.inc.h:79
 msgid ""
 "Elsewhere at the shrine, the kappa were all huddled into a group, talking "
 "intensely in hushed tones…\n"
-msgstr ""
+msgstr "神社的另一处，河童们聚作一团，压低声音激烈讨论；\n"
 
 #: src/cutscenes/intro.inc.h:80
 msgid ""
 "And the tengu were furiously scribbling on their notepads, as if they’d just "
 "gotten the scoop of their careers.\n"
-msgstr ""
+msgstr "天狗们则在笔记本上疯狂涂写, 仿佛刚刚挖到了职业生涯中的独家猛料。\n"
 
 #: src/cutscenes/intro.inc.h:81
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
-msgstr ""
+msgstr "即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
-msgstr ""
+msgstr "魔理沙 （坏结局）"
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr ""
+msgstr "—— 红魔馆"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr ""
+msgstr "一座位于东方幻想之地的宅邸。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
 "A nervous witch sat flipping through endless stacks of books, drinking tea "
 "instead of her usual sake…\n"
-msgstr ""
+msgstr "一位紧张的魔女坐在那里，不停地翻阅着堆积如山的书籍, 喝着茶而非她惯常的清酒……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:13
 msgid "Hey Patchy, do ya got any more books on Magitech?"
-msgstr ""
+msgstr "额帕琪，你这还有没有更多关于魔法科技的书？"
 
 #: src/cutscenes/marisa_bad_end.inc.h:14
 msgid ""
 "Yes, but I doubt they’ll be of much use. That machine is beyond that subject "
 "entirely."
-msgstr ""
+msgstr "有的，但我怀疑它们用处不大。那台机器完全超出了这个范畴。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr ""
+msgstr "唉，你可能又说对了，像往常一样。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
-msgstr ""
+msgstr "魔理沙合上书，任它砰地一声砸到地板上。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:20
 msgid "Mind your manners! That’s a very old tome!"
-msgstr ""
+msgstr "喂注意点啊！那可是本非常古老的典籍！"
 
 #: src/cutscenes/marisa_bad_end.inc.h:21
 msgid ""
 "It’s so irritatin’! I thought I solved everything but now that Tower’s just "
 "sittin’ there, ‘n the whole Mountain’s been quarantined…!"
-msgstr ""
+msgstr "真是烦死了! 我还以为我把一切都搞定了, 可现在那座塔就那么立在那儿, 整座山还被封锁了……！"
 
 #: src/cutscenes/marisa_bad_end.inc.h:22
 msgid "It just ain’t satisfyin’, y’know?"
-msgstr ""
+msgstr "就是让人很不爽ZE，你懂吧？"
 
 #: src/cutscenes/marisa_bad_end.inc.h:26
 msgid "I could destroy it! Make it go BOOM!"
-msgstr ""
+msgstr "那就把它炸了！让它轰地一声灰飞烟灭！"
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
-msgstr ""
+msgstr "啊啊! …… 芙兰，我之前是不是说过别再偷偷摸摸靠近别人了？"
 
 #: src/cutscenes/marisa_bad_end.inc.h:28
 msgid "Sorry!"
-msgstr ""
+msgstr "抱歉！"
 
 #: src/cutscenes/marisa_bad_end.inc.h:29
 msgid "Thank you for the offer, Flandre, but no."
-msgstr ""
+msgstr "谢谢你想帮忙，芙兰朵露酱，但还是算了吧。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:30
 msgid "Awww… how boring…"
-msgstr ""
+msgstr "啊……好无聊啊……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:34
 msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
-msgstr ""
+msgstr "和他们一起喝完茶后，魔理沙在书架间徘徊，寻找灵感。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
 "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
 "flat on her face.\n"
-msgstr ""
+msgstr "突然, 她感觉好像踩进了一个坑洞, 绊了一跤, 正脸朝下重重摔在地上。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:36
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
-msgstr ""
+msgstr "当她回头看向地面时, 除了那些排列整齐, 一尘不染的书架外, 什么也没看到。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
-msgstr ""
+msgstr "接着，她注意到手底下有什么又冷又细的东西。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:41
 msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
-msgstr ""
+msgstr "过了一会儿，她意识到那大概是某种「智能设备」, 就是手持电脑之类的东西。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
-msgstr ""
+msgstr "这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机还NB。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
 "It behaved both as a solid and a liquid, able to rapidly change shapes by "
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
-msgstr ""
+msgstr "它兼具固态和液态的特性, 通过按压不同侧面可以迅速改变形状, 变成各种形态：手机, 书本, 带键盘的数码打字机……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
 "Once Marisa worked out how to make it display something, the title of a book "
 "appeared on its dim screen…"
-msgstr ""
+msgstr "等魔理沙终于弄清楚如何让它显示内容时, 昏暗的屏幕上出现了一本书的书名……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:48
 msgid ""
 "Practical & Advanced Computational Applications of the Grand Unified Theory\n"
 "\n"
-msgstr ""
+msgstr "《大统一理论的实用与高级计算应用》\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:49
 msgid "— by Usami Renko"
-msgstr ""
+msgstr "—— 宇佐见莲子 著"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
@@ -1878,7 +1878,7 @@ msgstr "琪露诺"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:92
 msgid "Thermodynamic Ice Fairy"
-msgstr ""
+msgstr "热力学的冰之妖精"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:102
 #: src/stages/stage2/hina.c:41
@@ -1887,7 +1887,7 @@ msgstr "键山雏"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:103
 msgid "Gyroscopic Pestilence God"
-msgstr ""
+msgstr "回旋的厄神"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
 msgid "Wriggle Nightbug"
@@ -1895,11 +1895,11 @@ msgstr "莉格露·奈特巴格"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:125
 msgid "Insect Rights Activist"
-msgstr ""
+msgstr "昆虫权利活动家"
 
 #: src/dialog/dialog_macros.h:74 src/menu/charprofile.c:136
 msgid "High-Society Phlebotomist"
-msgstr ""
+msgstr "上流的吸血技师"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
 #: src/stages/stage5/iku.c:108
@@ -1908,11 +1908,11 @@ msgstr "永江衣玖"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:147
 msgid "Fulminologist of the Heavens"
-msgstr ""
+msgstr "天界的闪电学家"
 
 #: src/dialog/dialog_macros.h:76 src/menu/charprofile.c:158
 msgid "The Theoretical Reaper"
-msgstr ""
+msgstr "理论收割者"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
@@ -2183,31 +2183,31 @@ msgstr "其实永远不会ZE"
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
-msgstr ""
+msgstr "哇哦，一座神秘与魔力的豪宅！"
 
 #: src/dialog/marisa.c:245
 msgid "… how generic can you get?"
-msgstr ""
+msgstr "……你能不能再俗套一点？"
 
 #: src/dialog/marisa.c:248
 msgid "And to top it off, a western witch!"
-msgstr ""
+msgstr "更过分的是你还是一个西方魔女！"
 
 #: src/dialog/marisa.c:250
 msgid "Seen it a thousand times already. It’s such a boring motif."
-msgstr ""
+msgstr "真是个无聊的老套题材，已经看过一千遍了。"
 
 #: src/dialog/marisa.c:253
 msgid "Right? But I make up for it with my devilish charm."
-msgstr ""
+msgstr "有点松弛对吧？但我迷人的邪魅魅力弥补了这一点。"
 
 #: src/dialog/marisa.c:256
 msgid "But that theme is so overdone…"
-msgstr ""
+msgstr "但那个题材早就被用烂了……"
 
 #: src/dialog/marisa.c:258
 msgid "What’s next? A maid?"
-msgstr ""
+msgstr "接下来是不是该来个妹抖长了？"
 
 #: src/dialog/marisa.c:260
 msgid ""
@@ -3026,15 +3026,15 @@ msgstr "离家很远？但你闯入了我的秘密基地！"
 
 #: src/dialog/reimu.c:205
 msgid "Haven’t you heard of the Car—…"
-msgstr "你没听说过螃——"
+msgstr "你没听说过碳——"
 
 #: src/dialog/reimu.c:206
 msgid "Carb—…"
-msgstr "螃蟹吗……"
+msgstr "碳素吗……"
 
 #: src/dialog/reimu.c:208
 msgid "That period of history?"
-msgstr "那段历史？"
+msgstr "什么那段历史？"
 
 #: src/dialog/reimu.c:209
 msgid "It was the greatest time, everyone should’ve heard of it by now!"
@@ -3436,7 +3436,7 @@ msgstr "以这松果弹抖闪电鞭，检验你那不变的决心！"
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
-msgstr ""
+msgstr "雷云？我们现在这么高了？"
 
 #: src/dialog/reimu.c:502
 msgid "Ah…"
@@ -3618,7 +3618,7 @@ msgstr "大概你已经干脆忘了，就像忘了我们其他人一样！"
 msgid ""
 "Only the privileged, such as Lady Kazami, made it out! The rest of us were "
 "lost!"
-msgstr "只有像风见大人这样的特权人士才能逃出来！我们其他人都神隐了！"
+msgstr "只有像风见大人这样的特权人士才能逃出来! 我们其他人都神隐了！"
 
 #: src/dialog/reimu.c:606
 msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
@@ -3628,7 +3628,7 @@ msgstr "你指的是风见幽香？我想还带个爱丽丝对吧？"
 msgid ""
 "I remember when I first met Alice, and she said some weird things too, just "
 "like you are now."
-msgstr "我记得第一次见到爱丽丝的时候，她也说了一些奇怪的话，就像你现在这样。"
+msgstr "我记得第一次见到爱丽丝的时候, 她也说了一些奇怪的话, 就像你现在这样。"
 
 #: src/dialog/reimu.c:609
 msgid "But she didn’t go around threatening everyone!"
@@ -3665,7 +3665,7 @@ msgstr "已经太迟了！很快，幻想乡的所有人都会醒悟的！"
 msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
-msgstr "可怜的巫女，你难道不明白吗？科学是深不可测的力量，无可匹敌！"
+msgstr "可怜的巫女，你难道不明白吗? 科学是深不可测的力量，无可匹敌！"
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
@@ -4929,7 +4929,7 @@ msgstr "桨鱼"
 
 #: src/menu/charprofile.c:149
 msgid "Meteorology (Fulminology)"
-msgstr "学(雷电学)"
+msgstr "气象学(雷电学)"
 
 #: src/menu/charprofile.c:150
 msgid ""
@@ -5014,18 +5014,24 @@ msgid ""
 "For those just beginning\n"
 "their academic careers"
 msgstr ""
+"为初学者设计\n"
+"STG的生涯刚刚开始"
 
 #: src/menu/difficultyselect.c:45
 msgid ""
 "All those years of study\n"
 "have finally paid off"
 msgstr ""
+"苦心沉淀多年\n"
+"努力得到回报。"
 
 #: src/menu/difficultyselect.c:46
 msgid ""
 "You must really\n"
 "love books"
 msgstr ""
+"你疑似有点\n"
+"爱上书本了"
 
 #: src/menu/difficultyselect.c:47
 msgid ""
@@ -5033,6 +5039,9 @@ msgid ""
 "or live long enough to\n"
 "become a professor"
 msgstr ""
+"你要么死掉,\n"
+"或者活到\n"
+"成为教授那天"
 
 #: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
@@ -5040,7 +5049,7 @@ msgstr ""
 
 #: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
-msgstr ""
+msgstr "加载快速存档"
 
 #: src/menu/gameovermenu.c:62
 msgid "Spell Failed"
@@ -5048,15 +5057,15 @@ msgstr ""
 
 #: src/menu/gameovermenu.c:64
 msgid "Restart"
-msgstr ""
+msgstr "重开"
 
 #: src/menu/gameovermenu.c:66 src/menu/gameovermenu.c:84
 msgid "Give up"
-msgstr ""
+msgstr "撤退，保存实力"
 
 #: src/menu/gameovermenu.c:69
 msgid "Game Over"
-msgstr ""
+msgstr "满身疮痍"
 
 #: src/menu/gameovermenu.c:76
 #, c-format
@@ -5066,7 +5075,7 @@ msgstr ""
 #: src/menu/gameovermenu.c:78
 #, c-format
 msgid "Continue"
-msgstr ""
+msgstr "我不甘心！"
 
 #: src/menu/gameovermenu.c:82 src/menu/ingamemenu.c:137
 msgid "Restart the Game"
@@ -5074,7 +5083,7 @@ msgstr "推把"
 
 #: src/menu/gameovermenu.c:84
 msgid "Return to Title"
-msgstr ""
+msgstr "返回标题界面"
 
 #: src/menu/ingamemenu.c:133
 msgid "Game Paused"
@@ -5151,11 +5160,11 @@ msgstr ""
 
 #: src/menu/media.c:58
 msgid "Replay Cutscenes"
-msgstr ""
+msgstr "过场动画重播"
 
 #: src/menu/musicroom.c:124
 msgid "Now playing"
-msgstr ""
+msgstr "正在播放"
 
 #: src/menu/musicroom.c:170
 msgid ""
@@ -5164,24 +5173,30 @@ msgid ""
 "\n"
 "If you wish to hear it anyway, please select it again to confirm."
 msgstr ""
+"\n"
+"你还没解锁此曲目呢！\n"
+"\n"
+"若仍想试听，请再次选择以确认。"
 
 #: src/menu/musicroom.c:178
 msgid ""
 "\n"
 "No comment available"
 msgstr ""
+"\n"
+"暂无评论可用"
 
 #: src/menu/musicroom.c:234
 msgid "Unknown track"
-msgstr ""
+msgstr "未知曲目"
 
 #: src/menu/options.c:494
 msgid "Reset all settings to defaults?"
-msgstr ""
+msgstr "重置所有设置为默认值吗？"
 
 #: src/menu/options.c:500
 msgid "Reset all settings to the last saved values?"
-msgstr ""
+msgstr "重置所有设置为上次保存的值吗？"
 
 #: src/menu/options.c:701
 msgid "Yes"
@@ -5193,15 +5208,15 @@ msgstr ""
 
 #: src/menu/options.c:730
 msgid "Video Options"
-msgstr ""
+msgstr "显示选项"
 
 #: src/menu/options.c:733
 msgid "Fullscreen"
-msgstr ""
+msgstr "全屏"
 
 #: src/menu/options.c:738
 msgid "Display"
-msgstr ""
+msgstr "显示"
 
 #: src/menu/options.c:742
 msgid "Window size"
@@ -5253,69 +5268,69 @@ msgstr "后处理效果"
 
 #: src/menu/options.c:833
 msgid "Gamepad Controls"
-msgstr ""
+msgstr "手柄控制"
 
 #: src/menu/options.c:835 src/menu/options.c:1028
 msgid "Move up"
-msgstr ""
+msgstr "向上移动"
 
 #: src/menu/options.c:839 src/menu/options.c:1032
 msgid "Move down"
-msgstr ""
+msgstr "向下移动"
 
 #: src/menu/options.c:843 src/menu/options.c:1036
 msgid "Move left"
-msgstr ""
+msgstr "向左移动"
 
 #: src/menu/options.c:847 src/menu/options.c:1040
 msgid "Move right"
-msgstr ""
+msgstr "向右移动"
 
 #: src/menu/options.c:853 src/menu/options.c:1046
 msgid "Shoot"
-msgstr ""
+msgstr "射击"
 
 #: src/menu/options.c:857 src/menu/options.c:1050
 msgid "Focus"
-msgstr ""
+msgstr "低速"
 
 #: src/menu/options.c:861 src/menu/options.c:1054
 msgid "Use Spell Card"
-msgstr ""
+msgstr "使用符卡"
 
 #: src/menu/options.c:865 src/menu/options.c:1058
 msgid "Power Surge / Discharge"
-msgstr ""
+msgstr "能量浪涌 / 结束浪涌"
 
 #: src/menu/options.c:871 src/menu/options.c:1072
 msgid "Skip dialog"
-msgstr ""
+msgstr "跳过对话"
 
 #: src/menu/options.c:949
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
-msgstr ""
+msgstr "按下手柄上任意键退出手柄测试模式"
 
 #: src/menu/options.c:952
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
-msgstr ""
+msgstr "按下手柄上的 %s 键进入手柄测试模式"
 
 #: src/menu/options.c:965
 msgid "Gamepad Options"
-msgstr ""
+msgstr "手柄设置"
 
 #: src/menu/options.c:976
 msgid "Enable Gamepad/Joystick support"
-msgstr ""
+msgstr "启用手柄/摇杆支持"
 
 #: src/menu/options.c:980
 msgid "Device"
-msgstr ""
+msgstr "设备"
 
 #: src/menu/options.c:986 src/menu/options.c:1197
 msgid "Customize controls…"
-msgstr ""
+msgstr "自定义控制…"
 
 #: src/menu/options.c:990
 msgid "Remap square input into circular"
@@ -5530,11 +5545,11 @@ msgstr ""
 msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
-msgstr ""
+msgstr "魔法导弹与激光—— 一对简单明了的组合, 从未让你失望. 所以为何停滞不前呢？"
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
-msgstr ""
+msgstr "纯恋「Galactic Spark」（星河火花）"
 
 #: src/plrmodes/marisa_b.c:554
 msgid "Stellar Vortex"
@@ -5544,26 +5559,26 @@ msgstr ""
 msgid ""
 "As many bullets as there are stars in the sky. Some of them are bound to "
 "hit. That's called “homing”, right?"
-msgstr ""
+msgstr "天上有多少颗星星, 就有多少颗子弹, 最后肯定有一些会击中目标, 这也是一种「诱导」, 对吧？"
 
 #: src/plrmodes/marisa_b.c:556
 #, fuzzy
 msgid "Magic Sign “Stellar Vortex”"
-msgstr "里奇之御札「时空曲率」"
+msgstr "魔符「Stellar Vortex」（星环漩涡）"
 
 #: src/plrmodes/reimu_a.c:897
 msgid "Yōkai Buster"
-msgstr ""
+msgstr "Youkai Buster"
 
 #: src/plrmodes/reimu_a.c:898
 msgid ""
 "The tried-and-true: homing amulets and sharp needles. You don’t have the "
 "luxury of time to think about aiming."
-msgstr ""
+msgstr "久经考验的诱导护符与封魔针, 不必思考怎么瞄准敌人, 干就完了！"
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr ""
+msgstr "灵符「梦想封印 —裂—」"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -5573,11 +5588,11 @@ msgstr ""
 msgid ""
 "Turn your understanding of reality upside-down, and tie the boundaries of "
 "spacetime into knots as easily as the ribbons in your hair."
-msgstr ""
+msgstr "它将颠覆你对真实的认知: 将时空的边界系成结, 如同你发间的丝带般轻易。"
 
 #: src/plrmodes/reimu_b.c:715
 msgid "Dream Sign “Ethereal Boundary Rupture”"
-msgstr ""
+msgstr "梦符「幻之结界冲击波」"
 
 #: src/plrmodes/youmu_a.c:708
 msgid "Soul Reflection"
@@ -5587,26 +5602,26 @@ msgstr ""
 msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
-msgstr ""
+msgstr "人类与幽灵携手同行, 向这最后的目标前进, 你的二元之躯会助你一臂之力…… 或者说一尾之力。"
 
 #: src/plrmodes/youmu_a.c:710
 msgid "Soul Sign “Reality-Piercing Apparition”"
-msgstr ""
+msgstr "魂符「斩断现世的幽魂」"
 
 #: src/plrmodes/youmu_b.c:620
 #, fuzzy
 msgid "Haunting Revelation"
-msgstr "启示之巅"
+msgstr ""
 
 #: src/plrmodes/youmu_b.c:621
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
-msgstr ""
+msgstr "鬼魂是真实存在的, 但它们并不可怕。 当然, 除非你恰好挡在了一位 决心已定的持剑女士面前……"
 
 #: src/plrmodes/youmu_b.c:622
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
-msgstr ""
+msgstr "神盾剑「西行无向斩」"
 
 #: src/stage.c:622
 #, c-format
@@ -5976,7 +5991,7 @@ msgstr ""
 
 #: po/extra_strings.c:18
 msgid "Unsettling Knowledge"
-msgstr ""
+msgstr "糟心的知识"
 
 #: po/extra_strings.c:19
 msgid "jneen-collective"
@@ -6004,6 +6019,9 @@ msgid ""
 "\n"
 "Many paths branch from one. Echoes from across the sea yield a new adventure."
 msgstr ""
+"很好的阐释了「泰西」。"
+"\n"
+"一条大道，岔路千条。彼岸回声，奇遇新生。"
 
 #: po/extra_strings.c:26
 msgid "Logic Bombardier"
@@ -6025,7 +6043,7 @@ msgstr ""
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
-msgstr ""
+msgstr "雾所引的迷蒙闹戏"
 
 #: po/extra_strings.c:33
 msgid ""
@@ -6058,7 +6076,7 @@ msgstr ""
 
 #: po/extra_strings.c:38
 msgid "Treasure the Wager, Treasure the Odds"
-msgstr ""
+msgstr "珍惜赌注，珍惜机遇"
 
 #: po/extra_strings.c:41
 msgid ""
@@ -6071,7 +6089,7 @@ msgstr ""
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
-msgstr ""
+msgstr "暗黑神明的欢乐登场"
 
 #: po/extra_strings.c:45
 msgid ""
@@ -6085,7 +6103,7 @@ msgstr ""
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
-msgstr ""
+msgstr "斐索的发现 ~ Lightray Vector"
 
 #: po/extra_strings.c:49
 msgid ""
@@ -6130,7 +6148,7 @@ msgstr ""
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
-msgstr ""
+msgstr "被边缘的绯红 ~ The Red Word"
 
 #: po/extra_strings.c:61
 msgid ""
@@ -6203,7 +6221,7 @@ msgstr ""
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
-msgstr ""
+msgstr "大宇宙之战 ~ The Vacuum Catastrophe"
 
 #: po/extra_strings.c:77
 msgid ""
@@ -6219,7 +6237,7 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
-msgstr ""
+msgstr "登神的涌现属性 ~ Ambivalent Soul"
 
 #: po/extra_strings.c:81
 msgid ""
