@@ -3540,591 +3540,643 @@ msgstr "Aber dürfen wir nie auf mehr hoffen…?"
 
 #: src/dialog/reimu.c:267
 msgid "Huh? There’s a mansion jutting out of this tower?"
-msgstr ""
+msgstr "Huch? Aus dem Turm guckt unten ein Anwesen raus?"
 
 #: src/dialog/reimu.c:269
 msgid "This makes even less sense than usual."
-msgstr ""
+msgstr "Das macht ja noch weniger Sinn als sonst."
 
 #: src/dialog/reimu.c:275
 msgid "And who are you supposed to be?"
-msgstr ""
+msgstr "Und wer sollst du sein?"
 
 #: src/dialog/reimu.c:279
 msgid "Oi, that’s what I should be asking!"
-msgstr ""
+msgstr "Hey, das ist meine Frage!"
 
 #: src/dialog/reimu.c:282 src/dialog/youmu.c:322
 msgid "…?"
-msgstr ""
+msgstr "…?"
 
 #: src/dialog/reimu.c:284
 msgid "And what are you doing, anyways?"
-msgstr ""
+msgstr "Und was machst du hier überhaupt?"
 
 #: src/dialog/reimu.c:285
 msgid "Are you behind all these… strange thoughts everyone’s having?"
-msgstr ""
+msgstr "Steckst du hinter all diesen… seltsamen Gedanken, die jeder hat?"
 
 #: src/dialog/reimu.c:289
 msgid ""
 "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with "
 "you…"
 msgstr ""
+"Ich hab keine Ahnung, was du mit ‘seltsamen Gedanken’ meinst, aber ich bin "
+"ehrlich…"
 
 #: src/dialog/reimu.c:290
 msgid "Your clothing is giving me some strange thoughts!"
-msgstr ""
+msgstr "Dein Outfit gibt mir seltsame Gedanken!"
 
 #: src/dialog/reimu.c:291
 msgid "Where’d you even get that outfit?! Dumpster diving?! For real!"
-msgstr ""
+msgstr "Wo hast du diese Klamotten her?! Warst du containern?! Echt jetzt!"
 
 #: src/dialog/reimu.c:294
 msgid "Ugh, another prissy mansion-dweller."
-msgstr ""
+msgstr "Ugh, noch ein Snob mit Anwesen."
 
 #: src/dialog/reimu.c:296
 msgid "I thought I remembered you from somewhere, but no. Absolutely not."
 msgstr ""
+"Ich dachte ich habe dich irgendwo schon mal gesehen, aber nein. Auf keinen "
+"Fall."
 
 #: src/dialog/reimu.c:298
 msgid "Just… stop whatever it is you’re doing, right now."
-msgstr ""
+msgstr "Hör… einfach auf, mit was auch immer du gerade tust."
 
 #: src/dialog/reimu.c:301
 msgid "Once you get some fashion sense, maybe I will!"
-msgstr ""
+msgstr "Sobald du etwas Modebewusstsein entwickelst, vielleicht!"
 
 #: src/dialog/reimu.c:304
 msgid "… so you *are* behind this, huh?"
-msgstr ""
+msgstr "… als *bist* du die Übeltäterin, hm?"
 
 #: src/dialog/reimu.c:306
 msgid "Besides, haven’t you ever seen a shrine maiden before?"
-msgstr ""
+msgstr "Und sowieso, hast du noch nie eine Miko gesehen?"
 
 #: src/dialog/reimu.c:309
 msgid "You’re a shrine maiden?"
-msgstr ""
+msgstr "Du bist eine Miko?"
 
 #: src/dialog/reimu.c:311
 msgid "More like… BRINE maiden!"
-msgstr ""
+msgstr "Mehr wie… MIETKLO!"
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
-msgstr ""
+msgstr "D-das hier ist was Mikos anhaben. Unsere Uniform."
 
 #: src/dialog/reimu.c:316
 msgid "Uniform? Are you kidding me?!"
-msgstr ""
+msgstr "Uniform? Machst du Witze?!"
 
 #: src/dialog/reimu.c:317
 msgid ""
 "I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
-msgstr ""
+msgstr "Ich hab schon mal eine echte Miko gesehen und die sah ganz anders aus!"
 
 #: src/dialog/reimu.c:318
 msgid ""
 "What’s with those patterns, anyways? It’s completely unorthodox! It’s not "
 "even using the right type of fabric!"
 msgstr ""
+"Was sind das überhaupt für Muster? Komplett unorthodox! Nicht mal der Stoff "
+"ist richtig!"
 
 #: src/dialog/reimu.c:320
 msgid "Get out of here, fake-maiden!"
-msgstr ""
+msgstr "Raus hier, Fake-Miko!"
 
 #: src/dialog/reimu.c:323
 msgid "… ARGH!"
-msgstr ""
+msgstr "… AHHH!"
 
 #: src/dialog/reimu.c:325
 msgid "Listen!! It’s HARD to find clothes I can wear every day on the job!"
 msgstr ""
+"Hör mal!! Es ist SCHWER Kleidung zu finden, die ich täglich bei meinem Job "
+"tragen kann!"
 
 #: src/dialog/reimu.c:326
 msgid "It has to fit a certain style!"
-msgstr ""
+msgstr "Sie muss einen bestimmten Stil haben!"
 
 #: src/dialog/reimu.c:327
 msgid "And only a few fabrics feel good to wear!"
-msgstr ""
+msgstr "Und nur bestimmte Stoffe fühlen sich gut an!"
 
 #: src/dialog/reimu.c:328
 msgid "I can’t stand scratchy wool or slippery silk!"
-msgstr ""
+msgstr "Kratzende Wolle oder schlüpfrige Seide kann ich nicht ab!"
 
 #: src/dialog/reimu.c:329
 msgid "Everything else feels terrible against my skin—"
-msgstr ""
+msgstr "Alles andere fühlt sich furchtbar auf meiner Haut an—"
 
 #: src/dialog/reimu.c:332
 msgid "Whoa, hey, sorry, didn’t mean to make you all—"
-msgstr ""
+msgstr "Whoa, hey, sorry, ich wollte dich nicht—"
 
 #: src/dialog/reimu.c:336
 msgid "I *hate* prissy mansion dwellers!"
-msgstr ""
+msgstr "Ich *hasse* Snobs mit Anwesen!"
 
 #: src/dialog/reimu.c:338
 msgid "Let’s just get this over with!"
-msgstr ""
+msgstr "Less es uns einfach hinter uns bringen!"
 
 #: src/dialog/reimu.c:352
 msgid "That’s what you get for insulting my outfit like that."
-msgstr ""
+msgstr "Geschieht dir recht dafür dass du mein Outfit beleidigt hast."
 
 #: src/dialog/reimu.c:354
 msgid "Ouch ouch ouch…"
-msgstr ""
+msgstr "Auauaua…"
 
 #: src/dialog/reimu.c:355
 msgid "W-wait, what happened?"
-msgstr ""
+msgstr "W-warte, was ist passiert?"
 
 #: src/dialog/reimu.c:357
 msgid "What do you mean ‘what happened’?"
-msgstr ""
+msgstr "Was meinst du ‘was ist passiert’?"
 
 #: src/dialog/reimu.c:359
 msgid "(M-maybe if I fake having amnesia… yeah, that’s it…!)"
-msgstr ""
+msgstr "(V-vielleicht kann ich Amnesie vortäuschen… ja, das ist es…!)"
 
 #: src/dialog/reimu.c:361
 msgid "O-oof, my head! Ow! How did I even get here???"
-msgstr ""
+msgstr "A-auuu, mein Kopf! Au! Wie bin ich hier nur gelandet???"
 
 #: src/dialog/reimu.c:362
 msgid "W-wait! Aren’t you that girl from a long while back?"
-msgstr ""
+msgstr "W-warte! Bist du nicht die von damals?"
 
 #: src/dialog/reimu.c:365
 msgid "I don’t remember you at all."
-msgstr ""
+msgstr "Keine Ahnung wovon du redest."
 
 #: src/dialog/reimu.c:367
 msgid "But somehow, so familiar…"
-msgstr ""
+msgstr "Aber irgendwas kommt mir bekannt vor…"
 
 #: src/dialog/reimu.c:369
 msgid ""
 "This feeling is annoying, whatever it is. Make it stop, or tell me how to "
 "make it stop."
 msgstr ""
+"So ein nerviges Gefühl, was auch immer es ist. Lass es aufhören oder sag "
+"mir, was ich dagegen tun kann."
 
 #: src/dialog/reimu.c:372
 msgid "Huh? I-I don’t know! I barely remember anything!"
-msgstr ""
+msgstr "Hä? I-ich weiß nicht! Ich erinnere mich doch selbst an nichts!"
 
 #: src/dialog/reimu.c:373
 msgid "(Ugh, her outfit really does suck though…)"
-msgstr ""
+msgstr "(Ugh, aber ihr Outfit ist echt schlimm…)"
 
 #: src/dialog/reimu.c:375
 msgid "(Just another victim…?)"
-msgstr ""
+msgstr "(Nur ein weiteres Opfer…?)"
 
 #: src/dialog/reimu.c:377
 msgid "I’ll deal with you after I figure out whatever's happening here."
-msgstr ""
+msgstr "Ich kümmere mich um dich, wenn ich herausfinde was hier los ist."
 
 #: src/dialog/reimu.c:394
 msgid "I’ve got a bad feeling about this…"
-msgstr ""
+msgstr "Ich habe ein ungutes Gefühl…"
 
 #: src/dialog/reimu.c:396
 msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
 msgstr ""
+"Oder vielleicht ist mir nur schlecht von der ganzen Dreherei dieses Turms."
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
-msgstr ""
+msgstr "Oder möglicherweise eine Nebenwirkung seiner puren Existenz?"
 
 #: src/dialog/reimu.c:404
 msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
-msgstr ""
+msgstr "Oh, du bist’s. Warum hast du mich eben angegriffen?"
 
 #: src/dialog/reimu.c:408
 msgid "Ah, apologies. It must have been friendly fire."
-msgstr ""
+msgstr "Oh, entschuldigung. Das wahr wohl Friendly-Fire."
 
 #: src/dialog/reimu.c:410
 msgid "Things are quite hectic here. I beg your understanding."
-msgstr ""
+msgstr "Ist echt hektisch hier. Ich bitte um Verzeihung."
 
 #: src/dialog/reimu.c:411
 msgid "But it has been a while, has it not?"
-msgstr ""
+msgstr "Aber lange nicht gesehen, oder?"
 
 #: src/dialog/reimu.c:414
 msgid "Err, right, yes, it has been a while. Nice to see you again."
-msgstr ""
+msgstr "Richtig, schon etwas her. Schön dich mal wieder zu treffen."
 
 #: src/dialog/reimu.c:417
 msgid "This tower is unlike anything I have seen before."
-msgstr ""
+msgstr "Dieser Turm ist anders als alles, was ich bisher gesehen habe."
 
 #: src/dialog/reimu.c:418
 msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
 msgstr ""
+"Durch Wörtern aus den Wolken habe ich herausgefunden, dass der Übeltäter "
+"etwas mit ‘parallelen Universen’ zu tun hat."
 
 #: src/dialog/reimu.c:421
 msgid ""
 "You mean like Otherworlds? That’s not too out of the ordinary these days."
-msgstr ""
+msgstr "Du meinst so was wie Anderswelten? Nicht so besonders heutzutage."
 
 #: src/dialog/reimu.c:423
 msgid ""
 "This feels different though. It’s like the walls are sucking up faith into a "
 "void."
 msgstr ""
+"Das hier fühlt sich aber anders an. Es ist als würden die Wände unseren "
+"Glauben ins nichts saugen."
 
 #: src/dialog/reimu.c:424
 msgid "I’m surprised the fairies are surviving at all…"
-msgstr ""
+msgstr "Ich bin überrascht, dass die Feen das überhaupt überleben…"
 
 #: src/dialog/reimu.c:426
 msgid "But what are you even doing here?"
-msgstr ""
+msgstr "Aber was machst du hier?"
 
 #: src/dialog/reimu.c:429
 msgid "It is not just the Netherworld and Gensōkyō being affected."
-msgstr ""
+msgstr "Es ist nicht nur das Jenseits und Gensōkyō, die betroffen sind."
 
 #: src/dialog/reimu.c:431
 msgid ""
 "In Bhava-agra, the Eldest Daughter’s personality has experienced some "
 "changes, too."
 msgstr ""
+"Die Persönlichkeit der ältesten Tochter in Bhava-agra wurde auch beeinflusst."
 
 #: src/dialog/reimu.c:434
 msgid "It’s spreading that fast?!"
-msgstr ""
+msgstr "Es breitet sich so schnell aus?"
 
 #: src/dialog/reimu.c:437
 msgid "Initially, I had no plans towards interfering."
-msgstr ""
+msgstr "Am Anfang hatte ich keine Absicht mich einzumischen."
 
 #: src/dialog/reimu.c:440
 msgid ""
 "However, the tower’s psychological effects began to intensify, and I began "
 "to fear that nobody would take charge."
 msgstr ""
+"Aber die psychologischen Effekte des Turms wurden stärker und ich hatte "
+"Sorge, dass niemand sich darum kümmern würde."
 
 #: src/dialog/reimu.c:443
 msgid "(Do people have this little faith in me…?)"
-msgstr ""
+msgstr "(Haben die Leute so wenig Vertrauen in mich…?)"
 
 #: src/dialog/reimu.c:446
 msgid "As more minds began to fall prey, I considered a theory…"
-msgstr ""
+msgstr "Während immer mehr Leute beeinflusst wurden, hatte ich eine Theorie…"
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
-msgstr ""
+msgstr "Ist diese Maschine inkompatibel mit der Existenz von Fantasie?"
 
 #: src/dialog/reimu.c:450
 msgid "That may be why you feel a sense of dread about the place."
-msgstr ""
+msgstr "Deswegen fühlst du vielleicht eine Bedrohung von diesem Ort."
 
 #: src/dialog/reimu.c:453
 msgid "Well, that settles it. Where’s the owner, then?"
-msgstr ""
+msgstr "Okay, das erklärt es. Aber wo ist der Eigentümer?"
 
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
 msgstr ""
+"Um ehrlich zu sein, bin ich nicht sicher ob du dieser Aufgabe gewachsen bist."
 
 #: src/dialog/reimu.c:457
 msgid ""
 "You are still relatively composed, yes, but your mental state seems to be "
 "deteriorating."
 msgstr ""
+"Du bist immer noch relativ beisammen, aber dein mentaler Zustand scheint "
+"sich zu verschlechtern."
 
 #: src/dialog/reimu.c:460
 msgid "Deteriorating? But I just got here!"
-msgstr ""
+msgstr "Verschlechtern? Aber ich bin doch gerade erst angekommen!"
 
 #: src/dialog/reimu.c:463
 msgid ""
 "You are still so worrisome. You ought to go home before you lose yourself."
 msgstr ""
+"Ich mache mir trotzdem Sorgen. Geh besser nach Hause, bevor es zu spät ist."
 
 #: src/dialog/reimu.c:466
 msgid "No!"
-msgstr ""
+msgstr "Nein!"
 
 #: src/dialog/reimu.c:469
 msgid "I beg your pardon?"
-msgstr ""
+msgstr "Wie bitte?"
 
 #: src/dialog/reimu.c:471
 msgid "Don’t keep telling me how little you think of me. I’m sick of it!"
-msgstr ""
+msgstr "Hör auf zu sagen wie wenig du von mir erwartest. Ich hab es satt!"
 
 #: src/dialog/reimu.c:473
 msgid "I’m going to give everyone a reason to have faith in me!"
-msgstr ""
+msgstr "Ich werde allen einen Grund geben an mich zu glauben!"
 
 #: src/dialog/reimu.c:475
 msgid "It seems your resolve is unwavering. Very well, then."
-msgstr ""
+msgstr "Scheint als wäre dein Wille ungebrochen. Na gut."
 
 #: src/dialog/reimu.c:476
 msgid "Allow me to test your resistance to their infuriating machine!"
 msgstr ""
+"Erlaube es mir deine Widerstandsfähigkeit gegen diese widerwärtige Maschine "
+"zu testen!"
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
-msgstr ""
+msgstr "Gewitterwolken? Sind wir wirklich so weit oben?"
 
 #: src/dialog/reimu.c:502
 msgid "Ah…"
-msgstr ""
+msgstr "Ah…"
 
 #: src/dialog/reimu.c:503
 msgid "I was wrong for doubting you, I suppose…"
-msgstr ""
+msgstr "Es war falsch an dir zu zweifeln, denke ich."
 
 #: src/dialog/reimu.c:506
 msgid "Somehow I don’t feel too satisfied by that."
-msgstr ""
+msgstr "Irgendwie stellt mich das nicht sehr zufrieden."
 
 #: src/dialog/reimu.c:509
 msgid "To be honest with you, I’m glad you arrived after all."
-msgstr ""
+msgstr "Um ehrlich zu sein bin ich froh, dass du gekommen bist."
 
 #: src/dialog/reimu.c:510
 msgid "I know now that I would not have been able to defeat her."
-msgstr ""
+msgstr "Ich weiß jetzt, dass ich sie nicht hätte besiegen können."
 
 #: src/dialog/reimu.c:512
 msgid ""
 "Since you’re still able to think clearly, perhaps Gensōkyō will be saved "
 "after all."
-msgstr ""
+msgstr "Da du immer noch klar denken kannst, ist Gens­ōkyō vielleicht gerettet."
 
 #: src/dialog/reimu.c:515
 msgid "Finally."
-msgstr ""
+msgstr "Endlich."
 
 #: src/dialog/reimu.c:517
 msgid "But you’re right. This is bigger than Gensōkyō."
-msgstr ""
+msgstr "Aber du hast recht. Das hier ist größer als Gensōkyō."
 
 #: src/dialog/reimu.c:518
 msgid "I’ll need to take this seriously."
-msgstr ""
+msgstr "Ich muss es ernst nehmen."
 
 #: src/dialog/reimu.c:521
 msgid "Glad to hear it."
-msgstr ""
+msgstr "Freut mich zu hören."
 
 #: src/dialog/reimu.c:537
 msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
 msgstr ""
+"Na, na na, es scheint eine gewissenhafte Ratte hat sich bei uns eingenistet."
 
 #: src/dialog/reimu.c:541
 msgid "How strange. You should’ve lost your mind by now."
-msgstr ""
+msgstr "Wie seltsam. Du solltest längst wahnsinnig sein."
 
 #: src/dialog/reimu.c:544
 msgid "Just turn it off already."
-msgstr ""
+msgstr "Mach das Ding endlich aus."
 
 #: src/dialog/reimu.c:545
 msgid "I’m not in the mood to argue, so don’t push me!"
-msgstr ""
+msgstr "Ich hab keine Lust zu diskutieren, versuch’s nicht."
 
 #: src/dialog/reimu.c:549
 msgid "Bold of you to barge into MY tower and give ME orders!"
 msgstr ""
+"Mutig von dir in MEINEN Turm einzubrechen und dann MIR Befehle zu geben."
 
 #: src/dialog/reimu.c:550
 msgid "I still remember what you did to Lady Kazami and I back then!"
-msgstr ""
+msgstr "Ich erinnere mich noch was du damals mit Lady Kazami gemacht hast!"
 
 #: src/dialog/reimu.c:553
 msgid "And what was that, again?"
-msgstr ""
+msgstr "Und was hab ich noch mal gemacht?"
 
 #: src/dialog/reimu.c:554
 msgid "I’m getting a familiar feeling just looking at you, but…"
-msgstr ""
+msgstr "Irgendwas klingelt da, aber ich…"
 
 #: src/dialog/reimu.c:557
 msgid "Is this a joke?! Are you trying to mock me?!"
-msgstr ""
+msgstr "Ist das ein Witz?! Nimmst du mich auf den Arm?!"
 
 #: src/dialog/reimu.c:560
 msgid ""
 "I think I would’ve remembered a giant tower that makes people go mad with "
 "power!"
 msgstr ""
+"Ich denke an einen riesigen Turm der Leute wahnsinnig macht hätte ich mich "
+"wohl erinnert!"
 
 #: src/dialog/reimu.c:561
 msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
 msgstr ""
+"Das Mindeste was du tun kannst, wenn du mich beschuldigst ist zu sagen, was "
+"ich denn getan haben soll."
 
 #: src/dialog/reimu.c:564
 msgid "Ah. I see."
-msgstr ""
+msgstr "Ach, verstehe."
 
 #: src/dialog/reimu.c:566
 msgid "Fine. I will."
-msgstr ""
+msgstr "Gut, ich sage es dir."
 
 #: src/dialog/reimu.c:568
 msgid ""
 "This tower is a recent invention. Its mere existence is revolutionary in "
 "several scientific fields."
 msgstr ""
+"Dieser Turm ist eine neuartige Erfindung. Seine pure Existenz ist "
+"revolutionär für verschiedene Felder der Wissenschaft."
 
 #: src/dialog/reimu.c:569
 msgid ""
 "The denizens of this Gensōkyō ought to have been thankful for its vast "
 "scientific knowledge…"
 msgstr ""
+"Die Bewohner dieses Gensōkyōs sollten dankbar sein für sein unerschöpfliches "
+"Wissen…"
 
 #: src/dialog/reimu.c:570
 msgid "But alas, we have other plans."
-msgstr ""
+msgstr "Aber was solls, wir haben andere Pläne."
 
 #: src/dialog/reimu.c:573
 msgid "‘This’ Gensōkyō…?"
-msgstr ""
+msgstr "‘Dieses’ Gensōkyō…?"
 
 #: src/dialog/reimu.c:576
 msgid "Somehow, it feels like more of a punishment."
-msgstr ""
+msgstr "Irgendwie fühlt sich das mehr wie eine Strafe an."
 
 #: src/dialog/reimu.c:577
 msgid "Ever heard of ‘ignorance is bliss’?"
-msgstr ""
+msgstr "‘Unwissenheit ist ein Segen’ je gehört?"
 
 #: src/dialog/reimu.c:578
 msgid ""
 "There won’t be anyone to rule over, or whatever, if you make them all lose "
 "it."
 msgstr ""
+"Du wirst niemanden zum Regieren haben, oder was auch immer, wenn vorher alle "
+"wahnsinnig werden."
 
 #: src/dialog/reimu.c:580
 msgid ""
 "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around "
 "it."
 msgstr ""
+"Der Babelturm hat die Funktion die, die in den Genuss seiner Nähe kommen, "
+"‘erleuchten’."
 
 #: src/dialog/reimu.c:582
 msgid "Anyone unable to comprehend its brilliance will be driven to madness."
-msgstr ""
+msgstr "Jeder, der seine Brillianz nicht verstehen kann wird wahnsinnig."
 
 #: src/dialog/reimu.c:584
 msgid ""
 "But this is simply retribution for the crimes that have been committed "
 "against us!"
 msgstr ""
+"Aber das ist die gerechte Strafe für die Verbrechen, die gegen uns begangen "
+"wurden!"
 
 #: src/dialog/reimu.c:587
 msgid "‘Parallel universes’, is that it?"
-msgstr ""
+msgstr "‘Paralleluniversen’, ist es das?"
 
 #: src/dialog/reimu.c:590
 msgid "Hmm? Is that what you think this Gensōkyō is?"
-msgstr ""
+msgstr "Hmm? Denkst du es ist das, was Gens­ōky­ō ausmacht?"
 
 #: src/dialog/reimu.c:593
 msgid "You tell me! You’re the megalomaniac!"
-msgstr ""
+msgstr "Sag du es mir! Du bist die Größenwahnsinnige!"
 
 #: src/dialog/reimu.c:595
 msgid "Do you hate me because some other Reimu did something? Is that it?"
-msgstr ""
+msgstr "Hasst du mich, weil eine andere Reimu irgendwas getan hat? Ist es das?"
 
 #: src/dialog/reimu.c:596
 msgid "But then what does that have to do with any of us?!"
-msgstr ""
+msgstr "Aber was hat das denn mit uns zu tun?!"
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr ""
+msgstr "Für eine ‘Wissenschaftlerin’ bist du aber ganz schön unlogisch!"
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
-msgstr ""
+msgstr "Vielleicht hast du es einfach vergessen, wie den Rest von uns!"
 
 #: src/dialog/reimu.c:603
 msgid ""
 "Only the privileged, such as Lady Kazami, made it out! The rest of us were "
 "lost!"
 msgstr ""
+"Nur die Privilegierten wie Lady Kazami haben es herausgeschafft. Der Rest "
+"von uns war verloren."
 
 #: src/dialog/reimu.c:606
 msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
-msgstr ""
+msgstr "Du meinst Kazami Y­ūka? Und… Alice?"
 
 #: src/dialog/reimu.c:607
 msgid ""
 "I remember when I first met Alice, and she said some weird things too, just "
 "like you are now."
 msgstr ""
+"Ich erinnere mich, als ich das erste mal Alice traf hat sie auch irgendwas "
+"komisches gesagt, wie du."
 
 #: src/dialog/reimu.c:609
 msgid "But she didn’t go around threatening everyone!"
-msgstr ""
+msgstr "Aber sie fing nicht gleich an alle zu bedrohen!"
 
 #: src/dialog/reimu.c:612
 msgid ""
 "We weren’t as lucky! And as reparation, we will take control of this "
 "Gensōkyō!"
 msgstr ""
+"Wir hatten nicht so viel Glück! Und als Wiedergutmachen werden wir jetzt "
+"dieses Gensōky­ō übernehmen!"
 
 #: src/dialog/reimu.c:613
 msgid "We will make it so we will NEVER be forgotten!"
-msgstr ""
+msgstr "Wir werden dafür sorgen, dass wir NIE WIEDER vergessen werden!"
 
 #: src/dialog/reimu.c:616
 msgid "Even in Gensōkyō, you can be forgotten, huh?"
-msgstr ""
+msgstr "Selbst in Gens­ōkyo kann man vergessen werden, hm?"
 
 #: src/dialog/reimu.c:617
 msgid ""
 "What a miserable thought. No wonder I felt terrible just seeing this place!"
 msgstr ""
+"Was für ein schlimmer Gedanke. Kein Wunder dass mir schlecht wird, wenn ich "
+"diesen Ort nur sehe!"
 
 #: src/dialog/reimu.c:619
 msgid "Turn it off, or being forgotten will be the least of your worries!"
 msgstr ""
+"Schalte es aus, oder vergessen zu werden ist das geringste deiner Probleme!"
 
 #: src/dialog/reimu.c:623
 msgid "It’s too late for that! Soon, all of Gensōkyō will become enlightened!"
-msgstr ""
+msgstr "Es ist zu spät dafür! Bald wird ganz Gens­ōky­ō erleuchtet werden!"
 
 #: src/dialog/reimu.c:625
 msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
 msgstr ""
+"Verstehst du nicht, jämmerliche Miko? Wissenschaft ist eine unglaubliche "
+"Kraft, die durch nichts besiegt werden kann!"
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
-msgstr ""
+msgstr "Dieses mal werden wir nicht vergessen!"
 
 #: src/dialog/reimu.c:639
 msgid "Is that it? Are you finally done?"
-msgstr ""
+msgstr "Und? Bist du endlich fertig?"
 
 #: src/dialog/reimu.c:640
 msgid "Y-you think this is over?! The time of reckoning is upon you!"
-msgstr ""
+msgstr "D-du denkst das wars?! Die Zeit der Abrechnung ist gekommen!"
 
 #: src/dialog/reimu.c:641
 msgid "Gaze upon the ultimate truth of the universe, and tremble!"
 msgstr ""
+"Wirf einen Blick auf die ultimative Wahrheit des Universums und zittere!"
 
 #: src/dialog/youmu.c:24
 msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
