@@ -5,7 +5,7 @@
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/moriya", {
 		T_NARRATOR("— The Moriya Shrine\n"),
-		T_NARRATOR("A workaholic shrine at the top of of Yōkai Mountain."),
+		T_NARRATOR("A workaholic shrine at the top of Yōkai Mountain."),
 		{ 0 },
 	}},
 	{ "cutscenes/locations/moriya", {
@@ -95,7 +95,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_CENTERED("— Good End —", "The Extra Stage is not ready yet, sorry! ^_^'"),
+		T_CENTERED(N_("— Good End —"), N_("The Extra Stage is not ready yet, sorry! ^_^'")),
 		{ 0 },
 	}},
 	{ NULL }
