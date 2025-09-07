@@ -276,11 +276,11 @@ msgstr "魔理沙 （坏结局）"
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr "—— 红魔馆\n"
+msgstr "—— 红魔馆"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr "一座位于东方幻想之地的宅邸。\n"
+msgstr "一座位于东方幻想之地的宅邸。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
@@ -2358,7 +2358,7 @@ msgstr "呃，我可没答应要被这么暴揍一顿的！"
 
 #: src/dialog/marisa.c:355
 msgid "‘Sign up’? I thought you didn’t remember anything."
-msgstr "没答应？我怎么记得你刚才还什么都不记得了呢？"
+msgstr "没答应？我怎么记得你刚才还什么都不记得了呢？""
 
 #: src/dialog/marisa.c:358
 msgid "N-Nevermind!"
@@ -2933,7 +2933,7 @@ msgstr "如我所料，你可能会来。"
 
 #: src/dialog/reimu.c:123
 msgid "But once again, you’re trying to go places you shouldn’t."
-msgstr "但和上一次一样——你又试图踏入不应踏足的地方。"
+msgstr "但和上一次一样—— 你又试图踏入不应踏足的地方。"
 
 #: src/dialog/reimu.c:124
 msgid "What a troubled girl…"
@@ -2951,7 +2951,7 @@ msgstr "你到底知不知道你是在保护我挡啥伤害啊喂？"
 msgid ""
 "A bright girl like you should know that Yōkai Mountain is especially "
 "dangerous today."
-msgstr "像你这样聪明的女孩子应该知道，妖怪之山今天非常非常危险。"
+msgstr "像你这样聪明的女孩子应该知道, 妖怪之山今天非常非常危险。"
 
 #: src/dialog/reimu.c:136
 msgid "You ought to turn back now, my dear."
@@ -2963,7 +2963,7 @@ msgstr "（她......她完全无视我的问题。)"
 
 #: src/dialog/reimu.c:141
 msgid "Does it matter that the Gods asked me to come this time?"
-msgstr "这次是几位大神请我来的，这难道不重要吗？"
+msgstr "这次是几位大神请我来的, 这难道不重要吗？"
 
 #: src/dialog/reimu.c:145
 msgid "I know better than the mountain Gods this time."
@@ -3135,7 +3135,7 @@ msgstr "你的衣服让我产生了一些「奇怪想法」！"
 
 #: src/dialog/reimu.c:291
 msgid "Where’d you even get that outfit?! Dumpster diving?! For real!"
-msgstr "你这身衣服到底从哪弄来的？！该不会是捡破烂捡来的吧？！真的假的！"
+msgstr "你这身衣服到底从哪弄来的？! 该不会是捡破烂捡来的吧？！真的假的！"
 
 #: src/dialog/reimu.c:294
 msgid "Ugh, another prissy mansion-dweller."
@@ -3198,7 +3198,7 @@ msgstr "……你干嘛嗨嗨哟！"
 
 #: src/dialog/reimu.c:325
 msgid "Listen!! It’s HARD to find clothes I can wear every day on the job!"
-msgstr "直视我！Look in my eyes！你知道我找适合每天上班的衣服有多难吗！"
+msgstr "直视我！Look in my eyes! 你知道我找适合每天上班的衣服有多难吗！"
 
 #: src/dialog/reimu.c:326
 msgid "It has to fit a certain style!"
@@ -3326,7 +3326,7 @@ msgstr "这塔确实与众不同呢。"
 msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
-msgstr "自从消息传遍云端后，我得知罪魁祸首与“平行 宇宙”有关。"
+msgstr "自从消息传遍云端后, 我得知罪魁祸首与“平行宇宙”有关。"
 
 #: src/dialog/reimu.c:421
 msgid ""
@@ -3369,7 +3369,7 @@ msgstr "本来吗我没打算干涉。"
 msgid ""
 "However, the tower’s psychological effects began to intensify, and I began "
 "to fear that nobody would take charge."
-msgstr "然而，这座塔的心理影响开始加剧，我担心没有人来垫底。"
+msgstr "然而，这座塔的心理影响开始加剧, 我担心没有人来垫底。"
 
 #: src/dialog/reimu.c:443
 msgid "(Do people have this little faith in me…?)"
@@ -3389,7 +3389,7 @@ msgstr "这也许就是为什么你对这个地方感到恐惧的原因。"
 
 #: src/dialog/reimu.c:453
 msgid "Well, that settles it. Where’s the owner, then?"
-msgstr "好了，事情解决了。那么，这塔的所有者在哪儿呢？"
+msgstr "好了，事情解决了。 那么, 这塔的所有者在哪儿呢？"
 
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
@@ -3399,7 +3399,7 @@ msgstr "坦白说，我不确定你是否能担此大任。"
 msgid ""
 "You are still relatively composed, yes, but your mental state seems to be "
 "deteriorating."
-msgstr "虽你仍然相对镇定，但你的精神状态正在「恶化」。"
+msgstr "虽你仍然相对镇定, 但你的精神状态正在「恶化」。"
 
 #: src/dialog/reimu.c:460
 msgid "Deteriorating? But I just got here!"
@@ -3408,7 +3408,7 @@ msgstr "恶化？可我才刚到这里！"
 #: src/dialog/reimu.c:463
 msgid ""
 "You are still so worrisome. You ought to go home before you lose yourself."
-msgstr "你还是这么让人操心。趁还没迷失自己，赶紧回家吧。"
+msgstr "你还是这么让人操心。趁还没迷失自己, 赶紧回家吧。"
 
 #: src/dialog/reimu.c:466
 msgid "No!"
@@ -3432,7 +3432,7 @@ msgstr "看来你的决心坚定不移。那么，来吧。"
 
 #: src/dialog/reimu.c:476
 msgid "Allow me to test your resistance to their infuriating machine!"
-msgstr "以这松果弹抖闪电鞭，检验你那不变的决心！"
+msgstr "以这松果弹抖闪电鞭, 检验你那不变的决心！"
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
@@ -3568,7 +3568,7 @@ msgstr "听说过「无知即幸运」吗？"
 msgid ""
 "There won’t be anyone to rule over, or whatever, if you make them all lose "
 "it."
-msgstr "如果你让他们都失控了，就没有统治对象了，大抵就这个意思。"
+msgstr "如果你让他们都失控了, 就没有统治对象了, 大抵就这个意思。"
 
 #: src/dialog/reimu.c:580
 msgid ""
@@ -3600,7 +3600,7 @@ msgstr "你自己说的！你个宇宙无敌偏执狂！"
 
 #: src/dialog/reimu.c:595
 msgid "Do you hate me because some other Reimu did something? Is that it?"
-msgstr "你是因为其他灵梦做了什么事才这么恨我的吗？是吗？"
+msgstr "你是因为其他灵梦做了什么事才这么恨我的吗? 是吗？"
 
 #: src/dialog/reimu.c:596
 msgid "But then what does that have to do with any of us?!"
@@ -3608,11 +3608,11 @@ msgstr "但这与我们有什么关系呢？！"
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr "对于一名「科学家」来说，你的说法毫无意义！"
+msgstr "对于一名「科学家」来说, 你的说法毫无意义！"
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
-msgstr "大概你已经干脆忘了，就像忘了我们其他人一样！"
+msgstr "大概你已经干脆忘了, 就像忘了我们其他人一样！"
 
 #: src/dialog/reimu.c:603
 msgid ""
@@ -3677,7 +3677,7 @@ msgstr "就这样搞定了？"
 
 #: src/dialog/reimu.c:640
 msgid "Y-you think this is over?! The time of reckoning is upon you!"
-msgstr "你、你以为这就结束了吗？！清算的时刻到了！"
+msgstr "你、你以为这就结束了吗？! 清算的时刻到了！"
 
 #: src/dialog/reimu.c:641
 msgid "Gaze upon the ultimate truth of the universe, and tremble!"
@@ -4320,7 +4320,7 @@ msgstr "啊，"
 
 #: src/dialog/youmu.c:491
 msgid "Ahaha."
-msgstr "啊哈哈，"
+msgstr 啊哈哈，""
 
 #: src/dialog/youmu.c:493
 msgid "Ah-hahaha!"
