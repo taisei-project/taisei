@@ -276,11 +276,11 @@ msgstr "魔理沙 （坏结局）"
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr "—— 红魔馆"
+msgstr "—— 红魔馆\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr "一座位于东方幻想之地的宅邸。"
+msgstr "一座位于东方幻想之地的宅邸。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
@@ -2358,7 +2358,7 @@ msgstr "呃，我可没答应要被这么暴揍一顿的！"
 
 #: src/dialog/marisa.c:355
 msgid "‘Sign up’? I thought you didn’t remember anything."
-msgstr "没答应？我怎么记得你刚才还什么都不记得了呢？""
+msgstr "没答应？我怎么记得你刚才还什么都不记得了呢？"
 
 #: src/dialog/marisa.c:358
 msgid "N-Nevermind!"
@@ -4320,7 +4320,7 @@ msgstr "啊，"
 
 #: src/dialog/youmu.c:491
 msgid "Ahaha."
-msgstr 啊哈哈，""
+msgstr "啊哈哈，"
 
 #: src/dialog/youmu.c:493
 msgid "Ah-hahaha!"
