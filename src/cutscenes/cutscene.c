@@ -309,6 +309,10 @@ static void draw_center_text(
 	text_draw(_(e->text), &p);
 }
 
+static char *text_add_quotes(const char* text) {
+	return strfmt(_("“%s”"), text);
+}
+
 static void draw_text(CutsceneState *st) {
 	Font *font = res_font("standard");
 	const float lines = 7;
@@ -365,11 +369,20 @@ static void draw_text(CutsceneState *st) {
 			p.pos.x += ofs;
 		}
 
-		char buf[strlen(_(e->text)) * 2 + 1];
-		text_wrap(font, _(e->text), w, buf, sizeof(buf));
+		char *text;
+		if(e->type == CTT_DIALOGUE) {
+			text = text_add_quotes(_(e->text));
+		} else {
+			text = mem_strdup(_(e->text));
+		}
+
+		char buf[strlen(text) * 2 + 1];
+		text_wrap(font, text, w, buf, sizeof(buf));
 		text_draw(buf, &p);
 
 		y += text_height(font, buf, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
+
+		mem_free(text);
 	}
 
 	r_state_pop();
