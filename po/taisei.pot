@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 23:58+0200\n"
+"POT-Creation-Date: 2025-09-07 11:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,7 +41,7 @@ msgstr ""
 msgid "Diff. multiplier"
 msgstr ""
 
-#: src/boss.c:988
+#: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
 msgstr ""
 
@@ -73,6 +73,11 @@ msgstr ""
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
+msgstr ""
+
+#: src/cutscenes/cutscene.c:313
+#, c-format
+msgid "“%s”"
 msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
@@ -405,6 +410,16 @@ msgstr ""
 msgid "— by Usami Renko"
 msgstr ""
 
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "— Bad End —"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "Try to reach the end without using a Continue!"
+msgstr ""
+
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
 msgstr ""
@@ -624,7 +639,8 @@ msgid "— The Moriya Shrine\n"
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:8
-msgid "A workaholic shrine at the top of of Yōkai Mountain."
+#: src/cutscenes/reimu_extra_intro.inc.h:8
+msgid "A workaholic shrine at the top of Yōkai Mountain."
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:12
@@ -859,6 +875,16 @@ msgid ""
 "suddenly spring to life again…"
 msgstr ""
 
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "— Good End —"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "The Extra Stage is not ready yet, sorry! ^_^'"
+msgstr ""
+
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
 msgstr ""
@@ -992,10 +1018,6 @@ msgstr ""
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr ""
-
-#: src/cutscenes/reimu_extra_intro.inc.h:8
-msgid "A workaholic shrine at the top of Yōkai Mountain."
 msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
@@ -5556,6 +5578,101 @@ msgstr ""
 #: src/stage.c:622
 #, c-format
 msgid "BGM: %s"
+msgstr ""
+
+#: src/stagedraw.c:1294
+msgid "Hi-Score:"
+msgstr ""
+
+#: src/stagedraw.c:1295
+msgid "Score:"
+msgstr ""
+
+#: src/stagedraw.c:1296
+msgid "Lives:"
+msgstr ""
+
+#: src/stagedraw.c:1297
+msgid "Spell Cards:"
+msgstr ""
+
+#: src/stagedraw.c:1301
+msgid "Power:"
+msgstr ""
+
+#: src/stagedraw.c:1302
+msgid "Value:"
+msgstr ""
+
+#: src/stagedraw.c:1303
+msgid "Volts:"
+msgstr ""
+
+#: src/stagedraw.c:1304
+msgid "Graze:"
+msgstr ""
+
+#: src/stagedraw.c:1313 src/stagedraw.c:1314
+msgid "N/A"
+msgstr ""
+
+#: src/stagedraw.c:1326
+msgid "Next:"
+msgstr ""
+
+#: src/stagedraw.c:1352
+msgid "Fragments:"
+msgstr ""
+
+#: src/stagedraw.c:1465
+msgid "God Mode is enabled!"
+msgstr ""
+
+#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+msgid ""
+"Voltage        \n"
+"    Overdrive!"
+msgstr ""
+
+#: src/stagedraw.c:1879
+msgid "Demo"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "All Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "Stage Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1897
+msgid "Stage Clear bonus"
+msgstr ""
+
+#: src/stagedraw.c:1898
+msgid "Life bonus"
+msgstr ""
+
+#: src/stagedraw.c:1899
+msgid "Voltage bonus"
+msgstr ""
+
+#: src/stagedraw.c:1900
+msgid "Graze bonus"
+msgstr ""
+
+#: src/stagedraw.c:1904
+msgid "All Clear bonus"
+msgstr ""
+
+#: src/stagedraw.c:1909
+#, c-format
+msgid "Difficulty bonus (+%i%%)"
+msgstr ""
+
+#: src/stagedraw.c:1919
+msgid "Press Fire to continue"
 msgstr ""
 
 #: src/stageinfo.c:49
