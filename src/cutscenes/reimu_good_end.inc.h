@@ -68,7 +68,7 @@
 		{},
 	}},
 	{ "cutscenes/reimu_good/03", {
-		T_CENTERED("— Good End —", "The Extra Stage is not ready yet, sorry! ^_^'"),
+		T_CENTERED(N_("— Good End —"), N_("The Extra Stage is not ready yet, sorry! ^_^'")),
 		{},
 	}},
 	{}
