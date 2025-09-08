@@ -12,14 +12,38 @@
 #include "log.h"
 #include "resource/locale.h"
 #include "util.h"
+#include "util/env.h"
 
-static struct {
+#ifdef DEBUG
+	#define I18N_CHECK_MISSING_DEFAULT 1
+#else
+	#define I18N_CHECK_MISSING_DEFAULT 0
+#endif
+
+static struct i18n {
 	ResourceGroup resources;
 	I18nLocale *active_locale;
 	int active_locale_idx;
 	char **known_locales;
 	size_t num_known_locales;
+	ht_strset_ts_t missed_strings;
 } i18n;
+
+static bool i18n_misschecker_active(void) {
+	return i18n.missed_strings.elements != NULL;
+}
+
+static void i18n_misschecker_init(bool reset_only) {
+	if(!env_get("TAISEI_I18N_CHECK_MISSING", I18N_CHECK_MISSING_DEFAULT)) {
+		return;
+	}
+
+	if(!i18n_misschecker_active() && !reset_only) {
+		ht_create(&i18n.missed_strings);
+	} else {
+		ht_unset_all(&i18n.missed_strings);
+	}
+}
 
 void i18n_init(void) {
 	res_group_init(&i18n.resources);
@@ -49,6 +73,7 @@ void i18n_init(void) {
 void i18n_shutdown(void) {
 	res_group_release(&i18n.resources);
 	vfs_dir_list_free(i18n.known_locales, i18n.num_known_locales);
+	ht_destroy(&i18n.missed_strings);
 	i18n = (typeof(i18n)) {};
 }
 
@@ -115,6 +140,7 @@ void i18n_set_locale(const char *locale_id) {
 
 	if(i18n.active_locale_idx != chosen) {
 		res_group_release(&i18n.resources);
+		i18n_misschecker_init(chosen < 0);
 
 		if(chosen > -1) {
 			assume(chosen < i18n.num_known_locales);
@@ -143,5 +169,13 @@ const char *_i18n_translate_prehashed(const char *msgid, hash_t hash) {
 		return msgid;
 	}
 
-	return i18n_locale_get_translation_prehashed(i18n.active_locale, msgid, hash);
+	const char *result = i18n_locale_get_translation_prehashed(i18n.active_locale, msgid, hash);
+
+	if(i18n_misschecker_active() && result == msgid) {
+		if(ht_try_set_prehashed(&i18n.missed_strings, msgid, hash, HT_EMPTY, NULL, NULL)) {
+			log_warn("Missing translation for string: %s", msgid);
+		}
+	}
+
+	return result;
 }
