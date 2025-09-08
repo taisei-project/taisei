@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-07 11:57-0400\n"
+"POT-Creation-Date: 2025-09-07 12:17-0400\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -15,6 +15,14 @@ msgstr ""
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
 msgstr "~ Spell Card Angriff! ~"
+
+#: src/boss.c:972
+msgid "Spell Card failed…"
+msgstr "Spell-Card fehlgeschlagen…"
+
+#: src/boss.c:972
+msgid "Spell Card captured!"
+msgstr "Spell-Card geschafft!"
 
 #: src/boss.c:982
 msgid "Clear bonus"
@@ -3054,8 +3062,8 @@ msgid ""
 "Did you really think I wouldn’t notice all the commotion you caused inside "
 "the tower?"
 msgstr ""
-"Dachtest du wirklich, dass ich nicht bemerke was für einen Tumult du im "
-"Turm veranstaltet hast?"
+"Dachtest du wirklich, dass ich nicht bemerke was für einen Tumult du im Turm "
+"veranstaltet hast?"
 
 #: src/dialog/marisa.c:550
 msgid "Hmmmmmmm…"
@@ -3772,8 +3780,7 @@ msgstr "Ich habe ein ungutes Gefühl…"
 
 #: src/dialog/reimu.c:396
 msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
-msgstr ""
-"Oder vielleicht ist mir nur schlecht vom ganzen Gedrehe dieses Turms."
+msgstr "Oder vielleicht ist mir nur schlecht vom ganzen Gedrehe dieses Turms."
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
@@ -3882,7 +3889,8 @@ msgstr "Okay, das erklärt es. Aber wo ist der Eigentümer?"
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
 msgstr ""
-"Um ehrlich zu sein, bin ich nicht sicher, ob du dieser Aufgabe gewachsen bist."
+"Um ehrlich zu sein, bin ich nicht sicher, ob du dieser Aufgabe gewachsen "
+"bist."
 
 #: src/dialog/reimu.c:457
 msgid ""
@@ -3977,7 +3985,8 @@ msgstr "Freut mich zu hören."
 #: src/dialog/reimu.c:537
 msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
 msgstr ""
-"Na, na na, es scheint eine gewissenhafte Ratte hat sich bei uns eingeschlichen."
+"Na, na na, es scheint eine gewissenhafte Ratte hat sich bei uns "
+"eingeschlichen."
 
 #: src/dialog/reimu.c:541
 msgid "How strange. You should’ve lost your mind by now."
@@ -4025,8 +4034,8 @@ msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
 msgstr ""
-"Das Mindeste was du tun kannst, wenn du mich beschuldigst ist mir zu sagen, was "
-"ich denn getan haben soll!"
+"Das Mindeste was du tun kannst, wenn du mich beschuldigst ist mir zu sagen, "
+"was ich denn getan haben soll!"
 
 #: src/dialog/reimu.c:564
 msgid "Ah. I see."
@@ -4246,8 +4255,8 @@ msgstr ""
 msgid ""
 "But if I turn you into a snowflake, you’ll have to chop yourself in half!"
 msgstr ""
-"Alles klar, nachdem ich dich zur Schneeflocke gemacht hab, kannst du dich "
-"ja selbst zerschneiden!"
+"Alles klar, nachdem ich dich zur Schneeflocke gemacht hab, kannst du dich ja "
+"selbst zerschneiden!"
 
 #: src/dialog/youmu.c:58
 msgid "The cold is no good for such fine blades…"
@@ -5004,7 +5013,8 @@ msgstr "Nein, im Gegenteil, Sensenfrau!"
 #: src/dialog/youmu.c:531
 msgid "You’ve created an impeccable stage for our final confrontation."
 msgstr ""
-"Du hast diese makellose Bühne für unser finales Aufeinandertreffen geschaffen."
+"Du hast diese makellose Bühne für unser finales Aufeinandertreffen "
+"geschaffen."
 
 #: src/dialog/youmu.c:533
 msgid ""
