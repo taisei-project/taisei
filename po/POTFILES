@@ -110,7 +110,7 @@ src/hashtable_incproxy.inc.h
 src/hashtable_predefs.inc.h
 src/hirestime.c
 src/hirestime.h
-src/intl/intl.c
+src/i18n/i18n.c
 src/item.c
 src/item.h
 src/known_entities.h
@@ -340,11 +340,11 @@ src/resource/bgm.c
 src/resource/bgm.h
 src/resource/font.c
 src/resource/font.h
-src/resource/i18n.c
-src/resource/i18n.h
 src/resource/iqm_loader/iqm.h
 src/resource/iqm_loader/iqm_loader.c
 src/resource/iqm_loader/iqm_loader.h
+src/resource/locale.c
+src/resource/locale.h
 src/resource/material.c
 src/resource/material.h
 src/resource/model.c
