@@ -8,6 +8,7 @@
 
  #include "locale.h"
 
+#include "memory/scratch.h"
 #include "util.h"
 #include "util/io.h"
 #include "util/miscmath.h"
@@ -43,7 +44,7 @@ typedef struct MoHeader {
 			uint32_t original_strings_offset;
 			uint32_t translated_strings_offset;
 		};
-		uint32_t u32_array[6];
+		uint32_t u32_array[5];
 	};
 } MoHeader;
 
@@ -81,76 +82,132 @@ static void locale_unload(void *vlocale) {
 
 static void locale_load(ResourceLoadState *st) {
 	SDL_IOStream *stream = vfs_open(st->path, VFS_MODE_READ);
-	void *content = NULL;
 	I18nLocale *locale = NULL;
+	MemArena *scratch = acquire_scratch_arena();
 
 	if(!stream) {
 		log_error("VFS error: %s", vfs_get_error());
 		goto fail;
 	}
 
-	size_t filesize;
-	content = SDL_LoadFile_IO(stream, &filesize, true);
+	MoHeader header;
+	int64_t file_size  = SDL_GetIOSize(stream);
+	int64_t read_size = SDL_ReadIO(stream, &header, sizeof(header));
+	SDL_IOStatus iostat = SDL_GetIOStatus(stream);
 
-	if(!content) {
-		log_error("%s: error reading MO file: %s", st->path, SDL_GetError());
+	if(UNLIKELY(file_size < 0)) {
+		// NOTE: shouldn't actually happen with our vfs implementation
+		log_sdl_error(LOG_ERROR, "SDL_GetIOSize");
 		goto fail;
 	}
 
-	MoHeader *header = content;
+	if(UNLIKELY(iostat == SDL_IO_STATUS_EOF || read_size < sizeof(header))) {
+		log_error("%s: Truncated MO header", st->path);
+		goto fail;
+	} else if(UNLIKELY(iostat != SDL_IO_STATUS_READY)) {
+		log_error("%s: Error reading MO header: %s", st->path, SDL_GetError());
+		goto fail;
+	}
+
 	bool flip_endian;
 
-	if(header->magic == 0x950412de) {
+	if(header.magic == 0x950412de) {
 		flip_endian = false;
-	} else if(header->magic == 0xde120495) {
+	} else if(header.magic == 0xde120495) {
 		flip_endian = true;
 	} else {
-		log_error("%s is not a MO file: magic number mismatch", st->path);
+		log_error("%s is not an MO file: magic number mismatch", st->path);
 		goto fail;
 	}
 
-	flip_fields(flip_endian, header->u32_array, ARRAY_SIZE(header->u32_array));
+	flip_fields(flip_endian, header.u32_array, ARRAY_SIZE(header.u32_array));
 
-	if(header->revision != 0) {
+	if(header.revision != 0) {
 		log_error("%s: Unsupported MO version", st->path);
 		goto fail;
 	}
 
-	if(header->original_strings_offset + sizeof(MoStringDescriptor) * header->number_of_strings > filesize
-	|| header->translated_strings_offset + sizeof(MoStringDescriptor) * header->number_of_strings > filesize) {
-		log_error("%s: MO file has nonsense offsets", st->path);
+	if(header.number_of_strings > UINT32_MAX / sizeof(MoStringDescriptor) / 2) {
+		log_error("%s: Too many strings in MO file", st->path);
 		goto fail;
 	}
 
-	MoStringDescriptor *original_strings = content + header->original_strings_offset;
-	MoStringDescriptor *translated_strings = content + header->translated_strings_offset;
-
-	flip_fields(flip_endian, original_strings[0].u32_array, header->number_of_strings * ARRAY_SIZE(original_strings[0].u32_array));
-	flip_fields(flip_endian, translated_strings[0].u32_array, header->number_of_strings * ARRAY_SIZE(translated_strings[0].u32_array));
-
-	int strings_offset = filesize;
-	int max_offset = 0;
-
-	for(int i = 0; i < header->number_of_strings; i++) {
-		strings_offset = min(strings_offset, original_strings[i].offset);
-		strings_offset = min(strings_offset, translated_strings[i].offset);
-		max_offset = max(max_offset, translated_strings[i].offset + translated_strings[i].length + 1);
-		max_offset = max(max_offset, original_strings[i].offset + original_strings[i].length + 1);
+	if(header.original_strings_offset + sizeof(MoStringDescriptor) * header.number_of_strings > file_size
+	|| header.translated_strings_offset + sizeof(MoStringDescriptor) * header.number_of_strings > file_size
+	|| header.original_strings_offset < sizeof(MoHeader)) {
+		log_error("%s: MO file has nonsense string table offsets", st->path);
+		goto fail;
 	}
 
-	if(max_offset > filesize) {
+	size_t string_table_size = sizeof(MoStringDescriptor) * header.number_of_strings;
+
+	if(header.original_strings_offset + string_table_size != header.translated_strings_offset) {
+		log_error("%s: MO string tables are not contiguous", st->path);
+		goto fail;
+	}
+
+	if(SDL_SeekIO(stream, header.original_strings_offset, SDL_IO_SEEK_SET) < 0) {
+		log_error("%s: Failed to seek to MO string tables offset", st->path);
+		goto fail;
+	}
+
+	auto strings_descs = ARENA_ALLOC_ARRAY(scratch, header.number_of_strings * 2, MoStringDescriptor);
+	read_size = SDL_ReadIO(stream, strings_descs, string_table_size * 2);
+	iostat = SDL_GetIOStatus(stream);
+
+	if(UNLIKELY(iostat == SDL_IO_STATUS_EOF || read_size < string_table_size * 2)) {
+		log_error("%s: Truncated MO string tables", st->path);
+		goto fail;
+	} else if(UNLIKELY(iostat != SDL_IO_STATUS_READY)) {
+		log_error("%s: Error reading MO string tables: %s", st->path, SDL_GetError());
+		goto fail;
+	}
+
+	MoStringDescriptor *orig_string_descs = strings_descs;
+	MoStringDescriptor *trans_string_descs = orig_string_descs + header.number_of_strings;
+
+	flip_fields(flip_endian, strings_descs->u32_array, (string_table_size * 2) / sizeof(uint32_t));
+
+	int64_t min_strings_offset = header.translated_strings_offset + string_table_size;
+	int64_t max_strings_offset = 0;
+	int64_t strings_offset = file_size;
+
+	for(uint32_t i = 0; i < header.number_of_strings; i++) {
+		strings_offset = min(strings_offset, orig_string_descs[i].offset);
+		strings_offset = min(strings_offset, trans_string_descs[i].offset);
+		max_strings_offset = max(max_strings_offset, trans_string_descs[i].offset + trans_string_descs[i].length + 1);
+		max_strings_offset = max(max_strings_offset, orig_string_descs[i].offset + orig_string_descs[i].length + 1);
+	}
+
+	if(max_strings_offset > file_size || strings_offset < min_strings_offset) {
 		log_error("%s: MO file has nonsense string offsets", st->path);
 		goto fail;
 	}
 
-	size_t strings_size = filesize - strings_offset;
+	if(SDL_SeekIO(stream, strings_offset, SDL_IO_SEEK_SET) < 0) {
+		log_error("%s: Failed to seek to MO strings offset", st->path);
+		goto fail;
+	}
+
+	size_t strings_size = max_strings_offset - strings_offset;
 	locale = ALLOC_FLEX(I18nLocale, strings_size);
-	memcpy(locale->strings, content + strings_offset, strings_size);
+
+	read_size = SDL_ReadIO(stream, locale->strings, strings_size);
+	iostat = SDL_GetIOStatus(stream);
+
+	if(UNLIKELY(iostat == SDL_IO_STATUS_EOF || read_size < strings_size)) {
+		log_error("%s: Truncated MO strings", st->path);
+		goto fail;
+	} else if(UNLIKELY(iostat != SDL_IO_STATUS_READY)) {
+		log_error("%s: Error reading MO strings: %s", st->path, SDL_GetError());
+		goto fail;
+	}
+
 	ht_str2str_extern_create(&locale->table);
 
-	for(int i = 0; i < header->number_of_strings; i++) {
-		MoStringDescriptor *ostr = &original_strings[i];
-		MoStringDescriptor *tstr = &translated_strings[i];
+	for(uint32_t i = 0; i < header.number_of_strings; i++) {
+		MoStringDescriptor *ostr = &orig_string_descs[i];
+		MoStringDescriptor *tstr = &trans_string_descs[i];
 
 		if(locale->strings[ostr->offset + ostr->length - strings_offset] != '\0'
 		|| locale->strings[tstr->offset + tstr->length - strings_offset] != '\0') {
@@ -160,14 +217,18 @@ static void locale_load(ResourceLoadState *st) {
 
 		const char *orig = &locale->strings[ostr->offset - strings_offset];
 		const char *tran = &locale->strings[tstr->offset - strings_offset];
+
 		ht_str2str_extern_set(&locale->table, orig, tran);
 	}
 
+	release_scratch_arena(scratch);
+	SDL_CloseIO(stream);
 	res_load_finished(st, locale);
 	return;
 
 fail:
-	SDL_free(content);
+	release_scratch_arena(scratch);
+	SDL_CloseIO(stream);
 
 	if(locale) {
 		locale_unload(locale);
