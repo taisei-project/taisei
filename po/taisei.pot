@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-07 12:17-0400\n"
+"POT-Creation-Date: 2025-09-08 18:10-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4575,7 +4575,7 @@ msgid "Lunatic"
 msgstr ""
 
 #: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1347
+#: src/menu/options.c:1350
 msgid "Unknown"
 msgstr ""
 
@@ -4599,9 +4599,9 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:812
-#: src/menu/options.c:876 src/menu/options.c:1020 src/menu/options.c:1129
-#: src/menu/options.c:1209 src/menu/replayview.c:471
+#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:815
+#: src/menu/options.c:879 src/menu/options.c:1023 src/menu/options.c:1132
+#: src/menu/options.c:1212 src/menu/replayview.c:471
 #: src/menu/spellpractice.c:67
 msgid "Back"
 msgstr ""
@@ -5060,7 +5060,7 @@ msgid "Game Paused"
 msgstr ""
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1135
+#: src/menu/options.c:1138
 msgid "Options"
 msgstr ""
 
@@ -5162,301 +5162,353 @@ msgstr ""
 msgid "Reset all settings to the last saved values?"
 msgstr ""
 
-#: src/menu/options.c:701
+#: src/menu/options.c:577 src/menu/options.c:768
+msgid "on"
+msgstr ""
+
+#: src/menu/options.c:578 src/menu/options.c:769
+msgid "off"
+msgstr ""
+
+#: src/menu/options.c:704
 msgid "Yes"
 msgstr ""
 
-#: src/menu/options.c:702
+#: src/menu/options.c:705
 msgid "No"
 msgstr ""
 
-#: src/menu/options.c:730
+#: src/menu/options.c:733
 msgid "Video Options"
 msgstr ""
 
-#: src/menu/options.c:733
+#: src/menu/options.c:736
 msgid "Fullscreen"
 msgstr ""
 
-#: src/menu/options.c:738
+#: src/menu/options.c:741
 msgid "Display"
 msgstr ""
 
-#: src/menu/options.c:742
+#: src/menu/options.c:745
 msgid "Window size"
 msgstr ""
 
-#: src/menu/options.c:747
+#: src/menu/options.c:750
 msgid "Renderer resolution"
 msgstr ""
 
-#: src/menu/options.c:752
+#: src/menu/options.c:755
 msgid "Resizable window"
 msgstr ""
 
-#: src/menu/options.c:759
+#: src/menu/options.c:762
 msgid "Pause the game when not focused"
 msgstr ""
 
-#: src/menu/options.c:763
+#: src/menu/options.c:766
 msgid "Vertical synchronization"
 msgstr ""
 
 #: src/menu/options.c:772
+msgid "adaptive"
+msgstr ""
+
+#: src/menu/options.c:775
 msgid "Skip frames"
 msgstr ""
 
-#: src/menu/options.c:780
+#: src/menu/options.c:783
 msgid "Overall rendering quality"
 msgstr ""
 
-#: src/menu/options.c:784
+#: src/menu/options.c:787
 msgid "Draw background"
 msgstr ""
 
-#: src/menu/options.c:788
+#: src/menu/options.c:791
 msgid "Background rendering quality"
 msgstr ""
 
-#: src/menu/options.c:795
+#: src/menu/options.c:798
 msgid "Anti-aliasing"
 msgstr ""
 
 #: src/menu/options.c:800
+msgid "none"
+msgstr ""
+
+#: src/menu/options.c:801
+msgid "fxaa"
+msgstr ""
+
+#: src/menu/options.c:803
 msgid "Particle effects"
 msgstr ""
 
-#: src/menu/options.c:805
+#: src/menu/options.c:805 src/menu/options.c:810
+msgid "minimal"
+msgstr ""
+
+#: src/menu/options.c:806 src/menu/options.c:812
+msgid "full"
+msgstr ""
+
+#: src/menu/options.c:808
 msgid "Postprocessing effects"
 msgstr ""
 
-#: src/menu/options.c:833
+#: src/menu/options.c:811
+msgid "fast"
+msgstr ""
+
+#: src/menu/options.c:836
 msgid "Gamepad Controls"
 msgstr ""
 
-#: src/menu/options.c:835 src/menu/options.c:1028
+#: src/menu/options.c:838 src/menu/options.c:1031
 msgid "Move up"
 msgstr ""
 
-#: src/menu/options.c:839 src/menu/options.c:1032
+#: src/menu/options.c:842 src/menu/options.c:1035
 msgid "Move down"
 msgstr ""
 
-#: src/menu/options.c:843 src/menu/options.c:1036
+#: src/menu/options.c:846 src/menu/options.c:1039
 msgid "Move left"
 msgstr ""
 
-#: src/menu/options.c:847 src/menu/options.c:1040
+#: src/menu/options.c:850 src/menu/options.c:1043
 msgid "Move right"
 msgstr ""
 
-#: src/menu/options.c:853 src/menu/options.c:1046
+#: src/menu/options.c:856 src/menu/options.c:1049
 msgid "Shoot"
 msgstr ""
 
-#: src/menu/options.c:857 src/menu/options.c:1050
+#: src/menu/options.c:860 src/menu/options.c:1053
 msgid "Focus"
 msgstr ""
 
-#: src/menu/options.c:861 src/menu/options.c:1054
+#: src/menu/options.c:864 src/menu/options.c:1057
 msgid "Use Spell Card"
 msgstr ""
 
-#: src/menu/options.c:865 src/menu/options.c:1058
+#: src/menu/options.c:868 src/menu/options.c:1061
 msgid "Power Surge / Discharge"
 msgstr ""
 
-#: src/menu/options.c:871 src/menu/options.c:1072
+#: src/menu/options.c:874 src/menu/options.c:1075
 msgid "Skip dialog"
-msgstr ""
-
-#: src/menu/options.c:949
-#, c-format
-msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr ""
 
 #: src/menu/options.c:952
 #, c-format
+msgid "Press any button on your gamepad to exit joystick testing mode"
+msgstr ""
+
+#: src/menu/options.c:955
+#, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr ""
 
-#: src/menu/options.c:965
+#: src/menu/options.c:968
 msgid "Gamepad Options"
 msgstr ""
 
-#: src/menu/options.c:976
+#: src/menu/options.c:979
 msgid "Enable Gamepad/Joystick support"
 msgstr ""
 
-#: src/menu/options.c:980
+#: src/menu/options.c:983
 msgid "Device"
 msgstr ""
 
-#: src/menu/options.c:986 src/menu/options.c:1197
+#: src/menu/options.c:989 src/menu/options.c:1200
 msgid "Customize controls…"
 msgstr ""
 
-#: src/menu/options.c:990
+#: src/menu/options.c:993
 msgid "Remap square input into circular"
 msgstr ""
 
-#: src/menu/options.c:996
+#: src/menu/options.c:999
 msgid "Direction snap factor"
 msgstr ""
 
-#: src/menu/options.c:1000
+#: src/menu/options.c:1003
 msgid "Diagonal bias"
 msgstr ""
 
-#: src/menu/options.c:1007
+#: src/menu/options.c:1010
 msgid "Dead zone"
 msgstr ""
 
-#: src/menu/options.c:1011
+#: src/menu/options.c:1014
 msgid "Maximum zone"
 msgstr ""
 
-#: src/menu/options.c:1015
+#: src/menu/options.c:1018
 msgid "Sensitivity"
 msgstr ""
 
-#: src/menu/options.c:1026
+#: src/menu/options.c:1029
 msgid "Controls"
 msgstr ""
 
-#: src/menu/options.c:1064
+#: src/menu/options.c:1067
 msgid "Toggle fullscreen"
 msgstr ""
 
-#: src/menu/options.c:1068
+#: src/menu/options.c:1071
 msgid "Take a screenshot"
 msgstr ""
 
-#: src/menu/options.c:1078
+#: src/menu/options.c:1081
 msgid "Toggle audio"
 msgstr ""
 
-#: src/menu/options.c:1084
+#: src/menu/options.c:1087
 msgid "Stop the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1088
+#: src/menu/options.c:1091
 msgid "Restart the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1092
+#: src/menu/options.c:1095
 msgid "Quick save"
 msgstr ""
 
-#: src/menu/options.c:1096
+#: src/menu/options.c:1099
 msgid "Quick load"
 msgstr ""
 
-#: src/menu/options.c:1103
+#: src/menu/options.c:1106
 msgid "Toggle God mode"
 msgstr ""
 
-#: src/menu/options.c:1107
+#: src/menu/options.c:1110
 msgid "Skip stage"
 msgstr ""
 
-#: src/menu/options.c:1111
+#: src/menu/options.c:1114
 msgid "Power up"
 msgstr ""
 
-#: src/menu/options.c:1115
+#: src/menu/options.c:1118
 msgid "Power down"
 msgstr ""
 
-#: src/menu/options.c:1119
+#: src/menu/options.c:1122
 msgid "Disable background rendering (HoM effect)"
 msgstr ""
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1126
 msgid "Toggle collision areas overlay"
 msgstr ""
 
-#: src/menu/options.c:1139
+#: src/menu/options.c:1142
 msgid "Player name"
 msgstr ""
 
-#: src/menu/options.c:1146
+#: src/menu/options.c:1149
 msgid "Save replays"
 msgstr ""
 
+#: src/menu/options.c:1151
+msgid "always"
+msgstr ""
+
 #: src/menu/options.c:1152
+msgid "never"
+msgstr ""
+
+#: src/menu/options.c:1153
+msgid "ask"
+msgstr ""
+
+#: src/menu/options.c:1155
 msgid "Auto-restart in Spell Practice"
 msgstr ""
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1159
 msgid "Power in Spell and Stage Practice"
 msgstr ""
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1167
 msgid "Shoot by default"
 msgstr ""
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1171
 msgid "Automatic Power Surge activation"
 msgstr ""
 
-#: src/menu/options.c:1172
+#: src/menu/options.c:1175
 msgid "Boss healthbar style"
 msgstr ""
 
 #: src/menu/options.c:1177
+msgid "classic"
+msgstr ""
+
+#: src/menu/options.c:1178
+msgid "modern"
+msgstr ""
+
+#: src/menu/options.c:1180
 msgid "Floating score text visibility"
 msgstr ""
 
-#: src/menu/options.c:1183
+#: src/menu/options.c:1186
 msgid "SFX Volume"
 msgstr ""
 
-#: src/menu/options.c:1187
+#: src/menu/options.c:1190
 msgid "BGM Volume"
 msgstr ""
 
-#: src/menu/options.c:1191
+#: src/menu/options.c:1194
 msgid "Mute audio"
 msgstr ""
 
-#: src/menu/options.c:1196
+#: src/menu/options.c:1199
 msgid "Video options…"
 msgstr ""
 
-#: src/menu/options.c:1198
+#: src/menu/options.c:1201
 msgid "Gamepad & Joystick options…"
 msgstr ""
 
-#: src/menu/options.c:1202
+#: src/menu/options.c:1205
 msgid "Reload from last saved"
 msgstr ""
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1208
 msgid "Reset to defaults"
 msgstr ""
 
-#: src/menu/options.c:1338
+#: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
 msgstr ""
 
-#: src/menu/options.c:1378
+#: src/menu/options.c:1381
 msgid "All devices"
 msgstr ""
 
-#: src/menu/options.c:1384
+#: src/menu/options.c:1387
 msgid "No devices available"
 msgstr ""
 
-#: src/menu/options.c:1426
+#: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1427
+#: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1443
+#: src/menu/options.c:1446
 msgid "Unbound"
 msgstr ""
 

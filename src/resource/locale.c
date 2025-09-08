@@ -6,7 +6,7 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
- #include "locale.h"
+#include "locale.h"
 
 #include "memory/scratch.h"
 #include "util.h"
