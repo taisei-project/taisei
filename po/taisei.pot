@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-07 11:57-0400\n"
+"POT-Creation-Date: 2025-09-07 12:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,14 @@ msgstr ""
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
+msgstr ""
+
+#: src/boss.c:972
+msgid "Spell Card failed…"
+msgstr ""
+
+#: src/boss.c:972
+msgid "Spell Card captured!"
 msgstr ""
 
 #: src/boss.c:982
