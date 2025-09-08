@@ -2543,7 +2543,7 @@ msgstr "Glorreiche Insektengeschichte? Spaghetti Carbonara?"
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
-msgstr "Oh, du meinst das Carbon? Mit den Riesenkäf- äh Insekten und so."
+msgstr "Oh, du meinst das Karbon? Mit den Riesenkäf- äh Insekten und so."
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
@@ -2800,7 +2800,7 @@ msgstr "Huh? Nein, ich hab dich was gefragt."
 
 #: src/dialog/marisa.c:394
 msgid "An interesting theory, I suppose."
-msgstr "Interessante Theory, denke ich."
+msgstr "Interessante Theorie, denke ich."
 
 #: src/dialog/marisa.c:396
 msgid "It’d make sense though, right?"
@@ -2925,7 +2925,7 @@ msgid ""
 "I am trying to spare you further peril, yet all you can do is talk over me. "
 "Be more considerate."
 msgstr ""
-"Ich versuche nur dir Schlimmeres zu ersparen, aber lässt mich nicht mal "
+"Ich versuche nur dir Schlimmeres zu ersparen, doch du lässt mich nicht mal "
 "ausreden. Sei mal rücksichtsvoller."
 
 #: src/dialog/marisa.c:453
@@ -2964,7 +2964,7 @@ msgstr "Lass mich das mal für dich ausprobieren!"
 
 #: src/dialog/marisa.c:479
 msgid "So this place runs on electricity, eh? Hmm…"
-msgstr "Also läuft das hier mit Strom? Hmm…"
+msgstr "Also läuft dieser Ort hier mit Strom? Hmm…"
 
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
@@ -3054,7 +3054,7 @@ msgid ""
 "Did you really think I wouldn’t notice all the commotion you caused inside "
 "the tower?"
 msgstr ""
-"Dachtest du wirklich, dass ich nicht bemerke was du für einen Tumult du im "
+"Dachtest du wirklich, dass ich nicht bemerke was für einen Tumult du im "
 "Turm veranstaltet hast?"
 
 #: src/dialog/marisa.c:550
@@ -3121,7 +3121,7 @@ msgstr ""
 
 #: src/dialog/marisa.c:579
 msgid "But I do! And I end up empty handed every dang time!"
-msgstr "Aber ich schon! Und jedes mal stehe ich am Ende mit leeren Händen da!"
+msgstr "Aber ich schon! Und jedes Mal stehe ich am Ende mit leeren Händen da!"
 
 #: src/dialog/marisa.c:582
 msgid "I SAID I don’t CARE about your stupid little sorc—"
@@ -3180,12 +3180,12 @@ msgid ""
 "What, you mean last time? At least then you were guardin’ some powerful "
 "thingy I coulda used."
 msgstr ""
-"Was, du meinst letztes mal? Wenigstens hast du da irgendwas mächtiges "
+"Was, du meinst letztes Mal? Wenigstens hast du da irgendwas mächtiges "
 "bewacht, was ich hätte benutzen können."
 
 #: src/dialog/marisa.c:603
 msgid "I’m tryin’ to remember, was that timeline a bust, too?"
-msgstr "Ich weiß nicht micht mehr, war der Zeitstrang auch eine Enttäuschung?"
+msgstr "Ich weiß nicht mehr, war der Zeitstrang auch eine Enttäuschung?"
 
 #: src/dialog/marisa.c:605
 msgid ""
@@ -3197,7 +3197,7 @@ msgstr ""
 
 #: src/dialog/marisa.c:606
 msgid "Not right then, ‘n not voluntarily, but—"
-msgstr "Nich genau dann, und nich freiwillig, aber—"
+msgstr "Nicht genau dann, und nich freiwillig, aber—"
 
 #: src/dialog/marisa.c:609
 msgid "Y-you remember that?! But how—?!"
@@ -3271,7 +3271,7 @@ msgid ""
 "those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
 msgstr ""
 "Verdammt, ich nehme alles. Sogar so ein flimmerndes Tablettding mit diesen "
-"‘Peh Deh Effs’! Die sind so grell, dass meine Augen wehtun, aber—"
+"‘Peh-Deh-Effs’! Die sind so grell, dass meine Augen wehtun, aber—"
 
 #: src/dialog/marisa.c:632
 msgid ""
@@ -3368,7 +3368,7 @@ msgstr "Du hättest mich einfach durchlassen können, weißt du."
 
 #: src/dialog/reimu.c:93
 msgid "Not fair! You broke the rules! I wasn’t ready yet…"
-msgstr "NIcht fair! Du hast die Regeln gebrochen! Ich war noch nicht bereit…"
+msgstr "Nicht fair! Du hast die Regeln gebrochen! Ich war noch nicht bereit…"
 
 #: src/dialog/reimu.c:112
 msgid ""
@@ -3422,7 +3422,7 @@ msgstr "(Sie… sie hat meine Frage komplett ignoriert.)"
 #: src/dialog/reimu.c:141
 msgid "Does it matter that the Gods asked me to come this time?"
 msgstr ""
-"Macht es einen unterschied dass ich diesmal von den Göttern geschickt wurde?"
+"Macht es einen Unterschied dass ich diesmal von den Göttern geschickt wurde?"
 
 #: src/dialog/reimu.c:145
 msgid "I know better than the mountain Gods this time."
@@ -3551,7 +3551,7 @@ msgstr "Klingt wie eins von Sanae’s ‘nuklearen’ Experimenten."
 #: src/dialog/reimu.c:243
 msgid "B-but I saw it clearly… the glorious past of insectkind…"
 msgstr ""
-"A-aer ich habe es klar gesehen… die ruhmreiche Vergangenheit der Insekten…"
+"A-aber ich habe es klar gesehen… die ruhmreiche Vergangenheit der Insekten…"
 
 #: src/dialog/reimu.c:246
 msgid "Don’t you have a pretty sweet deal as it is, though?"
@@ -3559,7 +3559,7 @@ msgstr "Aber habt ihr nicht jetzt schon eine ziemlich gute Stellung?"
 
 #: src/dialog/reimu.c:247
 msgid "You practically own Gensōkyō’s forests."
-msgstr "Euch gehören praktisch Gensōkyō’ Wälder."
+msgstr "Euch gehören praktisch Gensōkyōs Wälder."
 
 #: src/dialog/reimu.c:249
 msgid "But can’t we ever hope for more…?"
@@ -3773,7 +3773,7 @@ msgstr "Ich habe ein ungutes Gefühl…"
 #: src/dialog/reimu.c:396
 msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
 msgstr ""
-"Oder vielleicht ist mir nur schlecht von der ganzen Dreherei dieses Turms."
+"Oder vielleicht ist mir nur schlecht vom ganzen Gedrehe dieses Turms."
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
@@ -3808,7 +3808,7 @@ msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
 msgstr ""
-"Durch Wörtern aus den Wolken habe ich herausgefunden, dass der Übeltäter "
+"Durch die Wörter in den Wolken habe ich herausgefunden, dass der Übeltäter "
 "etwas mit ‘parallelen Universen’ zu tun hat."
 
 #: src/dialog/reimu.c:421
@@ -3821,8 +3821,8 @@ msgid ""
 "This feels different though. It’s like the walls are sucking up faith into a "
 "void."
 msgstr ""
-"Das hier fühlt sich aber anders an. Es ist als würden die Wände unseren "
-"Glauben ins nichts saugen."
+"Das hier fühlt sich aber anders an. Es ist, als würden die Wände unseren "
+"Glauben ins Nichts saugen."
 
 #: src/dialog/reimu.c:424
 msgid "I’m surprised the fairies are surviving at all…"
@@ -3882,7 +3882,7 @@ msgstr "Okay, das erklärt es. Aber wo ist der Eigentümer?"
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
 msgstr ""
-"Um ehrlich zu sein, bin ich nicht sicher ob du dieser Aufgabe gewachsen bist."
+"Um ehrlich zu sein, bin ich nicht sicher, ob du dieser Aufgabe gewachsen bist."
 
 #: src/dialog/reimu.c:457
 msgid ""
@@ -3912,7 +3912,7 @@ msgstr "Wie bitte?"
 
 #: src/dialog/reimu.c:471
 msgid "Don’t keep telling me how little you think of me. I’m sick of it!"
-msgstr "Hör auf zu sagen wie wenig du von mir erwartest. Ich hab es satt!"
+msgstr "Hör auf mir zu sagen wie wenig du von mir erwartest. Ich hab es satt!"
 
 #: src/dialog/reimu.c:473
 msgid "I’m going to give everyone a reason to have faith in me!"
@@ -3938,7 +3938,7 @@ msgstr "Ah…"
 
 #: src/dialog/reimu.c:503
 msgid "I was wrong for doubting you, I suppose…"
-msgstr "Es war falsch an dir zu zweifeln, denke ich…"
+msgstr "Es war falsch, an dir zu zweifeln, denke ich…"
 
 #: src/dialog/reimu.c:506
 msgid "Somehow I don’t feel too satisfied by that."
@@ -3977,7 +3977,7 @@ msgstr "Freut mich zu hören."
 #: src/dialog/reimu.c:537
 msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
 msgstr ""
-"Na, na na, es scheint eine gewissenhafte Ratte hat sich bei uns eingenistet."
+"Na, na na, es scheint eine gewissenhafte Ratte hat sich bei uns eingeschlichen."
 
 #: src/dialog/reimu.c:541
 msgid "How strange. You should’ve lost your mind by now."
@@ -3998,7 +3998,7 @@ msgstr ""
 
 #: src/dialog/reimu.c:550
 msgid "I still remember what you did to Lady Kazami and I back then!"
-msgstr "Ich erinnere mich noch was du damals mit Lady Kazami gemacht hast!"
+msgstr "Ich erinnere mich noch, was du damals mit Lady Kazami gemacht hast!"
 
 #: src/dialog/reimu.c:553
 msgid "And what was that, again?"
@@ -4017,7 +4017,7 @@ msgid ""
 "I think I would’ve remembered a giant tower that makes people go mad with "
 "power!"
 msgstr ""
-"Ich denke an einen riesigen Turm der Leute wahnsinnig macht hätte ich mich "
+"Ich denke an einen riesigen Turm, der Leute wahnsinnig macht, hätte ich mich "
 "wohl erinnert!"
 
 #: src/dialog/reimu.c:561
@@ -4025,7 +4025,7 @@ msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
 msgstr ""
-"Das Mindeste was du tun kannst, wenn du mich beschuldigst ist zu sagen, was "
+"Das Mindeste was du tun kannst, wenn du mich beschuldigst ist mir zu sagen, was "
 "ich denn getan haben soll!"
 
 #: src/dialog/reimu.c:564
@@ -4066,7 +4066,7 @@ msgstr "Irgendwie fühlt sich das mehr wie eine Strafe an."
 
 #: src/dialog/reimu.c:577
 msgid "Ever heard of ‘ignorance is bliss’?"
-msgstr "Hast du schonmal von ‘Unwissenheit ist ein Segen’ gehört?"
+msgstr "Hast du schon mal von ‘Unwissenheit ist ein Segen’ gehört?"
 
 #: src/dialog/reimu.c:578
 msgid ""
@@ -4118,7 +4118,7 @@ msgstr "Aber was hat das denn mit uns zu tun?!"
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr "Für eine ‘Wissenschaftlerin’ bist du aber ganz schön unlogisch!"
+msgstr "Für eine ‘Wissenschaftlerin’ bist du ganz schön unlogisch!"
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
@@ -4153,7 +4153,7 @@ msgid ""
 "We weren’t as lucky! And as reparation, we will take control of this "
 "Gensōkyō!"
 msgstr ""
-"Wir hatten nicht so viel Glück! Und als Wiedergutmachen werden wir jetzt "
+"Wir hatten nicht so viel Glück! Und als Wiedergutmachung werden wir jetzt "
 "dieses Gensōkyō übernehmen!"
 
 #: src/dialog/reimu.c:613
@@ -4198,7 +4198,7 @@ msgstr "Und? Bist du endlich fertig?"
 
 #: src/dialog/reimu.c:640
 msgid "Y-you think this is over?! The time of reckoning is upon you!"
-msgstr "D-du denkst das wars?! Die Zeit der Abrechnung ist gekommen!"
+msgstr "D-du denkst das war’s?! Die Zeit der Abrechnung ist gekommen!"
 
 #: src/dialog/reimu.c:641
 msgid "Gaze upon the ultimate truth of the universe, and tremble!"
@@ -4229,11 +4229,11 @@ msgid ""
 "you’d step aside."
 msgstr ""
 "Normalerweise duelliere ich mich nicht mit Schwächeren, also wäre es nett "
-"von dir mich durchzulassen."
+"von dir, mich durchzulassen."
 
 #: src/dialog/youmu.c:37
 msgid "Hah! Maybe YOU should step aside, then!"
-msgstr "Hah! Vielleicht solltest DU erst mal mich durchlassen!"
+msgstr "Hah! Vielleicht solltest DU erst mal MICH durchlassen!"
 
 #: src/dialog/youmu.c:40
 msgid ""
@@ -4246,7 +4246,7 @@ msgstr ""
 msgid ""
 "But if I turn you into a snowflake, you’ll have to chop yourself in half!"
 msgstr ""
-"Alles klar, nachdem ich *dich* zur Schneeflocke gemacht hab, kannst du dich "
+"Alles klar, nachdem ich dich zur Schneeflocke gemacht hab, kannst du dich "
 "ja selbst zerschneiden!"
 
 #: src/dialog/youmu.c:58
@@ -4286,7 +4286,7 @@ msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
 msgstr ""
-"Ich habe noch nie von dieser ’Lady Yuyuko’ gehört, aber ich kann das nicht "
+"Ich habe noch nie von dieser ‘Lady Yuyuko’ gehört, aber ich kann das nicht "
 "so durchgehen lassen."
 
 #: src/dialog/youmu.c:94
@@ -4419,7 +4419,7 @@ msgid ""
 "It’s only natural that the lower inhabitants of the mountain would get "
 "nervous in the face of our natural dominance."
 msgstr ""
-"Es ist vollkommen verständlich, dass die unteren Einwohner des Berges im "
+"Es ist vollkommen verständlich, dass die niederen Einwohner des Berges im "
 "Anblick unserer natürlichen Überlegenheit nervös werden."
 
 #: src/dialog/youmu.c:180
@@ -4446,7 +4446,7 @@ msgstr "… eine Gärtnerin?!"
 
 #: src/dialog/youmu.c:194
 msgid "Your true face is finally revealed!"
-msgstr "Deine Maske fällt und enthüllt die wahre Fratze darunter!"
+msgstr "Deine Maske fällt und enthüllt die hässliche Fratze!"
 
 #: src/dialog/youmu.c:195
 msgid ""
@@ -4479,7 +4479,7 @@ msgstr "So was ähnliches ist gerade hier passiert."
 
 #: src/dialog/youmu.c:215
 msgid "That’s not the past I saw…"
-msgstr "Das ist nicht die Vergangenheit die ich gesehen habe…"
+msgstr "Das ist nicht die Vergangenheit, die ich gesehen habe…"
 
 #: src/dialog/youmu.c:217
 msgid "How unfortunate for you."
@@ -4547,7 +4547,7 @@ msgstr "Natürlich nicht! Was denkst du von mir?!"
 msgid ""
 "No WAY I’d want to associate myself with the dweebs running this mansion!"
 msgstr ""
-"Auf gar keinen Fall würde ich mich abgeben mit den Flaschen die hier das "
+"Auf gar keinen Fall würde ich mich abgeben mit den Flaschen, die hier das "
 "Sagen haben!"
 
 #: src/dialog/youmu.c:267
@@ -4577,11 +4577,11 @@ msgstr ""
 
 #: src/dialog/youmu.c:279
 msgid "Didn’t you just say you weren’t associated with them?"
-msgstr "Hast du nicht gerade gesagt du hast nichts mit ihr zu tun?"
+msgstr "Hast du nicht gerade gesagt, du hast nichts mit ihr zu tun?"
 
 #: src/dialog/youmu.c:281
 msgid "Yeah, but I was lying to see how gullible you were."
-msgstr "Ja, aber ich hab gelogen, um zu sehen wie leichtgläubig du bist."
+msgstr "Ja, aber ich hab gelogen, um zu sehen, wie leichtgläubig du bist."
 
 #: src/dialog/youmu.c:284
 msgid "O-of course. I-I knew that."
@@ -4723,7 +4723,7 @@ msgstr ""
 
 #: src/dialog/youmu.c:382
 msgid "On the contrary, I would say."
-msgstr "Im Gegenteil würde ich sagen."
+msgstr "Im Gegenteil, würde ich sagen."
 
 #: src/dialog/youmu.c:385
 msgid "I decided to do some research on my own."
@@ -4966,7 +4966,7 @@ msgstr ""
 
 #: src/dialog/youmu.c:515
 msgid "Now, it will be the sigil of a new era!"
-msgstr "Nun wird es das Siegel einer neuen Ära!"
+msgstr "Nun wird sie das Siegel einer neuen Ära!"
 
 #: src/dialog/youmu.c:517
 msgid "One that we, the ‘forgotten’, will reign over!"
@@ -5004,7 +5004,7 @@ msgstr "Nein, im Gegenteil, Sensenfrau!"
 #: src/dialog/youmu.c:531
 msgid "You’ve created an impeccable stage for our final confrontation."
 msgstr ""
-"Du hast diese makelose Bühne für unser finales Aufeinandertreffen geschaffen."
+"Du hast diese makellose Bühne für unser finales Aufeinandertreffen geschaffen."
 
 #: src/dialog/youmu.c:533
 msgid ""
@@ -6339,15 +6339,15 @@ msgstr "Demo"
 
 #: src/stagedraw.c:1893
 msgid "All Clear!"
-msgstr "Alles Clear!"
+msgstr "Alles geschafft!"
 
 #: src/stagedraw.c:1893
 msgid "Stage Clear!"
-msgstr "Stage Clear!"
+msgstr "Stage geschafft!"
 
 #: src/stagedraw.c:1897
 msgid "Stage Clear bonus"
-msgstr "Stage-Clear-Bonus"
+msgstr "Stage-Abschluss-Bonus"
 
 #: src/stagedraw.c:1898
 msgid "Life bonus"
@@ -6363,7 +6363,7 @@ msgstr "Graze-Bonus"
 
 #: src/stagedraw.c:1904
 msgid "All Clear bonus"
-msgstr "Clear-Bonus"
+msgstr "Abschlussbonus"
 
 #: src/stagedraw.c:1909
 #, c-format
