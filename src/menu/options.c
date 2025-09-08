@@ -301,7 +301,7 @@ static OptionBinding* bind_getinputblocking(MenuData *m) {
 }
 
 // Adds a value to a BT_IntValue type binding
-static int bind_addvalue(OptionBinding *b, char *val) {
+static int bind_addvalue(OptionBinding *b, const char *val) {
 	assert(b->valrange_min == 0);
 
 	if(b->values == NULL) {
@@ -573,7 +573,10 @@ static void update_options_menu(MenuData *menu);
 static void options_menu_input(MenuData*);
 static void draw_options_menu(MenuData*);
 
-#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+static void bind_onoff(OptionBinding *b) {
+	bind_addvalue(b, _("on"));
+	bind_addvalue(b, _("off"));
+}
 
 static bool entry_is_active(MenuData *m, int idx) {
 	MenuEntry *e = dynarray_get_ptr(&m->entries, idx);
@@ -762,11 +765,11 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 
 	add_menu_entry(m, _("Vertical synchronization"), do_nothing,
 		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, "on");
-		bind_addvalue(b, "off");
+	);	bind_addvalue(b, _("on"));
+		bind_addvalue(b, _("off"));
 
 	if(video_query_capability(VIDEO_CAP_VSYNC_ADAPTIVE) != VIDEO_NEVER_AVAILABLE) {
-		bind_addvalue(b, "adaptive");
+		bind_addvalue(b, _("adaptive"));
 	}
 
 	add_menu_entry(m, _("Skip frames"), do_nothing,
@@ -794,19 +797,19 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 
 	add_menu_entry(m, _("Anti-aliasing"), do_nothing,
 		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "none");
-		bind_addvalue(b, "fxaa");
+	);	bind_addvalue(b, _("none"));
+		bind_addvalue(b, _("fxaa"));
 
 	add_menu_entry(m, _("Particle effects"), do_nothing,
 		b = bind_option(CONFIG_PARTICLES, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "minimal");
-		bind_addvalue(b, "full");
+	);	bind_addvalue(b, _("minimal"));
+		bind_addvalue(b, _("full"));
 
 	add_menu_entry(m, _("Postprocessing effects"), do_nothing,
 		b = bind_option(CONFIG_POSTPROCESS, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "minimal");
-		bind_addvalue(b, "fast");
-		bind_addvalue(b, "full");
+	);	bind_addvalue(b, _("minimal"));
+		bind_addvalue(b, _("fast"));
+		bind_addvalue(b, _("full"));
 
 	add_menu_separator(m);
 	add_menu_entry(m, _("Back"), menu_action_close, NULL);
@@ -1145,9 +1148,9 @@ MenuData* create_options_menu(void) {
 
 	add_menu_entry(m, _("Save replays"), do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, "always");
-		bind_addvalue(b, "never");
-		bind_addvalue(b, "ask");
+	);	bind_addvalue(b, _("always"));
+		bind_addvalue(b, _("never"));
+		bind_addvalue(b, _("ask"));
 
 	add_menu_entry(m, _("Auto-restart in Spell Practice"), do_nothing,
 		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART,  bind_common_onoff_get, bind_common_onoff_set)
@@ -1171,8 +1174,8 @@ MenuData* create_options_menu(void) {
 
 	add_menu_entry(m, _("Boss healthbar style"), do_nothing,
 		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, "classic");
-		bind_addvalue(b, "modern");
+	);	bind_addvalue(b, _("classic"));
+		bind_addvalue(b, _("modern"));
 
 	add_menu_entry(m, _("Floating score text visibility"), do_nothing,
 		b = bind_scale(CONFIG_SCORETEXT_ALPHA, 0, 1, 0.05)
