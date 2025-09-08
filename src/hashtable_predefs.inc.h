@@ -242,6 +242,26 @@
 #include "hashtable_incproxy.inc.h"
 
 /*
+ * strset_ts
+ *
+ * A hashset of strings (thread-safe).
+ */
+#define HT_SUFFIX                      strset_ts
+#define HT_KEY_TYPE                    char*
+#define HT_VALUE_TYPE                  struct ht_empty
+#define HT_FUNC_FREE_KEY(key)          mem_free(key)
+#define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = mem_strdup(src))
+#define HT_KEY_FMT                     "s"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "s"
+#define HT_VALUE_PRINTABLE(val)        "(none)"
+#define HT_KEY_CONST
+#define HT_THREAD_SAFE
+#include "hashtable_incproxy.inc.h"
+
+/*
  * C11 generic selection witchcraft.
  */
 
@@ -264,7 +284,8 @@
 	_HT_GENERIC_MAP(int2int_ts, name), \
 	_HT_GENERIC_MAP(int2ptr_ts, name), \
 	_HT_GENERIC_MAP(ptr2int_ts, name), \
-	_HT_GENERIC_MAP(ptr2ptr_ts, name)
+	_HT_GENERIC_MAP(ptr2ptr_ts, name), \
+	_HT_GENERIC_MAP(strset_ts, name)
 
 #define _HT_GENERIC(ht_expr, name) (_Generic((ht_expr), \
 	 _HT_GENERICLIST_NONTS(name), \
