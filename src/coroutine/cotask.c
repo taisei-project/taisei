@@ -577,8 +577,9 @@ void *cotask_yield(void *arg) {
 
 static inline CoWaitResult cotask_wait_init(CoTaskData *task_data, char wait_type) {
 	CoWaitResult wr = task_data->wait.result;
-	memset(&task_data->wait, 0, sizeof(task_data->wait));
-	task_data->wait.wait_type = wait_type;
+	task_data->wait = (typeof(task_data->wait)) {
+		.wait_type = wait_type,
+	};
 	return wr;
 }
 

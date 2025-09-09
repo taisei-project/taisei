@@ -19,7 +19,7 @@ static void fbpair_resize_fb(Framebuffer *fb, FramebufferAttachment attachment, 
 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments], const char *debug_label) {
 	assert(num_attachments > 0 && num_attachments <= FRAMEBUFFER_MAX_ATTACHMENTS);
-	memset(pair, 0, sizeof(*pair));
+	*pair = (typeof(*pair)) {};
 
 	char buf[R_DEBUG_LABEL_SIZE];
 

@@ -30,7 +30,7 @@ static const char *const shobj_exts[] = {
 static struct shobj_type shobj_type_table[] = {
 	{ ".vert.glsl", SHLANG_GLSL, SHADER_STAGE_VERTEX },
 	{ ".frag.glsl", SHLANG_GLSL, SHADER_STAGE_FRAGMENT },
-	{ NULL }
+	{}
 };
 
 static struct shobj_type *get_shobj_type(const char *name) {
@@ -91,7 +91,7 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 
 	ShaderMacro macros[] = {
 		{ backend_macro, "1" },
-		{ NULL, },
+		{},
 	};
 
 	switch(type->lang) {

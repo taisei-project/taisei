@@ -95,8 +95,7 @@ TASK(baryons_explode, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 
 	INVOKE_SUBTASK(baryon_explode_movement, ARGS.baryons, ARGS.boss);
 
-	bool dead[NUM_BARYONS];
-	memset(dead, 0, sizeof(dead));
+	bool dead[NUM_BARYONS] = {};
 
 	for(int t = 0;; t += WAIT(interval)) {
 		for(int i = 0; i < NUM_BARYONS; i++) {

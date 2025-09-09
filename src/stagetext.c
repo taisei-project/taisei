@@ -135,14 +135,15 @@ static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool updat
 }
 
 void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *titleclr, const Color *clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	memset(tbl, 0, sizeof(StageTextTable));
-	tbl->pos = VIEWPORT_W/2 + VIEWPORT_H/2*I;
-	tbl->clr = *clr;
-	tbl->width = width;
-	tbl->lifetime = lifetime;
-	tbl->fadeintime = fadeintime;
-	tbl->fadeouttime = fadeouttime;
-	tbl->delay = delay;
+	*tbl = (typeof(*tbl)) {
+		.pos = VIEWPORT_W/2 + VIEWPORT_H/2*I,
+		.clr = *clr,
+		.width = width,
+		.lifetime = lifetime,
+		.fadeintime = fadeintime,
+		.fadeouttime = fadeouttime,
+		.delay = delay,
+	};
 
 	StageText *txt = stagetext_add(title, tbl->pos, ALIGN_CENTER, res_font("big"), titleclr, tbl->delay, lifetime, fadeintime, fadeouttime);
 	stagetext_table_push(tbl, txt, true);

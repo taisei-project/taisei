@@ -35,12 +35,11 @@ static struct pkg_loader_t {
 } pkg_loaders[] = {
 	{ ".zip",       vfs_mount_zipfile },
 	{ ".pkgdir",    vfs_mount_pkgdir  },
-	{ NULL },
+	{},
 };
 
 static struct pkg_loader_t* find_loader(const char *str) {
-	char buf[strlen(str) + 1];
-	memset(buf, 0, sizeof(buf));
+	char buf[strlen(str) + 1] = {};
 
 	for(char *p = buf; *str; ++p, ++str) {
 		*p = tolower(*str);

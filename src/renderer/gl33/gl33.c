@@ -217,7 +217,7 @@ static inline void gl33_stats_post_frame(void) {
 	#ifdef GL33_DRAW_STATS
 	log_debug("%.1fµs spent in %u draw calls", R.stats.draw_time / (HRTIME_RESOLUTION / 1000000.0) , R.stats.draw_calls);
 	log_debug("%u texture rebinds", R.stats.texture_rebinds);
-	memset(&R.stats, 0, sizeof(R.stats));
+	R.stats = (typeof(R.stats)) {};
 	#endif
 }
 
@@ -531,10 +531,8 @@ static void gl33_sync_magic_uniforms(void) {
 
 		if(num_color_out > 0) {
 			IntExtent fb_size = gl33_get_default_framebuffer_size();
-			vec2 out[num_color_out];
-			out[0][0] = fb_size.w;
-			out[0][1] = fb_size.h;
-			memset(out + 1, 0, sizeof(out) - sizeof(out[0]));
+			vec2 out[num_color_out] = {};
+			glm_vec2_copy((vec2) { fb_size.w, fb_size.h }, out[0]);
 			r_uniform_vec2_array(u[UMAGIC_COLOR_OUT_SIZES], 0, num_color_out, out);
 		}
 	}
@@ -1394,7 +1392,7 @@ static void gl33_swap(SDL_Window *window) {
 	// so force the next frame to set one on the first draw call.
 	// The viewport might get updated externally when e.g. going
 	// fullscreen, and we can't catch that in the resize event.
-	memset(&R.viewport.active, 0, sizeof(R.viewport.active));
+	R.viewport.active = (typeof(R.viewport.active)) {};
 }
 
 static void gl33_blend(BlendMode mode) {

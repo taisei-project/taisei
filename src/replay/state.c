@@ -12,23 +12,25 @@
 #include "eventcodes.h"
 
 void replay_state_init_play(ReplayState *rst, Replay *rpy, ReplayStage *rstage) {
-	memset(rst, 0, sizeof(*rst));
-	rst->replay = rpy;
-	rst->stage = rstage;
-	rst->mode = REPLAY_PLAY;
-	rst->play.desync_frame = -1;
-	rst->play.desync_check_frame = -1;
-	rst->play.skip_frames = rstage->skip_frames;
+	*rst = (typeof(*rst)) {
+		.replay = rpy,
+		.stage = rstage,
+		.mode = REPLAY_PLAY,
+		.play.desync_frame = -1,
+		.play.desync_check_frame = -1,
+		.play.skip_frames = rstage->skip_frames,
+	};
 }
 
 void replay_state_init_record(ReplayState *rst, Replay *rpy) {
-	memset(rst, 0, sizeof(*rst));
-	rst->replay = rpy;
-	rst->mode = REPLAY_RECORD;
+	*rst = (typeof(*rst)) {
+		.replay = rpy,
+		.mode = REPLAY_RECORD,
+	};
 }
 
 void replay_state_deinit(ReplayState *rst) {
-	memset(rst, 0, sizeof(*rst));
+	*rst = (typeof(*rst)) {};
 }
 
 ReplaySyncStatus replay_state_check_desync(ReplayState *rst, int time, uint16_t check) {

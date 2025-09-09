@@ -55,7 +55,7 @@ static uint64_t xoshiro256plus(uint64_t s[4]) {
 }
 
 void rng_init(RandomState *rng, uint64_t seed) {
-	memset(rng, 0, sizeof(*rng));
+	*rng = (typeof(*rng)) {};
 	rng_seed(rng, seed);
 }
 

@@ -148,7 +148,7 @@ static LogicFrameAction skipstate_handle_frame(void) {
 }
 
 static void skipstate_shutdown(void) {
-	memset(&skip_state, 0, sizeof(skip_state));
+	skip_state = (typeof(skip_state)) {};
 }
 
 #else
@@ -439,7 +439,7 @@ attr_nonnull_all
 static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 	ReplayStage *rstg = memdup(rstg_src, sizeof(*rstg));
 	rstg->num_events = 0;
-	memset(&rstg->events, 0, sizeof(rstg->events));
+	rstg->events = (typeof(rstg->events)) {};
 
 	dynarray_ensure_capacity(&rstg->events, rstg_src->events.num_elements + 1);
 	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
@@ -889,7 +889,7 @@ static void stage_update_fps(StageFrameState *fstate) {
 }
 
 static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonus) {
-	memset(bonus, 0, sizeof(*bonus));
+	*bonus = (typeof(*bonus)) {};
 
 	// FIXME: this is clunky...
 	if(!global.is_practice_mode && stage->type == STAGE_STORY) {

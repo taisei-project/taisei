@@ -1004,7 +1004,7 @@ static SDL_IOStream *progress_open_file_write(void) {
 }
 
 void progress_load(void) {
-	memset(&progress, 0, sizeof(GlobalProgress));
+	progress = (typeof(progress)) {};
 
 #ifdef PROGRESS_UNLOCK_ALL
 	progress_unlock_all();

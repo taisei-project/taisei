@@ -173,8 +173,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 
 	auto arena_snap = marena_snapshot(arena);
 
-	memset(out_src, 0, sizeof(*out_src));
-	out_src->content = NULL;
+	*out_src = (typeof(*out_src)) {};
 
 	// TODO check for IO errors
 
@@ -184,9 +183,9 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 	}
 
 	out_src->stage = READU8(s);
-
-	memset(&out_src->lang, 0, sizeof(out_src->lang));
-	out_src->lang.lang = READU8(s);
+	out_src->lang = (typeof(out_src->lang)) {
+		.lang = READU8(s)
+	};
 
 	uint32_t entrypoint_len = READU8(s);
 	char *entrypoint = marena_alloc(arena, entrypoint_len + 1);

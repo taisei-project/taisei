@@ -16,17 +16,18 @@
 Stage3D stage_3d_context;
 
 void stage3d_init(Stage3D *s, uint pos_buffer_size) {
-	memset(s, 0, sizeof(*s));
+	*s = (typeof(*s)) {};
 	camera3d_init(&s->cam);
 	dynarray_ensure_capacity(&s->positions, pos_buffer_size);
 }
 
 void camera3d_init(Camera3D *cam) {
-	memset(cam, 0, sizeof(*cam));
-	cam->fovy = STAGE3D_DEFAULT_FOVY;
-	cam->aspect = VIEWPORT_W/(real)VIEWPORT_H;
-	cam->near = STAGE3D_DEFAULT_NEAR;
-	cam->far = STAGE3D_DEFAULT_FAR;
+	*cam = (typeof(*cam)) {
+		.fovy = STAGE3D_DEFAULT_FOVY,
+		.aspect = VIEWPORT_W/(real)VIEWPORT_H,
+		.near = STAGE3D_DEFAULT_NEAR,
+		.far = STAGE3D_DEFAULT_FAR,
+	};
 }
 
 void camera3d_update(Camera3D *cam) {

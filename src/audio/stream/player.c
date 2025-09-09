@@ -25,7 +25,7 @@ union audio_buffer {
 };
 
 bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *dst_spec) {
-	memset(plr, 0, sizeof(*plr));
+	*plr = (typeof(*plr)) {};
 
 	if(dst_spec->sample_format != SDL_AUDIO_F32) {
 		log_error("Unsupported audio format: 0x%4x", dst_spec->sample_format);

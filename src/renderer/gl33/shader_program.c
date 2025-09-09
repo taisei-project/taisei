@@ -438,8 +438,7 @@ static void print_info_log(GLuint prog) {
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
 
 	if(len > 1) {
-		char log[len];
-		memset(log, 0, len);
+		char log[len] = {};
 		glGetProgramInfoLog(prog, len, &alen, log);
 
 		log_warn(

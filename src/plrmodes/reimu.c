@@ -106,8 +106,7 @@ void reimu_common_bomb_bg(Player *p, float alpha) {
 }
 
 void reimu_common_bomb_buffer_init(void) {
-	FBAttachmentConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
+	FBAttachmentConfig cfg = {};
 	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	cfg.tex_params.type = TEX_TYPE_RGB;
 	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;

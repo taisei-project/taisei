@@ -14,7 +14,7 @@
 Global global;
 
 void init_global(CLIAction *cli) {
-	memset(&global, 0, sizeof(global));
+	global = (typeof(global)) {};
 
 	rng_init(&global.rand_game, time(0));
 	rng_init(&global.rand_visual, time(0));
