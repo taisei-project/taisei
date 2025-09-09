@@ -195,7 +195,7 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 		return;
 	}
 
-	ConfigValue oldv = { 0 };
+	ConfigValue oldv = {};
 	ConfigEntryType ctype = e->type;
 	config_copy_value(ctype, &oldv, e->val);
 	config_copy_value(ctype, &e->val, v);
