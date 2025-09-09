@@ -12,7 +12,7 @@ TASK(speen, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	aniplayer_queue(&boss->ani, "guruguru", 0);
 
-	boss->move = (MoveParams) { 0 };
+	boss->move = (MoveParams) {};
 	cmplx opos = boss->pos;
 
 	real trate = difficulty_value(0.6, 0.8, 0.9, 1.0);

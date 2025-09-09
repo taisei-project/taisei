@@ -115,7 +115,7 @@ static WDRecord *wdrecord_get(int wd, bool create) {
 
 	if(!ht_int2wdrecord_get_ptr_unsafe(&FW.wd_records, wd, &r, create)) {
 		if(create) {
-			*r = (WDRecord) { 0 };
+			*r = (WDRecord) {};
 		}
 	}
 

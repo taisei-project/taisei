@@ -102,7 +102,7 @@ attr_unused
 static void main_menu_input(MenuData *m) {
 	events_poll((EventHandler[]){
 		{ .proc = main_menu_input_handler, .arg = m },
-		{ NULL }
+		{}
 	}, EFLAG_MENU);
 }
 

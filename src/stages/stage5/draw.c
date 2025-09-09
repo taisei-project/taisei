@@ -82,7 +82,7 @@ static void stage5_stairs_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage5_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&stage5_draw_data->models.metal, &env);

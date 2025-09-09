@@ -14,7 +14,7 @@
 static const uint8_t png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
 static bool px_png_probe(SDL_IOStream *stream) {
-	uint8_t magic[sizeof(png_magic)] = { 0 };
+	uint8_t magic[sizeof(png_magic)] = {};
 	SDL_ReadIO(stream, magic, sizeof(magic));
 	return !memcmp(magic, png_magic, sizeof(magic));
 }
@@ -198,7 +198,7 @@ static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
 	png_structp png;
 	png_infop info_ptr;
 
-	Pixmap px = { 0 };
+	Pixmap px = {};
 
 	png = pngutil_create_write_struct();
 

@@ -14,7 +14,7 @@
 #include "util/io.h"
 #include "util/stringops.h"
 
-ShaderLangInfoArray glcommon_shader_lang_table = { 0 };
+ShaderLangInfoArray glcommon_shader_lang_table = {};
 
 static void add_glsl_version_parsed(GLSLVersion v) {
 	dynarray_foreach_elem(&glcommon_shader_lang_table, ShaderLangInfo *lang, {
@@ -44,7 +44,7 @@ static void add_glsl_version_nonstandard(const char *vstr) {
 
 	if(sscanf(vstr, "%c.%c%c - ", &a, &b, &c) == 3) {
 		if(isdigit(a) && isdigit(b) && isdigit(c)) {
-			GLSLVersion v = { 0 };
+			GLSLVersion v = {};
 			v.version = (a - '0') * 100 + (b - '0') * 10 + (c - '0');
 			v.profile = GLSL_PROFILE_NONE;
 			add_glsl_version_parsed(v);

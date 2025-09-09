@@ -91,7 +91,7 @@ void spawn_items(cmplx pos, SpawnItemsArgs groups[]);
 void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs groups[]);
 
 #define spawn_items(pos, ...) \
-	spawn_items(pos, ((SpawnItemsArgs[]) { __VA_ARGS__, { 0 } }))
+	spawn_items(pos, ((SpawnItemsArgs[]) { __VA_ARGS__, {} }))
 
 #define spawn_and_collect_items(pos, collect_value, ...) \
 	spawn_and_collect_items(pos, collect_value, ((SpawnItemsArgs[]) { __VA_ARGS__, 0 }))

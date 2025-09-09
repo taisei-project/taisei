@@ -15,7 +15,7 @@ static bool px_webp_probe(SDL_IOStream *stream) {
 	// "RIFF", file size (4 bytes), "WEBP", ("VP8 " | "VP8L" | "VP8X")
 	// https://developers.google.com/speed/webp/docs/riff_container
 
-	uchar header[16] = { 0 };
+	uchar header[16] = {};
 	SDL_ReadIO(stream, header, sizeof(header));
 
 	return (

@@ -345,7 +345,7 @@ static void video_update_mode_lists(void) {
 		log_info("Found display #%i: %s", s, video_display_name(s));
 
 		const SDL_DisplayMode *desktop_mode;
-		IntExtent screenspace_max_size = { 0 };
+		IntExtent screenspace_max_size = {};
 
 		if(!(desktop_mode = SDL_GetDesktopDisplayMode(display))) {
 			log_sdl_error(LOG_WARN, "SDL_GetDesktopDisplayMode");

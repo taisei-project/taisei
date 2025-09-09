@@ -9,7 +9,7 @@
 #include "systime.h"
 
 static time_t win32time_to_posixtime(SYSTEMTIME *wtime) {
-	struct tm ptime = { 0 };
+	struct tm ptime = {};
 
 	ptime.tm_year = wtime->wYear - 1900;
 	ptime.tm_mon = wtime->wMonth - 1;

@@ -81,7 +81,7 @@ static bool replay_write_stage(ReplayStage *stg, SDL_IOStream *file,
 
 	if(version == REPLAY_STRUCT_VERSION_TS104000_REV0) {
 		// NOTE: These fields were always bugged; older taisei only wrote zeroes here.
-		uint8_t buf[5] = { 0 };
+		uint8_t buf[5] = {};
 		SDL_WriteIO(file, buf, sizeof(buf));
 	}
 

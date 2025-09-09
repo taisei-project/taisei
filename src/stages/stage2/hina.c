@@ -12,7 +12,7 @@
 #include "renderer/api.h"
 
 void stage2_draw_hina_spellbg(Boss *h, int time) {
-	SpriteParams sp = { 0 };
+	SpriteParams sp = {};
 	sp.pos.x = VIEWPORT_W/2;
 	sp.pos.y = VIEWPORT_H/2;
 	sp.scale.both = 0.6;
@@ -31,7 +31,7 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 	sp.pos.x = re(h->pos);
 	sp.pos.y = im(h->pos);
 	sp.scale.both = 1;
-	sp.rotation = (SpriteRotationParams) { 0 };
+	sp.rotation = (SpriteRotationParams) {};
 	sp.blend = BLEND_PREMUL_ALPHA;
 	r_draw_sprite(&sp);
 }

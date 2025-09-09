@@ -295,7 +295,7 @@ ENTITIES(ENT_EMIT_ARRAY_DEFS,)
 	_name.array = _ent_array_data##_name
 
 #define ENT_ARRAY(_typename, _capacity) \
-	((Boxed##_typename##Array) { .array = (Boxed##_typename[_capacity]) { 0 }, .capacity = (_capacity), .size = 0 })
+	((Boxed##_typename##Array) { .array = (Boxed##_typename[_capacity]) {}, .capacity = (_capacity), .size = 0 })
 
 #define _ent_array_iterator MACROHAX_ADDLINENUM(_ent_array_iterator)
 #define _ent_array_temp MACROHAX_ADDLINENUM(_ent_array_temp)

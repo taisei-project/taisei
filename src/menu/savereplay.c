@@ -110,7 +110,7 @@ static void saverpy_menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = savepry_input_handler, .arg = menu },
 		{ .proc = menu_input_handler, .arg = menu },
-		{NULL}
+		{}
 	}, EFLAG_MENU);
 }
 

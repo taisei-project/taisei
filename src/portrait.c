@@ -83,7 +83,7 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_mat_proj_push_ortho(spr_w - s_base->padding.w, spr_h - s_base->padding.h);
 	r_mat_mv_push_identity();
 
-	SpriteParams sp = { 0 };
+	SpriteParams sp = {};
 	sp.sprite_ptr = s_base;
 	sp.blend = BLEND_NONE;
 	sp.pos.x = spr_w * 0.5f - s_base->padding.offset.x;
@@ -101,7 +101,7 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_state_pop();
 	r_framebuffer_destroy(fb);
 
-	Sprite s = { 0 };
+	Sprite s = {};
 	s.tex = ptex;
 	s.extent = s_base->extent;
 	s.padding = s_base->padding;

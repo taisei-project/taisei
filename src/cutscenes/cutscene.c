@@ -208,7 +208,7 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 	update_transition();
 	events_poll((EventHandler[]) {
 		{ .proc = cutscene_event, .arg = st, .priority = EPRIO_NORMAL },
-		{ NULL },
+		{},
 	}, EFLAG_MENU);
 
 	if(st->skip_timer > 0) {
@@ -327,7 +327,7 @@ static void draw_text(CutsceneState *st) {
 
 	r_state_push();
 
-	ShaderCustomParams cparams = { 0 };
+	ShaderCustomParams cparams = {};
 
 	TextParams p = {
 		.shader_ptr = res_shader("text_cutscene"),
@@ -460,7 +460,7 @@ static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	switch_bg(st, st->phase->background);
 	reset_timers(st);
 
-	FBAttachmentConfig a = { 0 };
+	FBAttachmentConfig a = {};
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a.tex_params.type = TEX_TYPE_RGBA_8;
 	a.tex_params.filter.min = TEX_FILTER_LINEAR;
@@ -468,7 +468,7 @@ static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = &a;
 	fbconf.num_attachments = 1;
 	fbconf.resize_strategy.resize_func = fbmgr_resize_strategy_screensized;

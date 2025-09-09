@@ -273,7 +273,7 @@ static void credits_towerwall_draw(vec3 pos) {
 	r_mat_mv_push();
 	r_mat_mv_translate_v(pos);
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	credits_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&credits.models.tower, &env);
@@ -319,7 +319,7 @@ static void credits_init(void) {
 	a[1].attachment = FRAMEBUFFER_ATTACH_DEPTH;
 	a[1].tex_params.type = TEX_TYPE_DEPTH;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = a;
 	fbconf.num_attachments = ARRAY_SIZE(a);
 	fbconf.resize_strategy.resize_func = resize_fb;

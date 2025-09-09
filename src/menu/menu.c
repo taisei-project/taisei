@@ -182,7 +182,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 void menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = menu_input_handler, .arg = menu },
-		{ NULL }
+		{}
 	}, EFLAG_MENU);
 }
 

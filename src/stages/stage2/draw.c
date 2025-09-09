@@ -178,7 +178,7 @@ static void stage2_bg_branch_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, 1, &env);
 
 	pbr_draw_model(&stage2_draw_data->models.branch, &env);
@@ -195,7 +195,7 @@ static void stage2_bg_leaves_draw(vec3 pos) {
 
 	r_shader("pbr_diffuse_alpha_discard");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, 1, &env);
 
 	pbr_draw_model(&stage2_draw_data->models.leaves, &env);
@@ -212,7 +212,7 @@ static void stage2_bg_ground_draw(vec3 pos) {
 
 	r_blend(BLEND_NONE);
 	r_shader("pbr");
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 
 	pbr_draw_model(&stage2_draw_data->models.ground, &env);
@@ -229,7 +229,7 @@ static void stage2_bg_ground_rocks_draw(vec3 pos) {
 
 	r_blend(BLEND_NONE);
 	r_shader("pbr");
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 
 	pbr_draw_model(&stage2_draw_data->models.rocks, &env);
@@ -247,7 +247,7 @@ static void stage2_bg_ground_grass_draw(vec3 pos) {
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_disable(RCAP_CULL_FACE);
 	r_shader("pbr_diffuse_alpha_discard");
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 
 	pbr_draw_model(&stage2_draw_data->models.grass, &env);
@@ -269,7 +269,7 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_uniform_vec3("water_color", 0.1, 0.2, 0.3);
 	r_uniform_vec3("wave_highlight_color", 0.1, 0.1, 0.1);
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 
 	r_mat_mv_push();
