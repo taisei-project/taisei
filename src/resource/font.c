@@ -567,7 +567,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 
 	if(!have_bitmap) {
 		// Some glyphs may be invisible, but we still need the metrics data for them (e.g. space)
-		memset(&glyph->sprite, 0, sizeof(Sprite));
+		glyph->sprite = (typeof(glyph->sprite)) {};
 	} else {
 		FT_Stroker_Set(font->stroker,
 			FT_MulFix(
@@ -1003,7 +1003,7 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *b
 	const uint32_t *tptr = text;
 	uint numlines = 0;
 
-	memset(bbox, 0, sizeof(*bbox));
+	*bbox = (typeof(*bbox)) {};
 	float y = 0;
 	Cursor c = cursor_init(font);
 
@@ -1195,7 +1195,7 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 	ShaderCustomParams shader_params;
 
 	if(params->shader_params == NULL) {
-		memset(&shader_params, 0, sizeof(shader_params));
+		shader_params = (typeof(shader_params)) {};
 	} else {
 		shader_params = *params->shader_params;
 	}

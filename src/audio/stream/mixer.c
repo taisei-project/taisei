@@ -87,7 +87,7 @@ bool mixer_group_get_channels_range(AudioChannelGroup group, int *first, int *la
 // BEGIN INIT/SHUTDOWN
 
 bool mixer_init(Mixer *mx, const AudioStreamSpec *spec) {
-	memset(mx, 0, sizeof(*mx));
+	*mx = (typeof(*mx)) {};
 
 	if(!splayer_init(mx->players + CHANGROUP_BGM, MIXER_NUM_BGM_CHANNELS, spec)) {
 		log_error("splayer_init() failed");
@@ -118,7 +118,7 @@ void mixer_shutdown(Mixer *mx) {
 
 		if(plr->channels) {
 			splayer_shutdown(plr);
-			memset(plr, 0, sizeof(*plr));
+			*plr = (typeof(*plr)) {};
 		}
 	}
 }

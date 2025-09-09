@@ -281,21 +281,25 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 }
 
 bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, const GLSLSourceOptions *options) {
-	memset(out, 0, sizeof(*out));
-	out->lang.lang = SHLANG_GLSL;
-	out->lang.glsl.version = options->version;
-	out->stage = options->stage;
-	out->entrypoint = "main";
+	*out = (typeof(*out)) {
+		.lang.lang = SHLANG_GLSL,
+		.lang.glsl.version = options->version,
+		.stage = options->stage,
+		.entrypoint = "main",
+	};
 
-	GLSLParseState pstate = {};
+	GLSLParseState pstate = {
+		.src = out,
+		.options = options,
+		.scratch = acquire_scratch_arena(),
+	};
+
 	pstate.dest = NOT_NULL(SDL_RWArena(arena, 1024, &pstate.stream_state));
-	pstate.src = out;
-	pstate.options = options;
-	pstate.scratch = acquire_scratch_arena();
 
-	GLSLFileParseState fstate = {};
-	fstate.global = &pstate;
-	fstate.path = path;
+	GLSLFileParseState fstate = {
+		.global = &pstate,
+		.path = path,
+	};
 
 	bool result = glsl_process_file(&fstate);
 	release_scratch_arena(pstate.scratch);

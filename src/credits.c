@@ -301,11 +301,10 @@ static void resize_fb(void *userdata, IntExtent *out_dimensions, FloatRect *out_
 }
 
 static void credits_init(void) {
-	memset(&credits, 0, sizeof(credits));
+	credits = (typeof(credits)) {};
 	stage3d_init(&stage_3d_context, 32);
 
-	FBAttachmentConfig a[2];
-	memset(a, 0, sizeof(a));
+	FBAttachmentConfig a[2] = {};
 
 	for(int i = 0; i < ARRAY_SIZE(a); i++) {
 		a[i].tex_params.filter.min = TEX_FILTER_LINEAR;

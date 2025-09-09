@@ -59,7 +59,7 @@ static void call_hooks(EntityDrawHookList *list, EntityInterface *ent) {
 }
 
 void ent_init(void) {
-	memset(&entities, 0, sizeof(entities));
+	entities = (typeof(entities)) {};
 	dynarray_ensure_capacity(&entities.registered, 1024);
 }
 

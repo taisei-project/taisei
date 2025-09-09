@@ -61,8 +61,7 @@ Projectile *youmu_common_shot(cmplx pos, MoveParams move, real dmg, ShaderProgra
 }
 
 void youmu_common_init_bomb_background(YoumuBombBGData *bg_data) {
-	FBAttachmentConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
+	FBAttachmentConfig cfg = {};
 	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	cfg.tex_params.type = TEX_TYPE_RGB;
 	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;

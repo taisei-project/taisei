@@ -367,7 +367,7 @@ bool replay_read(Replay *rpy, SDL_IOStream *file, ReplayReadMode mode, const cha
 	auto ctx = &_ctx;
 
 	if(mode & REPLAY_READ_META) {
-		memset(rpy, 0, sizeof(Replay));
+		*rpy = (typeof(*rpy)) {};
 
 		if(filesize > 0 && filesize <= sizeof(replay_magic_header) + 2) {
 			log_error("%s: Replay file is too short (%"PRIi64")", source, filesize);

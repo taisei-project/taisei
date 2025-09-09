@@ -399,7 +399,7 @@ void _r_sprite_batch_end_frame(void) {
 		.shader = "text_default",
 	});
 
-	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
+	_r_sprite_batch.frame_stats = (typeof(_r_sprite_batch.frame_stats)) {};
 #endif
 }
 

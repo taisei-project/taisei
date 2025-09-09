@@ -28,9 +28,7 @@ static void load_shader_program_stage1(ResourceLoadState *st);
 static void load_shader_program_stage2(ResourceLoadState *st);
 
 static void load_shader_program_stage1(ResourceLoadState *st) {
-	struct shprog_load_data ldata;
-	memset(&ldata, 0, sizeof(ldata));
-
+	struct shprog_load_data ldata = {};
 	char *strobjects = NULL;
 
 	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
@@ -44,7 +42,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 	if(!parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
 		{ "glsl_objects", .out_str = &strobjects, KVSPEC_DEPRECATED("objects") },
 		{ "objects",      .out_str = &strobjects },
-		{ NULL }
+		{}
 	})) {
 		SDL_CloseIO(rw);
 		mem_free(strobjects);

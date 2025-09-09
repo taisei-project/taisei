@@ -540,7 +540,7 @@ static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 		}
 	}
 
-	memset(&ld->preprocess, 0, sizeof(ld->preprocess));
+	ld->preprocess = (typeof(ld->preprocess)) {};
 
 	texture_loader_continue(ld);
 }
@@ -595,7 +595,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			{ "anisotropy",     .out_int  = (int*)&ld->params.anisotropy },
 			{ "multiply_alpha", .out_bool = &ld->preprocess.multiply_alpha },
 			{ "linearize",      .out_bool = &want_srgb },
-			{ NULL }
+			{}
 		});
 		SDL_CloseIO(rw);
 
@@ -746,7 +746,7 @@ void texture_loader_continue(TextureLoadData *ld) {
 
 		if(preprocess_needed) {
 			log_warn("%s: Preprocessing not implemented for compressed textures", ld->st->name);
-			memset(&ld->preprocess, 0, sizeof(ld->preprocess));
+			ld->preprocess = (typeof(ld->preprocess)) {};
 		}
 	}
 
@@ -759,7 +759,7 @@ void texture_loader_continue(TextureLoadData *ld) {
 
 		if(preprocess_needed) {
 			log_warn("%s: Preprocessing not implemented for cubemaps", ld->st->name);
-			memset(&ld->preprocess, 0, sizeof(ld->preprocess));
+			ld->preprocess = (typeof(ld->preprocess)) {};
 		}
 	} else {
 		have_explicit_mips = ld->num_pixmaps > 1;
@@ -770,7 +770,7 @@ void texture_loader_continue(TextureLoadData *ld) {
 
 		if(preprocess_needed) {
 			log_warn("%s: Preprocessing not implemented for textures with explicit mipmaps", ld->st->name);
-			memset(&ld->preprocess, 0, sizeof(ld->preprocess));
+			ld->preprocess = (typeof(ld->preprocess)) {};
 		}
 
 		assume(ld->alphamap.data.untyped == NULL);

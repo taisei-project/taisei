@@ -483,7 +483,7 @@ void log_shutdown(void) {
 	mem_free(logging.err_appendix);
 #endif
 
-	memset(&logging, 0, sizeof(logging));
+	logging = (typeof(logging)) {};
 }
 
 void log_sync(bool flush) {

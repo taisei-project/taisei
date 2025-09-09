@@ -1427,15 +1427,15 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 Attack *boss_add_attack(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossRule draw_rule) {
 	assert(boss->acount < BOSS_MAX_ATTACKS);
 
-	Attack *a = &boss->attacks[boss->acount];
-	boss->acount += 1;
-	memset(a, 0, sizeof(Attack));
-	a->type = type;
-	a->name = name;
-	a->timeout = timeout * FPS;
-	a->maxhp = hp;
-	a->hp = hp;
-	a->draw_rule = draw_rule;
+	Attack *a = &boss->attacks[boss->acount++];
+	*a = (typeof(*a)) {
+		.type = type,
+		.name = name,
+		.timeout = timeout * FPS,
+		.maxhp = hp,
+		.hp = hp,
+		.draw_rule = draw_rule,
+	};
 
 	COEVENT_INIT_ARRAY(a->events);
 

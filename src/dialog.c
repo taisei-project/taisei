@@ -13,7 +13,7 @@
 #include "resource/font.h"
 
 void dialog_init(Dialog *d) {
-	memset(d, 0, sizeof(*d));
+	*d = (typeof(*d)) {};
 	d->state = DIALOG_STATE_IDLE;
 	d->text.current = &d->text.buffers[0];
 	d->text.fading_out = &d->text.buffers[1];
@@ -31,18 +31,14 @@ void dialog_deinit(Dialog *d) {
 }
 
 void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide side) {
-	memset(a, 0, sizeof(*a));
-	a->name = name;
-	a->face = "normal";
-	a->side = side;
-	a->target_opacity = 1;
-	a->composite_dirty = true;
-
-	if(side == DIALOG_SIDE_RIGHT) {
-		a->speech_color = *RGB(0.6, 0.6, 1.0);
-	} else {
-		a->speech_color = *RGB(1.0, 1.0, 1.0);
-	}
+	*a = (typeof(*a)) {
+		.name = name,
+		.face = "normal",
+		.side = side,
+		.target_opacity = 1,
+		.composite_dirty = true,
+		.speech_color = (side == DIALOG_SIDE_RIGHT) ? *RGB(0.6, 0.6, 1.0) : *RGB(1.0, 1.0, 1.0),
+	};
 
 	alist_append(&d->actors, a);
 }

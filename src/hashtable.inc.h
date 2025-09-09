@@ -1272,7 +1272,7 @@ HT_DECLARE_FUNC(void*, foreach, (HT_BASETYPE *ht, HT_TYPE(foreach_callback) call
 
 HT_DECLARE_FUNC(void, iter_begin, (HT_BASETYPE *ht, HT_TYPE(iter) *iter)) {
 	HT_PRIV_FUNC(begin_read)(ht);
-	memset(iter, 0, sizeof(*iter));
+	*iter = (typeof(*iter)) {};
 	iter->hashtable = ht;
 	iter->private.remaining = ht->num_elements_occupied;
 	iter->has_data = iter->private.remaining;

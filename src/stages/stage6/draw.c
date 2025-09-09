@@ -39,8 +39,7 @@ void stage6_drawsys_init(void) {
 		glm_vec3_copy(p, stage6_draw_data->stars.position[i]);
 	}
 
-	FBAttachmentConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
+	FBAttachmentConfig cfg = {};
 	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	cfg.tex_params.type = TEX_TYPE_RGBA;
 	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
