@@ -19,7 +19,7 @@
 #define CONFIG_FILE "storage/config"
 
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
-	#define CONFIGDEF(type,entryname,default,ufield) { type, entryname, { .ufield = default } },
+	#define CONFIGDEF(_type,_name,_default,_ufield) { .type = _type, .name = _name, .val = { ._ufield = _default } },
 	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_KEYBINDING, entryname, default, i)
 	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_GPKEYBINDING, entryname, default, i)
 	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(CONFIG_TYPE_INT, entryname, default, i)
@@ -27,7 +27,7 @@ CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#define CONFIGDEF_STRING(id,entryname,default) CONFIGDEF(CONFIG_TYPE_STRING, entryname, NULL, s)
 
 	CONFIGDEFS
-	{0}
+	{}
 
 	#undef CONFIGDEF
 	#undef CONFIGDEF_KEYBINDING
@@ -195,7 +195,7 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 		return;
 	}
 
-	ConfigValue oldv = { 0 };
+	ConfigValue oldv = {};
 	ConfigEntryType ctype = e->type;
 	config_copy_value(ctype, &oldv, e->val);
 	config_copy_value(ctype, &e->val, v);
