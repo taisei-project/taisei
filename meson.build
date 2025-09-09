@@ -131,6 +131,7 @@ taisei_c_args = [
     '-fno-math-errno',
     '-fno-signaling-nans',
     '-fno-trapping-math',
+    '-fzero-init-padding-bits=all',
 ]
 
 taisei_conversion_c_args = [
