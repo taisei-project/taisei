@@ -199,15 +199,15 @@ typedef enum ConfigEntryType {
 } ConfigEntryType;
 
 typedef union ConfigValue {
-	int i;
-	double f;
 	char *s;
+	double f;
+	int i;
 } ConfigValue;
 
 typedef struct ConfigEntry {
-	ConfigEntryType type;
 	char *name;
 	ConfigValue val;
+	ConfigEntryType type;
 } ConfigEntry;
 
 KeyIndex config_key_from_scancode(int scan);
