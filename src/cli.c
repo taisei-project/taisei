@@ -104,7 +104,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{}
 	};
 
-	memset(a, 0, sizeof(*a));
+	*a = (typeof(*a)) {};
 
 	int nopts = ARRAY_SIZE(taisei_opts);
 	struct option opts[nopts];

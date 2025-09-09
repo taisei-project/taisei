@@ -12,8 +12,9 @@
 #include "stageobjects.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence) {
-	memset(plr,0,sizeof(AniPlayer));
-	plr->ani = ani;
+	*plr = (typeof(*plr)) {
+		.ani = ani,
+	};
 
 	aniplayer_queue(plr,startsequence,0);
 }

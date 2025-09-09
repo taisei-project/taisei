@@ -23,7 +23,7 @@ void _dynarray_free_data(dynarray_size_t sizeof_element, DynamicArray *darr) {
 	if(darr->capacity) {
 		DYNARRAY_DEBUG(darr, "%u/%u", darr->num_elements, darr->capacity);
 	}
-	memset(darr, 0, sizeof(*darr));
+	*darr = (typeof(*darr)) {};
 }
 
 INLINE void _dynarray_resize(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t capacity) {

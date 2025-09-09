@@ -12,7 +12,7 @@
 #include "hashtable.h"
 
 void cosched_init(CoSched *sched) {
-	memset(sched, 0, sizeof(*sched));
+	*sched = (typeof(*sched)) {};
 }
 
 CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
@@ -136,5 +136,5 @@ void cosched_finish(CoSched *sched) {
 	finish_task_list(&sched->pending_tasks);
 	assert(!sched->tasks.first);
 	assert(!sched->pending_tasks.first);
-	memset(sched, 0, sizeof(*sched));
+	*sched = (typeof(*sched)) {};
 }

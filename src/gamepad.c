@@ -339,7 +339,7 @@ void gamepad_shutdown(void) {
 	set_events_state(false);
 	SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 
-	memset(&gamepad, 0, sizeof(gamepad));
+	gamepad = (typeof(gamepad)) {};
 	events_unregister_handler(gamepad_event_handler);
 }
 

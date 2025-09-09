@@ -594,8 +594,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 		}
 
 		if(destroy) {
-			memset(&col, 0, sizeof(col));
-			col.fatal = true;
+			col = (typeof(col)) { .fatal = true };
 		} else if(collision) {
 			calc_projectile_collision(proj, &col);
 
@@ -603,7 +602,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 				spawn_projectile_collision_effect(proj);
 			}
 		} else {
-			memset(&col, 0, sizeof(col));
+			col = (typeof(col)) { };
 
 			if(!(proj->flags & PFLAG_NOAUTOREMOVE) && !projectile_in_viewport(proj)) {
 				col.fatal = true;

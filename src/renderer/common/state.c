@@ -18,7 +18,7 @@ static struct {
 } _r_state;
 
 void _r_state_init(void) {
-	memset(&_r_state, 0, sizeof(_r_state));
+	_r_state = (typeof(_r_state)) {};
 }
 
 void _r_state_shutdown(void) {

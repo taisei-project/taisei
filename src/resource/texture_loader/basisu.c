@@ -142,7 +142,7 @@ static struct basis_size_info texture_loader_basisu_get_transcoded_size_info(
 			image,
 			level
 		);
-		memset(&size_info, 0, sizeof(size_info));
+		size_info = (typeof(size_info)) {};
 	}
 
 	return size_info;

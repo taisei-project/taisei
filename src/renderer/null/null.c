@@ -74,10 +74,11 @@ static void null_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *
 }
 
 static void null_texture_get_params(Texture *tex, TextureParams *params) {
-	memset(params, 0, sizeof(*params));
-	params->width = 1;
-	params->height = 1;
-	params->type = TEX_TYPE_RGBA;
+	*params = (typeof(*params)) {
+		.width = 1,
+		.height = 1,
+		.type = TEX_TYPE_RGBA,
+	};
 }
 
 static void null_texture_set_debug_label(Texture *tex, const char *label) { }

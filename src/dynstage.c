@@ -297,7 +297,7 @@ void dynstage_shutdown(void) {
 
 	dlclose(dynstage.lib);
 	sigaction(SIGCHLD, &(struct sigaction) { .sa_handler = SIG_DFL }, NULL);
-	memset(&dynstage, 0, sizeof(dynstage));
+	dynstage = (typeof(dynstage)) {};
 }
 
 uint32_t dynstage_get_generation(void) {

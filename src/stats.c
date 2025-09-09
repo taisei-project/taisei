@@ -11,7 +11,7 @@
 #include "log.h"
 
 void stats_init(Stats *stats) {
-	memset(stats, 0, sizeof(*stats));
+	*stats = (typeof(*stats)) {};
 }
 
 void stats_track_life_used(Stats *stats) {
@@ -36,6 +36,6 @@ void stats_track_continue_used(Stats *stats) {
 }
 
 void stats_stage_reset(Stats *stats) {
-	memset(&stats->stage, 0, sizeof(stats->stage));
+	stats->stage = (typeof(stats->stage)) {};
 	log_debug("statistics reset");
 }

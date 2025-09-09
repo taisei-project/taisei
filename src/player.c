@@ -35,17 +35,18 @@ DEFINE_ENTITY_TYPE(PlayerIndicators, {
 });
 
 void player_init(Player *plr) {
-	memset(plr, 0, sizeof(Player));
-	plr->pos = PLR_SPAWN_POS;
-	plr->lives = PLR_START_LIVES;
-	plr->bombs = PLR_START_BOMBS;
-	plr->point_item_value = PLR_START_PIV;
-	plr->power_stored = 100;
-	plr->deathtime = -1;
-	plr->continuetime = -1;
-	plr->bomb_triggertime = -1;
-	plr->bomb_endtime = 0;
-	plr->mode = plrmode_find(0, 0);
+	*plr = (typeof(*plr)) {
+		.pos = PLR_SPAWN_POS,
+		.lives = PLR_START_LIVES,
+		.bombs = PLR_START_BOMBS,
+		.point_item_value = PLR_START_PIV,
+		.power_stored = 100,
+		.deathtime = -1,
+		.continuetime = -1,
+		.bomb_triggertime = -1,
+		.bomb_endtime = 0,
+		.mode = plrmode_find(0, 0),
+	};
 }
 
 void player_stage_pre_init(Player *plr) {

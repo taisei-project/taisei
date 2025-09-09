@@ -1478,7 +1478,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 		// Move dependency list into persistent entry
 		dynarray_free_data(&persistent->dependencies);
 		persistent->dependencies = ires->dependencies;
-		memset(&ires->dependencies, 0, sizeof(ires->dependencies));
+		ires->dependencies = (typeof(ires->dependencies)) {};
 	}
 
 	persistent->reload_buddy = NULL;

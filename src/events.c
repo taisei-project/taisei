@@ -399,8 +399,9 @@ static bool events_handler_clipboard(SDL_Event *event, void *arg) {
 
 	if(event->key.mod & SDL_KMOD_CTRL && event->key.scancode == SDL_SCANCODE_V) {
 		if(SDL_HasClipboardText()) {
-			memset(event, 0, sizeof(SDL_Event));
-			event->type = MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE);
+			*event = (typeof(*event)) {
+				.type = MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE),
+			};
 		} else {
 			return true;
 		}

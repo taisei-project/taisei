@@ -22,7 +22,7 @@ void replay_reset(Replay *rpy) {
 	replay_destroy_events(rpy);
 	dynarray_free_data(&rpy->stages);
 	mem_free(rpy->playername);
-	memset(rpy, 0, sizeof(Replay));
+	*rpy = (typeof(*rpy)) {};
 }
 
 static char *replay_getpath(const char *name, bool ext) {
