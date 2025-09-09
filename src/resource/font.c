@@ -725,7 +725,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	return glyph;
 }
 
-static Glyph *get_glyph(Font *fnt, charcode_t cp) {
+static Glyph *_get_glyph(Font *fnt, charcode_t cp) {
 	int64_t ofs;
 
 	if(!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs)) {
@@ -736,16 +736,13 @@ static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
 			if(fnt->fallbacks) {
 				for(char **fallback = fnt->fallbacks; *fallback != NULL; fallback++) {
-					glyph = get_glyph(res_font(*fallback), cp);
-					if(glyph) {
+					glyph = _get_glyph(res_font(*fallback), cp);
+					if(glyph != NULL) {
 						return glyph;
 					}
 				}
 			}
-
-			log_debug("Font or fallbacks have no glyph for charcode 0x%08lx", cp);
-			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
-			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
+			ofs = -1;
 		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
 			glyph = load_glyph(fnt, ft_index, &globals.spritesheets);
 			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
@@ -756,6 +753,17 @@ static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 	}
 
 	return ofs < 0 ? NULL : dynarray_get_ptr(&fnt->glyphs, ofs);
+}
+
+static Glyph *get_glyph(Font *fnt, charcode_t cp) {
+	Glyph *glyph = _get_glyph(fnt, cp);
+	if(glyph == NULL) {
+		log_debug("Font or fallbacks have no glyph for charcode 0x%08lx", cp);
+		glyph = _get_glyph(fnt, UNICODE_UNKNOWN);
+		int64_t ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
+		ht_set(&fnt->charcodes_to_glyph_ofs, cp, ofs);
+	}
+	return glyph;
 }
 
 attr_nonnull(1)
