@@ -158,7 +158,7 @@ static bool gamepad_update_device_list(void) {
 
 	for(int i = 0; i < num_joysticks; ++i) {
 		SDL_GUID guid = SDL_GetJoystickGUIDForID(joysticks[i]);
-		char guid_str[33] = { 0 };
+		char guid_str[33] = {};
 		SDL_GUIDToString(guid, guid_str, sizeof(guid_str));
 
 		if(!*guid_str) {
@@ -804,7 +804,7 @@ int gamepad_device_num_from_guid(const char *guid_str) {
 	}
 
 	dynarray_foreach_idx(&gamepad.devices, int i, {
-		char guid[33] = {0};
+		char guid[33] = {};
 		gamepad_device_guid(i, guid, sizeof(guid));
 
 		if(!strcasecmp(guid_str, guid)) {

@@ -60,8 +60,8 @@ static SDL_GPUVertexElementFormat vertex_elem_format(VertexAttribType type, Vert
 		[SDL_GPU_VERTEXELEMENTFORMAT_USHORT4_NORM]     = { 4, VA_USHORT, VA_CONVERT_FLOAT_NORMALIZED },
 
 		// Not supported by our API yet
-		// [SDL_GPU_VERTEXELEMENTFORMAT_HALF2]         = { 0 },
-		// [SDL_GPU_VERTEXELEMENTFORMAT_HALF4]         = { 0 },
+		// [SDL_GPU_VERTEXELEMENTFORMAT_HALF2]         = {},
+		// [SDL_GPU_VERTEXELEMENTFORMAT_HALF4]         = {},
 	};
 
 	for(SDL_GPUVertexElementFormat fmt = 0; fmt < ARRAY_SIZE(formats); ++fmt) {

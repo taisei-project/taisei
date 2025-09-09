@@ -81,7 +81,7 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 	struct enemy_col {
 		Enemy *enemy;
 		EnemyFlag original_flags;
-	} enemy_collisions[64] = { 0 };  // 64 collisions ought to be enough for everyone
+	} enemy_collisions[64] = {};  // 64 collisions ought to be enough for everyone
 
 	int num_enemy_collissions = 0;
 
@@ -360,7 +360,7 @@ TASK(marisa_laser_slave_shot, {
 
 		// We started shooting - register a laser for rendering
 
-		MarisaALaser laser = { 0 };
+		MarisaALaser laser = {};
 		marisa_laser_show_laser(ctrl, &laser);
 		active_laser = &laser;
 
@@ -635,7 +635,7 @@ TASK(marisa_laser_bomb_handler, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	BoxedTask bomb_task = { 0 };
+	BoxedTask bomb_task = {};
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);

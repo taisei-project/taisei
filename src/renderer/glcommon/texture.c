@@ -110,7 +110,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 	}
 
 	GLint64 supported = query_gl_format(fmt->internal_format, GL_INTERNALFORMAT_SUPPORTED);
-	StringBuffer buf = { 0 };
+	StringBuffer buf = {};
 
 	dump_fmt_info(&buf, fmt);
 	log_debug("??? TRY: %s", buf.start);
@@ -537,7 +537,7 @@ GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg
 #endif
 
 	FMATCH_DBG(
-		StringBuffer dbg_buf = { 0 };
+		StringBuffer dbg_buf = {};
 		FMATCH_DBG_PRINT("Type: %s", r_texture_type_name(cfg->intended_type));
 		FMATCH_DBG_PUT("Required flags:    "); dump_tex_flags(&dbg_buf, cfg->flags.required); FMATCH_DBG_FLUSH();
 		FMATCH_DBG_PUT("Forbidden flags:   "); dump_tex_flags(&dbg_buf, cfg->flags.forbidden); FMATCH_DBG_FLUSH();

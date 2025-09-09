@@ -51,7 +51,7 @@ static void texture_loader_basisu_tls_destructor(void *tc) {
 }
 
 static basist_transcoder *texture_loader_basisu_get_transcoder(void) {
-	static SDL_TLSID tls = { 0 };
+	static SDL_TLSID tls = {};
 	static basist_transcoder *fallback = NULL;
 
 	basist_transcoder *tc = SDL_GetTLS(&tls) ?: fallback;
@@ -103,7 +103,7 @@ static struct basis_size_info texture_loader_basisu_get_transcoded_size_info(
 	uint32_t level,
 	basist_texture_format format
 ) {
-	struct basis_size_info size_info = { 0 };
+	struct basis_size_info size_info = {};
 
 	if((uint)format >= BASIST_NUM_FORMATS) {
 		log_error("%s: Invalid basisu format 0x%04x", ld->st->name, format);
@@ -366,7 +366,7 @@ static void texture_loader_basisu_cleanup(struct basisu_load_data *bld) {
 			basist_transcoder_stop_transcoding(bld->tc);
 		}
 
-		basist_transcoder_set_data(bld->tc, (basist_data) { 0 });
+		basist_transcoder_set_data(bld->tc, (basist_data) {});
 	}
 
 	mem_free(bld->filebuf);
@@ -714,7 +714,7 @@ static bool texture_loader_basisu_load_pixmap(
 }
 
 void texture_loader_basisu(TextureLoadData *ld) {
-	struct basisu_load_data bld = { 0 };
+	struct basisu_load_data bld = {};
 
 	if(UNLIKELY(!(bld.tc = texture_loader_basisu_get_transcoder()))) {
 		texture_loader_basisu_failed(ld, &bld);
@@ -747,7 +747,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	basist_transcoder_set_data(bld.tc, (basist_data) { .data = bld.filebuf, .size = filesize });
 	log_info("%s: Loaded Basis Universal data from %s", ctx, basis_file);
 
-	basist_file_info file_info = { 0 };
+	basist_file_info file_info = {};
 	TRY(basist_transcoder_get_file_info, bld.tc, &file_info);
 
 	BASISU_DEBUG("Version: %u", file_info.version);
@@ -831,7 +831,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	PixmapFormat px_fallback_format = PIXMAP_FORMAT_RGBA8;
 	basist_texture_format basis_fallback_format = BASIST_FORMAT_RGBA32;
 
-	TextureTypeQueryResult qr = { 0 };
+	TextureTypeQueryResult qr = {};
 
 	PixmapFormat choosen_format = texture_loader_basisu_pick_and_apply_compressed_format(
 		ld,
@@ -848,7 +848,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		return;
 	}
 
-	basist_transcode_level_params p = { 0 };
+	basist_transcode_level_params p = {};
 	basist_init_transcode_level_params(&p);
 
 	if(pixmap_format_is_compressed(choosen_format)) {

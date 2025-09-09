@@ -24,7 +24,7 @@ void stage1_drawsys_init(void) {
 	stage1_draw_data = ALLOC(typeof(*stage1_draw_data));
 	stage3d_init(&stage_3d_context, 64);
 
-	FBAttachmentConfig cfg = { 0 };
+	FBAttachmentConfig cfg = {};
 	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
 	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
@@ -243,7 +243,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0]+offs, pos[1], d);
 	r_mat_mv_rotate(2 * M_PI * sin(32.234*pos[1]) + global.frames / 800.0, 0, 0, 1);
 
-	Sprite spr = { 0 };
+	Sprite spr = {};
 	spr.w = spr.h = 1;
 	spr.tex = res_texture("stage1/waterplants");
 	spr.tex_area.w = 0.5f;

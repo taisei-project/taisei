@@ -365,7 +365,7 @@ static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *i
 }
 
 void *cotask_entry(void *varg) {
-	CoTaskData data = { 0 };
+	CoTaskData data = {};
 	CoTaskInitData *init_data = varg;
 	CoTask *task = init_data->task;
 	cotask_entry_setup(task, &data, init_data);

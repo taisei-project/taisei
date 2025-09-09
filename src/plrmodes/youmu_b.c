@@ -562,7 +562,7 @@ TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
 	YoumuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	BoxedTask bomb_task = { 0 };
+	BoxedTask bomb_task = {};
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);

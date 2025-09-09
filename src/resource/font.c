@@ -674,7 +674,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			}
 		}
 
-		TextureTypeQueryResult qr = { 0 };
+		TextureTypeQueryResult qr = {};
 
 		// TODO: Only query this once on init.
 		if(r_texture_type_query(SS_TEXTURE_TYPE, SS_TEXTURE_FLAGS, px.format, px.origin, &qr)) {
@@ -820,7 +820,7 @@ void load_font(ResourceLoadState *st) {
 		{ "face",          .out_long  = &font.base_face_idx },
 		{ "border_inner",  .out_float = &font.base_border_inner, },
 		{ "border_outer",  .out_float = &font.base_border_outer, },
-		{ NULL }
+		{}
 	});
 
 	SDL_CloseIO(rw);

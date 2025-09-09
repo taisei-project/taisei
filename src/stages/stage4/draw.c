@@ -207,7 +207,7 @@ static void stage4_lake_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage4_bg_setup_pbr_env_outdoors(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&stage4_draw_data->models.ground, &env);
@@ -236,7 +236,7 @@ static void stage4_corridor_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage4_bg_setup_pbr_env_indoors(&stage_3d_context.cam, pos, &env);
 
 	pbr_draw_model(&stage4_draw_data->models.corridor, &env);

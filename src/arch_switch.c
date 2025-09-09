@@ -23,7 +23,7 @@
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);env_set_string(name, val, true)
 
 static nxAtExitFn g_nxAtExitFn = NULL;
-static char g_programDir[FS_MAX_PATH] = {0};
+static char g_programDir[FS_MAX_PATH] = {};
 static AppletHookCookie g_hookCookie;
 
 static s32 g_initialScreenWidth = 1920;

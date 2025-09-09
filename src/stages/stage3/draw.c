@@ -69,7 +69,7 @@ static void stage3_bg_ground_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage3_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&stage3_draw_data->models.trees, &env);
@@ -88,7 +88,7 @@ static void stage3_bg_leaves_draw(vec3 pos) {
 
 	r_shader("pbr_roughness_alpha_discard");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage3_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&stage3_draw_data->models.leaves, &env);

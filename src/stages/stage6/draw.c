@@ -26,7 +26,7 @@ void stage6_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 128);
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		vec3 p = { 0 };
+		vec3 p = {};
 
 		for(int c = 0; c < 10; c++) {
 			p[0] += rng_f32s();
@@ -97,7 +97,7 @@ static void stage6_towertop_draw(vec3 pos) {
 
 	r_shader("pbr");
 
-	PBREnvironment env = { 0 };
+	PBREnvironment env = {};
 	stage6_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
 	pbr_draw_model(&stage6_draw_data->models.stairs, &env);

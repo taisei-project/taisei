@@ -168,7 +168,7 @@ static void charprofile_logic(MenuData *m) {
 	});
 	MenuEntry *cursor_entry = dynarray_get_ptr(&m->entries, m->cursor);
 	Font *font = res_font("small");
-	char buf[512] = { 0 };
+	char buf[512] = {};
 	int j = check_unlocked_profile(m->cursor);
 	text_wrap(font, profiles[j].description, DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
@@ -371,7 +371,7 @@ void preload_charprofile_menu(ResourceGroup *rg) {
 static void charprofile_input(MenuData *m) {
 	events_poll((EventHandler[]){
 		{ .proc = charprofile_input_handler, .arg = m },
-		{ NULL }
+		{}
 	}, EFLAG_MENU);
 }
 

@@ -593,7 +593,7 @@ static void replay_input(StageFrameState *fstate) {
 						: stage_input_handler_replay,
 				.arg = fstate,
 			},
-			{ NULL }
+			{}
 		}, EFLAG_GAME);
 	}
 
@@ -645,7 +645,7 @@ static void stage_input(StageFrameState *fstate) {
 				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
 				.arg = fstate,
 			},
-			{NULL}
+			{}
 		}, EFLAG_NOPUMP);
 	} else {
 		events_poll((EventHandler[]){
@@ -655,7 +655,7 @@ static void stage_input(StageFrameState *fstate) {
 				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
 				.arg = fstate,
 			},
-			{NULL}
+			{}
 		}, EFLAG_GAME);
 	}
 
@@ -1159,7 +1159,7 @@ static void _stage_enter(
 		} \
 	} while(0)
 
-	static const ShaderRule shader_rules_stub[1] = { NULL };
+	static const ShaderRule shader_rules_stub[1] = {};
 
 	STUB_PROC(preload, stage_preload_stub_proc);
 	STUB_PROC(begin, stage_stub_proc);

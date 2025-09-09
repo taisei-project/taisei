@@ -15,7 +15,7 @@
 #include "util/env.h"
 #include "util/io.h"
 
-struct glext_s glext = { 0 };
+struct glext_s glext = {};
 
 typedef void (*glad_glproc_ptr)(void);
 
@@ -696,7 +696,7 @@ static void detect_broken_intel_driver(void) {
 	}
 
 	int button;
-	SDL_MessageBoxData mbdata = { 0 };
+	SDL_MessageBoxData mbdata = {};
 
 	mbdata.flags = SDL_MESSAGEBOX_WARNING;
 	mbdata.title = "Taisei Project";

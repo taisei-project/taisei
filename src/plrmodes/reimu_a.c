@@ -240,7 +240,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	Color base_colors[3];
 
 	for(int i = 0; i < 3; ++i) {
-		base_colors[i] = *reimu_spirit_orb_color(&(Color){0}, i);
+		base_colors[i] = *reimu_spirit_orb_color(&(Color){}, i);
 
 		PARTICLE(
 			.sprite = "blast",
@@ -254,7 +254,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_ADD(&impact_effects, PARTICLE(
 			.sprite = "fantasyseal_impact",
-			.color = reimu_spirit_orb_color(&(Color){0}, i),
+			.color = reimu_spirit_orb_color(&(Color){}, i),
 			.pos = pos + 2 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
 			.timeout = 120,
 			.layer = LAYER_BOSS + 1,
@@ -305,7 +305,7 @@ TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
 		ENT_ARRAY_ADD(&components, PARTICLE(
 			.sprite_ptr = glowball,
 			.shader_ptr = shader,
-			.color = reimu_spirit_orb_color(&(Color){0}, i),
+			.color = reimu_spirit_orb_color(&(Color){}, i),
 			.opacity = 0.7,
 			.layer = LAYER_PLAYER_FOCUS - 1,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
@@ -384,7 +384,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 
 			PARTICLE(
 				.sprite_ptr = res_sprite("part/stain"),
-				// .color = reimu_spirit_orb_color(&(Color){0}, i),
+				// .color = reimu_spirit_orb_color(&(Color){}, i),
 				.color = HSLA(t/orb->timeout, 0.3, 0.3, 0.0),
 				.pos = trail_pos,
 				.angle = rng_angle(),
@@ -449,7 +449,7 @@ TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	BoxedTask bomb_task = { 0 };
+	BoxedTask bomb_task = {};
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);

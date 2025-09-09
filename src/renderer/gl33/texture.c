@@ -75,7 +75,7 @@ typedef struct FormatFilterFlags {
 } FormatFilterFlags;
 
 static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
-	GLTextureFormatMatchConfig cfg = { 0 };
+	GLTextureFormatMatchConfig cfg = {};
 
 	cfg.intended_type = type;
 	cfg.flags.desirable |= GLTEX_FILTERABLE;

@@ -22,7 +22,7 @@
 	} \
 	Dialog dialog; \
 	stage_begin_dialog(&dialog); \
-	_interface##DialogEvents events = { 0 }; \
+	_interface##DialogEvents events = {}; \
 	COEVENT_INIT_ARRAY(events); \
 	if(ARGS.out_events) *ARGS.out_events = &events; \
 	YIELD \

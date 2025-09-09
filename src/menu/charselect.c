@@ -104,7 +104,7 @@ static void update_char_menu(MenuData *menu) {
 	assume(m != NULL);
 
 	Font *font = res_font("standard");
-	char buf[256] = { 0 };
+	char buf[256] = {};
 	text_wrap(font, m->description, DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
@@ -381,7 +381,7 @@ static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 static void char_menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = char_menu_input_handler, .arg = menu },
-		{ NULL }
+		{}
 	}, EFLAG_MENU);
 }
 

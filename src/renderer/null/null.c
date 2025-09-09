@@ -181,7 +181,7 @@ static IndexBuffer* null_vertex_array_get_index_attachment(VertexArray *varr) { 
 static void null_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) { }
 
 static void null_scissor(IntRect scissor) { }
-static void null_scissor_current(IntRect *scissor) { *scissor = (IntRect) { 0 }; }
+static void null_scissor_current(IntRect *scissor) { *scissor = (IntRect) {}; }
 
 static void null_vsync(VsyncMode mode) { }
 static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }

@@ -73,7 +73,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{ "padding_bottom", .out_float = &pad.bottom },
 		{ "padding_left",   .out_float = &pad.left },
 		{ "padding_right",  .out_float = &pad.right },
-		{ NULL }
+		{}
 	});
 
 	SDL_CloseIO(rw);
@@ -131,7 +131,7 @@ static void load_sprite_stage2(ResourceLoadState *st) {
 	} infermap[] = {
 		{ "sprite width",  &spr->w, "texture region width",  &denorm_coords.w },
 		{ "sprite height", &spr->h, "texture region height", &denorm_coords.h },
-		{ NULL },
+		{},
 	};
 
 	for(struct infermap *m = infermap; m->dst; ++m) {

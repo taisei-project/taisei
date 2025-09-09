@@ -163,7 +163,7 @@ struct conversion_def conversion_table[] = {
 	CONV(f32, 32 | DEPTH_FLOAT_BIT, u32, 32),
 	CONV(f32, 32 | DEPTH_FLOAT_BIT, f32, 32 | DEPTH_FLOAT_BIT),
 
-	{ 0 }
+	{}
 };
 
 static struct conversion_def* find_conversion(uint depth_in, uint depth_out) {

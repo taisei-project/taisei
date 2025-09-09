@@ -101,7 +101,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"height",             required_argument,  0, 'H'},            "Set window height", "HEIGHT"},
 		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
 		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
-		{ 0 }
+		{}
 	};
 
 	memset(a, 0, sizeof(*a));

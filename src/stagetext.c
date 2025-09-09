@@ -96,7 +96,7 @@ static void stagetext_draw_single(StageText *txt) {
 		ofs_x = ofs_y = 10 * pow(f, 2);
 	}
 
-	TextParams params = { 0 };
+	TextParams params = {};
 	params.font_ptr = txt->font;
 	params.align = txt->align;
 	params.blend = BLEND_PREMUL_ALPHA;

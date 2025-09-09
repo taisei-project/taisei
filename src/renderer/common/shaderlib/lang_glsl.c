@@ -287,13 +287,13 @@ bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, cons
 	out->stage = options->stage;
 	out->entrypoint = "main";
 
-	GLSLParseState pstate = { 0 };
+	GLSLParseState pstate = {};
 	pstate.dest = NOT_NULL(SDL_RWArena(arena, 1024, &pstate.stream_state));
 	pstate.src = out;
 	pstate.options = options;
 	pstate.scratch = acquire_scratch_arena();
 
-	GLSLFileParseState fstate = { 0 };
+	GLSLFileParseState fstate = {};
 	fstate.global = &pstate;
 	fstate.path = path;
 

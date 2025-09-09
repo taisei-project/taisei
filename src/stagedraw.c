@@ -172,7 +172,7 @@ static void stage_draw_fbpair_create(
 	StageFramebufferResizeParams *rp = memdup(resize_params, sizeof(*resize_params));
 	rp->refs = 2;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = attachments;
 	fbconf.num_attachments = num_attachments;
 	fbconf.resize_strategy.resize_func = stage_framebuffer_resize_strategy;
@@ -182,8 +182,7 @@ static void stage_draw_fbpair_create(
 }
 
 static void stage_draw_setup_framebuffers(void) {
-	FBAttachmentConfig a[2], *a_color, *a_depth;
-	memset(a, 0, sizeof(a));
+	FBAttachmentConfig a[2] = {}, *a_color, *a_depth;
 
 	a_color = &a[0];
 	a_depth = &a[1];
@@ -239,12 +238,12 @@ static Framebuffer *add_custom_framebuffer(
 	uint num_attachments,
 	FBAttachmentConfig attachments[num_attachments]
 ) {
-	StageFramebufferResizeParams rp = { 0 };
+	StageFramebufferResizeParams rp = {};
 	rp.scaling_base = fbtype;
 	rp.scale.worst = scale_worst;
 	rp.scale.best = scale_best;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = attachments;
 	fbconf.num_attachments = num_attachments;
 	fbconf.resize_strategy.resize_func = stage_framebuffer_resize_strategy;
@@ -262,7 +261,7 @@ Framebuffer *stage_add_background_framebuffer(const char *label, float scale_wor
 }
 
 Framebuffer *stage_add_static_framebuffer(const char *label, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = attachments;
 	fbconf.num_attachments = num_attachments;
 	return fbmgr_group_framebuffer_create(stagedraw.mfb_group, label, &fbconf);
@@ -1603,7 +1602,7 @@ static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
 }
 
 static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
-	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
+	#define NUM_SAMPLES (sizeof(((FPSCounter){{}}).frametimes) / sizeof(((FPSCounter){{}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
 	r_state_push();
@@ -1642,7 +1641,7 @@ void stage_draw_hud(void) {
 	r_blend(BLEND_PREMUL_ALPHA);
 
 	// Set up positions of most HUD elements
-	struct labels_s labels = { 0 };
+	struct labels_s labels = {};
 
 	const float label_spacing = 32;
 	float label_ypos = 0;

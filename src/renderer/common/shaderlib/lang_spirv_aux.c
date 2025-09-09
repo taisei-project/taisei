@@ -185,7 +185,7 @@ bool spirv_compile(
 ) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
-	ShaderLangInfo target_lang = { 0 };
+	ShaderLangInfo target_lang = {};
 	target_lang.lang = SHLANG_SPIRV;
 	target_lang.spirv.target = options->target;
 
@@ -280,7 +280,7 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 }
 
 bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena, const SPIRVTranspileOptions *options) {
-	ShaderSource transient_src = { 0 };
+	ShaderSource transient_src = {};
 	bool result;
 
 	ShaderSource _in = *in;

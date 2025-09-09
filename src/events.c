@@ -139,7 +139,7 @@ static int enqueue_event_handlers(int max, EventHandler *queue[max], EventHandle
 	// counting sort!
 
 	int cnt = 0;
-	int pcount[NUM_EPRIOS] = { 0 };
+	int pcount[NUM_EPRIOS] = {};
 	EventHandler *temp[max];
 
 	assert(global_handlers.num_elements <= max);
@@ -252,7 +252,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 		return;
 	}
 
-	SDL_Event event = { 0 };
+	SDL_Event event = {};
 	event.type = sdltype;
 	event.user.code = code;
 	event.user.data1 = data1;
@@ -349,7 +349,7 @@ static EventHandler default_handlers[] = {
 	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_DOWN },
 	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_UP },
 
-	{NULL}
+	{}
 };
 
 static void events_register_default_handlers(void) {

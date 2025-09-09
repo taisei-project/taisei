@@ -54,7 +54,7 @@ void vfs_setup(CallChain next) {
 		// per-user directory, to contain various cached resources to speed up loading times
 		{ "cache",        cache_path,          false,         false,         VFS_SYSPATH_MOUNT_MKDIR },
 
-		{NULL}
+		{}
 	};
 
 	vfs_init();
