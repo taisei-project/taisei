@@ -177,7 +177,7 @@ static int bind_gpdev_get(OptionBinding *b) {
 }
 
 static int bind_gpdev_set(OptionBinding *b, int v) {
-	char guid[33] = {0};
+	char guid[33] = {};
 
 	if(v == -1) {
 		v = GAMEPAD_DEVNUM_ANY;
@@ -1942,7 +1942,7 @@ static void options_menu_input(MenuData *menu) {
 		events_poll((EventHandler[]){
 			{ .proc = submenu_input_handler, .arg = sub },
 			{ .proc = menu_input_handler, .arg = sub },
-			{NULL}
+			{}
 		}, flags);
 		return;
 	}
@@ -1976,6 +1976,6 @@ static void options_menu_input(MenuData *menu) {
 			.priority = EPRIO_NORMAL,
 		},
 
-		{NULL}
+		{}
 	}, flags);
 }

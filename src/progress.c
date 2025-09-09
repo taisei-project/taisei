@@ -333,7 +333,7 @@ static void progress_read(SDL_IOStream *file) {
 		return;
 	}
 
-	TaiseiVersion version_info = { 0 };
+	TaiseiVersion version_info = {};
 
 	// TODO: handle premature EOFs better
 
@@ -902,7 +902,7 @@ static void progress_write(SDL_IOStream *file) {
 		{progress_prepare_cmd_unlock_bgms, progress_write_cmd_unlock_bgms, NULL},
 		{progress_prepare_cmd_unlock_cutscenes, progress_write_cmd_unlock_cutscenes, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
-		{NULL}
+		{}
 	};
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {

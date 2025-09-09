@@ -34,7 +34,7 @@ VideoPostProcess *video_postprocess_init(void) {
 		.mfb_group = fbmgr_group_create(),
 	});
 
-	FBAttachmentConfig a = { 0 };
+	FBAttachmentConfig a = {};
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a.tex_params.anisotropy = 1;
 	a.tex_params.filter.mag = TEX_FILTER_LINEAR;
@@ -45,7 +45,7 @@ VideoPostProcess *video_postprocess_init(void) {
 	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	a.tex_params.wrap.t = TEX_WRAP_MIRROR;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.num_attachments = 1;
 	fbconf.attachments = &a;
 	fbconf.resize_strategy.resize_func = fbmgr_resize_strategy_screensized;

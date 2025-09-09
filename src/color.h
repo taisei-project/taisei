@@ -33,11 +33,11 @@ typedef union Color {
 #define RGBA_MUL_ALPHA(r, g, b, a) color_mul_alpha(RGBA((r), (g), (b), (a)))
 #define RGB(r, g, b) RGBA((r), (g), (b), 1)
 
-#define HSLA(h, s, l, a) color_hsla((&(Color) { 0 }), (h), (s), (l), (a))
+#define HSLA(h, s, l, a) color_hsla((&(Color) {}), (h), (s), (l), (a))
 #define HSLA_MUL_ALPHA(h, s, l, a) color_mul_alpha(HSLA((h), (s), (l), (a)))
 #define HSL(h, s, l) HSLA((h), (s), (l), 1)
 
-#define COLOR_COPY(c) color_copy((&(Color) { 0 }), (c))
+#define COLOR_COPY(c) color_copy((&(Color) {}), (c))
 
 /*
  * All of these modify the first argument in-place, and return it for convenience.

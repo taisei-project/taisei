@@ -274,7 +274,7 @@ void laserdraw_init(void) {
 	create_pass1_resources();
 	create_pass2_resources();
 
-	FBAttachmentConfig aconf = { 0 };
+	FBAttachmentConfig aconf = {};
 	aconf.attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	aconf.tex_params.type = TEX_TYPE_RG_16_FLOAT;
 	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
@@ -282,7 +282,7 @@ void laserdraw_init(void) {
 	aconf.tex_params.wrap.s = TEX_WRAP_REPEAT;
 	aconf.tex_params.wrap.t = TEX_WRAP_REPEAT;
 
-	FramebufferConfig fbconf = { 0 };
+	FramebufferConfig fbconf = {};
 	fbconf.attachments = &aconf;
 	fbconf.num_attachments = 1;
 	fbconf.resize_strategy.resize_func = laserdraw_sdf_fb_resize_strategy;

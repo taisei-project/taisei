@@ -72,7 +72,7 @@ DEFINE_ENTITY_TYPE(MarisaBBeams, {
 static void marisa_star_draw_slave(EntityInterface *ent) {
 	MarisaBSlave *slave = ENT_CAST(ent, MarisaBSlave);
 
-	ShaderCustomParams shader_params = { 0 };
+	ShaderCustomParams shader_params = {};
 	// shader_params.color = *RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
 	float t = global.frames;
 
@@ -289,7 +289,7 @@ static void marisa_star_draw_orbiter(EntityInterface *ent) {
 	MarisaBOrbiter *orbiter = ENT_CAST(ent, MarisaBOrbiter);
 	MarisaBController *ctrl = orbiter->ctrl;
 
-	SpriteParams sp = { 0 };
+	SpriteParams sp = {};
 	sp.pos.as_cmplx = orbiter->pos;
 	sp.color = color_mul_scalar(COLOR_COPY(&orbiter->circle_color), ctrl->bomb.beams_alpha);
 	sp.rotation.angle = global.frames * 10 * DEG2RAD;
@@ -378,7 +378,7 @@ TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; real hue; BoxedM
 		if(tb >= fadetime) {
 			pcolor.a = 1 - (tb - fadetime) / (1 - fadetime);
 			CANCEL_TASK(stars_task);
-			stars_task = (BoxedTask) { 0 };
+			stars_task = (BoxedTask) {};
 		}
 
 		color_mul_alpha(&pcolor);
@@ -468,7 +468,7 @@ TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	BoxedTask bomb_task = { 0 };
+	BoxedTask bomb_task = {};
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);

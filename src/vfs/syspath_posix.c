@@ -30,7 +30,7 @@ static void vfs_syspath_free(VFSNode *node) {
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
 	struct stat fstat;
-	VFSInfo i = {0};
+	VFSInfo i = {};
 
 	if(stat(VFS_NODE_CAST(VFSSysPathNode, node)->path, &fstat) >= 0) {
 		i.exists = true;

@@ -567,7 +567,7 @@ void kill_projectile(Projectile *proj) {
 }
 
 void process_projectiles(ProjectileList *projlist, bool collision) {
-	ProjCollisionResult col = { 0 };
+	ProjCollisionResult col = {};
 	bool stage_cleared = stage_is_cleared();
 
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
@@ -841,7 +841,7 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 	spbuf->color = proj->color;
 	spbuf->shader_params = (ShaderCustomParams) {{ proj->opacity, 0, 0, 0 }};
 
-	SpriteParams sp = { 0 };
+	SpriteParams sp = {};
 	sp.blend = proj->blend;
 	sp.color = &spbuf->color;
 	sp.pos.x = re(proj->pos);

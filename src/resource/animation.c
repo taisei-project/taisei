@@ -294,7 +294,7 @@ static void load_animation_stage2(ResourceLoadState *st) {
 	ani->sprites = ALLOC_ARRAY(ani->sprite_count, typeof(*ani->sprites));
 
 	char buf[strlen(st->name) + sizeof(".frame0000")];
-	struct anim_remap_state remap_state = { 0 };
+	struct anim_remap_state remap_state = {};
 
 	for(int i = 0; i < ani->sprite_count; ++i) {
 		snprintf(buf, sizeof(buf), "%s.frame%04d", st->name, i);

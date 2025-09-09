@@ -136,7 +136,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_rice,
 		.pos = ARGS.pos,
-		.color = boson_color(&(Color){0}, ARGS.trail_idx, 0),
+		.color = boson_color(&(Color){}, ARGS.trail_idx, 0),
 		.max_viewport_dist = 20,
 	));
 
@@ -249,7 +249,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			float overshoot_time = re(pos0 * conj(dir)) / re(ARGS.vel * conj(dir));
 			pos_lookahead -= ARGS.vel * overshoot_time;
 
-			Color *clr = boson_color(&(Color){0}, ARGS.trail_idx, ARGS.num_warps - warps_left + 1);
+			Color *clr = boson_color(&(Color){}, ARGS.trail_idx, ARGS.num_warps - warps_left + 1);
 			clr->a = 0;
 
 			PARTICLE(

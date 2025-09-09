@@ -89,7 +89,7 @@ void dialog_update(Dialog *d) {
 	}
 
 	const float offset_per_actor = 32;
-	float target_offsets[2] = { 0 };
+	float target_offsets[2] = {};
 
 	for(DialogActor *a = d->actors.last; a; a = a->prev) {
 		fapproach_asymptotic_p(&a->offset.x, target_offsets[a->side], 0.10, 1e-3);
@@ -177,7 +177,7 @@ void dialog_message_ex(Dialog *d, const DialogMessageParams *params) {
 }
 
 static void _dialog_message(Dialog *d, DialogActor *actor, const char *text, bool skippable, int delay) {
-	DialogMessageParams p = { 0 };
+	DialogMessageParams p = {};
 	p.actor = actor;
 	p.text = text;
 	p.implicit_wait = true;
@@ -263,7 +263,7 @@ void dialog_draw(Dialog *dialog) {
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_width/2.0, 64, 0);
 
-	Color clr = { 0 };
+	Color clr = {};
 
 	for(DialogActor *a = dialog->actors.first; a; a = a->next) {
 		if(a->opacity <= 0) {

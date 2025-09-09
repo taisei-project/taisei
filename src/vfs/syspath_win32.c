@@ -73,7 +73,7 @@ static void _vfs_set_error_win32(const char *file, int line) {
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	VFSInfo i = {0};
+	VFSInfo i = {};
 
 	if(!PathFileExists(pnode->wpath)) {
 		i.exists = false;

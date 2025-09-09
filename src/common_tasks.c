@@ -131,7 +131,7 @@ static int common_charge_impl(
 	SFXPlayID charge_snd_id = snd_charge ? play_sfx(snd_charge) : 0;
 	DECLARE_ENT_ARRAY(Projectile, particles, 256);
 
-	BoxedTask snd_stopper_task = { 0 };
+	BoxedTask snd_stopper_task = {};
 
 	if(charge_snd_id) {
 		snd_stopper_task = cotask_box(INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, charge_sound_stopper, charge_snd_id));

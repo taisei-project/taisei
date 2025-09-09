@@ -20,7 +20,7 @@ enum {
 static const uint8_t pxi_magic[] = { 0xe2, 0x99, 0xa5, 0x52, 0x65, 0x69, 0x6d, 0x75 };
 
 static bool px_internal_probe(SDL_IOStream *stream) {
-	uint8_t magic[sizeof(pxi_magic)] = { 0 };
+	uint8_t magic[sizeof(pxi_magic)] = {};
 	SDL_ReadIO(stream, magic, sizeof(magic));
 	return !memcmp(magic, pxi_magic, sizeof(magic));
 }
@@ -78,7 +78,7 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 
 	// TODO check for read errors
 
-	uint8_t magic[sizeof(pxi_magic)] = { 0 };
+	uint8_t magic[sizeof(pxi_magic)] = {};
 	SDL_ReadIO(stream, magic, sizeof(magic));
 
 	if(memcmp(magic, pxi_magic, sizeof(magic))) {

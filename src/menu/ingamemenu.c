@@ -110,7 +110,7 @@ static void ingame_menu_input(MenuData *m) {
 		{ .proc = ingame_menu_input_filter, .arg = m },
 		{ .proc = menu_input_handler, .arg = m },
 		{ .proc = ingame_menu_input_handler, .arg = m },
-		{ NULL }
+		{}
 	}, EFLAG_MENU);
 }
 

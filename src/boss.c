@@ -965,7 +965,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 }
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
-	SpellBonus bonus = { 0 };
+	SpellBonus bonus = {};
 	calc_spell_bonus(a, &bonus);
 
 	const char *title = bonus.failed ? "Spell Card failed…"  : "Spell Card captured!";

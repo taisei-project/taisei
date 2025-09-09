@@ -95,7 +95,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{ "roughness",        .out_float = &ld->mat->roughness_value },
 		{ "metallic",         .out_float = &ld->mat->metallic_value },
 		{ "depth_scale",      .out_float = &ld->mat->depth_scale },
-		{ NULL },
+		{},
 	});
 
 	SDL_CloseIO(rw);
