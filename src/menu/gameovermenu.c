@@ -10,7 +10,7 @@
 
 #include "global.h"
 #include "ingamemenu.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "menu.h"
 #include "stats.h"
 

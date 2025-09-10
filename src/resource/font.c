@@ -29,7 +29,8 @@ static void post_init_fonts(void);
 static void shutdown_fonts(void);
 static char *font_path(const char*);
 static bool check_font_path(const char*);
-static void load_font(ResourceLoadState *st);
+static void load_font_stage1(ResourceLoadState *st);
+static void load_font_stage2(ResourceLoadState *st);
 static void unload_font(void*);
 static bool transfer_font(void*, void*);
 
@@ -44,7 +45,7 @@ ResourceHandler font_res_handler = {
 		.shutdown = shutdown_fonts,
 		.find = font_path,
 		.check = check_font_path,
-		.load = load_font,
+		.load = load_font_stage1,
 		.unload = unload_font,
 		.transfer = transfer_font,
 	},
@@ -118,7 +119,7 @@ struct Font {
 	FontMetrics metrics;
 	bool kerning;
 
-	char **fallbacks;
+	struct Font **fallbacks;
 #ifdef DEBUG
 	char debug_label[64];
 #endif
@@ -725,7 +726,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	return glyph;
 }
 
-static Glyph *get_glyph(Font *fnt, charcode_t cp) {
+static Glyph *_get_glyph(Font *fnt, charcode_t cp) {
 	int64_t ofs;
 
 	if(!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs)) {
@@ -735,17 +736,14 @@ static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 
 		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
 			if(fnt->fallbacks) {
-				for(char **fallback = fnt->fallbacks; *fallback != NULL; fallback++) {
-					glyph = get_glyph(res_font(*fallback), cp);
-					if(glyph) {
+				for(Font **fallback = fnt->fallbacks; *fallback != NULL; fallback++) {
+					glyph = _get_glyph(*fallback, cp);
+					if(glyph != NULL) {
 						return glyph;
 					}
 				}
 			}
-
-			log_debug("Font or fallbacks have no glyph for charcode 0x%08lx", cp);
-			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
-			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
+			ofs = -1;
 		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
 			glyph = load_glyph(fnt, ft_index, &globals.spritesheets);
 			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
@@ -756,6 +754,17 @@ static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 	}
 
 	return ofs < 0 ? NULL : dynarray_get_ptr(&fnt->glyphs, ofs);
+}
+
+static Glyph *get_glyph(Font *fnt, charcode_t cp) {
+	Glyph *glyph = _get_glyph(fnt, cp);
+	if(glyph == NULL) {
+		log_debug("Font or fallbacks have no glyph for charcode 0x%08lx", cp);
+		glyph = _get_glyph(fnt, UNICODE_UNKNOWN);
+		int64_t ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
+		ht_set(&fnt->charcodes_to_glyph_ofs, cp, ofs);
+	}
+	return glyph;
 }
 
 attr_nonnull(1)
@@ -800,7 +809,6 @@ static void free_font_resources(Font *font) {
 	}
 
 	if(font->fallbacks) {
-		mem_free(font->fallbacks[0]);
 		mem_free(font->fallbacks);
 	}
 
@@ -815,27 +823,36 @@ static void free_font_resources(Font *font) {
 
 static void finish_reload(ResourceLoadState *st);
 
-static char **parse_fallbacks(char *commalist) {
-	char **fallbacks = NULL;
+static int parse_fallbacks(char **commalist) {
 	int num_fallbacks = 0;
-	if(commalist) {
-		for(char *p = commalist; *p != '\0'; p++) {
-			if(*p == ',') {
+	if(*commalist) {
+		int l = strlen(*commalist);
+
+		char *out = mem_alloc(l+2); // ensures "\0\0" sentinel
+		char *w = out;
+		for(char *r = *commalist; *r != '\0'; r++) {
+			if(*r == ',') {
 				num_fallbacks++;
-				*p = '\0';
+				*w = '\0';
+				w++;
+			} else if(*r != ' ') {
+				*w = *r;
+				w++;
 			}
 		}
 		num_fallbacks++;
-		fallbacks = ALLOC_ARRAY(num_fallbacks + 1, char *);
-		fallbacks[0] = commalist;
-		for(int i = 1; i < num_fallbacks; i++) {
-			fallbacks[i] = fallbacks[i-1] + strlen(fallbacks[i-1]) + 1;
-		}
+		mem_free(*commalist);
+		*commalist = out;
 	}
-	return fallbacks;
+	return num_fallbacks;
 }
 
-void load_font(ResourceLoadState *st) {
+typedef struct FontLoadData {
+	Font *font;
+	char *fallbacks;
+} FontLoadData;
+
+void load_font_stage1(ResourceLoadState *st) {
 	Font font = {
 		.base_border_inner = 0.5f,
 		.base_border_outer = 1.5f,
@@ -861,19 +878,27 @@ void load_font(ResourceLoadState *st) {
 		{ NULL }
 	});
 
-	font.fallbacks = parse_fallbacks(fallbacks);
-
 	SDL_CloseIO(rw);
 
 	if(UNLIKELY(!parsed)) {
 		log_error("Failed to parse font file '%s'", st->path);
 		mem_free(font.source_path);
+		mem_free(fallbacks);
 		res_load_failed(st);
 		return;
 	}
 
+	int num_fallbacks = parse_fallbacks(&fallbacks);
+	if(num_fallbacks > 0) {
+		font.fallbacks = ALLOC_ARRAY(num_fallbacks + 1, Font *);
+		for(char *fallback = fallbacks; *fallback != '\0'; fallback += strlen(fallback) + 1) {
+			res_load_dependency(st, RES_FONT, fallback);
+		}
+	}
+
 	if(!font.source_path) {
 		log_error("%s: No source path specified", st->path);
+		mem_free(fallbacks);
 		res_load_failed(st);
 		return;
 	}
@@ -883,11 +908,13 @@ void load_font(ResourceLoadState *st) {
 
 	if(!(font.face = load_font_face(font.source_path, font.base_face_idx))) {
 		free_font_resources(&font);
+		mem_free(fallbacks);
 		res_load_failed(st);
 	}
 
 	if(set_font_size(&font, global_font_scale())) {
 		free_font_resources(&font);
+		mem_free(fallbacks);
 		res_load_failed(st);
 		return;
 	}
@@ -897,15 +924,34 @@ void load_font(ResourceLoadState *st) {
 #ifdef DEBUG
 	strlcpy(font.debug_label, st->name, sizeof(font.debug_label));
 #endif
-
 	font_set_kerning_enabled(&font, true);
 	Font *newfont = memdup(&font, sizeof(font));
 
+	FontLoadData *ld = ALLOC(FontLoadData);
+	ld->font = newfont;
+	ld->fallbacks = fallbacks;
+	res_load_continue_after_dependencies(st, load_font_stage2, ld);
+}
+
+static void load_font_stage2(ResourceLoadState *st) {
+	FontLoadData *ld = NOT_NULL(st->opaque);
+	auto font = ld->font;
+
+	if(ld->fallbacks != NULL) {
+		int i = 0;
+		for(char *fallback = ld->fallbacks; *fallback != '\0'; fallback += strlen(fallback) + 1) {
+			font->fallbacks[i] = res_get_data(RES_FONT, fallback, st->flags);
+			i++;
+		}
+	}
+	mem_free(ld->fallbacks);
+	mem_free(ld);
+
 	if(st->flags & RESF_RELOAD) {
 		// workaround to avoid data race (font in use on main thread)
-		res_load_continue_on_main(st, finish_reload, newfont);
+		res_load_continue_on_main(st, finish_reload, font);
 	} else {
-		res_load_finished(st, newfont);
+		res_load_finished(st, font);
 	}
 }
 

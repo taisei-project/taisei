@@ -12,7 +12,7 @@
 #include "dynstage.h"
 #include "entity.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "portrait.h"
 #include "stage.h"
 #include "stagedraw.h"
@@ -969,7 +969,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	SpellBonus bonus = { 0 };
 	calc_spell_bonus(a, &bonus);
 
-	const char *title = bonus.failed ? "Spell Card failed…"  : "Spell Card captured!";
+	const char *title = bonus.failed ? _("Spell Card failed…")  : _("Spell Card captured!");
 
 	char diff_bonus_text[6];
 	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);

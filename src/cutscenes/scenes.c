@@ -7,7 +7,7 @@
  */
 
 #include "scenes.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 Cutscene const g_cutscenes[NUM_CUTSCENE_IDS] = {
 	[CUTSCENE_ID_INTRO] = {

@@ -9,7 +9,7 @@
 #include "wriggle.h"
 
 #include "common_tasks.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 void stage3_draw_wriggle_spellbg(Boss *b, int time) {
 	r_state_push();

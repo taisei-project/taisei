@@ -49,7 +49,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_bad/02", {
-		T_CENTERED("— Bad End —", "Try to reach the end without using a Continue!"),
+		T_CENTERED(N_("— Bad End —"), N_("Try to reach the end without using a Continue!")),
 		{ 0 },
 	}},
 	{ NULL }

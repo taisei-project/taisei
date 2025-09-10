@@ -11,6 +11,7 @@
 #include "entity.h"
 #include "events.h"
 #include "global.h"
+#include "i18n/i18n.h"
 #include "replay/struct.h"
 #include "resource/postprocess.h"
 #include "stageobjects.h"
@@ -553,7 +554,7 @@ static void draw_spellbg_overlay(int t) {
 	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
 	if(f > 0) {
-		draw_wall_of_text(f, b->current->name);
+		draw_wall_of_text(f, _(b->current->name));
 	}
 }
 
@@ -1290,17 +1291,17 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	Color *lb_label_clr = color_mul(COLOR_COPY(&labels->lb_baseclr), &stagedraw.hud_text.color.label);
 
 	// Labels
-	draw_label("Hi-Score:",    labels->y.hiscore, labels, &stagedraw.hud_text.color.label);
-	draw_label("Score:",       labels->y.score,   labels, &stagedraw.hud_text.color.label);
-	draw_label("Lives:",       labels->y.lives,   labels, lb_label_clr);
-	draw_label("Spell Cards:", labels->y.bombs,   labels, lb_label_clr);
+	draw_label(_("Hi-Score:"),    labels->y.hiscore, labels, &stagedraw.hud_text.color.label);
+	draw_label(_("Score:"),       labels->y.score,   labels, &stagedraw.hud_text.color.label);
+	draw_label(_("Lives:"),       labels->y.lives,   labels, lb_label_clr);
+	draw_label(_("Spell Cards:"), labels->y.bombs,   labels, lb_label_clr);
 
 	r_mat_mv_push();
 	r_mat_mv_translate(HUD_X_SECONDARY_OFS_LABEL, 0, 0);
-	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
-	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
-	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
-	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
+	draw_label(_("Power:"),       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
+	draw_label(_("Value:"),       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
+	draw_label(_("Volts:"),       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
+	draw_label(_("Graze:"),       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 	r_mat_mv_pop();
 
 	// Score/Hi-Score values
@@ -1309,8 +1310,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
 		r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
-		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
-		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw(_("N/A"), &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw(_("N/A"), &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
 		r_color4(1, 1, 1, 1.0);
 	}
 
@@ -1322,7 +1323,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
 		font = res_font("small");
 
-		text_draw("Next:", &(TextParams) {
+		text_draw(_("Next:"), &(TextParams) {
 			.pos = { labels->x.next_life + res_text_padding, labels->y.lives + labels->y_ofs.lives_text },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
@@ -1348,7 +1349,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		snprintf(buf, sizeof(buf), "%d / %d", global.plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
 		font = res_font("small");
 
-		text_draw("Fragments:", &(TextParams) {
+		text_draw(_("Fragments:"), &(TextParams) {
 			.pos = { labels->x.next_bomb + res_text_padding, labels->y.bombs + labels->y_ofs.bombs_text },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
@@ -1461,7 +1462,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// God Mode indicator
 	if(global.plr.iddqd) {
-		text_draw("God Mode is enabled!", &(TextParams) {
+		text_draw(_("God Mode is enabled!"), &(TextParams) {
 			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
 			.font_ptr = font,
 			.shader_ptr = stagedraw.hud_text.shader,
@@ -1810,10 +1811,10 @@ void stage_draw_hud(void) {
 		Font *font = res_font("big");
 
 		// TODO: replace this with a shader
-		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
-		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = { -1, -1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw(_("Voltage        \n    Overdrive!"), &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw(_("Voltage        \n    Overdrive!"), &(TextParams) { .pos = { -1, -1 }, .font_ptr = font, .align = ALIGN_CENTER });
 		r_color4(extraspell_alpha, extraspell_alpha, extraspell_alpha, extraspell_alpha);
-		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw(_("Voltage        \n    Overdrive!"), &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
 
 		r_mat_mv_pop();
 		r_state_pop();
@@ -1875,7 +1876,7 @@ void stage_draw_hud(void) {
 
 		r_mat_mv_pop();
 
-		text_draw("Demo", &(TextParams) {
+		text_draw(_("Demo"), &(TextParams) {
 			.align = ALIGN_CENTER,
 			.font = "big",
 			.shader_ptr = res_shader("text_demo"),
@@ -1889,33 +1890,33 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	StageTextTable tbl;
 
 	bool all_clear = bonus->all_clear.base;
-	const char *title = all_clear ? "All Clear!" : "Stage Clear!";
+	const char *title = all_clear ? _("All Clear!") : _("Stage Clear!");
 
 	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), 2*VIEWPORT_W/3,
 		20, 5184000, 60, 60);
-	stagetext_table_add_numeric_nonzero(&tbl, "Stage Clear bonus", bonus->base);
-	stagetext_table_add_numeric_nonzero(&tbl, "Life bonus", bonus->lives);
-	stagetext_table_add_numeric_nonzero(&tbl, "Voltage bonus", bonus->voltage);
-	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Stage Clear bonus"), bonus->base);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Life bonus"), bonus->lives);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Voltage bonus"), bonus->voltage);
+	stagetext_table_add_numeric_nonzero(&tbl, _("Graze bonus"), bonus->graze);
 
 	if(all_clear) {
 		stagetext_table_add_separator(&tbl);
-		stagetext_table_add_numeric_nonzero(&tbl, "All Clear bonus", bonus->all_clear.base);
+		stagetext_table_add_numeric_nonzero(&tbl, _("All Clear bonus"), bonus->all_clear.base);
 
 		if(bonus->all_clear.diff_bonus) {
 			char tmp[128];
 			int percent = (bonus->all_clear.diff_multiplier - 1.0) * 100;
-			snprintf(tmp, sizeof(tmp), "Difficulty bonus (+%i%%)", percent);
+			snprintf(tmp, sizeof(tmp), _("Difficulty bonus (+%i%%)"), percent);
 			stagetext_table_add_numeric_nonzero(&tbl, tmp, bonus->all_clear.diff_bonus);
 		}
 	}
 
 	stagetext_table_add_separator(&tbl);
-	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
+	stagetext_table_add_numeric(&tbl, _("Total"), bonus->total);
 	stagetext_end_table(&tbl);
 
 	stagetext_add(
-		"Press Fire to continue",
+		_("Press Fire to continue"),
 		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
 		ALIGN_CENTER,
 		res_font("standard"),
