@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 23:58+0200\n"
+"POT-Creation-Date: 2025-09-09 07:38-0400\n"
 "Last-Translator: Swordsdeer\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -9,6 +9,14 @@ msgstr ""
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
+msgstr ""
+
+#: src/boss.c:972
+msgid "Spell Card failed…"
+msgstr ""
+
+#: src/boss.c:972
+msgid "Spell Card captured!"
 msgstr ""
 
 #: src/boss.c:982
@@ -31,7 +39,7 @@ msgstr ""
 msgid "Diff. multiplier"
 msgstr ""
 
-#: src/boss.c:988
+#: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
 msgstr ""
 
@@ -63,6 +71,11 @@ msgstr ""
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
+msgstr ""
+
+#: src/cutscenes/cutscene.c:313
+#, c-format
+msgid "“%s”"
 msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
@@ -160,13 +173,17 @@ msgid ""
 "It would start with figuring out trivial problems that they’d been "
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
-msgstr "起初, 他们会突然解开一些一直困扰自己的简单问题, 例如机器的技术故障, 又或是引人注目的新闻标题。\n"
+msgstr ""
+"起初, 他们会突然解开一些一直困扰自己的简单问题, 例如机器的技术故障, 又或是引"
+"人注目的新闻标题。\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
-msgstr "但随着事态进一步发展, 他们被这种 “无所不知” 的感觉完全遮蔽, 再也无法理性行事。\n"
+msgstr ""
+"但随着事态进一步发展, 他们被这种 “无所不知” 的感觉完全遮蔽, 再也无法理性行"
+"事。\n"
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
@@ -199,7 +216,9 @@ msgstr "不是，你从哪里窜出来的?!"
 msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
-msgstr "呐……刚才听到你们的谈话了而已啦. 凭我的直觉, 加上你们描述的情况, 答案已经很明显了。"
+msgstr ""
+"呐……刚才听到你们的谈话了而已啦. 凭我的直觉, 加上你们描述的情况, 答案已经很明"
+"显了。"
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
@@ -209,7 +228,9 @@ msgstr "是…这样吗？愿意与我们分享一下吗？"
 msgid ""
 "Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
 "in all directions from a singular point, given how indiscriminate it is."
-msgstr "妖怪之山上的某个存在正散发出强烈的诡异疯狂气息. 鉴于其无差别性, 显然是从某一点向四面八方扩散。"
+msgstr ""
+"妖怪之山上的某个存在正散发出强烈的诡异疯狂气息. 鉴于其无差别性, 显然是从某一"
+"点向四面八方扩散。"
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
@@ -241,7 +262,9 @@ msgstr "幽幽子大人, 你怎么——?"
 msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
-msgstr "那些幽灵们似乎也被妖怪之山所吸引, 仿佛他们在渴望什么, 冥界越来越难以容纳它们......"
+msgstr ""
+"那些幽灵们似乎也被妖怪之山所吸引, 仿佛他们在渴望什么, 冥界越来越难以容纳它"
+"们......"
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
@@ -267,7 +290,8 @@ msgstr "天狗们则在笔记本上疯狂涂写, 仿佛刚刚挖到了职业生�
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
-msgstr "即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
+msgstr ""
+"即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
@@ -286,7 +310,9 @@ msgstr "一座位于东方幻想之地的宅邸。\n"
 msgid ""
 "A nervous witch sat flipping through endless stacks of books, drinking tea "
 "instead of her usual sake…\n"
-msgstr "一位紧张的魔女坐在那里，不停地翻阅着堆积如山的书籍, 喝着茶而非她惯常的清酒……\n"
+msgstr ""
+"一位紧张的魔女坐在那里，不停地翻阅着堆积如山的书籍, 喝着茶而非她惯常的清"
+"酒……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:13
 msgid "Hey Patchy, do ya got any more books on Magitech?"
@@ -314,7 +340,9 @@ msgstr "喂注意点啊！那可是本非常古老的典籍！"
 msgid ""
 "It’s so irritatin’! I thought I solved everything but now that Tower’s just "
 "sittin’ there, ‘n the whole Mountain’s been quarantined…!"
-msgstr "真是烦死了! 我还以为我把一切都搞定了, 可现在那座塔就那么立在那儿, 整座山还被封锁了……！"
+msgstr ""
+"真是烦死了! 我还以为我把一切都搞定了, 可现在那座塔就那么立在那儿, 整座山还被"
+"封锁了……！"
 
 #: src/cutscenes/marisa_bad_end.inc.h:22
 msgid "It just ain’t satisfyin’, y’know?"
@@ -356,7 +384,8 @@ msgstr "突然, 她感觉好像踩进了一个坑洞, 绊了一跤, 正脸朝下
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
-msgstr "当她回头看向地面时, 除了那些排列整齐, 一尘不染的书架外, 什么也没看到。\n"
+msgstr ""
+"当她回头看向地面时, 除了那些排列整齐, 一尘不染的书架外, 什么也没看到。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
@@ -366,20 +395,25 @@ msgstr "接着，她注意到手底下有什么又冷又细的东西。"
 msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
-msgstr "过了一会儿，她意识到那大概是某种「智能设备」, 就是手持电脑之类的东西。\n"
+msgstr ""
+"过了一会儿，她意识到那大概是某种「智能设备」, 就是手持电脑之类的东西。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
-msgstr "这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机还NB。\n"
+msgstr ""
+"这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机还"
+"NB。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
 "It behaved both as a solid and a liquid, able to rapidly change shapes by "
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
-msgstr "它兼具固态和液态的特性, 通过按压不同侧面可以迅速改变形状, 变成各种形态：手机, 书本, 带键盘的数码打字机……\n"
+msgstr ""
+"它兼具固态和液态的特性, 通过按压不同侧面可以迅速改变形状, 变成各种形态：手"
+"机, 书本, 带键盘的数码打字机……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
@@ -396,6 +430,16 @@ msgstr "《大统一理论的实用与高级计算应用》\n"
 #: src/cutscenes/marisa_bad_end.inc.h:49
 msgid "— by Usami Renko"
 msgstr "—— 宇佐见莲子 著"
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "— Bad End —"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "Try to reach the end without using a Continue!"
+msgstr ""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
@@ -616,7 +660,8 @@ msgid "— The Moriya Shrine\n"
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:8
-msgid "A workaholic shrine at the top of of Yōkai Mountain."
+#: src/cutscenes/reimu_extra_intro.inc.h:8
+msgid "A workaholic shrine at the top of Yōkai Mountain."
 msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:12
@@ -851,6 +896,16 @@ msgid ""
 "suddenly spring to life again…"
 msgstr ""
 
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "— Good End —"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "The Extra Stage is not ready yet, sorry! ^_^'"
+msgstr ""
+
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
 msgstr ""
@@ -984,10 +1039,6 @@ msgstr ""
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr ""
-
-#: src/cutscenes/reimu_extra_intro.inc.h:8
-msgid "A workaholic shrine at the top of Yōkai Mountain."
 msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
@@ -2413,7 +2464,8 @@ msgstr "不过这么想是合理的，对吧？"
 msgid ""
 "It appeared outta nowhere. If it were real brick, the air displacement alone "
 "woulda caused a huge noise…"
-msgstr "这塔完全是凭空出现的, 如果是真正的砖块, 光是空气被排开就会发出巨大的声响……"
+msgstr ""
+"这塔完全是凭空出现的, 如果是真正的砖块, 光是空气被排开就会发出巨大的声响……"
 
 #: src/dialog/marisa.c:399
 msgid "And it’d take so much power, too."
@@ -2494,7 +2546,9 @@ msgstr "当然是指那个主人啦！在楼上，对吧？"
 msgid ""
 "Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
 "divulge any further information, for your own protection."
-msgstr "也许是因为这个高度上稀薄的空气让你有些头 晕了, 出于对你的安全考虑, 我不能再透露更多信息。"
+msgstr ""
+"也许是因为这个高度上稀薄的空气让你有些头 晕了, 出于对你的安全考虑, 我不能再透"
+"露更多信息。"
 
 #: src/dialog/marisa.c:442
 msgid "What’s her name?"
@@ -2516,7 +2570,9 @@ msgstr "我可不想搞砸这个机会ZE"
 msgid ""
 "I am trying to spare you further peril, yet all you can do is talk over me. "
 "Be more considerate."
-msgstr "我正试图让你避开更大的危险, 而你却只会打断我说话。 请有点分寸, 多为别人考虑一下。"
+msgstr ""
+"我正试图让你避开更大的危险, 而你却只会打断我说话。 请有点分寸, 多为别人考虑一"
+"下。"
 
 #: src/dialog/marisa.c:453
 msgid ""
@@ -2827,7 +2883,9 @@ msgstr "一个书架？！几页乱涂乱画的破笔记？！"
 msgid ""
 "Heck, I’ll even take one of those little glowy tablet thingies with all "
 "those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
-msgstr "就是那些发着光的小平板也行啊! 上面全是那些亮得刺眼的“PDF”文件, 虽然看得我眼睛疼, 但——"
+msgstr ""
+"就是那些发着光的小平板也行啊! 上面全是那些亮得刺眼的“PDF”文件, 虽然看得我眼睛"
+"疼, 但——"
 
 #: src/dialog/marisa.c:632
 msgid ""
@@ -2839,7 +2897,9 @@ msgstr "既然你明显是在拿这事儿当笑话, 那就不必多言！"
 msgid ""
 "Oh c’mon, turn the madness-whatever off ‘n we’ll go out for drinks! There’s "
 "this nice new bar in town with a cute—"
-msgstr "哎呀你别闹了，把什么疯狂啊神力啊都收一收, 咱们出去喝一杯DA☆ZE! 人间之里新开了家不错的食堂, 老板娘还挺可爱的——"
+msgstr ""
+"哎呀你别闹了，把什么疯狂啊神力啊都收一收, 咱们出去喝一杯DA☆ZE! 人间之里新开了"
+"家不错的食堂, 老板娘还挺可爱的——"
 
 #: src/dialog/marisa.c:637
 msgid "There’s no force in this world that would make me turn back now!"
@@ -3874,7 +3934,8 @@ msgstr "简单来说，我们要夺回我们在历史中应有的地位！"
 msgid ""
 "It’s only natural that the lower inhabitants of the mountain would get "
 "nervous in the face of our natural dominance."
-msgstr "面对我们与生俱来的统治力, 山上那些底层居民感到紧张, 也是再自然不过的事了。"
+msgstr ""
+"面对我们与生俱来的统治力, 山上那些底层居民感到紧张, 也是再自然不过的事了。"
 
 #: src/dialog/youmu.c:180
 msgid "Your apology is accepted. You shall not fear our wrath—"
@@ -3904,7 +3965,8 @@ msgstr "你的真实面目终于暴露了！"
 msgid ""
 "My light shines brighter than ever now! I shall teach this lowly usurper due "
 "respect!"
-msgstr "我的光芒此刻比以往任何时候都要耀眼! 我定要让这个卑微的篡夺者学会应有的尊重！"
+msgstr ""
+"我的光芒此刻比以往任何时候都要耀眼! 我定要让这个卑微的篡夺者学会应有的尊重！"
 
 #: src/dialog/youmu.c:196
 msgid "So that we may live above beyond your green thumb once and for all!"
@@ -4074,7 +4136,9 @@ msgstr "诡、诡异？"
 msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
-msgstr "……是啊！我本来以为会是什么科学实验之类的, 结果他们硬是把它弄成了鬼屋, 还搞出幽灵啊什么的！"
+msgstr ""
+"……是啊！我本来以为会是什么科学实验之类的, 结果他们硬是把它弄成了鬼屋, 还搞出"
+"幽灵啊什么的！"
 
 #: src/dialog/youmu.c:327
 msgid "G-…"
@@ -4307,7 +4371,8 @@ msgstr "做好准备。她所掌握的科技, 来自一个所谓的「平行宇�
 msgid ""
 "It is unlike anything any of us have encountered before. Even I am not sure "
 "of its specifics."
-msgstr "它与我们任何人以前遇到过的任何事物都截然不同, 就连我也无法确定其具体原理。"
+msgstr ""
+"它与我们任何人以前遇到过的任何事物都截然不同, 就连我也无法确定其具体原理。"
 
 #: src/dialog/youmu.c:472
 msgid ""
@@ -4479,7 +4544,8 @@ msgstr "你一心想要成为这个幻想乡的大英雄, 对吧？！"
 #: src/dialog/youmu.c:565
 msgid ""
 "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!"
-msgstr "理所当然！我的目标和你一心想要成为「你的」幻想乡的英雄, 又有什么不同呢？！"
+msgstr ""
+"理所当然！我的目标和你一心想要成为「你的」幻想乡的英雄, 又有什么不同呢？！"
 
 #: src/dialog/youmu.c:567
 msgid "We’re not so different, you and I."
@@ -4501,7 +4567,8 @@ msgstr "因为我掌握着科学与理性的力量！"
 msgid ""
 "In a magic-filled world like this, they cut through delusional opponents "
 "with unparalleled precision!"
-msgstr "在这个充满魔法的世界里, 科学与理性能以无与伦比的精准, 斩断那些虚妄的对手！"
+msgstr ""
+"在这个充满魔法的世界里, 科学与理性能以无与伦比的精准, 斩断那些虚妄的对手！"
 
 #: src/dialog/youmu.c:580
 msgid ""
@@ -4538,7 +4605,7 @@ msgid "Lunatic"
 msgstr ""
 
 #: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1347
+#: src/menu/options.c:1350
 msgid "Unknown"
 msgstr "未知"
 
@@ -4562,9 +4629,9 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:812
-#: src/menu/options.c:876 src/menu/options.c:1020 src/menu/options.c:1129
-#: src/menu/options.c:1209 src/menu/replayview.c:471
+#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:815
+#: src/menu/options.c:879 src/menu/options.c:1023 src/menu/options.c:1132
+#: src/menu/options.c:1212 src/menu/replayview.c:471
 #: src/menu/spellpractice.c:67
 msgid "Back"
 msgstr "返回"
@@ -5090,7 +5157,7 @@ msgid "Game Paused"
 msgstr "游戏暂停"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1135
+#: src/menu/options.c:1138
 msgid "Options"
 msgstr ""
 
@@ -5198,301 +5265,353 @@ msgstr "重置所有设置为默认值吗？"
 msgid "Reset all settings to the last saved values?"
 msgstr "重置所有设置为上次保存的值吗？"
 
-#: src/menu/options.c:701
+#: src/menu/options.c:577 src/menu/options.c:768
+msgid "on"
+msgstr ""
+
+#: src/menu/options.c:578 src/menu/options.c:769
+msgid "off"
+msgstr ""
+
+#: src/menu/options.c:704
 msgid "Yes"
 msgstr ""
 
-#: src/menu/options.c:702
+#: src/menu/options.c:705
 msgid "No"
 msgstr ""
 
-#: src/menu/options.c:730
+#: src/menu/options.c:733
 msgid "Video Options"
 msgstr "显示选项"
 
-#: src/menu/options.c:733
+#: src/menu/options.c:736
 msgid "Fullscreen"
 msgstr "全屏"
 
-#: src/menu/options.c:738
+#: src/menu/options.c:741
 msgid "Display"
 msgstr "显示"
 
-#: src/menu/options.c:742
+#: src/menu/options.c:745
 msgid "Window size"
 msgstr "窗口尺寸"
 
-#: src/menu/options.c:747
+#: src/menu/options.c:750
 msgid "Renderer resolution"
 msgstr "渲染分辨率"
 
-#: src/menu/options.c:752
+#: src/menu/options.c:755
 msgid "Resizable window"
 msgstr "可调整大小窗口"
 
-#: src/menu/options.c:759
+#: src/menu/options.c:762
 msgid "Pause the game when not focused"
 msgstr "不聚焦窗口时暂停游戏"
 
-#: src/menu/options.c:763
+#: src/menu/options.c:766
 msgid "Vertical synchronization"
 msgstr "垂直同步"
 
 #: src/menu/options.c:772
+msgid "adaptive"
+msgstr ""
+
+#: src/menu/options.c:775
 msgid "Skip frames"
 msgstr "跳帧"
 
-#: src/menu/options.c:780
+#: src/menu/options.c:783
 msgid "Overall rendering quality"
 msgstr "整体渲染质量"
 
-#: src/menu/options.c:784
+#: src/menu/options.c:787
 msgid "Draw background"
 msgstr "背景绘制"
 
-#: src/menu/options.c:788
+#: src/menu/options.c:791
 msgid "Background rendering quality"
 msgstr "背景渲染质量"
 
-#: src/menu/options.c:795
+#: src/menu/options.c:798
 msgid "Anti-aliasing"
 msgstr "抗锯齿"
 
 #: src/menu/options.c:800
+msgid "none"
+msgstr ""
+
+#: src/menu/options.c:801
+msgid "fxaa"
+msgstr ""
+
+#: src/menu/options.c:803
 msgid "Particle effects"
 msgstr "粒子质量"
 
-#: src/menu/options.c:805
+#: src/menu/options.c:805 src/menu/options.c:810
+msgid "minimal"
+msgstr ""
+
+#: src/menu/options.c:806 src/menu/options.c:812
+msgid "full"
+msgstr ""
+
+#: src/menu/options.c:808
 msgid "Postprocessing effects"
 msgstr "后处理效果"
 
-#: src/menu/options.c:833
+#: src/menu/options.c:811
+msgid "fast"
+msgstr ""
+
+#: src/menu/options.c:836
 msgid "Gamepad Controls"
 msgstr "手柄控制"
 
-#: src/menu/options.c:835 src/menu/options.c:1028
+#: src/menu/options.c:838 src/menu/options.c:1031
 msgid "Move up"
 msgstr "向上移动"
 
-#: src/menu/options.c:839 src/menu/options.c:1032
+#: src/menu/options.c:842 src/menu/options.c:1035
 msgid "Move down"
 msgstr "向下移动"
 
-#: src/menu/options.c:843 src/menu/options.c:1036
+#: src/menu/options.c:846 src/menu/options.c:1039
 msgid "Move left"
 msgstr "向左移动"
 
-#: src/menu/options.c:847 src/menu/options.c:1040
+#: src/menu/options.c:850 src/menu/options.c:1043
 msgid "Move right"
 msgstr "向右移动"
 
-#: src/menu/options.c:853 src/menu/options.c:1046
+#: src/menu/options.c:856 src/menu/options.c:1049
 msgid "Shoot"
 msgstr "射击"
 
-#: src/menu/options.c:857 src/menu/options.c:1050
+#: src/menu/options.c:860 src/menu/options.c:1053
 msgid "Focus"
 msgstr "低速"
 
-#: src/menu/options.c:861 src/menu/options.c:1054
+#: src/menu/options.c:864 src/menu/options.c:1057
 msgid "Use Spell Card"
 msgstr "使用符卡"
 
-#: src/menu/options.c:865 src/menu/options.c:1058
+#: src/menu/options.c:868 src/menu/options.c:1061
 msgid "Power Surge / Discharge"
 msgstr "能量浪涌 / 结束浪涌"
 
-#: src/menu/options.c:871 src/menu/options.c:1072
+#: src/menu/options.c:874 src/menu/options.c:1075
 msgid "Skip dialog"
 msgstr "跳过对话"
 
-#: src/menu/options.c:949
+#: src/menu/options.c:952
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr "按下手柄上任意键退出手柄测试模式"
 
-#: src/menu/options.c:952
+#: src/menu/options.c:955
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "按下手柄上的 %s 键进入手柄测试模式"
 
-#: src/menu/options.c:965
+#: src/menu/options.c:968
 msgid "Gamepad Options"
 msgstr "手柄设置"
 
-#: src/menu/options.c:976
+#: src/menu/options.c:979
 msgid "Enable Gamepad/Joystick support"
 msgstr "启用手柄/摇杆支持"
 
-#: src/menu/options.c:980
+#: src/menu/options.c:983
 msgid "Device"
 msgstr "设备"
 
-#: src/menu/options.c:986 src/menu/options.c:1197
+#: src/menu/options.c:989 src/menu/options.c:1200
 msgid "Customize controls…"
 msgstr "自定义控制…"
 
-#: src/menu/options.c:990
+#: src/menu/options.c:993
 msgid "Remap square input into circular"
 msgstr ""
 
-#: src/menu/options.c:996
+#: src/menu/options.c:999
 msgid "Direction snap factor"
 msgstr ""
 
-#: src/menu/options.c:1000
+#: src/menu/options.c:1003
 msgid "Diagonal bias"
 msgstr ""
 
-#: src/menu/options.c:1007
+#: src/menu/options.c:1010
 msgid "Dead zone"
 msgstr ""
 
-#: src/menu/options.c:1011
+#: src/menu/options.c:1014
 msgid "Maximum zone"
 msgstr ""
 
-#: src/menu/options.c:1015
+#: src/menu/options.c:1018
 msgid "Sensitivity"
 msgstr ""
 
-#: src/menu/options.c:1026
+#: src/menu/options.c:1029
 msgid "Controls"
 msgstr ""
 
-#: src/menu/options.c:1064
+#: src/menu/options.c:1067
 msgid "Toggle fullscreen"
 msgstr ""
 
-#: src/menu/options.c:1068
+#: src/menu/options.c:1071
 msgid "Take a screenshot"
 msgstr ""
 
-#: src/menu/options.c:1078
+#: src/menu/options.c:1081
 msgid "Toggle audio"
 msgstr ""
 
-#: src/menu/options.c:1084
+#: src/menu/options.c:1087
 msgid "Stop the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1088
+#: src/menu/options.c:1091
 msgid "Restart the game immediately"
 msgstr ""
 
-#: src/menu/options.c:1092
+#: src/menu/options.c:1095
 msgid "Quick save"
 msgstr "快速保存"
 
-#: src/menu/options.c:1096
+#: src/menu/options.c:1099
 msgid "Quick load"
 msgstr "快速加载"
 
-#: src/menu/options.c:1103
+#: src/menu/options.c:1106
 msgid "Toggle God mode"
 msgstr ""
 
-#: src/menu/options.c:1107
+#: src/menu/options.c:1110
 msgid "Skip stage"
 msgstr "跳过本关卡"
 
-#: src/menu/options.c:1111
+#: src/menu/options.c:1114
 msgid "Power up"
 msgstr ""
 
-#: src/menu/options.c:1115
+#: src/menu/options.c:1118
 msgid "Power down"
 msgstr ""
 
-#: src/menu/options.c:1119
+#: src/menu/options.c:1122
 msgid "Disable background rendering (HoM effect)"
 msgstr ""
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1126
 msgid "Toggle collision areas overlay"
 msgstr ""
 
-#: src/menu/options.c:1139
+#: src/menu/options.c:1142
 msgid "Player name"
 msgstr "玩家名称"
 
-#: src/menu/options.c:1146
+#: src/menu/options.c:1149
 msgid "Save replays"
 msgstr ""
 
+#: src/menu/options.c:1151
+msgid "always"
+msgstr ""
+
 #: src/menu/options.c:1152
+msgid "never"
+msgstr ""
+
+#: src/menu/options.c:1153
+msgid "ask"
+msgstr ""
+
+#: src/menu/options.c:1155
 msgid "Auto-restart in Spell Practice"
 msgstr "Spell Practice自动重开"
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1159
 msgid "Power in Spell and Stage Practice"
 msgstr "练习模式默认灵力"
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1167
 msgid "Shoot by default"
 msgstr "默认启用射击"
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1171
 msgid "Automatic Power Surge activation"
 msgstr "自动激活能量浪涌"
 
-#: src/menu/options.c:1172
+#: src/menu/options.c:1175
 msgid "Boss healthbar style"
 msgstr "Boss血量条风格"
 
 #: src/menu/options.c:1177
+msgid "classic"
+msgstr ""
+
+#: src/menu/options.c:1178
+msgid "modern"
+msgstr ""
+
+#: src/menu/options.c:1180
 msgid "Floating score text visibility"
 msgstr "浮动分数文字可见性"
 
-#: src/menu/options.c:1183
+#: src/menu/options.c:1186
 msgid "SFX Volume"
 msgstr ""
 
-#: src/menu/options.c:1187
+#: src/menu/options.c:1190
 msgid "BGM Volume"
 msgstr ""
 
-#: src/menu/options.c:1191
+#: src/menu/options.c:1194
 msgid "Mute audio"
 msgstr ""
 
-#: src/menu/options.c:1196
+#: src/menu/options.c:1199
 msgid "Video options…"
 msgstr "显示选项"
 
-#: src/menu/options.c:1198
+#: src/menu/options.c:1201
 msgid "Gamepad & Joystick options…"
 msgstr ""
 
-#: src/menu/options.c:1202
+#: src/menu/options.c:1205
 msgid "Reload from last saved"
 msgstr ""
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1208
 msgid "Reset to defaults"
 msgstr ""
 
-#: src/menu/options.c:1338
+#: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
 msgstr ""
 
-#: src/menu/options.c:1378
+#: src/menu/options.c:1381
 msgid "All devices"
 msgstr ""
 
-#: src/menu/options.c:1384
+#: src/menu/options.c:1387
 msgid "No devices available"
 msgstr ""
 
-#: src/menu/options.c:1426
+#: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1427
+#: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1443
+#: src/menu/options.c:1446
 msgid "Unbound"
 msgstr ""
 
@@ -5545,7 +5664,8 @@ msgstr ""
 msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
-msgstr "魔法导弹与激光—— 一对简单明了的组合, 从未让你失望. 所以为何停滞不前呢？"
+msgstr ""
+"魔法导弹与激光—— 一对简单明了的组合, 从未让你失望. 所以为何停滞不前呢？"
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
@@ -5559,7 +5679,9 @@ msgstr ""
 msgid ""
 "As many bullets as there are stars in the sky. Some of them are bound to "
 "hit. That's called “homing”, right?"
-msgstr "天上有多少颗星星, 就有多少颗子弹, 最后肯定有一些会击中目标, 这也是一种「诱导」, 对吧？"
+msgstr ""
+"天上有多少颗星星, 就有多少颗子弹, 最后肯定有一些会击中目标, 这也是一种「诱"
+"导」, 对吧？"
 
 #: src/plrmodes/marisa_b.c:556
 #, fuzzy
@@ -5602,14 +5724,15 @@ msgstr ""
 msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
-msgstr "人类与幽灵携手同行, 向这最后的目标前进, 你的二元之躯会助你一臂之力…… 或者说一尾之力。"
+msgstr ""
+"人类与幽灵携手同行, 向这最后的目标前进, 你的二元之躯会助你一臂之力…… 或者说一"
+"尾之力。"
 
 #: src/plrmodes/youmu_a.c:710
 msgid "Soul Sign “Reality-Piercing Apparition”"
 msgstr "魂符「斩断现世的幽魂」"
 
 #: src/plrmodes/youmu_b.c:620
-#, fuzzy
 msgid "Haunting Revelation"
 msgstr ""
 
@@ -5617,7 +5740,9 @@ msgstr ""
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
-msgstr "鬼魂是真实存在的, 但它们并不可怕。 当然, 除非你恰好挡在了一位 决心已定的持剑女士面前……"
+msgstr ""
+"鬼魂是真实存在的, 但它们并不可怕。 当然, 除非你恰好挡在了一位 决心已定的持剑"
+"女士面前……"
 
 #: src/plrmodes/youmu_b.c:622
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
@@ -5626,6 +5751,102 @@ msgstr "神盾剑「西行无向斩」"
 #: src/stage.c:622
 #, c-format
 msgid "BGM: %s"
+msgstr ""
+
+#: src/stagedraw.c:1294
+msgid "Hi-Score:"
+msgstr ""
+
+#: src/stagedraw.c:1295
+msgid "Score:"
+msgstr ""
+
+#: src/stagedraw.c:1296
+msgid "Lives:"
+msgstr ""
+
+#: src/stagedraw.c:1297
+#, fuzzy
+msgid "Spell Cards:"
+msgstr "使用符卡"
+
+#: src/stagedraw.c:1301
+msgid "Power:"
+msgstr ""
+
+#: src/stagedraw.c:1302
+msgid "Value:"
+msgstr ""
+
+#: src/stagedraw.c:1303
+msgid "Volts:"
+msgstr ""
+
+#: src/stagedraw.c:1304
+msgid "Graze:"
+msgstr ""
+
+#: src/stagedraw.c:1313 src/stagedraw.c:1314
+msgid "N/A"
+msgstr ""
+
+#: src/stagedraw.c:1326
+msgid "Next:"
+msgstr ""
+
+#: src/stagedraw.c:1352
+msgid "Fragments:"
+msgstr ""
+
+#: src/stagedraw.c:1465
+msgid "God Mode is enabled!"
+msgstr ""
+
+#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+msgid ""
+"Voltage        \n"
+"    Overdrive!"
+msgstr ""
+
+#: src/stagedraw.c:1879
+msgid "Demo"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "All Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "Stage Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1897
+msgid "Stage Clear bonus"
+msgstr ""
+
+#: src/stagedraw.c:1898
+msgid "Life bonus"
+msgstr ""
+
+#: src/stagedraw.c:1899
+msgid "Voltage bonus"
+msgstr ""
+
+#: src/stagedraw.c:1900
+msgid "Graze bonus"
+msgstr ""
+
+#: src/stagedraw.c:1904
+msgid "All Clear bonus"
+msgstr ""
+
+#: src/stagedraw.c:1909
+#, c-format
+msgid "Difficulty bonus (+%i%%)"
+msgstr ""
+
+#: src/stagedraw.c:1919
+msgid "Press Fire to continue"
 msgstr ""
 
 #: src/stageinfo.c:49
@@ -6019,8 +6240,7 @@ msgid ""
 "\n"
 "Many paths branch from one. Echoes from across the sea yield a new adventure."
 msgstr ""
-"很好的阐释了「泰西」。"
-"\n"
+"很好的阐释了「泰西」。\n"
 "一条大道，岔路千条。彼岸回声，奇遇新生。"
 
 #: po/extra_strings.c:26
