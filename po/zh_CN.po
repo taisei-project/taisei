@@ -4578,7 +4578,7 @@ msgstr "且看看当你陷入真正的「觉醒」之时, 手中的刀剑还能�
 
 #: src/dialog/youmu.c:594
 msgid "Impressive! You’ve pushed me to 10% of my true power!"
-msgstr "最后请恕我直言，你个人机东西！我就用了一层功力就不行了？"
+msgstr "最后请恕我直言，你个人机东西！我就用了一成功力就不行了？"
 
 #: src/dialog/youmu.c:596
 msgid "Your despicable pride will be your downfall!"
@@ -5763,24 +5763,24 @@ msgstr ""
 
 #: src/stagedraw.c:1296
 msgid "Lives:"
-msgstr ""
+msgstr "剩余人数"
 
 #: src/stagedraw.c:1297
 #, fuzzy
 msgid "Spell Cards:"
-msgstr "使用符卡"
+msgstr "Spell Card"
 
 #: src/stagedraw.c:1301
 msgid "Power:"
-msgstr ""
+msgstr "灵力"
 
 #: src/stagedraw.c:1302
 msgid "Value:"
-msgstr ""
+msgstr "最大得点"
 
 #: src/stagedraw.c:1303
 msgid "Volts:"
-msgstr ""
+msgstr "电压"
 
 #: src/stagedraw.c:1304
 msgid "Graze:"
@@ -5796,7 +5796,7 @@ msgstr ""
 
 #: src/stagedraw.c:1352
 msgid "Fragments:"
-msgstr ""
+msgstr "碎片:"
 
 #: src/stagedraw.c:1465
 msgid "God Mode is enabled!"
