@@ -439,7 +439,7 @@ msgstr ""
 #: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
 #: src/cutscenes/youmu_bad_end.inc.h:52
 msgid "Try to reach the end without using a Continue!"
-msgstr ""
+msgstr "试试不续关完成游戏吧！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
@@ -2126,7 +2126,7 @@ msgstr "我可是昆虫界的伟大领袖！"
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr "伟大领袖？啥玩意，昆虫们还成立工会了不成？"
+msgstr "伟大领袖？啥玩意, 昆虫们还成立工会了不成？"
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
@@ -2168,7 +2168,7 @@ msgstr "第四——!"
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
-msgstr "行行行挺有意思的，但我还有更重要的事 要办。"
+msgstr "行行行挺有意思的, 但我还有更重要的事要办。"
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
@@ -2192,7 +2192,7 @@ msgstr "话说，你那些新招式是在哪儿学来的？"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
-msgstr "啊这……那是我们辉煌昆虫祖先的伟大幻象 告诉我的！"
+msgstr "啊这…… 那是我们辉煌昆虫祖先的伟大幻象告诉我的！"
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
@@ -2206,7 +2206,7 @@ msgstr "「辉煌的昆虫祖先」？「碳素时代」？"
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
-msgstr "哦，你该不会是说石炭纪吧？就是那个巨型虫子—— 呃，巨型昆虫横行的时期。"
+msgstr "哦，你该不会是说石炭纪吧? 就是那个巨型虫子—— 呃，巨型昆虫横行的时期。"
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
@@ -3386,7 +3386,7 @@ msgstr "这塔确实与众不同呢。"
 msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
-msgstr "自从消息传遍云端后, 我得知罪魁祸首与“平行宇宙”有关。"
+msgstr "自从消息传到云端后, 我得知罪魁祸首与“平行宇宙”有关。"
 
 #: src/dialog/reimu.c:421
 msgid ""
@@ -4401,7 +4401,7 @@ msgstr "多么壮丽的战场, 正适合英雄的最后一战！！"
 
 #: src/dialog/youmu.c:498
 msgid "Nothing seems to slow you down, hmm?"
-msgstr "似乎什么都无法阻挡你前进的脚步, 啥玩意？"
+msgstr "似乎什么都无法阻挡你前进的脚步? 啥玩意？"
 
 #: src/dialog/youmu.c:501
 msgid ""
@@ -4479,7 +4479,7 @@ msgstr "但在那之前请告诉我: 你在谋划什么？你在渴望什么？"
 #: src/dialog/youmu.c:535
 msgid ""
 "For us to share this… intimate moment, I desire to know everything about you."
-msgstr "为了让一起享受…… 这如此意味深长的时刻, 我渴望了解你的一切。"
+msgstr "为了让我们一起享受…… 这如此意味深长的时刻, 我渴望了解你的一切。"
 
 #: src/dialog/youmu.c:538
 msgid "…!"
@@ -5137,7 +5137,7 @@ msgstr "满身疮痍"
 #: src/menu/gameovermenu.c:76
 #, c-format
 msgid "Continue (%i)"
-msgstr ""
+msgstr "我不甘心! (%i)"
 
 #: src/menu/gameovermenu.c:78
 #, c-format
@@ -5167,7 +5167,7 @@ msgstr "返回游戏"
 
 #: src/menu/ingamemenu.c:138
 msgid "Stop the Game"
-msgstr "退出游戏"
+msgstr "结束游戏"
 
 #: src/menu/ingamemenu.c:159
 msgid "Replay Paused"
@@ -5267,11 +5267,11 @@ msgstr "重置所有设置为上次保存的值吗？"
 
 #: src/menu/options.c:577 src/menu/options.c:768
 msgid "on"
-msgstr ""
+msgstr "开"
 
 #: src/menu/options.c:578 src/menu/options.c:769
 msgid "off"
-msgstr ""
+msgstr "关"
 
 #: src/menu/options.c:704
 msgid "Yes"
@@ -5315,7 +5315,7 @@ msgstr "垂直同步"
 
 #: src/menu/options.c:772
 msgid "adaptive"
-msgstr ""
+msgstr "自适应"
 
 #: src/menu/options.c:775
 msgid "Skip frames"
@@ -5339,7 +5339,7 @@ msgstr "抗锯齿"
 
 #: src/menu/options.c:800
 msgid "none"
-msgstr ""
+msgstr "禁用"
 
 #: src/menu/options.c:801
 msgid "fxaa"
@@ -5351,11 +5351,11 @@ msgstr "粒子质量"
 
 #: src/menu/options.c:805 src/menu/options.c:810
 msgid "minimal"
-msgstr ""
+msgstr "最小"
 
 #: src/menu/options.c:806 src/menu/options.c:812
 msgid "full"
-msgstr ""
+msgstr "完整"
 
 #: src/menu/options.c:808
 msgid "Postprocessing effects"
@@ -5363,7 +5363,7 @@ msgstr "后处理效果"
 
 #: src/menu/options.c:811
 msgid "fast"
-msgstr ""
+msgstr "快速"
 
 #: src/menu/options.c:836
 msgid "Gamepad Controls"
@@ -5473,11 +5473,11 @@ msgstr ""
 
 #: src/menu/options.c:1087
 msgid "Stop the game immediately"
-msgstr ""
+msgstr "立即结束游戏"
 
 #: src/menu/options.c:1091
 msgid "Restart the game immediately"
-msgstr ""
+msgstr "立即推把"
 
 #: src/menu/options.c:1095
 msgid "Quick save"
@@ -5489,7 +5489,7 @@ msgstr "快速加载"
 
 #: src/menu/options.c:1106
 msgid "Toggle God mode"
-msgstr ""
+msgstr "切换上帝模式"
 
 #: src/menu/options.c:1110
 msgid "Skip stage"
@@ -5517,19 +5517,19 @@ msgstr "玩家名称"
 
 #: src/menu/options.c:1149
 msgid "Save replays"
-msgstr ""
+msgstr "保存Replay策略"
 
 #: src/menu/options.c:1151
 msgid "always"
-msgstr ""
+msgstr "总是"
 
 #: src/menu/options.c:1152
 msgid "never"
-msgstr ""
+msgstr "永不"
 
 #: src/menu/options.c:1153
 msgid "ask"
-msgstr ""
+msgstr "询问"
 
 #: src/menu/options.c:1155
 msgid "Auto-restart in Spell Practice"
@@ -5553,11 +5553,11 @@ msgstr "Boss血量条风格"
 
 #: src/menu/options.c:1177
 msgid "classic"
-msgstr ""
+msgstr "经典"
 
 #: src/menu/options.c:1178
 msgid "modern"
-msgstr ""
+msgstr "现代"
 
 #: src/menu/options.c:1180
 msgid "Floating score text visibility"
@@ -5669,7 +5669,7 @@ msgstr ""
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
-msgstr "纯恋「Galactic Spark」（星河火花）"
+msgstr "纯恋「Galactic Spark」(星河火花)"
 
 #: src/plrmodes/marisa_b.c:554
 msgid "Stellar Vortex"
@@ -5686,7 +5686,7 @@ msgstr ""
 #: src/plrmodes/marisa_b.c:556
 #, fuzzy
 msgid "Magic Sign “Stellar Vortex”"
-msgstr "魔符「Stellar Vortex」（星环漩涡）"
+msgstr "魔符「Stellar Vortex」(星环漩涡)"
 
 #: src/plrmodes/reimu_a.c:897
 msgid "Yōkai Buster"
@@ -5700,7 +5700,7 @@ msgstr "久经考验的诱导护符与封魔针, 不必思考怎么瞄准敌人,
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr "灵符「梦想封印 —裂—」"
+msgstr "灵符「梦想封印 裂」"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -5776,7 +5776,7 @@ msgstr "灵力"
 
 #: src/stagedraw.c:1302
 msgid "Value:"
-msgstr "最大得点"
+msgstr "得点"
 
 #: src/stagedraw.c:1303
 msgid "Volts:"
@@ -5792,7 +5792,7 @@ msgstr ""
 
 #: src/stagedraw.c:1326
 msgid "Next:"
-msgstr ""
+msgstr "下次奖残:"
 
 #: src/stagedraw.c:1352
 msgid "Fragments:"
