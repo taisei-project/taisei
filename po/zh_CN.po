@@ -971,7 +971,7 @@ msgstr "没有人对此感到满意。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:21
 msgid "The Moriya Gods were visibly shocked.\n"
-msgstr "守矢的俩大神感到极其震惊。\n'"
+msgstr "守矢的俩大神感到极其震惊。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:22
 msgid ""
@@ -1071,7 +1071,7 @@ msgid ""
 "Yukari smiled.\n"
 msgstr ""
 "\n"
-"紫淡淡的笑了\n。"
+"紫淡淡的笑了。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:54
 msgid "Glad to hear it. It’s your duty, after all."
@@ -5320,11 +5320,11 @@ msgstr "关"
 
 #: src/menu/options.c:704
 msgid "Yes"
-msgstr ""
+msgstr "是哒"
 
 #: src/menu/options.c:705
 msgid "No"
-msgstr ""
+msgstr "不要"
 
 #: src/menu/options.c:733
 msgid "Video Options"
@@ -5478,7 +5478,7 @@ msgstr "自定义控制…"
 
 #: src/menu/options.c:993
 msgid "Remap square input into circular"
-msgstr ""
+msgstr "将方形输入重新映射为圆形"
 
 #: src/menu/options.c:999
 msgid "Direction snap factor"
@@ -5490,15 +5490,15 @@ msgstr ""
 
 #: src/menu/options.c:1010
 msgid "Dead zone"
-msgstr ""
+msgstr "盲区"
 
 #: src/menu/options.c:1014
 msgid "Maximum zone"
-msgstr ""
+msgstr "最大区域"
 
 #: src/menu/options.c:1018
 msgid "Sensitivity"
-msgstr ""
+msgstr "灵敏度"
 
 #: src/menu/options.c:1029
 msgid "Controls"
@@ -5506,15 +5506,15 @@ msgstr ""
 
 #: src/menu/options.c:1067
 msgid "Toggle fullscreen"
-msgstr ""
+msgstr "切换全屏"
 
 #: src/menu/options.c:1071
 msgid "Take a screenshot"
-msgstr ""
+msgstr "截屏"
 
 #: src/menu/options.c:1081
 msgid "Toggle audio"
-msgstr ""
+msgstr "切换音频模式"
 
 #: src/menu/options.c:1087
 msgid "Stop the game immediately"
@@ -5542,19 +5542,19 @@ msgstr "跳过本关卡"
 
 #: src/menu/options.c:1114
 msgid "Power up"
-msgstr ""
+msgstr "提升灵力"
 
 #: src/menu/options.c:1118
 msgid "Power down"
-msgstr ""
+msgstr "降低灵力"
 
 #: src/menu/options.c:1122
 msgid "Disable background rendering (HoM effect)"
-msgstr ""
+msgstr "禁用背景渲染（HoM效果）"
 
 #: src/menu/options.c:1126
 msgid "Toggle collision areas overlay"
-msgstr ""
+msgstr "切换子弹判定可视化"
 
 #: src/menu/options.c:1142
 msgid "Player name"
@@ -5646,7 +5646,7 @@ msgstr "全部设备"
 
 #: src/menu/options.c:1387
 msgid "No devices available"
-msgstr ""
+msgstr "无设备可用"
 
 #: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
