@@ -576,7 +576,7 @@ msgid ""
 msgstr ""
 "\n"
 "宅邸开始剧烈地震动起来，仿佛连地基都在颤抖, "
-"但随即又戛然而止，就像它突然开始一样迅速结束。"
+"但随即又戛然而止，就像它突然开始一样迅速结束。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
