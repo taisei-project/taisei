@@ -940,62 +940,74 @@ msgstr ""
 msgid ""
 "The Tower had powered down, yet the instigators were nowhere to be found.\n"
 msgstr ""
+"高塔已经关闭，但始作俑者却无影无踪。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
-msgstr ""
+msgstr "灵梦回到了她的神社，不确定自己是否真的做成了什么。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:11
 msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
 msgstr ""
+"山中的神明与妖怪们悄然在神社周围等待，屏息凝神。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
-msgstr ""
+msgstr "灵梦叹了口气，然后她当众大喊:\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:16
 msgid ""
 "Listen up! I stopped the spread of madness, but until further notice, Yōkai "
 "Mountain is off limits!"
 msgstr ""
+"全体目光向我看齐！我虽然阻止了疯狂的蔓延, 但在进一步通知之前, "
+"妖怪之山一律禁止进入！"
 
 #: src/cutscenes/reimu_bad_end.inc.h:20
 msgid "Nobody was pleased with that.\n"
-msgstr ""
+msgstr "没有人对此感到满意。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:21
 msgid "The Moriya Gods were visibly shocked.\n"
-msgstr ""
+msgstr "守矢的俩大神感到极其震惊。\n'"
 
 #: src/cutscenes/reimu_bad_end.inc.h:22
 msgid ""
 "The kappa demanded that they be able to fetch their equipment, and tend to "
 "their hydroponic cucumber farms.\n"
 msgstr ""
+"河童们坚持要求她们必须取回自己的设备, "
+"以及照看她们的水培黄瓜农场。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
 "The tengu furiously scribbled down notes, once again as if they’d had the "
 "scoop of the century, before also beginning to make their own demands.\n"
 msgstr ""
+"天狗们疯狂地奋笔疾书，仿佛又一次拿到了世纪大新闻, "
+"随后也开始提出自己的种种要求。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:27
 msgid ""
 "Once Reimu had managed to placate the crowd, she sat in the back of the "
 "Hakurei Shrine, bottle of sake in hand.\n"
 msgstr ""
+"等灵梦好不容易安抚完人群后，她便坐在博丽神社的后院, "
+"手里握着一瓶清酒。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:28
 msgid ""
 "She didn’t feel like drinking, however. She cradled it without even "
 "uncorking it, sighing to herself."
 msgstr ""
+"然而她并没有那种兴致。她只是握着酒瓶, 甚至没有打开瓶塞, "
+"独自轻轻叹了口气。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:32
 msgid "Oh my, a little dissatisfied, aren’t we?"
-msgstr ""
+msgstr "哎呀呀，很不甘心，是吧？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:33
 msgid ""
@@ -1003,60 +1015,67 @@ msgid ""
 "Reimu was never surprised by Yukari’s sudden appearances anymore, of "
 "course.\n"
 msgstr ""
+"\n"
+"当然，灵梦早已不会因紫突然出现的样子感到惊讶了。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:34
 msgid "It’s unlike you to stop until everything is business as usual, Reimu."
-msgstr ""
+msgstr "这可不像你啊，灵梦, 按你平时不都是非要一切恢复正常才肯罢休的吗？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:35
 msgid "Depressed?"
-msgstr ""
+msgstr "很沮丧吗？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:39
 msgid "Yeah. That place sucked."
-msgstr ""
+msgstr "是啊，那个地方真让人提不起劲。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:40
 msgid "Perhaps I should’ve gone with you, hmm?"
-msgstr ""
+msgstr "或许我该跟你一起去的，嗯哼？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:41
 msgid "Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?"
-msgstr ""
+msgstr "哈？为啥? 你是想干脆把那整个地方与幻想乡直接隔离开吗？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:42
 msgid "That might be a bit much, even for me, dear."
-msgstr ""
+msgstr "那可能有点太夸张了, 就算是我也做不到那种地步啦，灵梦酱。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:46
 msgid ""
 "Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
 "feel frustrated and… lonely?"
 msgstr ""
+"不管那「疯狂」到底是什么, 它也影响到我了。让我感到烦躁, "
+"还有……孤独？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
-msgstr ""
+msgstr "可我为什么会感到孤独呢？这根本说不通啊。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:51
 msgid "So, what will you do?"
-msgstr ""
+msgstr "那么，你打算怎么办？"
 
 #: src/cutscenes/reimu_bad_end.inc.h:52
 msgid ""
 "Find a way to get rid of it, eventually. I’m sure there’s an answer "
 "somewhere out there…"
 msgstr ""
+"还是得想办法摆脱它, 我相信总会有解决的办法的……"
 
 #: src/cutscenes/reimu_bad_end.inc.h:53
 msgid ""
 "\n"
 "Yukari smiled.\n"
 msgstr ""
+"\n"
+"紫淡淡的笑了\n。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:54
 msgid "Glad to hear it. It’s your duty, after all."
-msgstr ""
+msgstr "很高兴听到你这么说。毕竟这是你的责任啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:2
 msgid "Reimu (Extra Stage Intro)"
