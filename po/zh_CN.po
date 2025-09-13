@@ -439,31 +439,31 @@ msgstr ""
 #: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
 #: src/cutscenes/youmu_bad_end.inc.h:52
 msgid "Try to reach the end without using a Continue!"
-msgstr "试试不续关完成游戏吧！"
+msgstr "试试不续关完成游戏吧!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
-msgstr ""
+msgstr "魔理沙(Extra引子)"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
 msgid "A haunted western mansion in an eastern wonderland."
-msgstr ""
+msgstr "一栋位于东方乐园中的阴森西式宅邸。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:12
 msgid "I get such a nervous feeling around the newcomers…"
-msgstr ""
+msgstr "我在新来者身边总是有点紧张……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:13
 msgid "They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"
-msgstr ""
+msgstr "没事啦没事啦！你看她, 是不是还挺可爱的？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:14
 msgid "Sure, but… you said you knew them, from another world?"
-msgstr ""
+msgstr "当然, 但是……你说你从另一个世界就认识她们了？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:15
 msgid "Well, another me knew another them in another world."
-msgstr ""
+msgstr "嗯，是另一个我在另一个世界认识了另一个她们。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:19
 msgid ""
@@ -471,20 +471,23 @@ msgid ""
 "infinity, folding onto ourselves, kinda like a really incredible katana "
 "gettin’ forged. It was intense!"
 msgstr ""
+"说真的，我仿佛窥见了无数个可能的自我, 在无限时空中延伸, "
+"又不断折叠回自身, 就像一把绝世武士刀在淬炼成型。太震撼了！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:20
 msgid "It’s just like you to accidentally see the Time Knife…"
-msgstr ""
+msgstr "看到了「Time Knife」吗……确实符合你的风格。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:21
 msgid "The what-now?"
-msgstr ""
+msgstr "你说——什么？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:25
 msgid ""
 "Marisa had just finished accompanying Kurumi to do some ‘service’ on the "
 "Tower of Babel.\n"
 msgstr ""
+"魔理沙刚陪胡桃在巴别塔做完一些「小服务」。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:26
 msgid ""
@@ -492,71 +495,78 @@ msgid ""
 "amongst themselves off to the side of the library, laughing cheerfully over… "
 "tea?\n"
 msgstr ""
+"胡桃和宅邸的主人蕾米莉亚在图书馆一角大声地聊着八卦, "
+"两人愉快地笑着，一边喝着……茶？\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:27
 msgid "Marisa hoped it was tea, at least."
-msgstr ""
+msgstr "她们最好喝的是茶，魔理沙想着。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:31
 msgid "Ah, it’s so nice to have a fresh face around here!"
-msgstr ""
+msgstr "啊，这里终于有了张新面孔，真是太好了！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:32
 msgid ""
 "Yeah! It was so boring being around that egghead pseudo-gami all the time."
 msgstr ""
+"是啊！整天陪着那个书呆子伪神，真是无聊到爆！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:33
 msgid ""
 "And my younger sister is a tad too reclusive to spend much time with me, "
 "these days…"
 msgstr ""
+"而且最近我那小妹妹也太内向了，不太愿意花时间"
+"陪我……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:34
 msgid "Perhaps we could go out on the town sometime soon?"
-msgstr ""
+msgstr "也许咱们可以找个时间一起去人里逛逛？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:38
 msgid "Sure! Know any good spots? For, you know…"
-msgstr ""
+msgstr "好呀！你知道有什么好地方吗？就是，嗯……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:39
 msgid "Oh yes, a few, but you must keep it down for now…"
-msgstr ""
+msgstr "呐……懂哒，我知道几个地方，但现在得小声点……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:40
 msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
-msgstr ""
+msgstr "六百六十六还有狂人日记，我还在这儿呢！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:41
 msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
-msgstr ""
+msgstr "啊……雾雨小姐，我说TA是自愿的你信吗……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:45
 msgid "Forgive the young witch, she’s such a spoil-sport at times."
-msgstr ""
+msgstr "请原谅那个小女巫，她有时候真是个扫兴鬼。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:46
 msgid "Mm, indeed~."
-msgstr ""
+msgstr "嗯，确实呢～"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:47
 msgid "Ugh, and after I said y’all were cool…"
-msgstr ""
+msgstr "呃，我刚还夸你们的……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:51
 msgid ""
 "It was then that a low rumble echoed through the chambers of the mansion. "
 "Slowly at first, but then gaining in intensity."
 msgstr ""
+"就在此时, 一阵低沉的轰鸣声在宅邸的厅堂中回荡起来。 "
+"起初还很微弱, 但随后逐渐增强，愈演愈烈。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:55
 msgid "Huh? What’s that?"
-msgstr ""
+msgstr "嗯？什么声音？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:56
 msgid "Perhaps the fairy maids are remodeling upstairs?"
-msgstr ""
+msgstr "也许是那些妖精女仆在楼上装修吧？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:57
 msgid ""
@@ -564,92 +574,108 @@ msgid ""
 "The mansion began to shake intense, as if down to its very foundation, "
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
+"\n"
+"宅邸开始剧烈地震动起来，仿佛连地基都在颤抖, "
+"但随即又戛然而止，就像它突然开始一样迅速结束。""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
 "Before the dust had a chance to settle, an eerie, long siren began blaring "
 "in the distance outside the mansion."
 msgstr ""
+"还没一会, 宅邸外远处便响起了一阵诡异而悠长的警报声。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:62
 msgid "Huh?! That’s one of the sirens I had the kappa set up!"
-msgstr ""
+msgstr "啊？！是我让河童设置的那个警报！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:63
 msgid "Sirens?"
-msgstr ""
+msgstr "警报？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:64
 msgid "Yeah, to monitor the Tower of Babel in case anything changed."
-msgstr ""
+msgstr "没错，主要是为了监测巴别塔，以防有什么异变。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:65
 msgid "Ah heck, and I guess that means…"
-msgstr ""
+msgstr "糟了，这么的话……意味着……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:69
 msgid "Y-you saw me back there, right?! You were there! I didn’t do anything!"
-msgstr ""
+msgstr "啊呀—你刚才看到咱在这对吧？！咱什么都没做呀！"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:70
 msgid ""
 "Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To "
 "keep the fairies out?"
 msgstr ""
+"没人说你干了啥坏事啊。你不过是关了个门而已，对吧？"
+"为了把妖精们挡在外头？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:71
 msgid ""
 "Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
 "opens'?"
 msgstr ""
+"没、没错！但……但会不会就像那句老话说的？"
+"「上帝关掉了一扇门，就会打开另外一扇」？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:72
 msgid "What do ya mean?"
-msgstr ""
+msgstr "你这话是什么意思？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:76
 msgid "Kurumi got rather pale, even for a vampire."
-msgstr ""
+msgstr "胡桃脸色变得煞白，即便对一个吸血鬼来说也是如此。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:80
 msgid "Oh no…"
-msgstr ""
+msgstr "完蛋了……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:81
 msgid ""
 "Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
 "up. We’ll just go back, get the kappa, and—"
 msgstr ""
+"得了吧，有啥快说啊。又不会怪你犯了错, "
+"大不了我们回去找河童，然后——"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
-msgstr ""
+msgstr "呃，那个……也许你该去检查一下？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:83
 msgid "Like, alone? Because I'd just get in your way?"
-msgstr ""
+msgstr "单独去吗？因为咱会碍手碍脚吗？"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:87
 msgid ""
 "But, uh, you know, there might be a really powerful enemy there now? So "
 "please be careful???"
 msgstr ""
+"可是，呃……你也知道，现在那里可能会出现一个非常强大的敌人? "
+"所以……请千万小心啊……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:88
 msgid "Aw, are ya worried about me? That’s cute."
-msgstr ""
+msgstr "哎呀，你是在担心我吗？卡哇伊捏～"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:92
 msgid ""
 "Marisa grinned and magically summoned her broom, mounting it deftly, and "
 "shooting right out of an open window in a flash.\n"
 msgstr ""
+"魔理沙咧嘴一笑，随即施展魔法召唤出她的扫帚, "
+"灵巧地一跃而上，瞬间便从一扇敞开的窗户飞射而出。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:93
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
 msgstr ""
+"她的目光紧紧锁定在妖怪之山上那座高耸着, "
+"不断震颤轰鸣的高塔之上……"
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
@@ -904,7 +930,7 @@ msgstr ""
 #: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
 #: src/cutscenes/youmu_good_end.inc.h:68
 msgid "The Extra Stage is not ready yet, sorry! ^_^'"
-msgstr ""
+msgstr "Ex面还没做好，抱歉！(ᗜᴗᗜ)"
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
@@ -2547,7 +2573,7 @@ msgid ""
 "Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
 "divulge any further information, for your own protection."
 msgstr ""
-"也许是因为这个高度上稀薄的空气让你有些头 晕了, 出于对你的安全考虑, 我不能再透"
+"也许是因为这个高度上稀薄的空气让你有些头晕了, 出于对你的安全考虑, 我不能再透"
 "露更多信息。"
 
 #: src/dialog/marisa.c:442
@@ -5142,7 +5168,7 @@ msgstr "我不甘心! (%i)"
 #: src/menu/gameovermenu.c:78
 #, c-format
 msgid "Continue"
-msgstr "我不甘心！"
+msgstr "我不甘心!"
 
 #: src/menu/gameovermenu.c:82 src/menu/ingamemenu.c:137
 msgid "Restart the Game"
@@ -5156,8 +5182,12 @@ msgstr "返回标题界面"
 msgid "Game Paused"
 msgstr "游戏暂停"
 
-#: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
+#: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 
 #: src/menu/options.c:1138
+msgid "Options"
+msgstr "选项"
+
+#: src/menu/mainmenu.c:130
 msgid "Options"
 msgstr ""
 
@@ -5565,15 +5595,15 @@ msgstr "浮动分数文字可见性"
 
 #: src/menu/options.c:1186
 msgid "SFX Volume"
-msgstr ""
+msgstr "音效音量"
 
 #: src/menu/options.c:1190
 msgid "BGM Volume"
-msgstr ""
+msgstr "BGM音量"
 
 #: src/menu/options.c:1194
 msgid "Mute audio"
-msgstr ""
+msgstr "静音"
 
 #: src/menu/options.c:1199
 msgid "Video options…"
@@ -5581,7 +5611,7 @@ msgstr "显示选项"
 
 #: src/menu/options.c:1201
 msgid "Gamepad & Joystick options…"
-msgstr ""
+msgstr "手柄与摇杆选项"
 
 #: src/menu/options.c:1205
 msgid "Reload from last saved"
@@ -5589,7 +5619,7 @@ msgstr ""
 
 #: src/menu/options.c:1208
 msgid "Reset to defaults"
-msgstr ""
+msgstr "重置为默认选项"
 
 #: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
@@ -5597,7 +5627,7 @@ msgstr ""
 
 #: src/menu/options.c:1381
 msgid "All devices"
-msgstr ""
+msgstr "全部设备"
 
 #: src/menu/options.c:1387
 msgid "No devices available"
@@ -5684,7 +5714,6 @@ msgstr ""
 "导」, 对吧？"
 
 #: src/plrmodes/marisa_b.c:556
-#, fuzzy
 msgid "Magic Sign “Stellar Vortex”"
 msgstr "魔符「Stellar Vortex」(星环漩涡)"
 
@@ -5766,7 +5795,6 @@ msgid "Lives:"
 msgstr "剩余人数"
 
 #: src/stagedraw.c:1297
-#, fuzzy
 msgid "Spell Cards:"
 msgstr "Spell Card"
 
@@ -5910,7 +5938,6 @@ msgid "Descent into Madness"
 msgstr "堕入疯狂"
 
 #: src/stages/stage1/spells/snow_halation.c:187
-#, fuzzy
 msgid "What are you doing??"
 msgstr "泥在干神马？"
 
@@ -5975,7 +6002,6 @@ msgid "Lottery Sign “Monty Hall Danmaku”"
 msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
 
 #: src/stages/stage2/wriggle.c:15
-#, fuzzy
 msgid "Wriggle"
 msgstr "莉格露"
 
@@ -6000,7 +6026,6 @@ msgid "Lamp Sign “Light Singularity”"
 msgstr "灯符「Light Singularity」（奇异之光）"
 
 #: src/stages/stage3/wriggle.c:31
-#, fuzzy
 msgid "Wriggle EX"
 msgstr "莉格露 EX"
 
@@ -6401,7 +6426,7 @@ msgstr ""
 "又回来了……那首歌怎么唱的？“No reason to get excited…”\n"
 "\n"
 "老实说，这歌其实是如今东西方影响力交融的产物。 如果说之前的BGM风格像钟摆般两"
-"极摆动, 那么这曲就如同 交流电般持续振荡。\n"
+"极摆动, 那么这曲就如同交流电般持续振荡。\n"
 "\n"
 "在此塔上, 攀登者须防失足之险, 故当目视顶峰, 步步为营, 行差踏错半步不得. "
 
@@ -6472,7 +6497,7 @@ msgstr ""
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
-msgstr ""
+msgstr "永恒真理"
 
 #: po/extra_strings.c:85
 msgid ""
