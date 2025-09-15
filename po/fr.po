@@ -1128,87 +1128,97 @@ msgstr ""
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
-msgstr ""
+msgstr "Mais pourquoi je me sentirais seul? Ça n'a aucun sens."
 
 #: src/cutscenes/reimu_bad_end.inc.h:51
 msgid "So, what will you do?"
-msgstr ""
+msgstr "Alors, qu'allez-vous faire?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:52
 msgid ""
 "Find a way to get rid of it, eventually. I’m sure there’s an answer "
 "somewhere out there…"
 msgstr ""
+"Trouvez un moyen de vous en débarrasser, tôt ou tard. "
+"Je suis sûr qu'il existe une solution quelque part…"
 
 #: src/cutscenes/reimu_bad_end.inc.h:53
 msgid ""
 "\n"
 "Yukari smiled.\n"
 msgstr ""
+"\n"
+"Yukari sourit.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:54
 msgid "Glad to hear it. It’s your duty, after all."
-msgstr ""
+msgstr "Je suis ravi de l'apprendre. C'est ton devoir, après tout."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:2
 #, fuzzy
 msgid "Reimu (Extra Stage Intro)"
-msgstr "Stage auswählen"
+msgstr "Reimu (Extra Stage Intro)"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr ""
+msgstr "— Le sanctuaire Moriya"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:8
 msgid "A workaholic shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "Un sanctuaire dédié aux bourreaux de travail au sommet du mont Yōkai."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
 msgid ""
 "Reimu was reading a book she'd borrowed from the Human Village’s book rental "
 "store, Suzunaan."
 msgstr ""
+"Reimu lisait un livre qu'elle avait emprunté à la librairie Suzunaan du village humain."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:13
 msgid ""
 "It was her first ‘science fiction’ series, apparently about a flat, circular "
 "world that floated through space on the backs of four turtles…"
 msgstr ""
+"C'était sa première série de ‘science-fiction’, "
+"apparemment sur un monde plat et circulaire qui flottait dans "
+"l'espace sur le dos de quatre tortues…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:17
 msgid "Suddenly, Yukari slid in through one of her gaps."
-msgstr ""
+msgstr "Soudain, Yukari se glissa dans l'une de ses brèches."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:18
 msgid "As usual, Reimu could feel her presence right away.\n"
-msgstr ""
+msgstr "Comme d'habitude, Reimu pouvait sentir sa présence immédiatement.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:19
 msgid ""
 "Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
 "with solemn, silent expressions."
 msgstr ""
+"De manière inattendue, Ran et Chen étaient également présents, "
+"prenant place derrière elle avec des expressions solennelles et silencieuses."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr ""
+msgstr "Eh bien, on passe le temps dans les sanctuaires rivaux, n'est-ce pas?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
-msgstr ""
+msgstr "Service de garde."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:25
 msgid "Hm? Not trusting enough of Ms. Kochiya to—"
-msgstr ""
+msgstr "Hm? Je ne fais pas suffisamment confiance à Mme Kochiya pour—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:26
 msgid "No."
-msgstr ""
+msgstr "Non."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:30
 msgid "*giggle* I see."
-msgstr ""
+msgstr "*gloussement* Je vois."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:31
 msgid ""
@@ -1216,335 +1226,395 @@ msgid ""
 "As if on cue, Elly came running up the steps of the Moriya Shrine, "
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
+"\n"
+"Comme si c’était prévu, Elly monta en courant les marches du Sanctuaire Moriya, "
+"à bout de souffle, vêtue d’un uniforme de prêtresse du sanctuaire Moriya.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
 msgid ""
 "Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
 "meet—"
 msgstr ""
+"Mlle Hakurei! Il y a eu- Oh, mes excuses, nous avons une invitée. Enchantée de "
+"rencontr—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:36
 msgid "Wait, no, there’s no time for that!"
-msgstr ""
+msgstr "Attendez, non, il n’y a pas de temps pour ça!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:37
 msgid "Slow down. What’s wrong?"
-msgstr ""
+msgstr "Doucement. Qu’est-ce qui ne va pas?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:41
 msgid ""
 "Elly brought out some kind of small communicator device. It projected an "
 "image into the air, like an illusion.\n"
 msgstr ""
+"Elly sortit une sorte de petit dispositif de communication. Il projeta une "
+"image dans l’air, comme une illusion.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:42
 msgid "It’s the Tower! It’s spinning back up!"
-msgstr ""
+msgstr "C’est la Tour! Elle se remet à tourner!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:43
 msgid "Spinning? It looks completely stationary from here."
-msgstr ""
+msgstr "Tourner? D’ici, elle a l’air complètement immobile."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:44
 msgid ""
 "No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
 msgstr ""
+"Non! Je veux dire qu’elle se rallume, qu’elle se recharge! Peu importe! Elle se "
+"réactive!!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:48
 msgid "Huh? It thought you were in control of it."
-msgstr ""
+msgstr "Hein? Je croyais que tu la contrôlais."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:49
 msgid ""
 "I am! I was! I should be…! But this device isn’t letting me do anything!"
 msgstr ""
+"Je le suis! Je l’étais! Je devrais l’être…! Mais cet appareil ne me laisse rien "
+"faire!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:50
 msgid ""
 "And I thought about going back to the Tower to turn it off again, but I-… "
 "no, i-it’s not safe to."
 msgstr ""
+"Et j’ai pensé retourner à la Tour pour l’éteindre encore une fois, mais je-… "
+"non, c-ce n’est pas sûr."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:51
 msgid "Eh? Why not?"
-msgstr ""
+msgstr "Hein? Pourquoi pas?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:55
 msgid "Hm? What’s all this, then?"
-msgstr ""
+msgstr "Hm? Qu’est-ce que tout ça, alors?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:56
 msgid "Kurumi, the Tower's turning back on!"
-msgstr ""
+msgstr "Kurumi, la Tour se rallume!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:57
 msgid ""
 "Huh?! But all I did was seal off the mansion's main doors, so the fairies "
 "would leave it alone, just like you asked!"
 msgstr ""
+"Hein?! Mais tout ce que j’ai fait, c’est sceller les portes principales du manoir, "
+"pour que les fées le laissent tranquille, exactement comme tu l’as demandé!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:58
 msgid "I… what?!"
-msgstr ""
+msgstr "Je… quoi?!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:62
 msgid ""
 "Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
 "the fairies stop playing inside of it'!"
 msgstr ""
+"Tu-tu m’as laissé une note qui disait: «Kurumi, va fermer le module du manoir "
+"pour que les fées arrêtent d’y jouer»!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:63
 msgid "So I did!!"
-msgstr ""
+msgstr "Alors je l’ai fait!!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:64
 msgid ""
 "I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
 "I have a hard time with stroke order—"
 msgstr ""
+"Je ne t’ai laissé aucune note pareille! Ce n’est même pas mon écriture! Tu *sais* "
+"que j’ai du mal avec l’ordre des traits—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:65
 msgid "Okay, excuse me, but what does this have to do with anything?"
-msgstr ""
+msgstr "D’accord, excuse-moi, mais quel est le rapport avec tout ça?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:69
 msgid "I… I may have stolen it from someone."
-msgstr ""
+msgstr "Je… je l’ai peut-être volée à quelqu’un."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:70
 msgid "That doesn't answer my question."
-msgstr ""
+msgstr "Ça ne répond pas à ma question."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:71
 msgid "She’s… still trapped in there. I thought I'd sealed her away, though!"
-msgstr ""
+msgstr "Elle est… encore piégée là-dedans. Pourtant je croyais l’avoir scellée!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:72
 msgid "There’s no way she should've been able to escape that!"
-msgstr ""
+msgstr "Elle n’aurait jamais dû pouvoir s’échapper de ça!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:76
 msgid ""
 "Elly and Kurumi got chilled expressions on their faces, falling completely "
 "silent.\n"
 msgstr ""
+"Elly et Kurumi prirent une expression glacée, tombant dans un silence complet.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:77
 msgid "Reimu closed her book and sighed."
-msgstr ""
+msgstr "Reimu ferma son livre et soupira."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:81
 msgid ""
 "Alright, okay, she’s a big scary monster. I had a feeling something like "
 "this might happen…"
 msgstr ""
+"D’accord, très bien, c’est un gros monstre effrayant. J’avais le pressentiment "
+"que quelque chose comme ça arriverait…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:82
 msgid "Before you go, Reimu…"
-msgstr ""
+msgstr "Avant que tu partes, Reimu…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:83
 msgid "Huh? What now? Want to come with?"
-msgstr ""
+msgstr "Hein? Quoi encore? Tu veux venir avec moi?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:87
 msgid ""
 "You do care very deeply about Gensōkyō, and everyone within it, don’t you?"
 msgstr ""
+"Tu tiens énormément à Gensōkyō, et à tous ceux qui y vivent, n’est-ce pas?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:88
 msgid ""
 "Even those who fundamenally threaten us. You even give the nastiest yōkai a "
 "chance at redemption."
 msgstr ""
+"Même à ceux qui nous menacent fondamentalement. Tu donnes même aux yōkai les "
+"plus abominables une chance de rédemption."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:89
 msgid "I admire that in you."
-msgstr ""
+msgstr "J’admire ça chez toi."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:93
 msgid "Ehhhh? Why are you being so sincere? It’s freaking me out."
-msgstr ""
+msgstr "Ehhhh? Pourquoi tu es si sincère? Ça me fout les jetons."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:94
 msgid "Even you think I’m a huge softie, huh? How disappointing…"
-msgstr ""
+msgstr "Même toi tu penses que je suis une énorme gentille, hein? Quelle déception…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:95
 msgid ""
 "\n"
 "Yukari remained silent, responding only with a gentle smile."
 msgstr ""
+"\n"
+"Yukari resta silencieuse, ne répondant que par un doux sourire."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:99
 msgid ""
 "In the distance, the Tower of Babel began to emit a low, eerie rumble, as "
 "Reimu flew off to meet her next challenge…"
 msgstr ""
+"Au loin, la Tour de Babel commença à émettre un grondement sourd et étrange, "
+"alors que Reimu s’envolait pour affronter son prochain défi…"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
-msgstr ""
+msgstr "Reimu (Bonne Fin)"
 
 #: src/cutscenes/reimu_good_end.inc.h:8
 msgid "A rival shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "Un sanctuaire rival au sommet de la Montagne Yōkai."
 
 #: src/cutscenes/reimu_good_end.inc.h:12
 msgid ""
 "Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
 msgstr ""
+"Écoute, Sanae, je ne sais pas ce qu’est un ‘speedrun’, et je m’en fiche complètement!"
 
 #: src/cutscenes/reimu_good_end.inc.h:13
 msgid ""
 "You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
 "as quickly as possible, right?"
 msgstr ""
+"Tu es vraiment rabat-joie, Reimu! Écoute, tu aimes résoudre les incidents le "
+"plus vite possible, pas vrai?"
 
 #: src/cutscenes/reimu_good_end.inc.h:14
 msgid "It’s like that, except with video games!"
-msgstr ""
+msgstr "C’est pareil, sauf que c’est avec des jeux vidéo!"
 
 #: src/cutscenes/reimu_good_end.inc.h:15
 msgid "I don’t know anything about ‘video games’, either!"
-msgstr ""
+msgstr "Je ne sais rien non plus à propos de «jeux vidéo»!"
 
 #: src/cutscenes/reimu_good_end.inc.h:19
 msgid ""
 "The Tower had been shut down, ending the crisis of madness sweeping the "
 "land.\n"
 msgstr ""
+"La Tour avait été arrêtée, mettant fin à la crise de folie qui balayait la "
+"région.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:20
 msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
 msgstr ""
+"Presque tout le monde était revenu à la normale, bien que quelques âmes étranges "
+"se lamentaient d’avoir perdu leur «savoir».\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
+"Kurumi et Elly avaient été réquisitionnées pour balayer les sentiers du Sanctuaire "
+"Moriya en guise de pénitence pour leurs actes.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr ""
+msgstr "Avec, bien sûr, les demandes étranges occasionnelles des dieux du Sanctuaire Moriya…"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
-msgstr ""
+msgstr "Je n’arrive pas à y croire! La fusion nucléaire est vraiment aussi simple?!"
 
 #: src/cutscenes/reimu_good_end.inc.h:27
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
 msgstr ""
+"O-oui, il suffit de changer ce coefficient-là, et de modeler le champ de confinement "
+"magnétique en utilisant—"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
 "Of course! I was such a fool! I can’t believe I ever bothered attempting to "
 "harness the Yatagarasu!"
 msgstr ""
+"Bien sûr! J’étais tellement idiote! Je n’arrive pas à croire que j’ai essayé "
+"d’exploiter le Yatagarasu!"
 
 #: src/cutscenes/reimu_good_end.inc.h:29
 msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
+"Enfin, j’ai la clé finale pour moderniser Gensōkyō et empêcher la crise énergétique "
+"de nous atteindre! L’énergie de fusion est désormais accessible!"
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
-msgstr ""
+msgstr "O-oh mon dieu… êtes-vous sûre d’aller bien, madame?"
 
 #: src/cutscenes/reimu_good_end.inc.h:34
 msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
-msgstr ""
+msgstr "Heh heh, ne t’inquiète pas, c’est aussi normal que possible pour Kanako."
 
 #: src/cutscenes/reimu_good_end.inc.h:35
 msgid "‘Normal’? Really?"
-msgstr ""
+msgstr "«Normal»? Vraiment?"
 
 #: src/cutscenes/reimu_good_end.inc.h:36
 msgid ""
 "Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
 "this?"
 msgstr ""
+"Kanako est une fanatique des énergies vertes. Tu ne trouves pas qu’elle est mignonne "
+"quand elle est comme ça?"
 
 #: src/cutscenes/reimu_good_end.inc.h:40
 msgid ""
 "In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
 "claiming she was ‘keeping watch’."
 msgstr ""
+"Au milieu de tout ça, Reimu passait plus de temps sur la Montagne Yōkai, affirmant "
+"qu’elle «montait la garde»."
 
 #: src/cutscenes/reimu_good_end.inc.h:44
 msgid "Hey, Elly."
-msgstr ""
+msgstr "Hé, Elly."
 
 #: src/cutscenes/reimu_good_end.inc.h:45
 msgid "Ah, yes? Do you need something from me?"
-msgstr ""
+msgstr "Ah, oui? Tu as besoin de quelque chose de moi?"
 
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
-msgstr ""
+msgstr "Je suis surprise que tu ne sois plus fâchée contre tout le monde. Même pas un peu."
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
-msgstr ""
+msgstr "Tu criais comme une dictatrice là-haut."
 
 #: src/cutscenes/reimu_good_end.inc.h:51
 msgid ""
 "It seems that the Tower's influence got to me, in the end. I thought I was "
 "stronger than that, but…"
 msgstr ""
+"Il semble que l’influence de la Tour m’ait atteinte, finalement. Je pensais être "
+"plus forte que ça, mais…"
 
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
-msgstr ""
+msgstr "Bien sûr, je suis toujours triste pour mon propre Gensōkyō, mais aller jusque-là…"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
-msgstr ""
+msgstr "Quelle drôle de machine. Je me demande ce que les kappa en pensent."
 
 #: src/cutscenes/reimu_good_end.inc.h:58
 msgid ""
 "The kappa won’t touch the thing, and even Kanako has talked herself out of "
 "it."
 msgstr ""
+"Les kappa ne veulent pas y toucher, et même Kanako s’est convaincue de l’abandonner."
 
 #: src/cutscenes/reimu_good_end.inc.h:59
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
-msgstr ""
+msgstr "Quand même, c’est étrange qu’il y ait eu des yōkai oubliés d’un autre Gensōkyō…"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
-msgstr ""
+msgstr "Ah, peu importe. Tant que ça reste tranquille."
 
 #: src/cutscenes/reimu_good_end.inc.h:64
 msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
 msgstr ""
+"Avec la disparition des sentiments de folie, tout le monde semblait plus détendu "
+"que d’habitude, comme si un fardeau leur avait été enlevé.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
 "But for some reason, Reimu in particular seemed to have a difficult time "
 "settling down.\n"
 msgstr ""
+"Mais pour une raison quelconque, Reimu en particulier semblait avoir du mal "
+"à se calmer.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:66
 msgid ""
 "And even as some grew to accept the Tower of Babel looming in the skyline, "
 "there were frequent mutterings over potentially getting rid of it entirely.\n"
 msgstr ""
+"Et même si certains en venaient à accepter la Tour de Babel dominant l’horizon, "
+"il y avait de fréquentes rumeurs sur la possibilité de s’en débarrasser complètement.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
 msgstr ""
+"Bien que personne n’avait la moindre idée de comment, "
+"sauf peut-être une certaine ‘yōkai des failles’…"
+
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
