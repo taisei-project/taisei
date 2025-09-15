@@ -957,107 +957,130 @@ msgid ""
 "Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
 msgstr ""
+"Bref, ça m'a pris un peu de temps, mais je me suis souvenu de cette vampire, "
+"Kurumi, et quand je t'ai vue, je me suis dit: ‘Waouh, vraiment?! Pour de vrai?!’"
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
-msgstr ""
+msgstr "C'est ridicule. Tu es ridicule."
 
 #: src/cutscenes/marisa_good_end.inc.h:86
 msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
-msgstr ""
+msgstr "Mais je suppose que dans un endroit comme Gensōkyō, ce n'est même pas si étrange…"
 
 #: src/cutscenes/marisa_good_end.inc.h:87
 msgid ""
 "… and you were such a child when I met you. It’s odd to see you all grown "
 "up, even if it’s another you entirely."
 msgstr ""
+"… et tu étais encore un enfant quand je t'ai rencontré. "
+"C'est étrange de te voir devenu adulte, même si c'est un tout autre toi."
 
 #: src/cutscenes/marisa_good_end.inc.h:88
 msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
-msgstr ""
+msgstr "Je te fais savoir que je ne suis pas plus sage qu'avant! Gahaha!"
 
 #: src/cutscenes/marisa_good_end.inc.h:92
 msgid ""
 "Many residents of Gensōkyō wondered if the Tower would be a blight on the "
 "skyline for all eternity.\n"
 msgstr ""
+"De nombreux habitants de Gensōkyō se demandaient si la Tour allait "
+"défigurer le paysage urbain pour l'éternité.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:93
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
 msgstr ""
+"D'autres se sont demandé si son pouvoir pouvait être exploité pour servir le bien commun.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
 "But for the guardians of Gensōkyō, they would need to be vigilant, lest it "
 "suddenly spring to life again…"
 msgstr ""
+"Mais les gardiens de Gensōkyō devaient rester vigilants, "
+"de peur qu'il ne reprenne soudainement vie…"
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
-msgstr ""
+msgstr "Reimu (Bad Ending)"
 
 #: src/cutscenes/reimu_bad_end.inc.h:9
 msgid ""
 "The Tower had powered down, yet the instigators were nowhere to be found.\n"
 msgstr ""
+"La Tour avait été mise hors tension, mais les instigateurs étaient introuvables.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
-msgstr ""
+msgstr "Reimu retourna à son sanctuaire, sans savoir si elle avait accompli quoi que ce soit.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:11
 msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
 msgstr ""
+"Les dieux et les yōkai de la montagne se déplaçaient silencieusement "
+"dans le sanctuaire, retenant leur souffle.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
-msgstr ""
+msgstr "Reimu soupira, puis fit son annonce.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:16
 msgid ""
 "Listen up! I stopped the spread of madness, but until further notice, Yōkai "
 "Mountain is off limits!"
 msgstr ""
+"Écoutez bien! J'ai stoppé la propagation de la folie, "
+"mais jusqu'à nouvel ordre, la montagne Yōkai est interdite d'accès!"
 
 #: src/cutscenes/reimu_bad_end.inc.h:20
 msgid "Nobody was pleased with that.\n"
-msgstr ""
+msgstr "Personne n'était satisfait de cela.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:21
 msgid "The Moriya Gods were visibly shocked.\n"
-msgstr ""
+msgstr "Les dieux Moriya étaient visiblement choqués.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:22
 msgid ""
 "The kappa demanded that they be able to fetch their equipment, and tend to "
 "their hydroponic cucumber farms.\n"
 msgstr ""
+"Les kappa ont exigé de pouvoir récupérer leur équipement "
+"et s'occuper de leurs cultures hydroponiques de concombres.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
 "The tengu furiously scribbled down notes, once again as if they’d had the "
 "scoop of the century, before also beginning to make their own demands.\n"
 msgstr ""
+"Les tengu griffonnèrent furieusement des notes, une fois de plus comme "
+"s'ils avaient obtenu le scoop du siècle, avant de commencer à formuler "
+"leurs propres exigences.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:27
 msgid ""
 "Once Reimu had managed to placate the crowd, she sat in the back of the "
 "Hakurei Shrine, bottle of sake in hand.\n"
 msgstr ""
+"Une fois que Reimu eut réussi à calmer la foule, "
+"elle s'assit à l'arrière du sanctuaire Hakurei, une bouteille de saké à la main.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:28
 msgid ""
 "She didn’t feel like drinking, however. She cradled it without even "
 "uncorking it, sighing to herself."
 msgstr ""
+"Elle n'avait cependant pas envie de boire. "
+"Elle le berça sans même le déboucher, soupirant pour elle-même."
 
 #: src/cutscenes/reimu_bad_end.inc.h:32
 msgid "Oh my, a little dissatisfied, aren’t we?"
-msgstr ""
+msgstr "Oh là là, on est un peu mécontent, n'est-ce pas?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:33
 msgid ""
@@ -1065,36 +1088,43 @@ msgid ""
 "Reimu was never surprised by Yukari’s sudden appearances anymore, of "
 "course.\n"
 msgstr ""
+"\n"
+"Reimu n'était bien sûr plus surprise par les apparitions soudaines de "
+"Yukari.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:34
 msgid "It’s unlike you to stop until everything is business as usual, Reimu."
 msgstr ""
+"Ce n'est pas ton genre de t'arrêter tant que tout n'est pas revenu "
+"à la normale, Reimu."
 
 #: src/cutscenes/reimu_bad_end.inc.h:35
 msgid "Depressed?"
-msgstr ""
+msgstr "Déprimé?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:39
 msgid "Yeah. That place sucked."
-msgstr ""
+msgstr "Oui. Cet endroit était nul."
 
 #: src/cutscenes/reimu_bad_end.inc.h:40
 msgid "Perhaps I should’ve gone with you, hmm?"
-msgstr ""
+msgstr "J'aurais peut-être dû venir avec toi, hein?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:41
 msgid "Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?"
-msgstr ""
+msgstr "Hein? Pourquoi? Tu veux supprimer tout ça de Gensōkyō?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:42
 msgid "That might be a bit much, even for me, dear."
-msgstr ""
+msgstr "C'est peut-être un peu trop, même pour moi, ma chérie."
 
 #: src/cutscenes/reimu_bad_end.inc.h:46
 msgid ""
 "Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
 "feel frustrated and… lonely?"
 msgstr ""
+"Quelle que soit cette ‘folie’, elle m'affectait moi aussi. "
+"Elle me rendait frustrée et… solitaire ?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
