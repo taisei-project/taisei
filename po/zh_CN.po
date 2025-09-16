@@ -679,21 +679,22 @@ msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
-msgstr ""
+msgstr "魔理沙（好结局）"
 
 #: src/cutscenes/marisa_good_end.inc.h:7
 msgid "— The Moriya Shrine\n"
-msgstr ""
+msgstr "—— 守矢神社\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:8
 #: src/cutscenes/reimu_extra_intro.inc.h:8
 msgid "A workaholic shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "一个坐落于妖怪之山峰顶的工作狂神社。"
 
 #: src/cutscenes/marisa_good_end.inc.h:12
 msgid ""
 "Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"
 msgstr ""
+"被击败之后, 那些外来者同意关闭她们的「巴别塔」。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
@@ -930,7 +931,7 @@ msgstr ""
 #: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
 #: src/cutscenes/youmu_good_end.inc.h:68
 msgid "The Extra Stage is not ready yet, sorry! ^_^'"
-msgstr "Ex面还没做好，抱歉！(ᗜᴗᗜ)"
+msgstr "Ex面还没做好，抱歉！^_^"
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
@@ -2106,7 +2107,7 @@ msgstr "我就当这是在夸我了。"
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
-msgstr "那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
+msgstr "那么, 你知道那些不听长辈话的调皮女孩会有什么 下场吗？"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
@@ -2325,7 +2326,7 @@ msgstr "呃，也许我漫画看得太多了, 就是那些天狗们炮制出来�
 
 #: src/dialog/marisa.c:270
 msgid "The tengu write manga now?"
-msgstr "天狗现在还画漫画？"
+msgstr "天狗现在还写漫画？"
 
 #: src/dialog/marisa.c:272
 msgid "Writin’ pure ficiton is more honest for them, I guess."
@@ -3226,7 +3227,7 @@ msgstr "那你在干什么？"
 
 #: src/dialog/reimu.c:285
 msgid "Are you behind all these… strange thoughts everyone’s having?"
-msgstr "这一切……大家产生的「奇怪想法」，是你在背后操纵吗？"
+msgstr "这一切……大家产生的「奇怪想法」, 是你在背后操纵吗？"
 
 #: src/dialog/reimu.c:289
 msgid ""
@@ -3482,7 +3483,7 @@ msgstr "（别人对我就这么没信心吗……？）"
 
 #: src/dialog/reimu.c:446
 msgid "As more minds began to fall prey, I considered a theory…"
-msgstr "随着越来越多的人开始陷入这种状态，我想出了 一个理论……"
+msgstr "随着越来越多的人开始陷入这种状态, 我想出了一个理论……"
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
@@ -4011,7 +4012,7 @@ msgid ""
 "My light shines brighter than ever now! I shall teach this lowly usurper due "
 "respect!"
 msgstr ""
-"我的光芒此刻比以往任何时候都要耀眼! 我定要让这个卑微的篡夺者学会应有的尊重！"
+"我的光芒此刻比以往任何时候都要耀眼! 我定要让这个卑微的篡位者学会应有的尊重！"
 
 #: src/dialog/youmu.c:196
 msgid "So that we may live above beyond your green thumb once and for all!"
@@ -4351,7 +4352,7 @@ msgstr "我绝不能让你就这样大步迈向毁灭！"
 
 #: src/dialog/youmu.c:427
 msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
-msgstr "终于！那么，就让你见识一下我楼观剑的无上威严吧！"
+msgstr "很好! 那么, 就让你见识一下我楼观剑的无上威严吧！"
 
 #: src/dialog/youmu.c:439
 msgid "Lightning? Hmph. I can outrun it with ease."
@@ -4935,7 +4936,7 @@ msgid ""
 msgstr ""
 "呆萌可爱的冰之妖精。\n"
 "\n"
-"可能她最近在和秘神与地狱妖精的决斗后感到不太开心？\n"
+"可能她最近在和秘神与地狱妖精的对决后感到不太开心？\n"
 "\n"
 "还是对她手下留情吧。"
 
@@ -4986,6 +4987,11 @@ msgid ""
 "The majority of insects do not scheme grand revolutions, yet their presence "
 "alone is enough to upset the course of events."
 msgstr ""
+"并非所有事物都可计算, 而这个「bug」似乎在你追踪"
+"真正元凶的过程中, 悄然潜入了某个决定性的岔路口。\n"
+"\n"
+"绝大多数昆虫并不谋划翻天覆地的革命, "
+"但它们的存在本身已足以颠覆事件的走向。"
 
 #: src/menu/charprofile.c:126
 msgid "Insect"
@@ -5033,7 +5039,7 @@ msgstr ""
 "\n"
 "她擅长吸血，但她现在的工作倒是当门卫，而且实际更热衷于买衣服。\n"
 "\n"
-"现在谁还没有几份副业呢……"
+"不过现在谁还没有几个业余爱好呢……"
 
 #: src/menu/charprofile.c:148
 msgid "Oarfish"
@@ -5103,11 +5109,11 @@ msgstr "研究领域"
 
 #: src/menu/charprofile.c:223 src/menu/media.c:56
 msgid "Character Profiles"
-msgstr ""
+msgstr "角色档案"
 
 #: src/menu/charprofile.c:269
 msgid "Press [Fire] for alternate expressions"
-msgstr "按[Fire]键查看差分"
+msgstr "按[射击]键查看差分"
 
 #: src/menu/charselect.c:166
 msgid "Intuition"
@@ -5204,7 +5210,7 @@ msgstr "游戏暂停"
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 
 #: src/menu/options.c:1138
 msgid "Options"
-msgstr "选项"
+msgstr ""
 
 #: src/menu/ingamemenu.c:136
 msgid "Return to Game"
@@ -5328,7 +5334,7 @@ msgstr "不要"
 
 #: src/menu/options.c:733
 msgid "Video Options"
-msgstr "显示选项"
+msgstr ""
 
 #: src/menu/options.c:736
 msgid "Fullscreen"
@@ -5667,25 +5673,25 @@ msgstr "无法加载Replay事件"
 #: src/menu/replayview.c:96
 #, c-format
 msgid "Can't replay this stage: unknown stage ID %X"
-msgstr ""
+msgstr "无法重播本关卡: 未知关卡ID %X"
 
 #: src/menu/replayview.c:103
 #, c-format
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
-msgstr ""
+msgstr "无法重播本关卡: 未知操纵角色/机体 %X/%X"
 
 #: src/menu/replayview.c:136
 #, c-format
 msgid "Unknown stage %X"
-msgstr ""
+msgstr "未知关卡 %X"
 
 #: src/menu/replayview.c:466
 msgid "No replays available. Play the game and record some!"
-msgstr ""
+msgstr "没有Replay可用。打几把游戏录点吧！"
 
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
-msgstr ""
+msgstr "获取Replay列表时出现问题 :("
 
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
@@ -5843,7 +5849,7 @@ msgstr "碎片:"
 
 #: src/stagedraw.c:1465
 msgid "God Mode is enabled!"
-msgstr ""
+msgstr "上帝模式已启用！"
 
 #: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
 msgid ""
@@ -5890,7 +5896,7 @@ msgstr ""
 
 #: src/stagedraw.c:1919
 msgid "Press Fire to continue"
-msgstr ""
+msgstr "按射击键继续……"
 
 #: src/stageinfo.c:49
 msgid "Spell"
@@ -6038,7 +6044,7 @@ msgstr "虫符「Firefly Storm」（飞萤风暴）"
 
 #: src/stages/stage3/stage3.c:57
 msgid "Lamp Sign “Light Singularity”"
-msgstr "灯符「Light Singularity」（奇异之光）"
+msgstr "灯符「Light Singularity」(奇异之光）"
 
 #: src/stages/stage3/wriggle.c:31
 msgid "Wriggle EX"
@@ -6058,19 +6064,19 @@ msgstr "无血「红色尖刺」"
 
 #: src/stages/stage4/stage4.c:48
 msgid "Limit “Animate Wall”"
-msgstr "界限「Animate Wall」（生命高墙）"
+msgstr "界限「Animate Wall」(生命高墙）"
 
 #: src/stages/stage4/stage4.c:53
 msgid "Summoning “Demon Wall”"
-msgstr "召唤「Demon Wall」（恶魔高墙）"
+msgstr "召唤「Demon Wall」(恶魔高墙）"
 
 #: src/stages/stage4/stage4.c:58
 msgid "Power Sign “Blow the Walls”"
-msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
+msgstr "力符「炸翻高墙」"
 
 #: src/stages/stage4/stage4.c:63
 msgid "Predation “Vampiric Vapor”"
-msgstr "力符「炸翻高墙」"
+msgstr "掠食「Vampiric Vapor」(吸血鬼气化)"
 
 #: src/stages/stage4/stage4.c:70
 msgid "Blood Magic “Vlad’s Army”"
@@ -6118,7 +6124,7 @@ msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
 
 #: src/stages/stage6/stage6.c:39
 msgid "Maxwell Sign “Wave Theory”"
-msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
+msgstr "麦克斯韦之御札「Wave Theory」(波动学说）"
 
 #: src/stages/stage6/stage6.c:47
 msgid "Eigenstate “Many-World Interpretation”"
@@ -6157,7 +6163,7 @@ msgstr ""
 
 #: po/extra_strings.c:2
 msgid "Divine Correction for Outliers"
-msgstr ""
+msgstr "对异类的神之修正"
 
 #: po/extra_strings.c:3 po/extra_strings.c:7 po/extra_strings.c:11
 #: po/extra_strings.c:23 po/extra_strings.c:27 po/extra_strings.c:31
@@ -6182,6 +6188,14 @@ msgid ""
 "Ultimately, I can’t decide if I did the original justice with this one or "
 "not, but I know it holds a special place in my heart."
 msgstr ""
+"改编一个角色现有的主题曲, 还是创作一个全新的主题曲, 这很难抉择, "
+"ZUN自己可能也很难抉择。\n"
+"\n"
+"我知道我的优势在于后者, 最终创作出了那种通常在塔顶才能听到的"
+"狂风暴雨般的旋律, 衣玖的原创主题曲格外的不错, 以至于我接受了这个挑战。\n"
+"\n"
+"直到最后, 我也无法确定这首歌是否具备原作的精髓, 但我知道"
+"它在我心中已占有一席之地。"
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
@@ -6219,7 +6233,7 @@ msgstr ""
 "\n"
 "好同学们，我们今天都学到了些什么？\n"
 "\n"
-"啊没错：知识恰如禁果；孕育光明亦滋生黑暗。 下课下课，自机们也是时候去放松一下"
+"啊没错: 知识恰如禁果; 孕育光明亦滋生黑暗。下课下课, 自机们也是时候去放松一下"
 "开香槟了。"
 
 #: po/extra_strings.c:14
@@ -6312,6 +6326,10 @@ msgid ""
 "A relaxing mist illustrated with subdued instruments. Familiar shadows stir "
 "trouble just out of view. Ripples of times past dance across Misty Lake."
 msgstr ""
+"一面的主题曲。\n"
+"\n"
+"令人心旷神怡的薄雾, 配以柔和的乐器袅袅浮现。 熟悉的身影在视野外"
+"搅动着纷扰, 往昔的涟漪荡漾在雾之湖上。"
 
 #: po/extra_strings.c:34
 msgid "An Impish Reflection on the Water"
@@ -6389,6 +6407,13 @@ msgid ""
 "\n"
 "Sounds a little “beach”-like in the introduction…"
 msgstr ""
+"莉格露·奈特巴格的主题曲。\n"
+"\n"
+"一只非常有动力的虫子。她站在世界之巅! ——不不不, 站在世界之巅的是另外一个人, "
+"她现在最多站在通道的中央。不管怎样, 她知道只要下定决心, 她就能淦翻全场, "
+"对吧？\n"
+"\n"
+"开头听起来有点像“beach”……"
 
 #: po/extra_strings.c:54
 msgid "Evidence of Ki Domestication"
@@ -6405,10 +6430,17 @@ msgid ""
 "\n"
 "Smells like rust."
 msgstr ""
+"四面的主题曲。\n"
+"\n"
+"又回到东方的风格了……就像钟摆来回摆动一样。\n"
+"这首曲子的灵感来自于一位生活在大海彼岸的难以捉摸的音乐家, "
+"他因其音乐中受到中国的影响而闻名。\n"
+"\n"
+"嗯，有一股铁锈的味道。"
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
-msgstr "被边缘的绯红 ~ The Red Word"
+msgstr "边际的绯红 ~ The Red Word"
 
 #: po/extra_strings.c:61
 msgid ""
@@ -6460,6 +6492,7 @@ msgid ""
 "Iku provides the first tribulation."
 msgstr ""
 "永江衣玖的主题曲。\n"
+"\n"
 "这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. 想象一下, 在猛烈的雷雨中攀"
 "登高塔, 还要努力不感到疲惫.\n"
 "\n"
@@ -6481,7 +6514,7 @@ msgstr ""
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
-msgstr "大宇宙之战 ~ The Vacuum Catastrophe"
+msgstr "大宇宙论之战 ~ The Vacuum Catastrophe"
 
 #: po/extra_strings.c:77
 msgid ""
@@ -6497,7 +6530,7 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
-msgstr "登神的涌现属性 ~ Ambivalent Soul"
+msgstr "神化的涌现属性 ~ Ambivalent Soul"
 
 #: po/extra_strings.c:81
 msgid ""
@@ -6525,3 +6558,9 @@ msgid ""
 "series of dark curtains to pull back, each new finding more magnificent and "
 "imperceptible than the last."
 msgstr ""
+"艾丽的终符主题曲。\n"
+"\n"
+"世间那些最具雄心又不可或缺的伟业, 注定要包罗万象。世人多视科学为"
+"既定知识之集合, 宛若所有"伟大发现"皆已尘埃落定的封闭琥珀—— "
+"然事实恰恰相反。科学实乃永无止境的重重帷幕, 每次揭开都展现出比先前"
+"更加壮丽而精微的奇观。"
