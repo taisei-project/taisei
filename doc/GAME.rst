@@ -44,7 +44,7 @@ HUD
 
 Once you reach the game itself, a bunch of numbers will appear on the right of your screen (HUD). These are:
 
-- **Score** Your current score. See `Scoring System`_. grazing, and collecting items.
+- **Score** Your current score. See `Scoring System`_.
 - **Lives** How many lives you have. The *Next* value shows the next score at which you receive a bonus new life.
 - **Spell Cards** How many `Bombs`_ you have. If your *Fragment* count goes to 500, you get a new bomb.
 - **Power** How strong your current shot is. Maxes out at 4, but can be overcollected until 6.
