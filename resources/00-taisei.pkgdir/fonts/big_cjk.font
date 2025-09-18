@@ -1,5 +1,5 @@
 
-source = res/fonts/SourceHanSans-Regular.ttc
+source = res/fonts/SourceHanSerifSC-Heavy.ttf
 size = 35
 
 border_inner = 0.3
