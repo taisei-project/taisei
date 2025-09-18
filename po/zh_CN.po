@@ -52,6 +52,8 @@ msgid ""
 "Taisei Project\n"
 "brought to you by…"
 msgstr ""
+"泰西Project\n"
+"由以下人员为您呈现……"
 
 #: src/credits.c:154
 msgid "Special Thanks"
@@ -66,12 +68,19 @@ msgid ""
 "And join our Discord server\n"
 "%s"
 msgstr ""
+"联系我们\n"
+"%s\n"
+"\n"
+"或者加入我们的Discord服务器\n"
+"%s"
 
 #: src/credits.c:209
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
 msgstr ""
+"*\n"
+"然后别忘了放轻松点！"
 
 #: src/cutscenes/cutscene.c:313
 #, c-format
@@ -434,7 +443,7 @@ msgstr "—— 宇佐见莲子 著"
 #: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
 #: src/cutscenes/youmu_bad_end.inc.h:52
 msgid "— Bad End —"
-msgstr ""
+msgstr "— 坏结局 —"
 
 #: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
 #: src/cutscenes/youmu_bad_end.inc.h:52
@@ -926,7 +935,7 @@ msgstr ""
 #: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
 #: src/cutscenes/youmu_good_end.inc.h:68
 msgid "— Good End —"
-msgstr ""
+msgstr "— 好结局 —"
 
 #: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
 #: src/cutscenes/youmu_good_end.inc.h:68
@@ -6364,6 +6373,11 @@ msgid ""
 "deceptively fast-paced theme, to be sure. One excitable example makes a "
 "brief appearance. The rhythm of this theme is meant to make you feel lucky."
 msgstr ""
+"二面的主题曲。\n"
+"\n"
+"这条平静祥和的道路, 却难免会出现不少麻烦的家伙——确实如此, "
+"这听起来像一首快节奏的曲子。但有一段短暂出现的令人舒畅的旋律, "
+"这段律动旨在让你感到幸运。"
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
@@ -6378,6 +6392,12 @@ msgid ""
 "It’s a little merciful sometimes, but you still have to do your best, no "
 "matter what. Gambling might be a poor stress-reliever…"
 msgstr ""
+"键山雏的主题曲。\n"
+"\n"
+"这次，一切决于运气之上。\n"
+"\n"
+"有时候转转会比较仁慈点, 但无论如何, 你还是得尽力而为。 "
+"毕竟赌博并不是有效降低压力的好方法……"
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
