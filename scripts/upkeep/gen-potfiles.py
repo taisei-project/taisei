@@ -16,14 +16,14 @@ from taiseilib.common import (
 )
 
 def bgm_tags(filename):
-    result = subprocess.run(['ffprobe', '-output_format', 'json', '-show_entries', 'stream_tags', filename], capture_output=True, text=True, check=True)
+    result = subprocess.run(['ffprobe', '-print_format', 'json', '-show_entries', 'stream_tags', filename], capture_output=True, text=True, check=True)
 
     return json.loads(result.stdout)['streams'][0]['tags']
 
 def collect_bgm_tags(filenames):
     tags = []
 
-    for filename in filenames:
+    for filename in sorted(filenames):
         r = bgm_tags(filename)
         tags.append(r['TITLE'])
         tags.append(r['ARTIST'])
@@ -51,7 +51,10 @@ def main(args):
 
     files = glob.glob('src/**/*.c', root_dir=args.rootdir, recursive=True)
     files += glob.glob('src/**/*.h', root_dir=args.rootdir, recursive=True)
+    files.sort()
     files += [str(extra_strings)]
+
+    files = [f for f in files if f != 'src/i18n/i18n.h']
 
     data = '\n'.join(files) + '\n'
     update_text_file(args.rootdir / podir / 'POTFILES', data)

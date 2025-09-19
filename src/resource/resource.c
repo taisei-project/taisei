@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "resource.h"
@@ -11,6 +11,7 @@
 #include "animation.h"
 #include "bgm.h"
 #include "font.h"
+#include "locale.h"
 #include "material.h"
 #include "model.h"
 #include "postprocess.h"
@@ -19,7 +20,6 @@
 #include "shader_program.h"
 #include "sprite.h"
 #include "texture.h"
-#include "i18n.h"
 
 #include "eventloop/eventloop.h"
 #include "events.h"
@@ -41,7 +41,7 @@ ResourceHandler *_handlers[] = {
 	[RES_ANIM]              = &animation_res_handler,
 	[RES_BGM]               = &bgm_res_handler,
 	[RES_FONT]              = &font_res_handler,
-	[RES_I18N]              = &i18n_res_handler,
+	[RES_LOCALE]            = &locale_res_handler,
 	[RES_MATERIAL]          = &material_res_handler,
 	[RES_MODEL]             = &model_res_handler,
 	[RES_POSTPROCESS]       = &postprocess_res_handler,

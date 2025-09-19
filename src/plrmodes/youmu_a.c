@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "youmu.h"
@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "dialog/youmu.h"
 #include "global.h"
+#include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
@@ -704,9 +705,9 @@ static double youmu_mirror_property(Player *plr, PlrProperty prop) {
 }
 
 PlayerMode plrmode_youmu_a = {
-	.name = "Soul Reflection",
-	.description = "Human and phantom act together towards a singular purpose. Your inner duality shall lend you a hand… or a tail.",
-	.spellcard_name = "Soul Sign “Reality-Piercing Apparition”",
+	.name = N_("Soul Reflection"),
+	.description = N_("Human and phantom act together towards a singular purpose. Your inner duality shall lend you a hand… or a tail."),
+	.spellcard_name = N_("Soul Sign “Reality-Piercing Apparition”"),
 	.character = &character_youmu,
 	.dialog = &dialog_tasks_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,

@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -48,11 +48,11 @@ typedef struct Cutscene {
  */
 
 #define T_NARRATOR(text) \
-	{ CTT_NARRATION, NULL, N_(text), COLOR_NARRATOR }
+	{ CTT_NARRATION, NULL, text, COLOR_NARRATOR }
 #define T_SPEECH(speaker, text, ...) \
-	{ CTT_DIALOGUE, speaker, "“" N_(text) "”", __VA_ARGS__ }
+	{ CTT_DIALOGUE, speaker, text, __VA_ARGS__ }
 #define T_CENTERED(header, text) \
-	{ CTT_CENTERED, header, N_(text), COLOR_NARRATOR }
+	{ CTT_CENTERED, header, text, COLOR_NARRATOR }
 
 #define COLOR_NARRATOR { 0.955, 0.934, 0.745, 1 }
 

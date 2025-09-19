@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "stage2.h"
@@ -11,7 +11,7 @@
 #include "background_anim.h"
 #include "draw.h"
 #include "hina.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "spells/spells.h"
 #include "stage.h"
 #include "timeline.h"   // IWYU pragma: keep

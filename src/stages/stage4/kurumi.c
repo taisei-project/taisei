@@ -2,15 +2,15 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "kurumi.h"
 
 #include "audio/audio.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_burst) {
 	Boss *b = TASK_BIND(ARGS.boss);

@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "player.h"
@@ -12,7 +12,7 @@
 #include "entity.h"
 #include "gamepad.h"
 #include "global.h"
-#include "intl/intl.h"
+#include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "projectile.h"
 #include "replay/stage.h"
@@ -248,7 +248,7 @@ void player_draw_overlay(Player *plr) {
 
 	r_mat_mv_push();
 	r_mat_mv_scale(2 - 1 * spell_opacity, 2 - 1 * spell_opacity, 1);
-	text_draw(plr->mode->spellcard_name, &tp);
+	text_draw(_(plr->mode->spellcard_name), &tp);
 	r_mat_mv_pop();
 
 	r_mat_mv_pop();

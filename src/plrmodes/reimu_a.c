@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "reimu.h"
@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dialog/reimu.h"
 #include "global.h"
+#include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 #include "util/graphics.h"
@@ -893,9 +894,9 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 }
 
 PlayerMode plrmode_reimu_a = {
-	.name = "Yōkai Buster",
-	.description = "The tried-and-true: homing amulets and sharp needles. You don’t have the luxury of time to think about aiming.",
-	.spellcard_name = "Spirit Sign “Fantasy Seal —Burst—”",
+	.name = N_("Yōkai Buster"),
+	.description = N_("The tried-and-true: homing amulets and sharp needles. You don’t have the luxury of time to think about aiming."),
+	.spellcard_name = N_("Spirit Sign “Fantasy Seal —Burst—”"),
 	.character = &character_reimu,
 	.dialog = &dialog_tasks_reimu,
 	.shot_mode = PLR_SHOT_REIMU_SPIRIT,

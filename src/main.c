@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "audio/audio.h"
@@ -22,7 +22,7 @@
 #include "progress.h"
 #include "renderer/common/models.h"
 #include "renderer/common/sprite_batch.h"
-#include "resource/i18n.h"
+#include "i18n/i18n.h"
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
@@ -60,6 +60,7 @@ static void taisei_shutdown(void) {
 		progress_save();
 	}
 
+	i18n_shutdown();
 	r_release_resources();
 	res_shutdown();
 

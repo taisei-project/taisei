@@ -2,8 +2,8 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #pragma once
@@ -91,7 +91,7 @@
 	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
 	\
 	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "Player") \
-	CONFIGDEF_STRING    (LANGUAGE,                  "language",                             "system") \
+	CONFIGDEF_STRING    (LOCALE,                    "locale",                               "system") \
 	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           1) \
 	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
