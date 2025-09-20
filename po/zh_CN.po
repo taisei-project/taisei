@@ -452,7 +452,7 @@ msgstr "试试不续关完成游戏吧!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
-msgstr "魔理沙(Extra引子)"
+msgstr "魔理沙 (Extra引子)"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
 msgid "A haunted western mansion in an eastern wonderland."
@@ -481,7 +481,7 @@ msgid ""
 "gettin’ forged. It was intense!"
 msgstr ""
 "说真的，我仿佛窥见了无数个可能的自我, 在无限时空中延伸, "
-"又不断折叠回自身, 就像一把绝世武士刀在淬炼成型。太震撼了！"
+"又不断折叠回自身, 就像一把绝世武士刀在淬炼成型。太震撼啦DA☆ZE"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:20
 msgid "It’s just like you to accidentally see the Time Knife…"
@@ -707,13 +707,15 @@ msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
-msgstr ""
+msgstr "艾丽和胡桃被要求打扫守矢神社的地面……\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:14
 msgid ""
 "… which had become filthy from the local fairies partying non-stop, and some "
 "‘political demonstrations’ by the newly-formed ‘Insect Party’."
 msgstr ""
+"……这些地板因为妖精们没完没了的狂欢, 以及新成立的「昆虫党」"
+"进行的一些「政治示威」而变得肮脏不堪。"
 
 #: src/cutscenes/marisa_good_end.inc.h:18
 msgid ""
@@ -721,216 +723,245 @@ msgid ""
 "vector processing capabilities. Combined with other improvements, such as "
 "its DVD drive—"
 msgstr ""
+"——这玩意配备了一个全新的数学协处理器, 使其具备了先进的向量处理能力。 "
+"并且结合了其他改进, 例如DVD光驱——"
 
 #: src/cutscenes/marisa_good_end.inc.h:19
 msgid "Ah, I see. Fascinating. Wow. Incredible."
-msgstr ""
+msgstr "啊, 懂了。真有趣啊。哇哦, 太不可思议了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:20
 msgid "You two having fun?"
-msgstr ""
+msgstr "你俩玩的开心吗？"
 
 #: src/cutscenes/marisa_good_end.inc.h:21
 msgid "… y-yes, ma’am."
-msgstr ""
+msgstr "……是的，神奈子夫人。"
 
 #: src/cutscenes/marisa_good_end.inc.h:25
 msgid ""
 "Seems like it’s taking a bit more time for the madness to wear off for her. "
 "How’s all that ‘knowledge’ working out for you, newcomer?"
 msgstr ""
+"看来她恢复正常还需要一点时间。 怎么样, 你得到的那些「知识」还受用吗, 新来的小家伙? "
 
 #: src/cutscenes/marisa_good_end.inc.h:26
 msgid ""
 "I remembered way more about retro video game consoles than I wanted to! And "
 "now *you’ve* gotta deal with it!"
 msgstr ""
+"我想到的关于复古游戏机的事情, 可比我想要的多太多了! 现在这些你也得承受了！"
 
 #: src/cutscenes/marisa_good_end.inc.h:27
 msgid ""
 "\n"
 "Elly nodded and smiled politely, trying to hold back tears of boredom."
 msgstr ""
+"\n"
+"艾丽点了点头, 礼貌地微笑着, 努力忍住因无聊而想要流出的眼泪。"
 
 #: src/cutscenes/marisa_good_end.inc.h:31
 msgid ""
 "In the end, the newcomers seemed to calm down once the effects of the Tower "
 "had worn off, just like everyone else in Gensōkyō.\n"
 msgstr ""
+"最后, 和幻想乡里的其他人一样, 这些新人在高塔的影响消退后, 似乎也逐渐平静了下来。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:32
 msgid ""
 "During an early afternoon, Marisa arrived with a picnic basket and a grin on "
 "her face."
 msgstr ""
+"午后，魔理沙带着野餐篮, 脸上挂着灿烂的笑容来了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:36
 msgid "Ah, Ms. Kirisame. Hello again."
-msgstr ""
+msgstr "啊，雾雨小姐，又见面了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:37
 msgid "Yo, Elly!"
-msgstr ""
+msgstr "哟，这不艾丽吗？"
 
 #: src/cutscenes/marisa_good_end.inc.h:38
 msgid "Do you… need something from me?"
-msgstr ""
+msgstr "你……需要我做什么吗？"
 
 #: src/cutscenes/marisa_good_end.inc.h:39
 msgid "Heck yeah I do! A drinkin’ partner!"
-msgstr ""
+msgstr "那当然啦DA☆ZE！我需要一个陪我喝酒的小伙伴！"
 
 #: src/cutscenes/marisa_good_end.inc.h:43
 msgid "Isn’t it a little early for that?"
-msgstr ""
+msgstr "现在喝酒是不是有点太早了？"
 
 #: src/cutscenes/marisa_good_end.inc.h:44
 msgid "Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"
-msgstr ""
+msgstr "呐别这么死板嘛, 在无限的多元宇宙中, 总有个地方现在是中午吧？"
 
 #: src/cutscenes/marisa_good_end.inc.h:45
 msgid ""
 "\n"
 "Elly laughed. She wanted an excuse for a break anyways.\n"
 msgstr ""
+"\n"
+"艾丽笑了。反正她也正想找个休息的借口呢。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:46
 msgid ""
 "And so, they drank, and caught up on alternate worlds, uncanny timelines, "
 "and the strangeness of their circumstances.\n"
 msgstr ""
+"于是她们一边喝酒, 一边聊起了各自经历的平行世界, 诡异的时间线, 以及眼下这抽象的处境。"
 
 #: src/cutscenes/marisa_good_end.inc.h:50
 msgid ""
 "I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. "
 "Don’t ya know about Isaac Newton?"
 msgstr ""
+"哎呀, 你输掉那还用说嘛, 数学向来对魔法有点偏爱ZE。 "
+"难道你不知道艾萨克·牛顿的事吗？"
 
 #: src/cutscenes/marisa_good_end.inc.h:51
 msgid ""
 "The famous European mathematician? I studied his works, yes. But what about "
 "him?"
 msgstr ""
+"那位著名的欧洲数学家？我是研究过他的著作, 但和他有啥关系？"
 
 #: src/cutscenes/marisa_good_end.inc.h:52
 msgid "He was an Alchemist!"
-msgstr ""
+msgstr "他可是个炼金术士！"
 
 #: src/cutscenes/marisa_good_end.inc.h:53
 msgid "He was a… what?!"
-msgstr ""
+msgstr "他是个……什么？！"
 
 #: src/cutscenes/marisa_good_end.inc.h:57
 msgid ""
 "Yup. There’s even a copy of his occult book down at the library I frequent."
 msgstr ""
+"没错。我常去的那间图书馆里, 甚至还藏有他一本关于神秘学著作的抄本呢。"
 
 #: src/cutscenes/marisa_good_end.inc.h:58
 msgid "He was into a lotta wild stuff."
-msgstr ""
+msgstr "他可是涉猎了很多稀奇古怪的领域呢。"
 
 #: src/cutscenes/marisa_good_end.inc.h:59
 msgid "Kinda funny ya hadn’t heard of that, actually."
-msgstr ""
+msgstr "你居然没听说过这些……还挺有意思的。"
 
 #: src/cutscenes/marisa_good_end.inc.h:60
 msgid ""
 "Hah. That… *is* kind of funny, actually. I never ran across any of *those* "
 "books of his…"
 msgstr ""
+"哈哈, 这……确实还挺有趣的。我从来没见过他那些书……"
 
 #: src/cutscenes/marisa_good_end.inc.h:64
 msgid ""
 "Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
 msgstr ""
+"喂振作点嘛, 你爱在这儿待多久都行ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:65
 msgid "But what if this Gensōkyō collapses, too…?"
-msgstr ""
+msgstr "但如果这个幻想乡……也崩溃了怎么办？"
 
 #: src/cutscenes/marisa_good_end.inc.h:66
 msgid ""
 "It could! The Hakurei Barrier could fall tomorrow! But what’s the point in "
 "worryin’ about all that?"
 msgstr ""
+"当然有这种可能啊! 说不定明天博丽大结界就炸了! 但问题是, "
+"整天担心这些又有什么用呢？"
 
 #: src/cutscenes/marisa_good_end.inc.h:67
 msgid "Right now, I say we enjoy what we got!"
-msgstr ""
+msgstr "依我看，咱们就该好好享受眼前拥有的一切DA☆ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:71
 msgid "I suppose you’re right."
-msgstr ""
+msgstr "我想你说得对。"
 
 #: src/cutscenes/marisa_good_end.inc.h:72
 msgid "Although, I have to ask… how did you remember me?"
-msgstr ""
+msgstr "不过，我得问一下……你是怎么记得我的？"
 
 #: src/cutscenes/marisa_good_end.inc.h:73
 msgid "Oh, that’s easy. Mushrooms!"
-msgstr ""
+msgstr "哦，那很简单啊。蘑菇！"
 
 #: src/cutscenes/marisa_good_end.inc.h:74
 msgid "Mush… rooms? As in, mycelium?"
-msgstr ""
+msgstr "蘑……菇？你是说菌丝？"
 
 #: src/cutscenes/marisa_good_end.inc.h:78
 msgid ""
 "Yeah! A while ago, I was cookin’ up some especially powerful ones I found in "
 "a cave near the one-armed hermit’s house…"
 msgstr ""
+"正确！前段时间, 我炖了些在独臂仙人家附近的洞穴里找到的, 特别厉害的蘑菇……"
 
 #: src/cutscenes/marisa_good_end.inc.h:79
 msgid "And then, BOOM, there was a small explosion!"
-msgstr ""
+msgstr "然后，轰的一声，突然发生了个小爆炸！"
 
 #: src/cutscenes/marisa_good_end.inc.h:80
 msgid ""
 "Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My "
 "lives were flashin’ before my eyes!"
 msgstr ""
+"我还没反应过来, 就看到外面出现了各种各样的「自己」。我的一生仿佛在眼前飞速闪现！"
 
 #: src/cutscenes/marisa_good_end.inc.h:81
 msgid ""
 "Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
 msgstr ""
+"总之, 虽然花了一点时间, 但我还是模模糊糊记起了那个吸血鬼小女孩胡桃。 "
+"后来当我看到你的时候, 我就在想: 哇贞德食泥鸭！！"
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
-msgstr ""
+msgstr "太他喵荒了。你这个人，简直荒到天了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:86
 msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
-msgstr ""
+msgstr "但仔细想想, 在幻想乡这样的地方, 这似乎也算不上有多离奇了……"
 
 #: src/cutscenes/marisa_good_end.inc.h:87
 msgid ""
 "… and you were such a child when I met you. It’s odd to see you all grown "
 "up, even if it’s another you entirely."
 msgstr ""
+"……我与你初遇时, 你还只是个孩子。现在看到你已经长大成人, 即使"
+"这只是另一个「你」, 也总觉得有些奇妙。"
 
 #: src/cutscenes/marisa_good_end.inc.h:88
 msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
-msgstr ""
+msgstr "我可得让你知道, 我可一天都没变得更聪明ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:92
 msgid ""
 "Many residents of Gensōkyō wondered if the Tower would be a blight on the "
 "skyline for all eternity.\n"
 msgstr ""
+"幻想乡的许多居民都在纳闷, 那座塔会不会永远矗立在天际上, "
+"成为一道挥之不去的阴影。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:93
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
 msgstr ""
+"另一些人则在思考, 是否能够利用它的力量来造福众生。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
 "But for the guardians of Gensōkyō, they would need to be vigilant, lest it "
 "suddenly spring to life again…"
 msgstr ""
+"但对于幻想乡的守护者们来说, 她们必须保持警惕, 以免它突然再度苏醒……"
 
 #: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
 #: src/cutscenes/youmu_good_end.inc.h:68
@@ -944,7 +975,7 @@ msgstr "Ex面还没做好，抱歉！^_^"
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
-msgstr ""
+msgstr "灵梦 (坏结局)"
 
 #: src/cutscenes/reimu_bad_end.inc.h:9
 msgid ""
@@ -1089,32 +1120,35 @@ msgstr "很高兴听到你这么说。毕竟这是你的责任啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:2
 msgid "Reimu (Extra Stage Intro)"
-msgstr ""
+msgstr "灵梦 (Extra引子)"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr ""
+msgstr "—— 守矢神社"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
 msgid ""
 "Reimu was reading a book she'd borrowed from the Human Village’s book rental "
 "store, Suzunaan."
 msgstr ""
+"灵梦正在读一本她从人间之里的租书店「铃奈庵」搞来的书。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:13
 msgid ""
 "It was her first ‘science fiction’ series, apparently about a flat, circular "
 "world that floated through space on the backs of four turtles…"
 msgstr ""
+"这是她第一次读「科幻」系列小说, 讲的似乎是一个平坦的"
+"圆形世界, 由四只乌龟驮着在太空中漂浮……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:17
 msgid "Suddenly, Yukari slid in through one of her gaps."
-msgstr ""
+msgstr "突然，紫从打开的隙间蹦出来了。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:18
 msgid "As usual, Reimu could feel her presence right away.\n"
-msgstr ""
+msgstr "和往常一样，灵梦立刻就感觉到了她的存在。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:19
 msgid ""
@@ -1538,19 +1572,19 @@ msgstr "帕秋莉"
 
 #: src/cutscenes/youmu_bad_end.inc.h:2
 msgid "Yōmu (Bad Ending)"
-msgstr ""
+msgstr "妖梦 (坏结局)"
 
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
-msgstr ""
+msgstr "—— 巴别塔"
 
 #: src/cutscenes/youmu_bad_end.inc.h:8
 msgid "The infernal machine from another world."
-msgstr ""
+msgstr "来自另一个世界的地狱机器。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:12
 msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
-msgstr ""
+msgstr "在如今耸立于幻想乡天际的高塔脚下……"
 
 #: src/cutscenes/youmu_bad_end.inc.h:13
 msgid ""
@@ -1666,7 +1700,7 @@ msgstr ""
 
 #: src/cutscenes/youmu_extra_intro.inc.h:2
 msgid "Yōmu (Extra Stage Intro)"
-msgstr ""
+msgstr "妖梦 (Extra引子)"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
@@ -3753,7 +3787,7 @@ msgstr "但她可没有像你这个深井冰到处威胁大家！"
 msgid ""
 "We weren’t as lucky! And as reparation, we will take control of this "
 "Gensōkyō!"
-msgstr "我们可没那么幸运！作为补偿，我们将掌控这个幻想乡！"
+msgstr "我们可没那么幸运! 作为补偿, 我们将掌控这个幻想乡！"
 
 #: src/dialog/reimu.c:613
 msgid "We will make it so we will NEVER be forgotten!"
@@ -4192,7 +4226,7 @@ msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
 msgstr ""
-"……是啊！我本来以为会是什么科学实验之类的, 结果他们硬是把它弄成了鬼屋, 还搞出"
+"……是啊！我本来以为会是什么科学实验之类的, 结果她们硬是把它弄成了鬼屋, 还搞出"
 "幽灵啊什么的！"
 
 #: src/dialog/youmu.c:327
@@ -4254,7 +4288,7 @@ msgstr "我猜是博丽神社对吧？"
 
 #: src/dialog/youmu.c:372
 msgid "Wh-who told you?! Are you in league with them too?!"
-msgstr "谁……谁告诉你的？! 难道你也和他们一伙的吗？！"
+msgstr "谁……谁告诉你的？! 难道你也和她们一伙的吗？！"
 
 #: src/dialog/youmu.c:375
 msgid "Of course not, but where else would she be at a time like this?"
@@ -5759,7 +5793,7 @@ msgstr "久经考验的诱导护符与封魔针, 不必思考怎么瞄准敌人,
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr "灵符「梦想封印 裂」"
+msgstr "灵符「梦想封印   裂」"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -6323,6 +6357,14 @@ msgid ""
 "Supposing she were to appear as a boss, I think it might sound different "
 "given a different role in the incident."
 msgstr ""
+"一首献给我最喜欢角色的隐藏主题曲……\n"
+"\n"
+"我想尝试利用Scuttle在道中出现时的旋律, 并将其发展成一首完整的歌曲。\n"
+"\n"
+"结果很有趣！她的主题旋律就像她的存在一样, 格外的实验性呢。\n"
+"\n"
+"假设她以关底Boss的身份登场, 考虑到在事件中所扮演的不同角色, "
+"我觉得她的曲子可能会呈现出不一样的感觉。"
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
@@ -6412,6 +6454,11 @@ msgid ""
 "eyes. A fluttering little bug feels most at home in the dead of night, and "
 "most alive in a sea of light."
 msgstr ""
+"三面的主题曲。\n"
+"\n"
+"在黑暗中视物通常并非易事。它吸引着你, 将你吞没, 如同淹没感官的烈焰。"
+"但这一次, 或许最好保护好双眼。一只振翅的小飞虫在夜深时分最是自在, "
+"于光的海洋中最是活跃。"
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
@@ -6518,6 +6565,7 @@ msgstr ""
 "\n"
 "而衣玖, 便是千刀万剐之始."
 
+# 坏了译者感觉自己也被巴别塔影响了
 #: po/extra_strings.c:70
 msgid "Summit of Revelations"
 msgstr "启示之巅"
@@ -6531,6 +6579,11 @@ msgid ""
 "A grand architectural marvel may take thousands of years to complete… this "
 "song was no different! But the end result feels like a great discovery."
 msgstr ""
+"六面的主题曲。\n"
+"\n"
+"登塔凌顶可见天下, 然其间险峻几何？\n"
+"\n"
+"千秋伟业宛若筑就传世鸿篇——此曲亦不外如是! 终章奏响时, 恍若重大发现般的顿悟。"
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
@@ -6547,6 +6600,13 @@ msgid ""
 "She may have been a lowly gate guard the last time you saw her, but the "
 "apple’s fallen on her head. She’s a guard of a different kind of gate now."
 msgstr ""
+"艾丽的一阶段主题曲。\n"
+"\n"
+"一位故人。我常从这般构想中获得启迪: 无名之辈湮没于时光的"
+"微末之躯, 历经沉寂终抵云霄。\n"
+"\n"
+"上回相见时她或是卑微门吏, 然苹果砸落头顶顿悟天机。 "
+"而今她镇守的早已是另一重天门。"
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
@@ -6562,10 +6622,16 @@ msgid ""
 "\n"
 "Elly is a new person now, so an arrange wouldn’t speak the truth."
 msgstr ""
+"艾丽的二阶段主题曲。"
+"\n"
+"世间最令人敬畏的玄奇伟力, 终究非凡胎肉眼所能企及。然确有"
+"天纵奇才之辈, 或已筑就连通此岸与彼岸的通天之桥……\n"
+"\n"
+"艾丽已然升格新人，口中便再无真理。"
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
-msgstr "永恒真理"
+msgstr ""
 
 #: po/extra_strings.c:85
 msgid ""
