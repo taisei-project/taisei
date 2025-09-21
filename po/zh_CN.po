@@ -1309,7 +1309,7 @@ msgid ""
 "Elly and Kurumi got chilled expressions on their faces, falling completely "
 "silent.\n"
 msgstr ""
-"艾丽和胡桃的脸色瞬间变得苍白, 整个人僵住, 陷入了彻底的沉默。"
+"艾丽和胡桃的脸色瞬间变得苍白, 整个人僵住, 陷入了彻底的沉默。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:77
 msgid "Reimu closed her book and sighed."
@@ -1373,167 +1373,188 @@ msgstr ""
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
-msgstr ""
+msgstr "灵梦 (好结局)"
 
 #: src/cutscenes/reimu_good_end.inc.h:8
 msgid "A rival shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "位于妖怪之山山顶的一座竞争对手神社。"
 
 #: src/cutscenes/reimu_good_end.inc.h:12
 msgid ""
 "Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
 msgstr ""
+"听着，早苗，我不知道什么叫「速通」，也完全不在乎！"
 
 #: src/cutscenes/reimu_good_end.inc.h:13
 msgid ""
 "You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
 "as quickly as possible, right?"
 msgstr ""
+"你真是个古板的人啊，灵梦！听好了, 你喜欢尽快解决异变，对吧？"
 
 #: src/cutscenes/reimu_good_end.inc.h:14
 msgid "It’s like that, except with video games!"
-msgstr ""
+msgstr "就像那样，只不过对象换成了电子游戏而已！"
 
 #: src/cutscenes/reimu_good_end.inc.h:15
 msgid "I don’t know anything about ‘video games’, either!"
-msgstr ""
+msgstr "老娘也不知道「电子游戏」是指什么！"
 
 #: src/cutscenes/reimu_good_end.inc.h:19
 msgid ""
 "The Tower had been shut down, ending the crisis of madness sweeping the "
 "land.\n"
 msgstr ""
+"高塔已被关闭，席卷大地的疯狂危机也随之终结。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:20
 msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
 msgstr ""
+"几乎所有人都恢复了正常, 尽管仍有少数奇怪的在哀叹他们失去了所谓的「知识」。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
+"胡桃和艾丽被征去清扫守矢神社的参拜道路, 作为她们所作所为的赎罪。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr ""
+msgstr "当然，偶尔还会收到守矢神社神明们的一些奇怪要求……"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
-msgstr ""
+msgstr "真不敢相信！核聚变真的有这么简单吗？！"
 
 #: src/cutscenes/reimu_good_end.inc.h:27
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
 msgstr ""
+"是、是的，只要调整一下那个系数, 再利用……来塑造磁场约束场就行了——"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
 "Of course! I was such a fool! I can’t believe I ever bothered attempting to "
 "harness the Yatagarasu!"
 msgstr ""
+"啊……我真是个大baka! 我居然还费尽心思去试图驾驭八咫乌, 简直"
+"比那个笨鸟还baka！"
 
 #: src/cutscenes/reimu_good_end.inc.h:29
 msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
+"终于，我掌握了现代化幻想乡的最后关键, 能够防止能源危机波及我们了! "
+"核聚变能源如今已触手可及！"
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
-msgstr ""
+msgstr "啊……天哪，您真的没事吗？"
 
 #: src/cutscenes/reimu_good_end.inc.h:34
 msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
-msgstr ""
+msgstr "呵呵，别担心, 这对神奈子来说已经算是最正常的状态了。"
 
 #: src/cutscenes/reimu_good_end.inc.h:35
 msgid "‘Normal’? Really?"
-msgstr ""
+msgstr "「正常」？你认真的？"
 
 #: src/cutscenes/reimu_good_end.inc.h:36
 msgid ""
 "Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
 "this?"
 msgstr ""
+"神奈子是个绿色能源狂热者, 你不觉得她这样子挺可爱的吗？"
 
 #: src/cutscenes/reimu_good_end.inc.h:40
 msgid ""
 "In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
 "claiming she was ‘keeping watch’."
 msgstr ""
+"在这纷乱之中, 灵梦却越来越多地待在妖怪之山上, 声称自己是在「监视」。"
 
 #: src/cutscenes/reimu_good_end.inc.h:44
 msgid "Hey, Elly."
-msgstr ""
+msgstr "嘿，艾丽。"
 
 #: src/cutscenes/reimu_good_end.inc.h:45
 msgid "Ah, yes? Do you need something from me?"
-msgstr ""
+msgstr "啊，怎么了？你找我有什么事吗？"
 
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
 msgstr ""
+"我倒是有点意外, 你居然没有还在生大家的气, 一点都没有？"
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
-msgstr ""
+msgstr "你之前在上面简直像个辣脆头子一样大吼大叫。"
 
 #: src/cutscenes/reimu_good_end.inc.h:51
 msgid ""
 "It seems that the Tower's influence got to me, in the end. I thought I was "
 "stronger than that, but…"
 msgstr ""
+"看来那座高塔的影响最终还是波及到了我, 我以为自己能更坚强些, 但……"
 
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
 msgstr ""
+"当然, 我对自己世界的幻想乡依然感到悲伤, 但做到那种地步……还是太过分了。"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
-msgstr ""
+msgstr "真是个奇怪的机器, 不知道那些河童会怎么看待它呢。"
 
 #: src/cutscenes/reimu_good_end.inc.h:58
 msgid ""
 "The kappa won’t touch the thing, and even Kanako has talked herself out of "
 "it."
 msgstr ""
+"那些河童根本不敢碰那玩意, 就连神奈子也已经打消了这个念头。"
 
 #: src/cutscenes/reimu_good_end.inc.h:59
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
 msgstr ""
+"不过，竟然会出现来自另一个幻想乡的, 早已被遗忘的妖怪, 这还真是件奇怪的事啊……"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
-msgstr ""
+msgstr "呐算了, 只要它安安静静的别出事就好。"
 
 #: src/cutscenes/reimu_good_end.inc.h:64
 msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
 msgstr ""
+"随着那种令人发狂的感觉消失, 每个人似乎都比平时更加放松, 仿佛"
+"卸下了沉重的负担。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
 "But for some reason, Reimu in particular seemed to have a difficult time "
 "settling down.\n"
-msgstr ""
+msgstr "但不知为何，灵梦似乎特别难以平静下来。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:66
 msgid ""
 "And even as some grew to accept the Tower of Babel looming in the skyline, "
 "there were frequent mutterings over potentially getting rid of it entirely.\n"
 msgstr ""
+"尽管有些人逐渐接受了那座耸立在天际上的巴别塔, 但关于是否应该"
+"彻底将其拆除的议论仍不绝于耳。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
-msgstr ""
+msgstr "不过，除了某位「隙间妖怪」之外, 谁也不知道究竟该如何下手……"
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
