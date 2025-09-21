@@ -3,7 +3,7 @@ stagex_src = files(
     'background_anim.c',
     'draw.c',
     'nonspells/boss_nonspells.c',
-    'spells/trap_representation.c',
+    'spells/stack_smashing.c',
     'spells/fork_bomb.c',
     'spells/infinity_net.c',
     'spells/sierpinski.c',
