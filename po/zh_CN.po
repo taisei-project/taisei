@@ -811,7 +811,7 @@ msgid ""
 "And so, they drank, and caught up on alternate worlds, uncanny timelines, "
 "and the strangeness of their circumstances.\n"
 msgstr ""
-"于是她们一边喝酒, 一边聊起了各自经历的平行世界, 诡异的时间线, 以及眼下这抽象的处境。"
+"于是她们一边喝酒, 一边聊起了各自经历的平行世界, 诡异的时间线, 以及眼下这抽象的处境。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:50
 msgid ""
@@ -1155,26 +1155,27 @@ msgid ""
 "Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
 "with solemn, silent expressions."
 msgstr ""
+"奇怪的是, 蓝和橙也被拖来了, 以庄重而沉默的表情站在紫身后。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr ""
+msgstr "哎呀呀, 你居然也会在竞争对手的神社里消磨时间呢？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
-msgstr ""
+msgstr "我是来站岗执勤的。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:25
 msgid "Hm? Not trusting enough of Ms. Kochiya to—"
-msgstr ""
+msgstr "嗯? 难道你觉得东风谷小姐还不够靠谱, 所以——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:26
 msgid "No."
-msgstr ""
+msgstr "非也。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:30
 msgid "*giggle* I see."
-msgstr ""
+msgstr "(轻笑) 知道啦。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:31
 msgid ""
@@ -1182,171 +1183,193 @@ msgid ""
 "As if on cue, Elly came running up the steps of the Moriya Shrine, "
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
+"\n"
+"仿佛应声而至一般, 艾丽气喘吁吁地跑上了守矢神社的台阶, 身上"
+"还穿着一套神社的巫女服。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
 msgid ""
 "Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
 "meet—"
 msgstr ""
+"博丽小姐！出大事了——啊抱歉, 原来有客人在, 很高兴见到您——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:36
 msgid "Wait, no, there’s no time for that!"
-msgstr ""
+msgstr "等等，不行，现在没时间客套了！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:37
 msgid "Slow down. What’s wrong?"
-msgstr ""
+msgstr "你先冷静点, 到底发生什么事了？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:41
 msgid ""
 "Elly brought out some kind of small communicator device. It projected an "
 "image into the air, like an illusion.\n"
 msgstr ""
+"艾莉掏出一个小型通讯装置, 那设备将一幅影像投射到空中, 宛如幻象一般。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:42
 msgid "It’s the Tower! It’s spinning back up!"
-msgstr ""
+msgstr "是那座塔！它又开始重新运转了！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:43
 msgid "Spinning? It looks completely stationary from here."
-msgstr ""
+msgstr "啥玩意？从这里看它完全静止不动啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:44
 msgid ""
 "No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
 msgstr ""
+"不！我的意思是它正在启动, 开始充能！管它叫什么! 它要重新启动了！！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:48
 msgid "Huh? It thought you were in control of it."
-msgstr ""
+msgstr "啊？我还以为是你在控制它呢。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:49
 msgid ""
 "I am! I was! I should be…! But this device isn’t letting me do anything!"
 msgstr ""
+"本来是这样的！我之前确实在控制它! 我本该能控制的……! 但这个装置"
+"现在完全不听我的指令了！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:50
 msgid ""
 "And I thought about going back to the Tower to turn it off again, but I-… "
 "no, i-it’s not safe to."
 msgstr ""
+"我本想返回高塔再把它关掉, 但……那里现在太危险了, 根本回不去啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:51
 msgid "Eh? Why not?"
-msgstr ""
+msgstr "诶？为什么不行？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:55
 msgid "Hm? What’s all this, then?"
-msgstr ""
+msgstr "嗯？到底发生了什么事啊？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:56
 msgid "Kurumi, the Tower's turning back on!"
-msgstr ""
+msgstr "胡桃，高塔正在重新启动！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:57
 msgid ""
 "Huh?! But all I did was seal off the mansion's main doors, so the fairies "
 "would leave it alone, just like you asked!"
 msgstr ""
+"什么？！但我只是按你要求，封住了宅子的大门, 好让那些妖精别进去"
+"捣乱而已啊！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:58
 msgid "I… what?!"
-msgstr ""
+msgstr "我……什么？！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:62
 msgid ""
 "Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
 "the fairies stop playing inside of it'!"
 msgstr ""
+"你……你留了张纸条给我, 上面写着：“胡桃, 去把宅子的模块封闭起来，"
+"别让妖精们再进去玩了”！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:63
 msgid "So I did!!"
-msgstr ""
+msgstr "所以我才这么做的啊！！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:64
 msgid ""
 "I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
 "I have a hard time with stroke order—"
 msgstr ""
+"我根本没给你留过这种纸条! 这字迹也不是我的! 你明明知道我写字笔顺总是乱的——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:65
 msgid "Okay, excuse me, but what does this have to do with anything?"
-msgstr ""
+msgstr "额，不好意思, 这跟现在的事情到底有什么关系啊？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:69
 msgid "I… I may have stolen it from someone."
-msgstr ""
+msgstr "我……我可能是从别人那里偷来的。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:70
 msgid "That doesn't answer my question."
-msgstr ""
+msgstr "这并没有回答我的问题。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:71
 msgid "She’s… still trapped in there. I thought I'd sealed her away, though!"
-msgstr ""
+msgstr "她……还被困在里面。 可是我以为我已经把她封印住了啊！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:72
 msgid "There’s no way she should've been able to escape that!"
-msgstr ""
+msgstr "她根本不可能从那种封印中逃脱的！"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:76
 msgid ""
 "Elly and Kurumi got chilled expressions on their faces, falling completely "
 "silent.\n"
 msgstr ""
+"艾丽和胡桃的脸色瞬间变得苍白, 整个人僵住, 陷入了彻底的沉默。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:77
 msgid "Reimu closed her book and sighed."
-msgstr ""
+msgstr "灵梦合上书本，叹了口气。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:81
 msgid ""
 "Alright, okay, she’s a big scary monster. I had a feeling something like "
 "this might happen…"
 msgstr ""
+"行了行了, 是个又大又可怕的怪物对吧。我早就有种预感, 可能会出这种事……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:82
 msgid "Before you go, Reimu…"
-msgstr ""
+msgstr "在你走之前，灵梦……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:83
 msgid "Huh? What now? Want to come with?"
-msgstr ""
+msgstr "嗯？怎么了？想一起去吗？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:87
 msgid ""
 "You do care very deeply about Gensōkyō, and everyone within it, don’t you?"
-msgstr ""
+msgstr "你其实非常在乎幻想乡, 以及生活在其中的每一个人, 对吧？"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:88
 msgid ""
 "Even those who fundamenally threaten us. You even give the nastiest yōkai a "
 "chance at redemption."
 msgstr ""
+"即便是那些从根本上威胁着我们的存在, 还是最恶劣的妖怪, 你都愿意"
+"给他们一次赎罪的机会。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:89
 msgid "I admire that in you."
-msgstr ""
+msgstr "我欣赏你这一点。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:93
 msgid "Ehhhh? Why are you being so sincere? It’s freaking me out."
-msgstr ""
+msgstr "诶诶诶……？怎么突然这么认真啊? 搞得我都有点发毛了。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:94
 msgid "Even you think I’m a huge softie, huh? How disappointing…"
-msgstr ""
+msgstr "连你也觉得我是个超级老好人是吧? 真是令人失望啊……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:95
 msgid ""
 "\n"
 "Yukari remained silent, responding only with a gentle smile."
 msgstr ""
+"\n"
+"紫保持沉默，只是轻轻一笑作为回应。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:99
 msgid ""
 "In the distance, the Tower of Babel began to emit a low, eerie rumble, as "
 "Reimu flew off to meet her next challenge…"
 msgstr ""
+"远处，巴别塔开始发出低沉而诡异的轰鸣声, 与此同时, 灵梦"
+"飞身而去, 迎向她下一个挑战……"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
