@@ -16,7 +16,7 @@ extern struct stagex_spells_s {
 	// order of fields affects the visual spellstage number, but not its real internal ID
 
 	struct {
-		AttackInfo trap_representation;
+		AttackInfo stack_smashing;
 		AttackInfo fork_bomb;
 	} midboss;
 
