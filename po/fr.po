@@ -16,6 +16,16 @@ msgstr ""
 msgid "~ Spell Card Attack! ~"
 msgstr "~ Spell Card Attaque! ~"
 
+#: src/boss.c:972
+#, fuzzy
+msgid "Spell Card failed…"
+msgstr "Spell fehlgeschlagen"
+
+#: src/boss.c:972
+#, fuzzy
+msgid "Spell Card captured!"
+msgstr "~ Spell Card Attaque! ~"
+
 #: src/boss.c:982
 msgid "Clear bonus"
 msgstr "Clear-Bonus"
@@ -36,7 +46,7 @@ msgstr "Bonus d'endurance"
 msgid "Diff. multiplier"
 msgstr "Diff. multiplicateur"
 
-#: src/boss.c:988
+#: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
 msgstr "Total"
 
@@ -78,7 +88,12 @@ msgid ""
 "And don't forget to take it easy!"
 msgstr ""
 "*\n"
-"Et n'oubliez pas de vous détendre !"
+"Et n'oubliez pas de vous détendre!"
+
+#: src/cutscenes/cutscene.c:313
+#, c-format
+msgid "“%s”"
+msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -93,8 +108,8 @@ msgid ""
 "Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
 "summer.\n"
 msgstr ""
-"Trois héroïnes de Gensōkyō étaient assises en train de "
-"boire du thé par une journée calme à la fin de l'été.\n"
+"Trois héroïnes de Gensōkyō étaient assises en train de boire du thé par une "
+"journée calme à la fin de l'été.\n"
 
 #: src/cutscenes/intro.inc.h:10
 msgid "There was something unsettling in the air—"
@@ -114,7 +129,9 @@ msgstr ""
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
-msgstr "Le thé est bon. Je me sens juste bizarre. Je n'arrive pas à mettre le doigt dessus."
+msgstr ""
+"Le thé est bon. Je me sens juste bizarre. Je n'arrive pas à mettre le doigt "
+"dessus."
 
 #: src/cutscenes/intro.inc.h:17
 msgid "I’m feeling something similar, I’m afraid."
@@ -122,7 +139,9 @@ msgstr "Je ressens quelque chose de similaire, j'en ai bien peur."
 
 #: src/cutscenes/intro.inc.h:21
 msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
-msgstr "Les cloches du sanctuaire sonnaient à l'extérieur. Quelqu'un avait fait un don.\n"
+msgstr ""
+"Les cloches du sanctuaire sonnaient à l'extérieur. Quelqu'un avait fait un "
+"don.\n"
 
 #: src/cutscenes/intro.inc.h:22
 msgid "A minute later, there was another.\n"
@@ -149,8 +168,8 @@ msgid ""
 "Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
 "after another.\n"
 msgstr ""
-"À l'extérieur du sanctuaire, presque tous les habitants de la montagne "
-"Yōkai étaient alignés les uns derrière les autres.\n"
+"À l'extérieur du sanctuaire, presque tous les habitants de la montagne Yōkai "
+"étaient alignés les uns derrière les autres.\n"
 
 #: src/cutscenes/intro.inc.h:34
 msgid "Everyone seemed vaguely fearful."
@@ -173,8 +192,8 @@ msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
 msgstr ""
-"Une force mystérieuse poussait lentement les yōkai et les humains "
-"à succomber à un intense sentiment de ”tout savoir”.\n"
+"Une force mystérieuse poussait lentement les yōkai et les humains à "
+"succomber à un intense sentiment de ”tout savoir”.\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -182,26 +201,25 @@ msgid ""
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
 msgstr ""
-"Il commencerait par résoudre les problèmes triviaux auxquels "
-"ils étaient confrontés : un problème technique avec une machine ou trouver "
-"le titre parfait pour un article de journal.\n"
+"Il commencerait par résoudre les problèmes triviaux auxquels ils étaient "
+"confrontés : un problème technique avec une machine ou trouver le titre "
+"parfait pour un article de journal.\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
 msgstr ""
-"Mais au fur et à mesure que cela progressait, "
-"ils en étaient devenus complètement fascinés, "
-"incapables d'agir rationnellement.\n"
+"Mais au fur et à mesure que cela progressait, ils en étaient devenus "
+"complètement fascinés, incapables d'agir rationnellement.\n"
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
 "Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
 "she had been carried away into madness."
 msgstr ""
-"La montagne Yōkai était généralement protégée par la prêtresse du sanctuaire Moriya, "
-"mais même elle avait été emportée par la folie."
+"La montagne Yōkai était généralement protégée par la prêtresse du sanctuaire "
+"Moriya, mais même elle avait été emportée par la folie."
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
@@ -210,14 +228,15 @@ msgstr "Sanae ne cesse de parler de ’consoles de jeux vidéo’."
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
 msgstr ""
-"Hein ? Comme ces jouets que l'on branche à la télévision, "
-"ceux que l'on trouve chez Kōrindō ?"
+"Hein ? Comme ces jouets que l'on branche à la télévision, ceux que l'on "
+"trouve chez Kōrindō ?"
 
 #: src/cutscenes/intro.inc.h:53
 msgid ""
 "Right, but she just won’t stop. I’ve seen her excited, but not like this."
 msgstr ""
-"Oui, mais elle n'arrête pas. Je l'ai déjà vue enthousiaste, mais pas à ce point."
+"Oui, mais elle n'arrête pas. Je l'ai déjà vue enthousiaste, mais pas à ce "
+"point."
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
@@ -232,8 +251,8 @@ msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
 msgstr ""
-"Je n'ai pas pu m'empêcher d'entendre votre conversation. "
-"D'après mon intuition et ce que vous avez décrit, la réponse est évidente."
+"Je n'ai pas pu m'empêcher d'entendre votre conversation. D'après mon "
+"intuition et ce que vous avez décrit, la réponse est évidente."
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
@@ -245,17 +264,16 @@ msgid ""
 "in all directions from a singular point, given how indiscriminate it is."
 msgstr ""
 "Une entité présente sur le mont Yōkai émet une puissante folie surnaturelle, "
-"probablement dans toutes les directions à partir d'un point unique, "
-" étant donné son caractère aveugle."
+"probablement dans toutes les directions à partir d'un point unique,  étant "
+"donné son caractère aveugle."
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
 msgstr ""
-"Trop de connaissances d'un seul coup..."
-"mm, mm, cela peut potentiellement être fatal, "
-"au moins pour ceux qui ont l'esprit faible."
+"Trop de connaissances d'un seul coup...mm, mm, cela peut potentiellement "
+"être fatal, au moins pour ceux qui ont l'esprit faible."
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
@@ -266,15 +284,16 @@ msgid ""
 "A-ah, n-no, you all know the lay of the land better, a-after all, and with "
 "it being such a dire situation—"
 msgstr ""
-"A-ah, n-non, vous connaissez tous mieux la situation, après tout, "
-"et vu que c'est une situation si grave…"
+"A-ah, n-non, vous connaissez tous mieux la situation, après tout, et vu que "
+"c'est une situation si grave…"
 
 #: src/cutscenes/intro.inc.h:71
 msgid ""
 "Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
 "the Moriya Gods.\n"
 msgstr ""
-"Yōmu fut distrait à la vue de Dame Yuyuko qui jetait un œil derrière les dieux Moriya.\n"
+"Yōmu fut distrait à la vue de Dame Yuyuko qui jetait un œil derrière les "
+"dieux Moriya.\n"
 
 #: src/cutscenes/intro.inc.h:72
 msgid "Lady Yuyuko, why are you—?"
@@ -285,9 +304,9 @@ msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
 msgstr ""
-"Les esprits semblent également attirés par la montagne Yōkai, "
-"comme s'ils aspiraient à quelque chose. "
-"Il devient de plus en plus difficile de les apaiser tous…"
+"Les esprits semblent également attirés par la montagne Yōkai, comme s'ils "
+"aspiraient à quelque chose. Il devient de plus en plus difficile de les "
+"apaiser tous…"
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
@@ -302,24 +321,24 @@ msgid ""
 "Elsewhere at the shrine, the kappa were all huddled into a group, talking "
 "intensely in hushed tones…\n"
 msgstr ""
-"Ailleurs dans le sanctuaire, les kappa étaient tous regroupés, "
-"discutant intensément à voix basse…"
+"Ailleurs dans le sanctuaire, les kappa étaient tous regroupés, discutant "
+"intensément à voix basse…\n"
 
 #: src/cutscenes/intro.inc.h:80
 msgid ""
 "And the tengu were furiously scribbling on their notepads, as if they’d just "
 "gotten the scoop of their careers.\n"
 msgstr ""
-"Et les tengu griffonnaient furieusement sur leurs blocs-notes, "
-"comme s'ils venaient de décrocher le scoop de leur carrière.\n"
+"Et les tengu griffonnaient furieusement sur leurs blocs-notes, comme s'ils "
+"venaient de décrocher le scoop de leur carrière.\n"
 
 #: src/cutscenes/intro.inc.h:81
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
-"Même ici, loin de la montagne Yōkai, les effets de ce qu'on appelle "
-"la ’folie surnaturelle’ semblaient toucher tout le monde…"
+"Même ici, loin de la montagne Yōkai, les effets de ce qu'on appelle la "
+"’folie surnaturelle’ semblaient toucher tout le monde…"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
@@ -351,8 +370,8 @@ msgid ""
 "Yes, but I doubt they’ll be of much use. That machine is beyond that subject "
 "entirely."
 msgstr ""
-"Oui, mais je doute qu'ils soient d'une grande utilité."
-"Cette machine est complètement hors sujet."
+"Oui, mais je doute qu'ils soient d'une grande utilité.Cette machine est "
+"complètement hors sujet."
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
@@ -371,8 +390,9 @@ msgid ""
 "It’s so irritatin’! I thought I solved everything but now that Tower’s just "
 "sittin’ there, ‘n the whole Mountain’s been quarantined…!"
 msgstr ""
-"C'est tellement énervant ! Je pensais avoir tout réglé, mais maintenant Tower"
-"est juste assis là, alors que toute la montagne a été mise en quarantaine…!"
+"C'est tellement énervant ! Je pensais avoir tout réglé, mais maintenant "
+"Towerest juste assis là, alors que toute la montagne a été mise en "
+"quarantaine…!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:22
 msgid "It just ain’t satisfyin’, y’know?"
@@ -403,24 +423,24 @@ msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
 msgstr ""
-"Après avoir pris le thé avec eux, Marisa a déambulé entre les rayons, "
-"à la recherche d'inspiration.\n"
+"Après avoir pris le thé avec eux, Marisa a déambulé entre les rayons, à la "
+"recherche d'inspiration.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
 "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
 "flat on her face.\n"
 msgstr ""
-"Soudain, elle eut l'impression d'avoir marché dans un nid-de-poule, "
-"trébucha et tomba à plat ventre.\n"
+"Soudain, elle eut l'impression d'avoir marché dans un nid-de-poule, trébucha "
+"et tomba à plat ventre.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:36
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
 msgstr ""
-"Quand elle regarda à nouveau le sol, "
-"elle ne vit rien d'autre que les rangées parfaitement organisées d'étagères immaculées.\n"
+"Quand elle regarda à nouveau le sol, elle ne vit rien d'autre que les "
+"rangées parfaitement organisées d'étagères immaculées.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
@@ -431,16 +451,16 @@ msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
 msgstr ""
-"Au bout d'un certain temps, elle comprit qu'il s'agissait d'une sorte ‘d'appareil intelligent‘, "
-"comme un ordinateur de poche."
+"Au bout d'un certain temps, elle comprit qu'il s'agissait d'une sorte "
+"‘d'appareil intelligent‘, comme un ordinateur de poche.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
 msgstr ""
-"Celui-ci était bien plus avancé que tous ceux qu'elle avait vus dans le monde extérieur, "
-"y compris celui du jeune occultiste.\n"
+"Celui-ci était bien plus avancé que tous ceux qu'elle avait vus dans le "
+"monde extérieur, y compris celui du jeune occultiste.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
@@ -448,30 +468,41 @@ msgid ""
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
 msgstr ""
-"Il se comportait à la fois comme un solide et un liquide, "
-"capable de changer rapidement de forme en appliquant une pression sur certains côtés, "
-"pour prendre différentes formes : un téléphone, un livre, "
-"une machine à écrire numérique avec un clavier…\n"
+"Il se comportait à la fois comme un solide et un liquide, capable de changer "
+"rapidement de forme en appliquant une pression sur certains côtés, pour "
+"prendre différentes formes : un téléphone, un livre, une machine à écrire "
+"numérique avec un clavier…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
 "Once Marisa worked out how to make it display something, the title of a book "
 "appeared on its dim screen…"
 msgstr ""
-"Une fois que Marisa eut compris comment faire apparaître quelque chose à l'écran, "
-"le titre d'un livre s'afficha sur son écran sombre…"
+"Une fois que Marisa eut compris comment faire apparaître quelque chose à "
+"l'écran, le titre d'un livre s'afficha sur son écran sombre…"
 
 #: src/cutscenes/marisa_bad_end.inc.h:48
 msgid ""
 "Practical & Advanced Computational Applications of the Grand Unified Theory\n"
 "\n"
 msgstr ""
-"Applications pratiques et avancées de la théorie de la grande unification en informatique\n"
+"Applications pratiques et avancées de la théorie de la grande unification en "
+"informatique\n"
 "\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:49
 msgid "— by Usami Renko"
 msgstr "— par Usami Renko"
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "— Bad End —"
+msgstr ""
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "Try to reach the end without using a Continue!"
+msgstr ""
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
@@ -491,7 +522,9 @@ msgstr "Ils vont bien, ils vont bien! Regarde-la, elle est mignonne, non?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:14
 msgid "Sure, but… you said you knew them, from another world?"
-msgstr "Bien sûr, mais… tu as dit que tu les connaissais, qu'ils venaient d'un autre monde?"
+msgstr ""
+"Bien sûr, mais… tu as dit que tu les connaissais, qu'ils venaient d'un autre "
+"monde?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:15
 msgid "Well, another me knew another them in another world."
@@ -503,9 +536,9 @@ msgid ""
 "infinity, folding onto ourselves, kinda like a really incredible katana "
 "gettin’ forged. It was intense!"
 msgstr ""
-"En fait, j'ai vu toutes les itérations possibles de moi-même, s'étendant à l'infini, "
-"se repliant sur elles-mêmes, un peu comme un katana vraiment incroyable "
-"en cours de forgeage. C'était intense!"
+"En fait, j'ai vu toutes les itérations possibles de moi-même, s'étendant à "
+"l'infini, se repliant sur elles-mêmes, un peu comme un katana vraiment "
+"incroyable en cours de forgeage. C'était intense!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:20
 msgid "It’s just like you to accidentally see the Time Knife…"
@@ -521,7 +554,7 @@ msgid ""
 "Tower of Babel.\n"
 msgstr ""
 "Marisa venait juste de finir d'accompagner Kurumi pour faire un peu de "
-"’service’ sur la Tour de Babel."
+"’service’ sur la Tour de Babel.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:26
 msgid ""
@@ -529,8 +562,9 @@ msgid ""
 "amongst themselves off to the side of the library, laughing cheerfully over… "
 "tea?\n"
 msgstr ""
-"Kurumi et Remilia, la maîtresse du manoir, bavardaient bruyamment "
-"entre elles à l'écart de la bibliothèque, riant joyeusement autour d'une tasse de thé.\n"
+"Kurumi et Remilia, la maîtresse du manoir, bavardaient bruyamment entre "
+"elles à l'écart de la bibliothèque, riant joyeusement autour d'une tasse de "
+"thé.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:27
 msgid "Marisa hoped it was tea, at least."
@@ -544,15 +578,16 @@ msgstr "Ah, ça fait tellement plaisir d'avoir un nouveau visage par ici!"
 msgid ""
 "Yeah! It was so boring being around that egghead pseudo-gami all the time."
 msgstr ""
-"Oui! C'était tellement ennuyeux d'être tout le temps avec ce pseudo-gami à tête d'œuf."
+"Oui! C'était tellement ennuyeux d'être tout le temps avec ce pseudo-gami à "
+"tête d'œuf."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:33
 msgid ""
 "And my younger sister is a tad too reclusive to spend much time with me, "
 "these days…"
 msgstr ""
-"Et ma petite sœur est un peu trop solitaire pour passer beaucoup "
-"de temps avec moi ces derniers temps…"
+"Et ma petite sœur est un peu trop solitaire pour passer beaucoup de temps "
+"avec moi ces derniers temps…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:34
 msgid "Perhaps we could go out on the town sometime soon?"
@@ -568,7 +603,8 @@ msgstr "Oh oui, quelques-uns, mais tu dois garder ça secret pour l'instant…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:40
 msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
-msgstr "Hé, je suis là! Pas question de comploter pour manger des humains, compris?!"
+msgstr ""
+"Hé, je suis là! Pas question de comploter pour manger des humains, compris?!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:41
 msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
@@ -609,20 +645,22 @@ msgid ""
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
 "\n"
-"Le manoir se mit à trembler violemment, comme si ses fondations mêmes étaient ébranlées, "
-"avant de s'arrêter aussi soudainement qu'il avait commencé.\n"
+"Le manoir se mit à trembler violemment, comme si ses fondations mêmes "
+"étaient ébranlées, avant de s'arrêter aussi soudainement qu'il avait "
+"commencé.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
 "Before the dust had a chance to settle, an eerie, long siren began blaring "
 "in the distance outside the mansion."
 msgstr ""
-"Avant même que la poussière ait eu le temps de retomber, "
-"une sirène sinistre et interminable se mit à retentir au loin, à l'extérieur du manoir."
+"Avant même que la poussière ait eu le temps de retomber, une sirène sinistre "
+"et interminable se mit à retentir au loin, à l'extérieur du manoir."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:62
 msgid "Huh?! That’s one of the sirens I had the kappa set up!"
-msgstr "Hein?! C'est l'une des sirènes que j'avais fait installer par les kappa!"
+msgstr ""
+"Hein?! C'est l'une des sirènes que j'avais fait installer par les kappa!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:63
 msgid "Sirens?"
@@ -630,7 +668,8 @@ msgstr "Sirènes?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:64
 msgid "Yeah, to monitor the Tower of Babel in case anything changed."
-msgstr "Oui, pour surveiller la Tour de Babel au cas où quelque chose changerait."
+msgstr ""
+"Oui, pour surveiller la Tour de Babel au cas où quelque chose changerait."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:65
 msgid "Ah heck, and I guess that means…"
@@ -645,16 +684,16 @@ msgid ""
 "Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To "
 "keep the fairies out?"
 msgstr ""
-"Hé, personne ne t'accuse de quoi que ce soit. Tout ce que tu as fait, "
-"c'est fermer une porte, n'est-ce pas? Pour empêcher les fées d'entrer?"
+"Hé, personne ne t'accuse de quoi que ce soit. Tout ce que tu as fait, c'est "
+"fermer une porte, n'est-ce pas? Pour empêcher les fées d'entrer?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:71
 msgid ""
 "Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
 "opens'?"
 msgstr ""
-"O-oui ! Mais... mais c'est peut-être comme dans cette expression? "
-"« Une porte se ferme, une autre s'ouvre »?"
+"O-oui ! Mais... mais c'est peut-être comme dans cette expression? « Une "
+"porte se ferme, une autre s'ouvre »?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:72
 msgid "What do ya mean?"
@@ -673,8 +712,8 @@ msgid ""
 "Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
 "up. We’ll just go back, get the kappa, and—"
 msgstr ""
-"Allez, crache le morceau. On ne t'en voudra pas si tu as fait une erreur. "
-"On va juste retourner chercher le kappa, et..."
+"Allez, crache le morceau. On ne t'en voudra pas si tu as fait une erreur. On "
+"va juste retourner chercher le kappa, et..."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
@@ -689,8 +728,8 @@ msgid ""
 "But, uh, you know, there might be a really powerful enemy there now? So "
 "please be careful???"
 msgstr ""
-"Mais, euh, tu sais, il y a peut-être un ennemi très puissant là-bas maintenant? "
-"Alors fais attention, s'il te plaît???"
+"Mais, euh, tu sais, il y a peut-être un ennemi très puissant là-bas "
+"maintenant? Alors fais attention, s'il te plaît???"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:88
 msgid "Aw, are ya worried about me? That’s cute."
@@ -701,15 +740,16 @@ msgid ""
 "Marisa grinned and magically summoned her broom, mounting it deftly, and "
 "shooting right out of an open window in a flash.\n"
 msgstr ""
-"Marisa sourit et fit apparaître son balai par magie, "
-"s'y installa habilement et s'envola en un éclair par la fenêtre ouverte.\n"
+"Marisa sourit et fit apparaître son balai par magie, s'y installa habilement "
+"et s'envola en un éclair par la fenêtre ouverte.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:93
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
 msgstr ""
-"Son regard était fixé sur la tour qui se dressait et grondait au sommet de la montagne Yōkai..."
+"Son regard était fixé sur la tour qui se dressait et grondait au sommet de "
+"la montagne Yōkai..."
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
@@ -720,18 +760,21 @@ msgid "— The Moriya Shrine\n"
 msgstr "— Le sanctuaire Moriya\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:8
-msgid "A workaholic shrine at the top of of Yōkai Mountain."
+#: src/cutscenes/reimu_extra_intro.inc.h:8
+msgid "A workaholic shrine at the top of Yōkai Mountain."
 msgstr "Un sanctuaire dédié aux bourreaux de travail au sommet du mont Yōkai."
 
 #: src/cutscenes/marisa_good_end.inc.h:12
 msgid ""
 "Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"
 msgstr ""
-"Une fois vaincus, les nouveaux venus ont accepté de désactiver leur ’tour de Babel’.\n"
+"Une fois vaincus, les nouveaux venus ont accepté de désactiver leur ’tour de "
+"Babel’.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
-msgstr "Elly et Kurumi ont été obligées de récurer les sols du sanctuaire Moriya…\n"
+msgstr ""
+"Elly et Kurumi ont été obligées de récurer les sols du sanctuaire Moriya…\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:14
 msgid ""
@@ -748,9 +791,9 @@ msgid ""
 "vector processing capabilities. Combined with other improvements, such as "
 "its DVD drive—"
 msgstr ""
-"—qui était équipé d'un tout nouveau coprocesseur mathématique, "
-"lui conférant des capacités avancées de traitement vectoriel. "
-"Associé à d'autres améliorations, telles que son lecteur DVD—"
+"—qui était équipé d'un tout nouveau coprocesseur mathématique, lui conférant "
+"des capacités avancées de traitement vectoriel. Associé à d'autres "
+"améliorations, telles que son lecteur DVD—"
 
 #: src/cutscenes/marisa_good_end.inc.h:19
 msgid "Ah, I see. Fascinating. Wow. Incredible."
@@ -769,8 +812,9 @@ msgid ""
 "Seems like it’s taking a bit more time for the madness to wear off for her. "
 "How’s all that ‘knowledge’ working out for you, newcomer?"
 msgstr ""
-"On dirait que ça prend un peu plus de temps pour que la folie s'estompe chez elle. "
-"Comment ça marche pour toi, toute cette ’connaissance’, la nouvelle venue?"
+"On dirait que ça prend un peu plus de temps pour que la folie s'estompe chez "
+"elle. Comment ça marche pour toi, toute cette ’connaissance’, la nouvelle "
+"venue?"
 
 #: src/cutscenes/marisa_good_end.inc.h:26
 msgid ""
@@ -793,16 +837,16 @@ msgid ""
 "In the end, the newcomers seemed to calm down once the effects of the Tower "
 "had worn off, just like everyone else in Gensōkyō.\n"
 msgstr ""
-"Finalement, les nouveaux arrivants semblaient s'être calmés une fois "
-"que les effets de la Tour se furent dissipés, tout comme tout le monde à Gensōkyō.\n"
+"Finalement, les nouveaux arrivants semblaient s'être calmés une fois que les "
+"effets de la Tour se furent dissipés, tout comme tout le monde à Gensōkyō.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:32
 msgid ""
 "During an early afternoon, Marisa arrived with a picnic basket and a grin on "
 "her face."
 msgstr ""
-"En début d'après-midi, Marisa est arrivée avec un panier de pique-nique "
-"et un grand sourire."
+"En début d'après-midi, Marisa est arrivée avec un panier de pique-nique et "
+"un grand sourire."
 
 #: src/cutscenes/marisa_good_end.inc.h:36
 msgid "Ah, Ms. Kirisame. Hello again."
@@ -841,25 +885,24 @@ msgid ""
 "And so, they drank, and caught up on alternate worlds, uncanny timelines, "
 "and the strangeness of their circumstances.\n"
 msgstr ""
-"Et ainsi, ils burent, discutèrent de mondes parallèles, "
-"de chronologies étranges et de l'étrangeté de leur situation.\n"
+"Et ainsi, ils burent, discutèrent de mondes parallèles, de chronologies "
+"étranges et de l'étrangeté de leur situation.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:50
 msgid ""
 "I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. "
 "Don’t ya know about Isaac Newton?"
 msgstr ""
-"Je veux dire, bien sûr que tu as perdu. "
-"Les mathématiques ont toujours eu un faible pour la magie. "
-"Tu ne connais pas Isaac Newton?"
+"Je veux dire, bien sûr que tu as perdu. Les mathématiques ont toujours eu un "
+"faible pour la magie. Tu ne connais pas Isaac Newton?"
 
 #: src/cutscenes/marisa_good_end.inc.h:51
 msgid ""
 "The famous European mathematician? I studied his works, yes. But what about "
 "him?"
 msgstr ""
-"Le célèbre mathématicien européen ? J'ai étudié ses travaux, oui. "
-"Mais qu'en est-il de lui ?"
+"Le célèbre mathématicien européen ? J'ai étudié ses travaux, oui. Mais qu'en "
+"est-il de lui ?"
 
 #: src/cutscenes/marisa_good_end.inc.h:52
 msgid "He was an Alchemist!"
@@ -895,8 +938,8 @@ msgstr ""
 msgid ""
 "Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
 msgstr ""
-"Oh, remontez-vous le moral, d'accord ? "
-"Vous pourrez vous détendre ici aussi longtemps que vous le souhaitez."
+"Oh, remontez-vous le moral, d'accord ? Vous pourrez vous détendre ici aussi "
+"longtemps que vous le souhaitez."
 
 #: src/cutscenes/marisa_good_end.inc.h:65
 msgid "But what if this Gensōkyō collapses, too…?"
@@ -907,8 +950,8 @@ msgid ""
 "It could! The Hakurei Barrier could fall tomorrow! But what’s the point in "
 "worryin’ about all that?"
 msgstr ""
-"C'est possible! La barrière Hakurei pourrait tomber demain! "
-"Mais à quoi bon s'inquiéter pour ça?"
+"C'est possible! La barrière Hakurei pourrait tomber demain! Mais à quoi bon "
+"s'inquiéter pour ça?"
 
 #: src/cutscenes/marisa_good_end.inc.h:67
 msgid "Right now, I say we enjoy what we got!"
@@ -928,8 +971,7 @@ msgstr "Oh, c'est facile. Les champignons!"
 
 #: src/cutscenes/marisa_good_end.inc.h:74
 msgid "Mush… rooms? As in, mycelium?"
-msgstr ""
-"Champi… gnons ? Comme dans le mycélium ?"
+msgstr "Champi… gnons ? Comme dans le mycélium ?"
 
 #: src/cutscenes/marisa_good_end.inc.h:78
 msgid ""
@@ -937,7 +979,8 @@ msgid ""
 "a cave near the one-armed hermit’s house…"
 msgstr ""
 "Oui ! Il y a quelque temps, j'en ai préparé quelques-uns particulièrement "
-"puissants que j'ai trouvés dans une grotte près de la maison de l'ermite manchot…"
+"puissants que j'ai trouvés dans une grotte près de la maison de l'ermite "
+"manchot…"
 
 #: src/cutscenes/marisa_good_end.inc.h:79
 msgid "And then, BOOM, there was a small explosion!"
@@ -948,9 +991,8 @@ msgid ""
 "Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My "
 "lives were flashin’ before my eyes!"
 msgstr ""
-"Avant même de m'en rendre compte, "
-"je voyais toutes sortes de ‘versions‘ de moi-même apparaître. "
-"Ma vie défilait sous mes yeux!"
+"Avant même de m'en rendre compte, je voyais toutes sortes de ‘versions‘ de "
+"moi-même apparaître. Ma vie défilait sous mes yeux!"
 
 #: src/cutscenes/marisa_good_end.inc.h:81
 msgid ""
@@ -958,7 +1000,8 @@ msgid ""
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
 msgstr ""
 "Bref, ça m'a pris un peu de temps, mais je me suis souvenu de cette vampire, "
-"Kurumi, et quand je t'ai vue, je me suis dit: ‘Waouh, vraiment?! Pour de vrai?!’"
+"Kurumi, et quand je t'ai vue, je me suis dit: ‘Waouh, vraiment?! Pour de "
+"vrai?!’"
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
@@ -966,15 +1009,17 @@ msgstr "C'est ridicule. Tu es ridicule."
 
 #: src/cutscenes/marisa_good_end.inc.h:86
 msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
-msgstr "Mais je suppose que dans un endroit comme Gensōkyō, ce n'est même pas si étrange…"
+msgstr ""
+"Mais je suppose que dans un endroit comme Gensōkyō, ce n'est même pas si "
+"étrange…"
 
 #: src/cutscenes/marisa_good_end.inc.h:87
 msgid ""
 "… and you were such a child when I met you. It’s odd to see you all grown "
 "up, even if it’s another you entirely."
 msgstr ""
-"… et tu étais encore un enfant quand je t'ai rencontré. "
-"C'est étrange de te voir devenu adulte, même si c'est un tout autre toi."
+"… et tu étais encore un enfant quand je t'ai rencontré. C'est étrange de te "
+"voir devenu adulte, même si c'est un tout autre toi."
 
 #: src/cutscenes/marisa_good_end.inc.h:88
 msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
@@ -985,23 +1030,34 @@ msgid ""
 "Many residents of Gensōkyō wondered if the Tower would be a blight on the "
 "skyline for all eternity.\n"
 msgstr ""
-"De nombreux habitants de Gensōkyō se demandaient si la Tour allait "
-"défigurer le paysage urbain pour l'éternité.\n"
+"De nombreux habitants de Gensōkyō se demandaient si la Tour allait défigurer "
+"le paysage urbain pour l'éternité.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:93
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
 msgstr ""
-"D'autres se sont demandé si son pouvoir pouvait être exploité pour servir le bien commun.\n"
+"D'autres se sont demandé si son pouvoir pouvait être exploité pour servir le "
+"bien commun.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
 "But for the guardians of Gensōkyō, they would need to be vigilant, lest it "
 "suddenly spring to life again…"
 msgstr ""
-"Mais les gardiens de Gensōkyō devaient rester vigilants, "
-"de peur qu'il ne reprenne soudainement vie…"
+"Mais les gardiens de Gensōkyō devaient rester vigilants, de peur qu'il ne "
+"reprenne soudainement vie…"
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "— Good End —"
+msgstr ""
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "The Extra Stage is not ready yet, sorry! ^_^'"
+msgstr ""
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
@@ -1011,19 +1067,22 @@ msgstr "Reimu (Bad Ending)"
 msgid ""
 "The Tower had powered down, yet the instigators were nowhere to be found.\n"
 msgstr ""
-"La Tour avait été mise hors tension, mais les instigateurs étaient introuvables.\n"
+"La Tour avait été mise hors tension, mais les instigateurs étaient "
+"introuvables.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
-msgstr "Reimu retourna à son sanctuaire, sans savoir si elle avait accompli quoi que ce soit.\n"
+msgstr ""
+"Reimu retourna à son sanctuaire, sans savoir si elle avait accompli quoi que "
+"ce soit.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:11
 msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
 msgstr ""
-"Les dieux et les yōkai de la montagne se déplaçaient silencieusement "
-"dans le sanctuaire, retenant leur souffle.\n"
+"Les dieux et les yōkai de la montagne se déplaçaient silencieusement dans le "
+"sanctuaire, retenant leur souffle.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
@@ -1034,8 +1093,8 @@ msgid ""
 "Listen up! I stopped the spread of madness, but until further notice, Yōkai "
 "Mountain is off limits!"
 msgstr ""
-"Écoutez bien! J'ai stoppé la propagation de la folie, "
-"mais jusqu'à nouvel ordre, la montagne Yōkai est interdite d'accès!"
+"Écoutez bien! J'ai stoppé la propagation de la folie, mais jusqu'à nouvel "
+"ordre, la montagne Yōkai est interdite d'accès!"
 
 #: src/cutscenes/reimu_bad_end.inc.h:20
 msgid "Nobody was pleased with that.\n"
@@ -1050,33 +1109,33 @@ msgid ""
 "The kappa demanded that they be able to fetch their equipment, and tend to "
 "their hydroponic cucumber farms.\n"
 msgstr ""
-"Les kappa ont exigé de pouvoir récupérer leur équipement "
-"et s'occuper de leurs cultures hydroponiques de concombres.\n"
+"Les kappa ont exigé de pouvoir récupérer leur équipement et s'occuper de "
+"leurs cultures hydroponiques de concombres.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
 "The tengu furiously scribbled down notes, once again as if they’d had the "
 "scoop of the century, before also beginning to make their own demands.\n"
 msgstr ""
-"Les tengu griffonnèrent furieusement des notes, une fois de plus comme "
-"s'ils avaient obtenu le scoop du siècle, avant de commencer à formuler "
-"leurs propres exigences.\n"
+"Les tengu griffonnèrent furieusement des notes, une fois de plus comme s'ils "
+"avaient obtenu le scoop du siècle, avant de commencer à formuler leurs "
+"propres exigences.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:27
 msgid ""
 "Once Reimu had managed to placate the crowd, she sat in the back of the "
 "Hakurei Shrine, bottle of sake in hand.\n"
 msgstr ""
-"Une fois que Reimu eut réussi à calmer la foule, "
-"elle s'assit à l'arrière du sanctuaire Hakurei, une bouteille de saké à la main.\n"
+"Une fois que Reimu eut réussi à calmer la foule, elle s'assit à l'arrière du "
+"sanctuaire Hakurei, une bouteille de saké à la main.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:28
 msgid ""
 "She didn’t feel like drinking, however. She cradled it without even "
 "uncorking it, sighing to herself."
 msgstr ""
-"Elle n'avait cependant pas envie de boire. "
-"Elle le berça sans même le déboucher, soupirant pour elle-même."
+"Elle n'avait cependant pas envie de boire. Elle le berça sans même le "
+"déboucher, soupirant pour elle-même."
 
 #: src/cutscenes/reimu_bad_end.inc.h:32
 msgid "Oh my, a little dissatisfied, aren’t we?"
@@ -1095,8 +1154,8 @@ msgstr ""
 #: src/cutscenes/reimu_bad_end.inc.h:34
 msgid "It’s unlike you to stop until everything is business as usual, Reimu."
 msgstr ""
-"Ce n'est pas ton genre de t'arrêter tant que tout n'est pas revenu "
-"à la normale, Reimu."
+"Ce n'est pas ton genre de t'arrêter tant que tout n'est pas revenu à la "
+"normale, Reimu."
 
 #: src/cutscenes/reimu_bad_end.inc.h:35
 msgid "Depressed?"
@@ -1123,8 +1182,8 @@ msgid ""
 "Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
 "feel frustrated and… lonely?"
 msgstr ""
-"Quelle que soit cette ‘folie’, elle m'affectait moi aussi. "
-"Elle me rendait frustrée et… solitaire ?"
+"Quelle que soit cette ‘folie’, elle m'affectait moi aussi. Elle me rendait "
+"frustrée et… solitaire ?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
@@ -1139,8 +1198,8 @@ msgid ""
 "Find a way to get rid of it, eventually. I’m sure there’s an answer "
 "somewhere out there…"
 msgstr ""
-"Trouvez un moyen de vous en débarrasser, tôt ou tard. "
-"Je suis sûr qu'il existe une solution quelque part…"
+"Trouvez un moyen de vous en débarrasser, tôt ou tard. Je suis sûr qu'il "
+"existe une solution quelque part…"
 
 #: src/cutscenes/reimu_bad_end.inc.h:53
 msgid ""
@@ -1164,25 +1223,21 @@ msgstr "Reimu (Extra Stage Intro)"
 msgid "— The Moriya Shrine"
 msgstr "— Le sanctuaire Moriya"
 
-#: src/cutscenes/reimu_extra_intro.inc.h:8
-msgid "A workaholic shrine at the top of Yōkai Mountain."
-msgstr "Un sanctuaire dédié aux bourreaux de travail au sommet du mont Yōkai."
-
 #: src/cutscenes/reimu_extra_intro.inc.h:12
 msgid ""
 "Reimu was reading a book she'd borrowed from the Human Village’s book rental "
 "store, Suzunaan."
 msgstr ""
-"Reimu lisait un livre qu'elle avait emprunté à la librairie Suzunaan du village humain."
+"Reimu lisait un livre qu'elle avait emprunté à la librairie Suzunaan du "
+"village humain."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:13
 msgid ""
 "It was her first ‘science fiction’ series, apparently about a flat, circular "
 "world that floated through space on the backs of four turtles…"
 msgstr ""
-"C'était sa première série de ‘science-fiction’, "
-"apparemment sur un monde plat et circulaire qui flottait dans "
-"l'espace sur le dos de quatre tortues…"
+"C'était sa première série de ‘science-fiction’, apparemment sur un monde "
+"plat et circulaire qui flottait dans l'espace sur le dos de quatre tortues…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:17
 msgid "Suddenly, Yukari slid in through one of her gaps."
@@ -1197,8 +1252,8 @@ msgid ""
 "Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
 "with solemn, silent expressions."
 msgstr ""
-"De manière inattendue, Ran et Chen étaient également présents, "
-"prenant place derrière elle avec des expressions solennelles et silencieuses."
+"De manière inattendue, Ran et Chen étaient également présents, prenant place "
+"derrière elle avec des expressions solennelles et silencieuses."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
@@ -1227,16 +1282,17 @@ msgid ""
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
 "\n"
-"Comme si c’était prévu, Elly monta en courant les marches du Sanctuaire Moriya, "
-"à bout de souffle, vêtue d’un uniforme de prêtresse du sanctuaire Moriya.\n"
+"Comme si c’était prévu, Elly monta en courant les marches du Sanctuaire "
+"Moriya, à bout de souffle, vêtue d’un uniforme de prêtresse du sanctuaire "
+"Moriya.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
 msgid ""
 "Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
 "meet—"
 msgstr ""
-"Mlle Hakurei! Il y a eu- Oh, mes excuses, nous avons une invitée. Enchantée de "
-"rencontr—"
+"Mlle Hakurei! Il y a eu- Oh, mes excuses, nous avons une invitée. Enchantée "
+"de rencontr—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:36
 msgid "Wait, no, there’s no time for that!"
@@ -1266,8 +1322,8 @@ msgstr "Tourner? D’ici, elle a l’air complètement immobile."
 msgid ""
 "No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
 msgstr ""
-"Non! Je veux dire qu’elle se rallume, qu’elle se recharge! Peu importe! Elle se "
-"réactive!!"
+"Non! Je veux dire qu’elle se rallume, qu’elle se recharge! Peu importe! Elle "
+"se réactive!!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:48
 msgid "Huh? It thought you were in control of it."
@@ -1277,8 +1333,8 @@ msgstr "Hein? Je croyais que tu la contrôlais."
 msgid ""
 "I am! I was! I should be…! But this device isn’t letting me do anything!"
 msgstr ""
-"Je le suis! Je l’étais! Je devrais l’être…! Mais cet appareil ne me laisse rien "
-"faire!"
+"Je le suis! Je l’étais! Je devrais l’être…! Mais cet appareil ne me laisse "
+"rien faire!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:50
 msgid ""
@@ -1305,8 +1361,9 @@ msgid ""
 "Huh?! But all I did was seal off the mansion's main doors, so the fairies "
 "would leave it alone, just like you asked!"
 msgstr ""
-"Hein?! Mais tout ce que j’ai fait, c’est sceller les portes principales du manoir, "
-"pour que les fées le laissent tranquille, exactement comme tu l’as demandé!"
+"Hein?! Mais tout ce que j’ai fait, c’est sceller les portes principales du "
+"manoir, pour que les fées le laissent tranquille, exactement comme tu l’as "
+"demandé!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:58
 msgid "I… what?!"
@@ -1317,8 +1374,8 @@ msgid ""
 "Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
 "the fairies stop playing inside of it'!"
 msgstr ""
-"Tu-tu m’as laissé une note qui disait: «Kurumi, va fermer le module du manoir "
-"pour que les fées arrêtent d’y jouer»!"
+"Tu-tu m’as laissé une note qui disait: «Kurumi, va fermer le module du "
+"manoir pour que les fées arrêtent d’y jouer»!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:63
 msgid "So I did!!"
@@ -1329,8 +1386,8 @@ msgid ""
 "I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
 "I have a hard time with stroke order—"
 msgstr ""
-"Je ne t’ai laissé aucune note pareille! Ce n’est même pas mon écriture! Tu *sais* "
-"que j’ai du mal avec l’ordre des traits—"
+"Je ne t’ai laissé aucune note pareille! Ce n’est même pas mon écriture! Tu "
+"*sais* que j’ai du mal avec l’ordre des traits—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:65
 msgid "Okay, excuse me, but what does this have to do with anything?"
@@ -1346,7 +1403,8 @@ msgstr "Ça ne répond pas à ma question."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:71
 msgid "She’s… still trapped in there. I thought I'd sealed her away, though!"
-msgstr "Elle est… encore piégée là-dedans. Pourtant je croyais l’avoir scellée!"
+msgstr ""
+"Elle est… encore piégée là-dedans. Pourtant je croyais l’avoir scellée!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:72
 msgid "There’s no way she should've been able to escape that!"
@@ -1357,7 +1415,8 @@ msgid ""
 "Elly and Kurumi got chilled expressions on their faces, falling completely "
 "silent.\n"
 msgstr ""
-"Elly et Kurumi prirent une expression glacée, tombant dans un silence complet.\n"
+"Elly et Kurumi prirent une expression glacée, tombant dans un silence "
+"complet.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:77
 msgid "Reimu closed her book and sighed."
@@ -1368,8 +1427,8 @@ msgid ""
 "Alright, okay, she’s a big scary monster. I had a feeling something like "
 "this might happen…"
 msgstr ""
-"D’accord, très bien, c’est un gros monstre effrayant. J’avais le pressentiment "
-"que quelque chose comme ça arriverait…"
+"D’accord, très bien, c’est un gros monstre effrayant. J’avais le "
+"pressentiment que quelque chose comme ça arriverait…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:82
 msgid "Before you go, Reimu…"
@@ -1403,7 +1462,8 @@ msgstr "Ehhhh? Pourquoi tu es si sincère? Ça me fout les jetons."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:94
 msgid "Even you think I’m a huge softie, huh? How disappointing…"
-msgstr "Même toi tu penses que je suis une énorme gentille, hein? Quelle déception…"
+msgstr ""
+"Même toi tu penses que je suis une énorme gentille, hein? Quelle déception…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:95
 msgid ""
@@ -1433,7 +1493,8 @@ msgstr "Un sanctuaire rival au sommet de la Montagne Yōkai."
 msgid ""
 "Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
 msgstr ""
-"Écoute, Sanae, je ne sais pas ce qu’est un ‘speedrun’, et je m’en fiche complètement!"
+"Écoute, Sanae, je ne sais pas ce qu’est un ‘speedrun’, et je m’en fiche "
+"complètement!"
 
 #: src/cutscenes/reimu_good_end.inc.h:13
 msgid ""
@@ -1464,32 +1525,35 @@ msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
 msgstr ""
-"Presque tout le monde était revenu à la normale, bien que quelques âmes étranges "
-"se lamentaient d’avoir perdu leur ‘savoir’.\n"
+"Presque tout le monde était revenu à la normale, bien que quelques âmes "
+"étranges se lamentaient d’avoir perdu leur ‘savoir’.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
-"Kurumi et Elly avaient été réquisitionnées pour balayer les sentiers du Sanctuaire "
-"Moriya en guise de pénitence pour leurs actes.\n"
+"Kurumi et Elly avaient été réquisitionnées pour balayer les sentiers du "
+"Sanctuaire Moriya en guise de pénitence pour leurs actes.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr "Avec, bien sûr, les demandes étranges occasionnelles des dieux du Sanctuaire Moriya…"
+msgstr ""
+"Avec, bien sûr, les demandes étranges occasionnelles des dieux du Sanctuaire "
+"Moriya…"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
-msgstr "Je n’arrive pas à y croire! La fusion nucléaire est vraiment aussi simple?!"
+msgstr ""
+"Je n’arrive pas à y croire! La fusion nucléaire est vraiment aussi simple?!"
 
 #: src/cutscenes/reimu_good_end.inc.h:27
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
 msgstr ""
-"O-oui, il suffit de changer ce coefficient-là, et de modeler le champ de confinement "
-"magnétique en utilisant—"
+"O-oui, il suffit de changer ce coefficient-là, et de modeler le champ de "
+"confinement magnétique en utilisant—"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
@@ -1504,8 +1568,8 @@ msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
-"Enfin, j’ai la clé finale pour moderniser Gensōkyō et empêcher la crise énergétique "
-"de nous atteindre! L’énergie de fusion est désormais accessible!"
+"Enfin, j’ai la clé finale pour moderniser Gensōkyō et empêcher la crise "
+"énergétique de nous atteindre! L’énergie de fusion est désormais accessible!"
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
@@ -1513,7 +1577,8 @@ msgstr "O-oh mon dieu… êtes-vous sûre d’aller bien, madame?"
 
 #: src/cutscenes/reimu_good_end.inc.h:34
 msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
-msgstr "Heh heh, ne t’inquiète pas, c’est aussi normal que possible pour Kanako."
+msgstr ""
+"Heh heh, ne t’inquiète pas, c’est aussi normal que possible pour Kanako."
 
 #: src/cutscenes/reimu_good_end.inc.h:35
 msgid "‘Normal’? Really?"
@@ -1524,16 +1589,16 @@ msgid ""
 "Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
 "this?"
 msgstr ""
-"Kanako est une fanatique des énergies vertes. Tu ne trouves pas qu’elle est mignonne "
-"quand elle est comme ça?"
+"Kanako est une fanatique des énergies vertes. Tu ne trouves pas qu’elle est "
+"mignonne quand elle est comme ça?"
 
 #: src/cutscenes/reimu_good_end.inc.h:40
 msgid ""
 "In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
 "claiming she was ‘keeping watch’."
 msgstr ""
-"Au milieu de tout ça, Reimu passait plus de temps sur la Montagne Yōkai, affirmant "
-"qu’elle ‘montait la garde’."
+"Au milieu de tout ça, Reimu passait plus de temps sur la Montagne Yōkai, "
+"affirmant qu’elle ‘montait la garde’."
 
 #: src/cutscenes/reimu_good_end.inc.h:44
 msgid "Hey, Elly."
@@ -1546,7 +1611,9 @@ msgstr "Ah, oui? Tu as besoin de quelque chose de moi?"
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
-msgstr "Je suis surprise que tu ne sois plus fâchée contre tout le monde. Même pas un peu."
+msgstr ""
+"Je suis surprise que tu ne sois plus fâchée contre tout le monde. Même pas "
+"un peu."
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
@@ -1557,12 +1624,14 @@ msgid ""
 "It seems that the Tower's influence got to me, in the end. I thought I was "
 "stronger than that, but…"
 msgstr ""
-"Il semble que l’influence de la Tour m’ait atteinte, finalement. Je pensais être "
-"plus forte que ça, mais…"
+"Il semble que l’influence de la Tour m’ait atteinte, finalement. Je pensais "
+"être plus forte que ça, mais…"
 
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
-msgstr "Bien sûr, je suis toujours triste pour mon propre Gensōkyō, mais aller jusque-là…"
+msgstr ""
+"Bien sûr, je suis toujours triste pour mon propre Gensōkyō, mais aller "
+"jusque-là…"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
@@ -1573,12 +1642,15 @@ msgid ""
 "The kappa won’t touch the thing, and even Kanako has talked herself out of "
 "it."
 msgstr ""
-"Les kappa ne veulent pas y toucher, et même Kanako s’est convaincue de l’abandonner."
+"Les kappa ne veulent pas y toucher, et même Kanako s’est convaincue de "
+"l’abandonner."
 
 #: src/cutscenes/reimu_good_end.inc.h:59
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
-msgstr "Quand même, c’est étrange qu’il y ait eu des yōkai oubliés d’un autre Gensōkyō…"
+msgstr ""
+"Quand même, c’est étrange qu’il y ait eu des yōkai oubliés d’un autre "
+"Gensōkyō…"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
@@ -1589,8 +1661,8 @@ msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
 msgstr ""
-"Avec la disparition des sentiments de folie, tout le monde semblait plus détendu "
-"que d’habitude, comme si un fardeau leur avait été enlevé.\n"
+"Avec la disparition des sentiments de folie, tout le monde semblait plus "
+"détendu que d’habitude, comme si un fardeau leur avait été enlevé.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
@@ -1605,15 +1677,16 @@ msgid ""
 "And even as some grew to accept the Tower of Babel looming in the skyline, "
 "there were frequent mutterings over potentially getting rid of it entirely.\n"
 msgstr ""
-"Et même si certains en venaient à accepter la Tour de Babel dominant l’horizon, "
-"il y avait de fréquentes rumeurs sur la possibilité de s’en débarrasser complètement.\n"
+"Et même si certains en venaient à accepter la Tour de Babel dominant "
+"l’horizon, il y avait de fréquentes rumeurs sur la possibilité de s’en "
+"débarrasser complètement.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
 msgstr ""
-"Bien que personne n’avait la moindre idée de comment, "
-"sauf peut-être une certaine ‘yōkai des failles’…"
+"Bien que personne n’avait la moindre idée de comment, sauf peut-être une "
+"certaine ‘yōkai des failles’…"
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
@@ -1684,6 +1757,7 @@ msgstr "— Tour de Babel"
 #: src/cutscenes/youmu_bad_end.inc.h:8
 msgid "The infernal machine from another world."
 msgstr "La machine infernal d'un autre monde."
+
 #: src/cutscenes/youmu_bad_end.inc.h:12
 msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
 msgstr "Au pied de la Tour qui s’imposait désormais sur l’horizon de Gensōkyō…"
@@ -1693,8 +1767,8 @@ msgid ""
 "…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, "
 "stood over a makeshift grave, praying.\n"
 msgstr ""
-"…la plus grande épéiste de Gensōkyō et de l’Autre-Monde, Konpaku Yōmu, "
-"se tenait au-dessus d’une tombe de fortune, en prière.\n"
+"…la plus grande épéiste de Gensōkyō et de l’Autre-Monde, Konpaku Yōmu, se "
+"tenait au-dessus d’une tombe de fortune, en prière.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:14
 msgid ""
@@ -1710,7 +1784,8 @@ msgstr "Dis-moi encore… elle a simplement disparu ? En plein air ?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:19
 msgid "Yes. One moment she was there, and the next, she was not."
-msgstr "Oui. Un instant elle était là, et l’instant d’après, elle ne l’était plus."
+msgstr ""
+"Oui. Un instant elle était là, et l’instant d’après, elle ne l’était plus."
 
 #: src/cutscenes/youmu_bad_end.inc.h:20
 msgid ""
@@ -1740,8 +1815,8 @@ msgid ""
 "That woman, Elly… we knew each other for such a short time, yet her passion "
 "and fury affected me so deeply."
 msgstr ""
-"Cette femme, Elly… nous nous connaissions depuis si peu de temps, et pourtant "
-"sa passion et sa fureur m’ont profondément affectée."
+"Cette femme, Elly… nous nous connaissions depuis si peu de temps, et "
+"pourtant sa passion et sa fureur m’ont profondément affectée."
 
 #: src/cutscenes/youmu_bad_end.inc.h:27
 msgid ""
@@ -1756,8 +1831,8 @@ msgid ""
 "I doubt she has truly died, then… ah, but all this ‘parallel universes’ "
 "stuff is beyond me, hehehe."
 msgstr ""
-"Je doute qu’elle soit vraiment morte, alors… ah, mais tout ce truc des ‘"
-"univers parallèles’ me dépasse, hehehe."
+"Je doute qu’elle soit vraiment morte, alors… ah, mais tout ce truc des "
+"‘univers parallèles’ me dépasse, hehehe."
 
 #: src/cutscenes/youmu_bad_end.inc.h:32
 msgid ""
@@ -1785,7 +1860,9 @@ msgstr ""
 
 #: src/cutscenes/youmu_bad_end.inc.h:38
 msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
-msgstr "Merci d’avoir accepté la demande étrange de votre humble serviteur, Dame Yuyuko."
+msgstr ""
+"Merci d’avoir accepté la demande étrange de votre humble serviteur, Dame "
+"Yuyuko."
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
@@ -1813,9 +1890,9 @@ msgid ""
 "(From A Safe Distance)’ festival, to encourage human and yōkai tourism after "
 "everyone had been scared off by the Tower.\n"
 msgstr ""
-"Les kappa de la Montagne des Yōkai organisaient un festival intitulé ‘Regardez "
-"la Tour Incroyable (de loin)’, pour encourager le tourisme humain et yōkai "
-"après que tout le monde ait été effrayé par la Tour.\n"
+"Les kappa de la Montagne des Yōkai organisaient un festival intitulé "
+"‘Regardez la Tour Incroyable (de loin)’, pour encourager le tourisme humain "
+"et yōkai après que tout le monde ait été effrayé par la Tour.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:47
 msgid "Although, Yōmu found it difficult to enjoy herself, of course.\n"
@@ -1847,8 +1924,8 @@ msgid ""
 "The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
 "between the sakura trees of the ethereal realm.\n"
 msgstr ""
-"Les maîtres d’épée, Konpaku Yōmu et Elly, se livraient à un duel crépusculaire "
-"entre les cerisiers de l’autre-réalité.\n"
+"Les maîtres d’épée, Konpaku Yōmu et Elly, se livraient à un duel "
+"crépusculaire entre les cerisiers de l’autre-réalité.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:13
 msgid ""
@@ -1867,8 +1944,8 @@ msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
 msgstr ""
-"Pendant leur gaieté, il y eut une interruption, Elly sortant un petit appareil "
-"de la poche de sa robe.\n"
+"Pendant leur gaieté, il y eut une interruption, Elly sortant un petit "
+"appareil de la poche de sa robe.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
@@ -1911,8 +1988,8 @@ msgid ""
 "The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
 "Tower from."
 msgstr ""
-"Celle qui m’a sauvée, mais qui m’a aussi manipulée. Celle que j’ai… ‘libérée’ "
-"de la Tour."
+"Celle qui m’a sauvée, mais qui m’a aussi manipulée. Celle que j’ai… "
+"‘libérée’ de la Tour."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:37
 msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
@@ -1935,8 +2012,8 @@ msgid ""
 "… she’s freed herself from her prison, and she no doubt intends to finish "
 "what she started."
 msgstr ""
-"… elle s’est libérée de sa prison, et il ne fait aucun doute qu’elle a l’intention "
-"de finir ce qu’elle a commencé."
+"… elle s’est libérée de sa prison, et il ne fait aucun doute qu’elle a "
+"l’intention de finir ce qu’elle a commencé."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:41
 msgid "I see. Then it appears we no longer possess the luxury of time."
@@ -1959,8 +2036,8 @@ msgid ""
 "I’m worried the machine will influence me again! I can’t put you at risk "
 "again, and I can’t go with you!"
 msgstr ""
-"Je crains que la machine ne m’influence à nouveau ! Je ne peux pas te mettre en "
-"danger encore une fois, et je ne peux pas venir avec toi !"
+"Je crains que la machine ne m’influence à nouveau ! Je ne peux pas te mettre "
+"en danger encore une fois, et je ne peux pas venir avec toi !"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:49
 msgid "Please forgive me, Yōmu!"
@@ -1979,16 +2056,16 @@ msgid ""
 "Yes, of course. There’s a time and place to face one’s fears. This is not "
 "your time or place, even somewhat literally."
 msgstr ""
-"Oui, bien sûr. Il y a un moment et un endroit pour affronter ses peurs. Ce n’est "
-"pas ton moment ni ton endroit, même littéralement."
+"Oui, bien sûr. Il y a un moment et un endroit pour affronter ses peurs. Ce "
+"n’est pas ton moment ni ton endroit, même littéralement."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:56
 msgid ""
 "However, don’t think you've gotten off so easily. When I return, it shall be "
 "your turn to pay for dinner. Understand?"
 msgstr ""
-"Cependant, ne pense pas que tu t’en sortes si facilement. Quand je reviendrai, "
-"ce sera ton tour de payer le dîner. Compris ?"
+"Cependant, ne pense pas que tu t’en sortes si facilement. Quand je "
+"reviendrai, ce sera ton tour de payer le dîner. Compris ?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:60
 msgid "Elly couldn’t help but laugh, despite her fears.\n"
@@ -2000,9 +2077,9 @@ msgid ""
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
 msgstr ""
-"Après avoir dit au revoir à Elly et à Dame Yuyuko, Yōmu retourna à Gensōkyō, et "
-"se dirigea vers la Tour infernale, alors qu’elle commençait à trembler et à "
-"grogner de malheur imminent…"
+"Après avoir dit au revoir à Elly et à Dame Yuyuko, Yōmu retourna à Gensōkyō, "
+"et se dirigea vers la Tour infernale, alors qu’elle commençait à trembler et "
+"à grogner de malheur imminent…"
 
 #: src/cutscenes/youmu_good_end.inc.h:2
 msgid "Yōmu (Good Ending)"
@@ -2016,32 +2093,32 @@ msgstr "Un sanctuaire digne au sommet de la Montagne des Yōkai."
 msgid ""
 "Atop the Mountain, the Tower of Babel stood silently, as if a sleeping giant."
 msgstr ""
-"Au sommet de la Montagne, la Tour de Babel se dressait silencieusement, comme "
-"un géant endormi."
+"Au sommet de la Montagne, la Tour de Babel se dressait silencieusement, "
+"comme un géant endormi."
 
 #: src/cutscenes/youmu_good_end.inc.h:13
 msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
-"En dessous, au sanctuaire pas si humble de Moriya, deux maîtres d’épée échangeaient "
-"les techniques de leur art…"
+"En dessous, au sanctuaire pas si humble de Moriya, deux maîtres d’épée "
+"échangeaient les techniques de leur art…"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
 "I’m sure you’re aware that the classic scythe was used by farmers, and was "
 "sometimes repurposed as a makeshift weapon—"
 msgstr ""
-"Je suis sûr que tu sais que la faux classique était utilisée par les paysans, "
-"et était parfois transformée en une arme de fortune—"
+"Je suis sûr que tu sais que la faux classique était utilisée par les "
+"paysans, et était parfois transformée en une arme de fortune—"
 
 #: src/cutscenes/youmu_good_end.inc.h:18
 msgid ""
 "Yes, of course. Some of the finest martial arts evolved from the practices "
 "of common folk—"
 msgstr ""
-"Oui, bien sûr. Certaines des meilleures arts martiaux sont nées des pratiques "
-"des gens du commun—"
+"Oui, bien sûr. Certaines des meilleures arts martiaux sont nées des "
+"pratiques des gens du commun—"
 
 #: src/cutscenes/youmu_good_end.inc.h:22
 msgid ""
@@ -2056,8 +2133,8 @@ msgid ""
 "Their dispositions softened considerably, and they apologized profusely for "
 "what they had tried to do.\n"
 msgstr ""
-"Leurs attitudes se radoucirent considérablement, et elles s’excusèrent abondamment "
-"pour ce qu’elles avaient essayé de faire.\n"
+"Leurs attitudes se radoucirent considérablement, et elles s’excusèrent "
+"abondamment pour ce qu’elles avaient essayé de faire.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:24
 msgid ""
@@ -2080,8 +2157,8 @@ msgid ""
 "Mostly, a lot smaller. Practically barren compared to this one. It felt more "
 "like a road-side food stand."
 msgstr ""
-"Principalement, il était bien plus petit. Pratiquement désert comparé à celui-ci. "
-"Il ressemblait davantage à un stand de nourriture en bord de route."
+"Principalement, il était bien plus petit. Pratiquement désert comparé à "
+"celui-ci. Il ressemblait davantage à un stand de nourriture en bord de route."
 
 #: src/cutscenes/youmu_good_end.inc.h:31
 msgid "Hmm, fascinating…"
@@ -2091,7 +2168,8 @@ msgstr "Hmm, fascinant…"
 msgid ""
 "I know I said this before, but I still feel like a fool after everything."
 msgstr ""
-"Je sais que je l’ai déjà dit, mais je me sens toujours comme une idiote après tout ce qui s’est passé."
+"Je sais que je l’ai déjà dit, mais je me sens toujours comme une idiote "
+"après tout ce qui s’est passé."
 
 #: src/cutscenes/youmu_good_end.inc.h:36
 msgid "I was miserable about my home, but to go that far…"
@@ -2099,14 +2177,16 @@ msgstr "J’étais misérable à propos de chez moi, mais en arriver là…"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
-msgstr "Il semble que celle qui a été la plus submergée par la folie, c’est moi."
+msgstr ""
+"Il semble que celle qui a été la plus submergée par la folie, c’est moi."
 
 #: src/cutscenes/youmu_good_end.inc.h:38
 msgid ""
 "I know everyone here accepted my apology, but I’m still truly sorry for what "
 "I did."
 msgstr ""
-"Je sais que tout le monde ici a accepté mes excuses, mais je suis toujours vraiment désolée pour ce que j’ai fait."
+"Je sais que tout le monde ici a accepté mes excuses, mais je suis toujours "
+"vraiment désolée pour ce que j’ai fait."
 
 #: src/cutscenes/youmu_good_end.inc.h:42
 msgid "Your pain was legitimate, even if your expression of it was not."
@@ -2116,23 +2196,24 @@ msgstr "Ta douleur était légitime, même si son expression ne l’était pas."
 msgid ""
 "Now that you've recognized that, you are welcome here, like anyone else."
 msgstr ""
-"Maintenant que tu l’as reconnu, tu es la bienvenue ici, comme n’importe qui d’autre."
+"Maintenant que tu l’as reconnu, tu es la bienvenue ici, comme n’importe qui "
+"d’autre."
 
 #: src/cutscenes/youmu_good_end.inc.h:44
 msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
 msgstr ""
-"Demain, à condition que Dame Yuyuko n’ait pas d’affaires pour moi, j’aimerais "
-"te montrer ce que le Pays des Morts et Gensōkyō ont à offrir !"
+"Demain, à condition que Dame Yuyuko n’ait pas d’affaires pour moi, "
+"j’aimerais te montrer ce que le Pays des Morts et Gensōkyō ont à offrir !"
 
 #: src/cutscenes/youmu_good_end.inc.h:45
 msgid ""
 "Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
 "generous, so it shall be my treat!"
 msgstr ""
-"Peut-être pourrions-nous même visiter un ramen shop populaire pas loin. Je me sens "
-"généreuse, ce sera donc ma tournée !"
+"Peut-être pourrions-nous même visiter un ramen shop populaire pas loin. Je "
+"me sens généreuse, ce sera donc ma tournée !"
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
@@ -2147,14 +2228,15 @@ msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
-"J’espère que la prêtresse aux cheveux verts ne va pas encore me bassiner avec "
-"ses technologies de divertissement obsolètes…"
+"J’espère que la prêtresse aux cheveux verts ne va pas encore me bassiner "
+"avec ses technologies de divertissement obsolètes…"
 
 #: src/cutscenes/youmu_good_end.inc.h:52
 msgid ""
 "I commend you for complying with your penance, despite its… cruel hardships."
 msgstr ""
-"Je te félicite d’avoir respecté ta pénitence, malgré ses… cruelles difficultés."
+"Je te félicite d’avoir respecté ta pénitence, malgré ses… cruelles "
+"difficultés."
 
 #: src/cutscenes/youmu_good_end.inc.h:53
 msgid ""
@@ -2169,40 +2251,42 @@ msgid ""
 "The two blademasters had become practically inseparable in an incredibly "
 "short time.\n"
 msgstr ""
-"Les deux maîtres d’épée étaient devenues pratiquement inséparables en un temps "
-"incroyablement court.\n"
+"Les deux maîtres d’épée étaient devenues pratiquement inséparables en un "
+"temps incroyablement court.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:58
 msgid ""
 "As they spent many evenings dueling, practicing, and drinking merrily, many "
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
-"Alors qu’elles passaient de nombreuses soirées à s’affronter, s’entraîner et boire joyeusement, "
-"beaucoup de gens commentaient à quel point ils n’avaient jamais vu Yōmu aussi enthousiaste."
+"Alors qu’elles passaient de nombreuses soirées à s’affronter, s’entraîner et "
+"boire joyeusement, beaucoup de gens commentaient à quel point ils n’avaient "
+"jamais vu Yōmu aussi enthousiaste."
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
 "Despite the incident being resolved, nobody had figured out how to remove "
 "the Tower, and most were too anxious to even think about it.\n"
 msgstr ""
-"Bien que l’incident fût résolu, personne n’avait trouvé comment retirer la Tour, et la plupart étaient trop "
-"anxieux pour même y penser.\n"
+"Bien que l’incident fût résolu, personne n’avait trouvé comment retirer la "
+"Tour, et la plupart étaient trop anxieux pour même y penser.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:63
 msgid ""
 "And with its lingering, menacing visage blighting the skyline, many wondered "
 "if the Tower was truly inert and harmless.\n"
 msgstr ""
-"Et avec son apparence menaçante persistante souillant l’horizon, beaucoup se demandaient "
-"si la Tour était vraiment inerte et inoffensive.\n"
+"Et avec son apparence menaçante persistante souillant l’horizon, beaucoup se "
+"demandaient si la Tour était vraiment inerte et inoffensive.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:64
 msgid ""
 "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion "
 "discussed details of an ancient future’s past…"
 msgstr ""
-"Pendant ce temps, dans le Pays des Morts, une certaine yōkai de l’écart et son compagnon fantomatique "
-"discutaient des détails d’un passé d’un futur ancien…"
+"Pendant ce temps, dans le Pays des Morts, une certaine yōkai de l’écart et "
+"son compagnon fantomatique discutaient des détails d’un passé d’un futur "
+"ancien…"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:91
 #: src/stages/stage1/cirno.c:27
@@ -4886,7 +4970,7 @@ msgid "Lunatic"
 msgstr "Lunatique"
 
 #: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1347
+#: src/menu/options.c:1350
 msgid "Unknown"
 msgstr "Inconnu"
 
@@ -4910,9 +4994,9 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:812
-#: src/menu/options.c:876 src/menu/options.c:1020 src/menu/options.c:1129
-#: src/menu/options.c:1209 src/menu/replayview.c:471
+#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:815
+#: src/menu/options.c:879 src/menu/options.c:1023 src/menu/options.c:1132
+#: src/menu/options.c:1212 src/menu/replayview.c:471
 #: src/menu/spellpractice.c:67
 msgid "Back"
 msgstr "Retour"
@@ -5460,7 +5544,7 @@ msgid "Game Paused"
 msgstr "Jeu En Pause"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1135
+#: src/menu/options.c:1138
 msgid "Options"
 msgstr "Options"
 
@@ -5568,301 +5652,354 @@ msgstr "Auf Werkseinstellungen zurücksetzen?"
 msgid "Reset all settings to the last saved values?"
 msgstr "Alle Einstellungen auf zuletzt gespeicherte Werte setzen?"
 
-#: src/menu/options.c:701
+#: src/menu/options.c:577 src/menu/options.c:768
+#, fuzzy
+msgid "on"
+msgstr "Bas"
+
+#: src/menu/options.c:578 src/menu/options.c:769
+msgid "off"
+msgstr ""
+
+#: src/menu/options.c:704
 msgid "Yes"
 msgstr "Ja"
 
-#: src/menu/options.c:702
+#: src/menu/options.c:705
 msgid "No"
 msgstr "Nein"
 
-#: src/menu/options.c:730
+#: src/menu/options.c:733
 msgid "Video Options"
 msgstr "Videooptionen"
 
-#: src/menu/options.c:733
+#: src/menu/options.c:736
 msgid "Fullscreen"
 msgstr "Vollbild"
 
-#: src/menu/options.c:738
+#: src/menu/options.c:741
 msgid "Display"
 msgstr "Anzeige"
 
-#: src/menu/options.c:742
+#: src/menu/options.c:745
 msgid "Window size"
 msgstr "Fenstergröße"
 
-#: src/menu/options.c:747
+#: src/menu/options.c:750
 msgid "Renderer resolution"
 msgstr "Darstellungsauflösung"
 
-#: src/menu/options.c:752
+#: src/menu/options.c:755
 msgid "Resizable window"
 msgstr "Skalierbares Fenster"
 
-#: src/menu/options.c:759
+#: src/menu/options.c:762
 msgid "Pause the game when not focused"
 msgstr "Spiel pausieren wenn unfokussiert"
 
-#: src/menu/options.c:763
+#: src/menu/options.c:766
 msgid "Vertical synchronization"
 msgstr "Vertikale Synchronisation"
 
 #: src/menu/options.c:772
+msgid "adaptive"
+msgstr ""
+
+#: src/menu/options.c:775
 msgid "Skip frames"
 msgstr "Frames überspringen"
 
-#: src/menu/options.c:780
+#: src/menu/options.c:783
 msgid "Overall rendering quality"
 msgstr "Allgemeine Darstellungsqualität"
 
-#: src/menu/options.c:784
+#: src/menu/options.c:787
 msgid "Draw background"
 msgstr "Hintergrund darstellen"
 
-#: src/menu/options.c:788
+#: src/menu/options.c:791
 msgid "Background rendering quality"
 msgstr "Hintegrundqualität"
 
-#: src/menu/options.c:795
+#: src/menu/options.c:798
 msgid "Anti-aliasing"
 msgstr "Kantenglättung"
 
 #: src/menu/options.c:800
+msgid "none"
+msgstr ""
+
+#: src/menu/options.c:801
+msgid "fxaa"
+msgstr ""
+
+#: src/menu/options.c:803
 msgid "Particle effects"
 msgstr "Partikeleffekte"
 
-#: src/menu/options.c:805
+#: src/menu/options.c:805 src/menu/options.c:810
+msgid "minimal"
+msgstr ""
+
+#: src/menu/options.c:806 src/menu/options.c:812
+msgid "full"
+msgstr ""
+
+#: src/menu/options.c:808
 msgid "Postprocessing effects"
 msgstr "Postprocessing-Effekte"
 
-#: src/menu/options.c:833
+#: src/menu/options.c:811
+msgid "fast"
+msgstr ""
+
+#: src/menu/options.c:836
 msgid "Gamepad Controls"
 msgstr "Gamepad Steuerung"
 
-#: src/menu/options.c:835 src/menu/options.c:1028
+#: src/menu/options.c:838 src/menu/options.c:1031
 msgid "Move up"
 msgstr "Hoch"
 
-#: src/menu/options.c:839 src/menu/options.c:1032
+#: src/menu/options.c:842 src/menu/options.c:1035
 msgid "Move down"
 msgstr "Runter"
 
-#: src/menu/options.c:843 src/menu/options.c:1036
+#: src/menu/options.c:846 src/menu/options.c:1039
 msgid "Move left"
 msgstr "Nach links"
 
-#: src/menu/options.c:847 src/menu/options.c:1040
+#: src/menu/options.c:850 src/menu/options.c:1043
 msgid "Move right"
 msgstr "Nach rechts"
 
-#: src/menu/options.c:853 src/menu/options.c:1046
+#: src/menu/options.c:856 src/menu/options.c:1049
 msgid "Shoot"
 msgstr "Schießen"
 
-#: src/menu/options.c:857 src/menu/options.c:1050
+#: src/menu/options.c:860 src/menu/options.c:1053
 msgid "Focus"
 msgstr "Fokus"
 
-#: src/menu/options.c:861 src/menu/options.c:1054
+#: src/menu/options.c:864 src/menu/options.c:1057
 msgid "Use Spell Card"
 msgstr "Spell-Card benutzen"
 
-#: src/menu/options.c:865 src/menu/options.c:1058
+#: src/menu/options.c:868 src/menu/options.c:1061
 msgid "Power Surge / Discharge"
 msgstr ""
 
-#: src/menu/options.c:871 src/menu/options.c:1072
+#: src/menu/options.c:874 src/menu/options.c:1075
 msgid "Skip dialog"
 msgstr "Dialog überspringen"
 
-#: src/menu/options.c:949
+#: src/menu/options.c:952
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr "Drücke einen Gamepad-Button, um den Joystick Testmodus zu verlassen"
 
-#: src/menu/options.c:952
+#: src/menu/options.c:955
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "Drücke %s auf dem Gamepad um Joystick Testmodus zu aktivieren"
 
-#: src/menu/options.c:965
+#: src/menu/options.c:968
 msgid "Gamepad Options"
 msgstr "Gamepad-Optionen"
 
-#: src/menu/options.c:976
+#: src/menu/options.c:979
 msgid "Enable Gamepad/Joystick support"
 msgstr "Gamepad/Joystick-Unterstützung aktivieren"
 
-#: src/menu/options.c:980
+#: src/menu/options.c:983
 msgid "Device"
 msgstr "Gerät"
 
-#: src/menu/options.c:986 src/menu/options.c:1197
+#: src/menu/options.c:989 src/menu/options.c:1200
 msgid "Customize controls…"
 msgstr "Steuerung konfigurieren…"
 
-#: src/menu/options.c:990
+#: src/menu/options.c:993
 msgid "Remap square input into circular"
 msgstr "Quadratische Eingabe auf Kreiseingabe abbilden"
 
-#: src/menu/options.c:996
+#: src/menu/options.c:999
 msgid "Direction snap factor"
 msgstr "Richtungseinrastungsfaktor"
 
-#: src/menu/options.c:1000
+#: src/menu/options.c:1003
 msgid "Diagonal bias"
 msgstr "Diagonales Bias"
 
-#: src/menu/options.c:1007
+#: src/menu/options.c:1010
 msgid "Dead zone"
 msgstr "Tote Zone"
 
-#: src/menu/options.c:1011
+#: src/menu/options.c:1014
 msgid "Maximum zone"
 msgstr "Maximale Zone"
 
-#: src/menu/options.c:1015
+#: src/menu/options.c:1018
 msgid "Sensitivity"
 msgstr "Empfindlichkeit"
 
-#: src/menu/options.c:1026
+#: src/menu/options.c:1029
 msgid "Controls"
 msgstr "Kontrollen"
 
-#: src/menu/options.c:1064
+#: src/menu/options.c:1067
 msgid "Toggle fullscreen"
 msgstr "Vollbild umschalten"
 
-#: src/menu/options.c:1068
+#: src/menu/options.c:1071
 msgid "Take a screenshot"
 msgstr "Bildschirmschnappschuss"
 
-#: src/menu/options.c:1078
+#: src/menu/options.c:1081
 msgid "Toggle audio"
 msgstr "Audio umschalten"
 
-#: src/menu/options.c:1084
+#: src/menu/options.c:1087
 msgid "Stop the game immediately"
 msgstr "Spiel sofort beenden"
 
-#: src/menu/options.c:1088
+#: src/menu/options.c:1091
 msgid "Restart the game immediately"
 msgstr "Spiel sofort neustarten"
 
-#: src/menu/options.c:1092
+#: src/menu/options.c:1095
 msgid "Quick save"
 msgstr "Schnellspeichern"
 
-#: src/menu/options.c:1096
+#: src/menu/options.c:1099
 msgid "Quick load"
 msgstr "Schnellladen"
 
-#: src/menu/options.c:1103
+#: src/menu/options.c:1106
 msgid "Toggle God mode"
 msgstr "Gottmodus umschalten"
 
-#: src/menu/options.c:1107
+#: src/menu/options.c:1110
 msgid "Skip stage"
 msgstr "Stage überspringen"
 
-#: src/menu/options.c:1111
+#: src/menu/options.c:1114
 msgid "Power up"
 msgstr "Power erhöhen"
 
-#: src/menu/options.c:1115
+#: src/menu/options.c:1118
 msgid "Power down"
 msgstr "Power verringern"
 
-#: src/menu/options.c:1119
+#: src/menu/options.c:1122
 msgid "Disable background rendering (HoM effect)"
 msgstr "Hintergrund deaktivieren (HoM Effekt)"
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1126
 msgid "Toggle collision areas overlay"
 msgstr "Kollisionsoverlay umschalten"
 
-#: src/menu/options.c:1139
+#: src/menu/options.c:1142
 msgid "Player name"
 msgstr "Spielername"
 
-#: src/menu/options.c:1146
+#: src/menu/options.c:1149
 msgid "Save replays"
 msgstr "Replays speichern"
 
+#: src/menu/options.c:1151
+msgid "always"
+msgstr ""
+
 #: src/menu/options.c:1152
+msgid "never"
+msgstr ""
+
+#: src/menu/options.c:1153
+msgid "ask"
+msgstr ""
+
+#: src/menu/options.c:1155
 msgid "Auto-restart in Spell Practice"
 msgstr "Automatischer Neustart im Spell-Training"
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1159
 msgid "Power in Spell and Stage Practice"
 msgstr "Power in Spell- und Stage-Training"
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1167
 msgid "Shoot by default"
 msgstr "Immer Schießen"
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1171
 msgid "Automatic Power Surge activation"
 msgstr "Power Surge automatisch aktivieren"
 
-#: src/menu/options.c:1172
+#: src/menu/options.c:1175
 msgid "Boss healthbar style"
 msgstr "Boss Gesundheitsanzeige"
 
 #: src/menu/options.c:1177
+msgid "classic"
+msgstr ""
+
+#: src/menu/options.c:1178
+msgid "modern"
+msgstr ""
+
+#: src/menu/options.c:1180
 msgid "Floating score text visibility"
 msgstr "Schwebende Punktetext Lesbarkeit"
 
-#: src/menu/options.c:1183
+#: src/menu/options.c:1186
 msgid "SFX Volume"
 msgstr "SFX Lautstärke"
 
-#: src/menu/options.c:1187
+#: src/menu/options.c:1190
 msgid "BGM Volume"
 msgstr "BGM Lautstärke"
 
-#: src/menu/options.c:1191
+#: src/menu/options.c:1194
 msgid "Mute audio"
 msgstr "Stummschalten"
 
-#: src/menu/options.c:1196
+#: src/menu/options.c:1199
 msgid "Video options…"
 msgstr "Videooptionen…"
 
-#: src/menu/options.c:1198
+#: src/menu/options.c:1201
 msgid "Gamepad & Joystick options…"
 msgstr "Gamepad- & Joystick-Optionen…"
 
-#: src/menu/options.c:1202
+#: src/menu/options.c:1205
 msgid "Reload from last saved"
 msgstr "Vom letzten Speicherstand laden"
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1208
 msgid "Reset to defaults"
 msgstr "Auf Werkseinstellungen setzen"
 
-#: src/menu/options.c:1338
+#: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Drücke Taste zum Zuweisen, ESC zum Abbrechen"
 
-#: src/menu/options.c:1378
+#: src/menu/options.c:1381
 msgid "All devices"
 msgstr "Alle Geräte"
 
-#: src/menu/options.c:1384
+#: src/menu/options.c:1387
 msgid "No devices available"
 msgstr "Keine Geräte verfügbar"
 
-#: src/menu/options.c:1426
+#: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Bewege eine Achse zum Zuweisen, Zurück zum Abbrechen"
 
-#: src/menu/options.c:1427
+#: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
 msgstr "Drücke eine Taste zum Zuweisen, Zurück zum Abbrechen"
 
-#: src/menu/options.c:1443
+#: src/menu/options.c:1446
 msgid "Unbound"
 msgstr "Nicht zugewiesen"
 
@@ -6000,6 +6137,108 @@ msgstr ""
 #: src/stage.c:622
 #, c-format
 msgid "BGM: %s"
+msgstr ""
+
+#: src/stagedraw.c:1294
+msgid "Hi-Score:"
+msgstr ""
+
+#: src/stagedraw.c:1295
+msgid "Score:"
+msgstr ""
+
+#: src/stagedraw.c:1296
+msgid "Lives:"
+msgstr ""
+
+#: src/stagedraw.c:1297
+#, fuzzy
+msgid "Spell Cards:"
+msgstr "Spell-Card benutzen"
+
+#: src/stagedraw.c:1301
+#, fuzzy
+msgid "Power:"
+msgstr "Power erhöhen"
+
+#: src/stagedraw.c:1302
+msgid "Value:"
+msgstr ""
+
+#: src/stagedraw.c:1303
+msgid "Volts:"
+msgstr ""
+
+#: src/stagedraw.c:1304
+msgid "Graze:"
+msgstr ""
+
+#: src/stagedraw.c:1313 src/stagedraw.c:1314
+msgid "N/A"
+msgstr ""
+
+#: src/stagedraw.c:1326
+msgid "Next:"
+msgstr ""
+
+#: src/stagedraw.c:1352
+msgid "Fragments:"
+msgstr ""
+
+#: src/stagedraw.c:1465
+msgid "God Mode is enabled!"
+msgstr ""
+
+#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+msgid ""
+"Voltage        \n"
+"    Overdrive!"
+msgstr ""
+
+#: src/stagedraw.c:1879
+msgid "Demo"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "All Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "Stage Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1897
+#, fuzzy
+msgid "Stage Clear bonus"
+msgstr "Clear-Bonus"
+
+#: src/stagedraw.c:1898
+#, fuzzy
+msgid "Life bonus"
+msgstr "Temps bonus"
+
+#: src/stagedraw.c:1899
+#, fuzzy
+msgid "Voltage bonus"
+msgstr "Clear-Bonus"
+
+#: src/stagedraw.c:1900
+#, fuzzy
+msgid "Graze bonus"
+msgstr "Bonus d'endurance"
+
+#: src/stagedraw.c:1904
+#, fuzzy
+msgid "All Clear bonus"
+msgstr "Clear-Bonus"
+
+#: src/stagedraw.c:1909
+#, c-format
+msgid "Difficulty bonus (+%i%%)"
+msgstr ""
+
+#: src/stagedraw.c:1919
+msgid "Press Fire to continue"
 msgstr ""
 
 #: src/stageinfo.c:49
@@ -6596,3 +6835,7 @@ msgid ""
 "series of dark curtains to pull back, each new finding more magnificent and "
 "imperceptible than the last."
 msgstr ""
+
+#~ msgid "A workaholic shrine at the top of of Yōkai Mountain."
+#~ msgstr ""
+#~ "Un sanctuaire dédié aux bourreaux de travail au sommet du mont Yōkai."
