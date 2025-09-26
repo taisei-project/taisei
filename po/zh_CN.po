@@ -3759,7 +3759,7 @@ msgstr "「这个」幻想乡……？"
 
 #: src/dialog/reimu.c:576
 msgid "Somehow, it feels like more of a punishment."
-msgstr "可我感觉这玩意感觉更像是某种惩罚之类的东西。"
+msgstr "可我感觉这玩意, 更像是某种惩罚之类的东西。"
 
 #: src/dialog/reimu.c:577
 msgid "Ever heard of ‘ignorance is bliss’?"
@@ -3775,7 +3775,7 @@ msgstr "如果你用知识让他们都失控了, 你就没有统治对象了, �
 msgid ""
 "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around "
 "it."
-msgstr "巴别塔能够「启迪」那些有幸身处其周围的人。"
+msgstr "这巴别塔, 能够「启迪」那些有幸身处其周围的人。"
 
 #: src/dialog/reimu.c:582
 msgid "Anyone unable to comprehend its brilliance will be driven to madness."
@@ -5429,7 +5429,7 @@ msgstr "不要"
 
 #: src/menu/options.c:733
 msgid "Video Options"
-msgstr ""
+msgstr "显示设置"
 
 #: src/menu/options.c:736
 msgid "Fullscreen"
@@ -5936,7 +5936,7 @@ msgstr ""
 
 #: src/stagedraw.c:1326
 msgid "Next:"
-msgstr "下次奖残:"
+msgstr "奖残:"
 
 #: src/stagedraw.c:1352
 msgid "Fragments:"
