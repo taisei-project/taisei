@@ -21,27 +21,27 @@ msgstr ""
 
 #: src/boss.c:982
 msgid "Clear bonus"
-msgstr ""
+msgstr "Clear奖励"
 
 #: src/boss.c:983
 msgid "Time bonus"
-msgstr ""
+msgstr "时间奖励"
 
 #: src/boss.c:984
 msgid "Survival bonus"
-msgstr ""
+msgstr "存活奖励"
 
 #: src/boss.c:985
 msgid "Endurance bonus"
-msgstr ""
+msgstr "持久奖励"
 
 #: src/boss.c:987
 msgid "Diff. multiplier"
-msgstr ""
+msgstr "难度系数"
 
 #: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
-msgstr ""
+msgstr "共计"
 
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
@@ -1709,28 +1709,30 @@ msgid ""
 "Yōmu's newfound fearlessness had been tempered as well, replaced with a "
 "sense of loss."
 msgstr ""
+"妖梦之前所持有的无畏之心也已消退，取而代之的是一种失落感。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:38
 msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
-msgstr ""
+msgstr "感谢您屈尊应允在下这古怪的请求，幽幽子大人。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
-msgstr ""
+msgstr "哎呀别放在心上啦, 你做得很棒了！"
 
 #: src/cutscenes/youmu_bad_end.inc.h:40
 msgid ""
 "But since we’re in the neighbourhood… do you think the kappa are running one "
 "of their famous festival grill stands?"
 msgstr ""
+"不过既然我们走到这了……你觉得河童们会不会在附近摆烧烤摊啊？"
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
-msgstr ""
+msgstr "或许是为了庆祝事件顺利解决而举办的吧……？"
 
 #: src/cutscenes/youmu_bad_end.inc.h:42
 msgid "We could go on a fun date! And I’m feeling a bit peckish…"
-msgstr ""
+msgstr "那我们就去好好看看吧！而且我也有点饿了……"
 
 #: src/cutscenes/youmu_bad_end.inc.h:46
 msgid ""
@@ -1738,16 +1740,19 @@ msgid ""
 "(From A Safe Distance)’ festival, to encourage human and yōkai tourism after "
 "everyone had been scared off by the Tower.\n"
 msgstr ""
+"妖怪之山的河童们正在举办一场名为「远观奇塔(请保持安全距离)」的节日庆典, "
+"旨在高塔事件吓跑众人之后, 重新吸引人类与妖怪前来观光旅游。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:47
 msgid "Although, Yōmu found it difficult to enjoy herself, of course.\n"
-msgstr ""
+msgstr "不过，她当然还是很难真正享受其中。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:48
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
 msgstr ""
+"她仍希望那位怒火中烧、秉持正义的持镰者, 依然在那等待着与她再度对决……"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:2
 msgid "Yōmu (Extra Stage Intro)"
@@ -1906,12 +1911,12 @@ msgstr "妖梦 (好结局)"
 
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "位于妖怪之山山顶的一座庄严的神社。"
 
 #: src/cutscenes/youmu_good_end.inc.h:12
 msgid ""
 "Atop the Mountain, the Tower of Babel stood silently, as if a sleeping giant."
-msgstr ""
+msgstr "在山顶上，巴别塔静静矗立，宛如一位沉睡的巨人。"
 
 #: src/cutscenes/youmu_good_end.inc.h:13
 msgid ""
@@ -5220,7 +5225,7 @@ msgstr "科学"
 
 #: src/menu/charselect.c:174
 msgid "Select Character"
-msgstr ""
+msgstr "选择角色"
 
 #: src/menu/difficultyselect.c:44
 msgid ""
@@ -5258,7 +5263,7 @@ msgstr ""
 
 #: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
-msgstr ""
+msgstr "选择难度"
 
 #: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
@@ -5966,28 +5971,28 @@ msgstr ""
 
 #: src/stagedraw.c:1897
 msgid "Stage Clear bonus"
-msgstr ""
+msgstr "Stage Clear奖励"
 
 #: src/stagedraw.c:1898
 msgid "Life bonus"
-msgstr ""
+msgstr "余残奖励"
 
 #: src/stagedraw.c:1899
 msgid "Voltage bonus"
-msgstr ""
+msgstr "电压奖励"
 
 #: src/stagedraw.c:1900
 msgid "Graze bonus"
-msgstr ""
+msgstr "擦弹奖励"
 
 #: src/stagedraw.c:1904
 msgid "All Clear bonus"
-msgstr ""
+msgstr "All Clear奖励"
 
 #: src/stagedraw.c:1909
 #, c-format
 msgid "Difficulty bonus (+%i%%)"
-msgstr ""
+msgstr "难度奖励 (+%i%%)"
 
 #: src/stagedraw.c:1919
 msgid "Press Fire to continue"
@@ -5995,7 +6000,7 @@ msgstr "按射击键继续……"
 
 #: src/stageinfo.c:49
 msgid "Spell"
-msgstr ""
+msgstr "符卡"
 
 #: src/stageinfo.c:129
 msgid "Stage 1"
@@ -6569,6 +6574,11 @@ msgid ""
 "more comfortable than a Lake of Blood, but this confrontation is anything "
 "but. A mix of fears make the walls feel like they’re closing in."
 msgstr ""
+"胡桃的主题曲。\n"
+"\n"
+"旧面孔, 新梦想。她找到了新家, 比当年的血之湖还要舒适一些。"
+"然而这次对峙却绝非温柔, 交织的恐惧令人感到四面楚歌, "
+"高墙仿佛正逐渐逼近。"
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
