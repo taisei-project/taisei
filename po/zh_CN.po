@@ -1449,7 +1449,7 @@ msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
-"终于, 我掌握了现代化幻想乡的最后关键, 能够防止能源危机波及我们了! "
+"终于, 我掌握了幻想乡现代化的最后关键技术, 终于能够防止能源危机波及我们了! "
 "核聚变能源如今已触手可及! "
 
 #: src/cutscenes/reimu_good_end.inc.h:33
@@ -1506,7 +1506,7 @@ msgstr ""
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
 msgstr ""
-"当然, 我对自己世界的幻想乡依然感到悲伤, 但做到那种地步……还是太过分了。"
+"当然, 我对自己世界的幻想乡依然感到悲伤, 但因此做到那种地步……还是太过分了。"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
@@ -1523,7 +1523,7 @@ msgstr ""
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
 msgstr ""
-"不过, 竟然会出现来自另一个幻想乡的, 早已被遗忘的妖怪, 这还真是件奇怪的事啊……"
+"不过, 这里竟然会出现来自另一个幻想乡的, 早已被遗忘的妖怪, 这还真是件奇怪的事啊……"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
@@ -1696,7 +1696,7 @@ msgid ""
 "The Tower had ceased functioning, returning the land and yōkai around it to "
 "some semblance of status quo.\n"
 msgstr ""
-"高塔已停止运转, 使周围的土地与妖怪们恢复到了近似于原来的状态。\n"
+"高塔已停止运转, 周围的土地与妖怪们恢复到了近似于原来的状态。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:33
 msgid ""
@@ -1728,7 +1728,7 @@ msgstr ""
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
-msgstr "或许是为了庆祝事件顺利解决而举办的吧……？"
+msgstr "或许是为了庆祝事件顺利解决搞的吧……？"
 
 #: src/cutscenes/youmu_bad_end.inc.h:42
 msgid "We could go on a fun date! And I’m feeling a bit peckish…"
@@ -1923,6 +1923,7 @@ msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
+"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量他们的技艺……"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
@@ -2140,7 +2141,7 @@ msgstr "泥个大坏蛋! 根本不还钱! "
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr "咱要把泥冻成冰立方! "
+msgstr "咱要把泥冻成大冰块! "
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
@@ -3374,6 +3375,7 @@ msgstr "你**是巫女? "
 msgid "More like… BRINE maiden!"
 msgstr "我看你像歌姬吧! "
 # （brine是什么玩意啊，深海少女? ）
+# （额，brine maiden居然是一副画，不过中文里的brine和shrine听起来就不是一个东西）
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
@@ -3994,7 +3996,7 @@ msgstr "你确定你这个「少女剑客的威光」的说法 不是什么青�
 
 #: src/dialog/youmu.c:106
 msgid "It’s not a PHASE, mo—"
-msgstr "并非中二, 摩——"
+msgstr "并非中二, 妈——"
 
 #: src/dialog/youmu.c:108
 msgid "…!!"
@@ -4470,7 +4472,7 @@ msgstr "你的逻辑真是扭曲……"
 msgid ""
 "Alas, it cannot be helped. You have likely been affected since before your "
 "arrival."
-msgstr "唉, 这已无可避免。 你很可能在到来之前就已经被影响了。"
+msgstr "唉, 我可能没法子处理你的「中二」了。 你很可能在到这之前就已经被影响很深了。"
 
 #: src/dialog/youmu.c:457
 msgid "I have no choice but to let you through, despite my reservations."
