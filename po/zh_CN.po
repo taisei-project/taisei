@@ -547,7 +547,7 @@ msgstr "六百六十六还有狂人日记, 我还在这儿呢! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:41
 msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
-msgstr "啊……雾雨小姐, 我说TA是自愿的你信吗……"
+msgstr "啊……雾雨小姐, 我说TA是自愿被吃的你信吗……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:45
 msgid "Forgive the young witch, she’s such a spoil-sport at times."
@@ -584,7 +584,7 @@ msgid ""
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
 "\n"
-"宅邸开始剧烈地震动起来, 仿佛连地基都在颤抖, "
+"红魔馆开始剧烈地震动起来, 似乎连地基都在颤抖, "
 "但随即又戛然而止, 就像它突然开始一样迅速结束。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
@@ -592,7 +592,7 @@ msgid ""
 "Before the dust had a chance to settle, an eerie, long siren began blaring "
 "in the distance outside the mansion."
 msgstr ""
-"还没一会, 宅邸外远处便响起了一阵诡异而悠长的警报声。"
+"还没一会, 红魔馆外面远处便响起了一阵诡异而悠长的警报声。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:62
 msgid "Huh?! That’s one of the sirens I had the kappa set up!"
@@ -1221,7 +1221,7 @@ msgstr "啥玩意? 从这里看它完全静止不动啊。"
 msgid ""
 "No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
 msgstr ""
-"不! 我的意思是它正在启动, 开始充能! 管它叫什么! 它要重新启动了! ! "
+"不! 我的意思是它正在开机, 正在充能! 管它叫什么! 总之那破塔要重新启动了! ! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:48
 msgid "Huh? It thought you were in control of it."
@@ -1290,7 +1290,7 @@ msgstr "额, 不好意思, 这跟现在的事情到底有什么关系啊? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:69
 msgid "I… I may have stolen it from someone."
-msgstr "我……我可能是从别人那里偷来的。"
+msgstr "我……我那个高塔可能是从别人那里偷来的。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:70
 msgid "That doesn't answer my question."
@@ -1930,143 +1930,169 @@ msgid ""
 "I’m sure you’re aware that the classic scythe was used by farmers, and was "
 "sometimes repurposed as a makeshift weapon—"
 msgstr ""
+"我相信你清楚, 传统的长柄镰刀原本是农民使用的农具, 偶尔也会被临时改作武器——"
 
 #: src/cutscenes/youmu_good_end.inc.h:18
 msgid ""
 "Yes, of course. Some of the finest martial arts evolved from the practices "
 "of common folk—"
 msgstr ""
+"当然, 但一些最精妙的武术正是源于人民群众的日常实践——"
+# 学文科学的
 
 #: src/cutscenes/youmu_good_end.inc.h:22
 msgid ""
 "After the incident, Elly and Kurumi agreed to surrender, and disabled the "
 "Tower's ability to ‘enlighten’.\n"
 msgstr ""
+"在那件事后, 艾丽和胡桃同意投降, 并关闭了高塔的所谓「启蒙」能力。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:23
 msgid ""
 "Their dispositions softened considerably, and they apologized profusely for "
 "what they had tried to do.\n"
 msgstr ""
+"她们的态度明显缓和了许多, 并为自己曾做的事情再三道歉。"
 
 #: src/cutscenes/youmu_good_end.inc.h:24
 msgid ""
 "But even as everyone else returned to their usual selves, it seemed that "
 "Konpaku Yōmu had retained nearly all of the newfound confidence…"
 msgstr ""
+"然而, 就在其他人都恢复如常之际, 魂魄妖梦那份新获得的「自信」似乎"
+"几近全部保留了……"
 
 #: src/cutscenes/youmu_good_end.inc.h:28
 msgid "This Gensōkyō is so different compared to the one I was used to."
-msgstr ""
+msgstr "这个幻想乡与我所熟悉的那个大不相同呢。"
 
 #: src/cutscenes/youmu_good_end.inc.h:29
 msgid "What was your Gensōkyō like, if I may ask?"
-msgstr ""
+msgstr "如果可以的话, 能告诉我你那个幻想乡是什么样子的吗？"
 
 #: src/cutscenes/youmu_good_end.inc.h:30
 msgid ""
 "Mostly, a lot smaller. Practically barren compared to this one. It felt more "
 "like a road-side food stand."
 msgstr ""
+"小得多, 跟这里相比简直可以说是太荒凉了, 感觉最多称得上大路边的一条小巷子。"
 
 #: src/cutscenes/youmu_good_end.inc.h:31
 msgid "Hmm, fascinating…"
-msgstr ""
+msgstr "嗯，真有意思……"
 
 #: src/cutscenes/youmu_good_end.inc.h:35
 msgid ""
 "I know I said this before, but I still feel like a fool after everything."
 msgstr ""
+"我知道我已经说过一次了, 但经历这件事后, 我还是觉得自己像个baka。"
 
 #: src/cutscenes/youmu_good_end.inc.h:36
 msgid "I was miserable about my home, but to go that far…"
-msgstr ""
+msgstr "我虽然对自己的家乡感到痛苦，但也不该做到那种地步……"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
-msgstr ""
+msgstr "看来, 被那「疯狂」吞噬得最深的, 反而是我自己。"
 
 #: src/cutscenes/youmu_good_end.inc.h:38
 msgid ""
 "I know everyone here accepted my apology, but I’m still truly sorry for what "
 "I did."
 msgstr ""
+"我知道大伙都接受了我的道歉, 但我对自己所做的一切依然深感歉意。"
 
 #: src/cutscenes/youmu_good_end.inc.h:42
 msgid "Your pain was legitimate, even if your expression of it was not."
-msgstr ""
+msgstr "没事啦, 你的痛苦确有其事, 即便你表达痛苦的方式并不恰当。"
 
 #: src/cutscenes/youmu_good_end.inc.h:43
 msgid ""
 "Now that you've recognized that, you are welcome here, like anyone else."
 msgstr ""
+"既然你已经意识到了自己的错误, 那就欢迎你留在这里。"
 
 #: src/cutscenes/youmu_good_end.inc.h:44
 msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
 msgstr ""
+"明天只要幽幽子大人没有拜托我做什么事情, 我带你去好好参观冥界和幻想乡"
+"都有些什么！"
 
 #: src/cutscenes/youmu_good_end.inc.h:45
 msgid ""
 "Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
 "generous, so it shall be my treat!"
 msgstr ""
+"或许我们可以去附近一家很受欢迎的拉面店逛逛, 今天心情好, 我来买单！"
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
-msgstr ""
+msgstr "噢噢! 那真是太好了！"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
-msgstr ""
+msgstr "但……那个, 我该回神社继续干活了。"
 
 #: src/cutscenes/youmu_good_end.inc.h:51
 msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
+"希望那个绿毛巫女别再跟我滔滔不绝地讲那些过时的娱乐小科技了……"
 
 #: src/cutscenes/youmu_good_end.inc.h:52
 msgid ""
 "I commend you for complying with your penance, despite its… cruel hardships."
 msgstr ""
+"我钦佩你始终如一地为自己所为赎罪, 尽管这条道路充满残酷与……艰辛,"
 
 #: src/cutscenes/youmu_good_end.inc.h:53
 msgid ""
 "\n"
 "The pair of them laughed.\n"
 msgstr ""
+"\n"
+"两人都哈哈大笑起来。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:57
 msgid ""
 "The two blademasters had become practically inseparable in an incredibly "
 "short time.\n"
 msgstr ""
+"这两位剑术大师短短几天内几乎变得形影不离。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:58
 msgid ""
 "As they spent many evenings dueling, practicing, and drinking merrily, many "
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
+"她们在无数个夜晚切磋剑术、练习技艺、畅饮欢谈, 许多人都感叹居然见到妖梦这么兴奋。"
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
 "Despite the incident being resolved, nobody had figured out how to remove "
 "the Tower, and most were too anxious to even think about it.\n"
 msgstr ""
+"尽管事件已经平息, 却仍无人想出办法拆除那座高塔, 而大多数人甚至吓得"
+"根本不敢去想这件事。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:63
 msgid ""
 "And with its lingering, menacing visage blighting the skyline, many wondered "
 "if the Tower was truly inert and harmless.\n"
 msgstr ""
+"而高塔那挥之不去, 令人不安的黑影依然矗立于幻想乡的天际线, 许多人"
+"不禁怀疑, 这座高塔是否真的已经彻底沉寂, 再无威胁。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:64
 msgid ""
 "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion "
 "discussed details of an ancient future’s past…"
 msgstr ""
+"与此同时, 在冥界, 某位「隙间妖怪」与她那跟幽灵一样的同伴, 正低声谈论着"
+"某个「古老未来」的往昔……"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:91
 #: src/stages/stage1/cirno.c:27
@@ -2089,6 +2115,7 @@ msgstr "回旋的厄神"
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
 msgid "Wriggle Nightbug"
 msgstr "莉格露·奈特巴格"
+# 为啥咱突然想到了辉格党
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:125
 msgid "Insect Rights Activist"
@@ -4472,7 +4499,7 @@ msgstr "你的逻辑真是扭曲……"
 msgid ""
 "Alas, it cannot be helped. You have likely been affected since before your "
 "arrival."
-msgstr "唉, 我可能没法子处理你的「中二」了。 你很可能在到这之前就已经被影响很深了。"
+msgstr "唉, 我也束手无策了, 你很可能在到这之前就已经被影响很深了。"
 
 #: src/dialog/youmu.c:457
 msgid "I have no choice but to let you through, despite my reservations."
