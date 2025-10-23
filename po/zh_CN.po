@@ -85,7 +85,7 @@ msgstr ""
 #: src/cutscenes/cutscene.c:313
 #, c-format
 msgid "“%s”"
-msgstr ""
+msgstr "“%s”"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -175,7 +175,7 @@ msgstr "什么忙? "
 msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
-msgstr "一股神秘的力量正逐渐让妖怪和人类都陷入一种 “无所不知” 的强烈感觉中。\n"
+msgstr "一股神秘的力量正逐渐让妖怪和人类都陷入一种「无所不知」的强烈感觉中。\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -191,7 +191,7 @@ msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
 msgstr ""
-"但随着事态进一步发展, 他们被这种 “无所不知” 的感觉完全遮蔽, 再也无法理性行"
+"但随着事态进一步发展, 他们被这种「无所不知」的感觉完全遮蔽, 再也无法理性行"
 "事。\n"
 
 #: src/cutscenes/intro.inc.h:47
@@ -202,7 +202,7 @@ msgstr "妖怪之山通常受守矢神社的巫女保护, 但就连她也被搞�
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
-msgstr "早苗她现在一个劲儿地念叨着“游戏机”。"
+msgstr "早苗她现在一个劲儿地念叨着「游戏机」。"
 
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
@@ -363,7 +363,7 @@ msgstr "那就把它炸了! 让它轰地一声灰飞烟灭! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
-msgstr "啊啊! …… 芙兰, 我之前是不是说过别再偷偷摸摸靠近别人了? "
+msgstr "啊啊!…… 芙兰, 我之前是不是说过别再偷偷摸摸靠近别人了? "
 
 #: src/cutscenes/marisa_bad_end.inc.h:28
 msgid "Sorry!"
@@ -371,7 +371,7 @@ msgstr "抱歉! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:29
 msgid "Thank you for the offer, Flandre, but no."
-msgstr "谢谢你想帮忙, 芙兰朵露酱, 但还是算了吧。"
+msgstr "谢谢你想帮忙, 芙兰朵露, 但还是算了吧。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:30
 msgid "Awww… how boring…"
@@ -1771,132 +1771,144 @@ msgid ""
 "The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
 "between the sakura trees of the ethereal realm.\n"
 msgstr ""
+"两位剑术大师, 魂魄妖梦与艾丽, 正在缥缈之境的樱花树下, 享受一场暮色"
+"中的对决。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:13
 msgid ""
 "The swordswoman was showing the scythe-bearer one of her favourite past-"
 "times: the mid-air bisecting sakura petals.\n"
 msgstr ""
+"那位剑客正在向持镰者展示她钟爱的消遣之一: 在半空中将樱花花瓣一分为二。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:14
 msgid "Yōmu was quite proud of herself, and Elly equally as impressed."
-msgstr ""
+msgstr "妖梦十分甚至九分的自豪，而艾丽也同样感到印象深刻。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:18
 msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
 msgstr ""
+"正当她们欢愉之际, 突然——艾丽从裙袋里掏出一个小装置。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
 "It was a communication device of some sort that seemed to be vibrating "
 "vigorously, projecting an illusion into the air…\n"
 msgstr ""
+"那是个某种通讯装置, 正剧烈地震动着, 并在空中投射出一道幻象……\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:20
 msgid "Elly's expression suddenly ran cold."
-msgstr ""
+msgstr "艾丽的神情骤然冷至冰点。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:24
 msgid "Hm? Is something the matter, my dear?"
-msgstr ""
+msgstr "嗯？艾丽酱, 出什么事了吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:25
 msgid "The Tower…! No, it can’t be! But I…!"
-msgstr ""
+msgstr "那高塔……! 不，这不可能！可是我……！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:26
 msgid "Has something changed?"
-msgstr ""
+msgstr "有什么变故吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:27
 msgid "It’s turning back on! In fact, at its current rate of power, it could—"
-msgstr ""
+msgstr "它正在重新启动! 照它目前的充能速度, 恐怕——"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:31
 msgid "… there’s no other explanation for this."
-msgstr ""
+msgstr "……只有一种可能了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:32
 msgid "It’s her… the one I told you about."
-msgstr ""
+msgstr "是她……就是我跟你提过的那位。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:33
 msgid ""
 "The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
 "Tower from."
 msgstr ""
+"那个救了我, 却又操控了我的人。那个把我……从高塔中「解放」出来的人。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:37
 msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
-msgstr ""
+msgstr "妖梦深吸一口气，收剑入鞘，轻轻叹了口气。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:38
 msgid "I see. So, she’s arrived on her own after all."
-msgstr ""
+msgstr "我明白了。所以, 她终究还是亲自下场了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:39
 msgid ""
 "I-I thought she would be imprisoned forever, until we were ready! But "
 "somehow, somehow she’s—"
 msgstr ""
+"我……我以为她会被永远囚禁, 直到我们准备好面对她的那一天! 可不知怎的, 她她她——"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:40
 msgid ""
 "… she’s freed herself from her prison, and she no doubt intends to finish "
 "what she started."
 msgstr ""
+"……她已经从自己的牢狱中脱身, 而且毫无疑问的是她打算完成当初未竟之事。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:41
 msgid "I see. Then it appears we no longer possess the luxury of time."
-msgstr ""
+msgstr "明白。看来我们已再不能坐以待毙了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:45
 msgid "Yōmu took Elly's hands between her own, grinning confidently.\n"
-msgstr ""
+msgstr "妖梦将艾丽的双手合在自己掌中, 自信地一笑。\n"
+# 666牵上手了
 
 #: src/cutscenes/youmu_extra_intro.inc.h:46
 msgid "Elly! Let’s face her now, together!"
-msgstr ""
+msgstr "艾丽! 那就让我们现在一起面对她吧！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:47
 msgid "I-I… I thought we'd have more time! It’s too soon!"
-msgstr ""
+msgstr "我……我原以为我们还有更多时间! 现在还没准备好啊喂！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:48
 msgid ""
 "I’m worried the machine will influence me again! I can’t put you at risk "
 "again, and I can’t go with you!"
 msgstr ""
+"我担心那台机器会再次影响我! 我绝不能再让你陷入危险, 也不能跟你一起去！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:49
 msgid "Please forgive me, Yōmu!"
-msgstr ""
+msgstr "请你原谅我, 妖梦！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:53
 msgid "I completely understand."
-msgstr ""
+msgstr "我完全理解这一点。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:54
 msgid "You… do?"
-msgstr ""
+msgstr "你……真的？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:55
 msgid ""
 "Yes, of course. There’s a time and place to face one’s fears. This is not "
 "your time or place, even somewhat literally."
 msgstr ""
+"是的。直面恐惧也需恰当时机与场合, 而此刻无论从哪方面来说, 都不是属于你的时机或战场。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:56
 msgid ""
 "However, don’t think you've gotten off so easily. When I return, it shall be "
 "your turn to pay for dinner. Understand?"
 msgstr ""
+"不过嘛, 可别以为这样就轻松脱身了。等我回来, 可就轮到你请我吃饭了, 明白吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:60
 msgid "Elly couldn’t help but laugh, despite her fears.\n"
-msgstr ""
+msgstr "尽管心里还是很害怕, 艾莉还是绷不住哈哈大笑起来。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:61
 msgid ""
@@ -1904,6 +1916,8 @@ msgid ""
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
 msgstr ""
+"与艾丽和幽幽子大人道别后, 妖梦重返幻想乡, 朝着那座地狱般的高塔而去——"
+"此时高塔已开始震颤、呻吟, 仿佛末日将至……"
 
 #: src/cutscenes/youmu_good_end.inc.h:2
 msgid "Yōmu (Good Ending)"
@@ -2106,7 +2120,7 @@ msgstr "热力学的冰之妖精"
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:102
 #: src/stages/stage2/hina.c:41
 msgid "Kagiyama Hina"
-msgstr "键山雏"
+msgstr "键山 雏"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:103
 msgid "Gyroscopic Pestilence God"
@@ -2128,7 +2142,7 @@ msgstr "上流的吸血技师"
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
 #: src/stages/stage5/iku.c:108
 msgid "Nagae Iku"
-msgstr "永江衣玖"
+msgstr "永江 衣玖"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:147
 msgid "Fulminologist of the Heavens"
@@ -4829,11 +4843,11 @@ msgstr "右摇杆"
 
 #: src/gamepad.c:880
 msgid "Left Bumper"
-msgstr ""
+msgstr "左肩键"
 
 #: src/gamepad.c:881
 msgid "Right Bumper"
-msgstr ""
+msgstr "右肩键"
 
 #: src/gamepad.c:882
 msgid "Up"
@@ -4873,7 +4887,7 @@ msgstr ""
 
 #: src/gamepad.c:891
 msgid "Touchpad"
-msgstr ""
+msgstr "触摸板"
 
 #: src/gamepad.c:892
 msgid "Misc 2"
@@ -4897,11 +4911,11 @@ msgstr ""
 
 #: src/gamepad.c:902 src/gamepad.c:917
 msgid "Left Trigger"
-msgstr ""
+msgstr "左扳机"
 
 #: src/gamepad.c:903 src/gamepad.c:918
 msgid "Right Trigger"
-msgstr ""
+msgstr "右扳机"
 
 #: src/gamepad.c:904
 msgid "Stick Up"
@@ -4920,24 +4934,20 @@ msgid "Stick Right"
 msgstr ""
 
 #: src/gamepad.c:913
-#, fuzzy
 msgid "Left X"
-msgstr "左摇杆"
+msgstr ""
 
 #: src/gamepad.c:914
-#, fuzzy
 msgid "Left Y"
-msgstr "左摇杆"
+msgstr ""
 
 #: src/gamepad.c:915
-#, fuzzy
 msgid "Right X"
-msgstr "右摇杆"
+msgstr ""
 
 #: src/gamepad.c:916
-#, fuzzy
 msgid "Right Y"
-msgstr "右摇杆"
+msgstr ""
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -5142,7 +5152,7 @@ msgid ""
 msgstr ""
 "一只发光的小虫子——或者说昆虫? ——远离了她惯常出没的领地。\n"
 "\n"
-"她坚信昆虫在演化长河中失去了“应有的地位”。\n"
+"她坚信昆虫在演化长河中失去了「应有的地位」。\n"
 "\n"
 "如果她真的自认遭受进化的不公, 应该来个人给她科普一点三叶虫的历史……"
 
@@ -5217,7 +5227,7 @@ msgstr ""
 "\n"
 "她显然给自己找了一位在理论物理的“暗之艺术”领域的导师。她的副业是个自大狂。\n"
 "\n"
-"她真正地立于世界之巅, 没有闲心去理会她脚下的一切。当她的通天之塔开始倾颓时, "
+"她真正地立于世界之巅, 没有闲心去理会她脚下的一切。 当她的通天之塔开始倾颓时, "
 "还望莫让坠落的砖石伤及下方无辜的妖怪。"
 
 #: src/menu/charprofile.c:168
@@ -5617,11 +5627,11 @@ msgstr "将方形输入重新映射为圆形"
 
 #: src/menu/options.c:999
 msgid "Direction snap factor"
-msgstr ""
+msgstr "方向吸附因子"
 
 #: src/menu/options.c:1003
 msgid "Diagonal bias"
-msgstr ""
+msgstr "对角线偏向"
 
 #: src/menu/options.c:1010
 msgid "Dead zone"
@@ -5765,7 +5775,7 @@ msgstr "手柄与摇杆选项"
 
 #: src/menu/options.c:1205
 msgid "Reload from last saved"
-msgstr ""
+msgstr "从上次保存的配置重加载"
 
 #: src/menu/options.c:1208
 msgid "Reset to defaults"
@@ -5773,7 +5783,7 @@ msgstr "重置为默认选项"
 
 #: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
-msgstr ""
+msgstr "请按对应键指派键位，按ESC取消"
 
 #: src/menu/options.c:1381
 msgid "All devices"
@@ -5793,7 +5803,7 @@ msgstr ""
 
 #: src/menu/options.c:1446
 msgid "Unbound"
-msgstr ""
+msgstr "未绑定"
 
 #: src/menu/replayview.c:87
 msgid "Failed to load replay events"
