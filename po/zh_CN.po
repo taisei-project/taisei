@@ -1790,7 +1790,7 @@ msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
 msgstr ""
-"正当她们欢愉之际, 突然——艾丽从裙袋里掏出一个小装置。"
+"正当她们欢愉之际, 突然——艾丽从裙袋里掏出一个小装置。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
@@ -1966,7 +1966,7 @@ msgid ""
 "Their dispositions softened considerably, and they apologized profusely for "
 "what they had tried to do.\n"
 msgstr ""
-"她们的态度明显缓和了许多, 并为自己曾做的事情再三道歉。"
+"她们的态度明显缓和了许多, 并为自己曾做的事情再三道歉。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:24
 msgid ""
