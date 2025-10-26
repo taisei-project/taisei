@@ -14,6 +14,7 @@
 #include "config.h"
 #include "difficulty.h"
 #include "events.h"
+#include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "progress.h"
 #include "replay/struct.h"
@@ -63,7 +64,7 @@ static void draw_saverpy_menu(MenuData *m) {
 
 	r_mat_mv_push();
 	r_mat_mv_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
-	text_draw("Save Replay?", &(TextParams) {
+	text_draw(_("Save Replay?"), &(TextParams) {
 		.font = "big",
 		.align = ALIGN_CENTER,
 		.shader = "text_default",
@@ -130,8 +131,8 @@ static MenuData *create_saverpy_menu(Replay *rpy) {
 	m->logic = update_saverpy_menu;
 	m->flags = MF_Transient | MF_NoDemo;
 
-	add_menu_entry(m, "Yes", save_rpy, rpy);
-	add_menu_entry(m, "No", menu_action_close, NULL);
+	add_menu_entry(m, _("Yes"), save_rpy, rpy);
+	add_menu_entry(m, _("No"), menu_action_close, NULL);
 
 	return m;
 }
