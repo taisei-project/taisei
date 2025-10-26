@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 18:10-0400\n"
+"POT-Creation-Date: 2025-10-26 15:01-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5170,11 +5170,11 @@ msgstr ""
 msgid "off"
 msgstr ""
 
-#: src/menu/options.c:704
+#: src/menu/options.c:704 src/menu/savereplay.c:134
 msgid "Yes"
 msgstr ""
 
-#: src/menu/options.c:705
+#: src/menu/options.c:705 src/menu/savereplay.c:135
 msgid "No"
 msgstr ""
 
@@ -5537,6 +5537,10 @@ msgstr ""
 
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
+msgstr ""
+
+#: src/menu/savereplay.c:67
+msgid "Save Replay?"
 msgstr ""
 
 #: src/player.c:113
