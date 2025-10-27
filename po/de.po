@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 18:10-0400\n"
+"POT-Creation-Date: 2025-10-26 15:01-0400\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.8\n"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -5859,11 +5859,11 @@ msgstr "an"
 msgid "off"
 msgstr "aus"
 
-#: src/menu/options.c:704
+#: src/menu/options.c:704 src/menu/savereplay.c:134
 msgid "Yes"
 msgstr "Ja"
 
-#: src/menu/options.c:705
+#: src/menu/options.c:705 src/menu/savereplay.c:135
 msgid "No"
 msgstr "Nein"
 
@@ -6227,6 +6227,10 @@ msgstr "Keine Replays verfügbar. Spiele das Spiel und nimm welche auf!"
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
 msgstr "Es gab ein Problem beim Laden der Replayliste :("
+
+#: src/menu/savereplay.c:67
+msgid "Save Replay?"
+msgstr "Replay speichern?"
 
 #: src/player.c:113
 msgid "Full Power!"
