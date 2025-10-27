@@ -412,8 +412,8 @@ msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
 msgstr ""
-"这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机还"
-"NB。\n"
+"这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机"
+"还更为强大。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
@@ -3685,7 +3685,7 @@ msgstr "以这松果弹抖闪电鞭, 检验你那不变的决心! "
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
-msgstr "雷云? 我们现在这么高了? "
+msgstr "雷云? 咱现在居然在这么高的地方了? "
 
 #: src/dialog/reimu.c:502
 msgid "Ah…"
