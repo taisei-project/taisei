@@ -44,13 +44,16 @@ if rst2html5.found()
 
     rst_docs = [
         'ENVIRON.rst',
+        'ENVIRON_CN.rst',
         'GAME.rst',
+        'GAME_CN.rst',
         # 'ANIMATION_FORMAT.rst'
     ]
 
     txt_docs = [
         'README.txt',
         'STORY.txt',
+        'STORY_CN.txt',
     ]
 
     foreach f : txt_docs

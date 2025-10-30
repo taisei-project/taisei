@@ -11,43 +11,53 @@ msgstr ""
 msgid "~ Spell Card Attack! ~"
 msgstr ""
 
+#: src/boss.c:972
+msgid "Spell Card failed…"
+msgstr ""
+
+#: src/boss.c:972
+msgid "Spell Card captured!"
+msgstr ""
+
 #: src/boss.c:982
 msgid "Clear bonus"
-msgstr ""
+msgstr "Clear奖励"
 
 #: src/boss.c:983
 msgid "Time bonus"
-msgstr ""
+msgstr "时间奖励"
 
 #: src/boss.c:984
 msgid "Survival bonus"
-msgstr ""
+msgstr "存活奖励"
 
 #: src/boss.c:985
 msgid "Endurance bonus"
-msgstr ""
+msgstr "持久奖励"
 
 #: src/boss.c:987
 msgid "Diff. multiplier"
-msgstr ""
+msgstr "难度系数"
 
-#: src/boss.c:988
+#: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
-msgstr ""
+msgstr "共计"
 
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
-msgstr ""
+msgstr "鼠标输入禁用"
 
 #: src/credits.c:71
 msgid ""
 "Taisei Project\n"
 "brought to you by…"
 msgstr ""
+"泰西Project\n"
+"由以下人员为您呈现……"
 
 #: src/credits.c:154
 msgid "Special Thanks"
-msgstr ""
+msgstr "特别感谢"
 
 #: src/credits.c:199
 #, c-format
@@ -58,12 +68,24 @@ msgid ""
 "And join our Discord server\n"
 "%s"
 msgstr ""
+"联系我们\n"
+"%s\n"
+"\n"
+"或者加入我们的Discord服务器\n"
+"%s"
 
 #: src/credits.c:209
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
 msgstr ""
+"*\n"
+"然后别忘了放轻松点! "
+
+#: src/cutscenes/cutscene.c:313
+#, c-format
+msgid "“%s”"
+msgstr "“%s”"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -77,7 +99,7 @@ msgstr "一座位于幻想与现实境界的神社。\n"
 msgid ""
 "Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
 "summer.\n"
-msgstr "夏末一个平静的日子里，有三个幻想乡的少女坐着喝茶。\n"
+msgstr "夏末一个平静的日子里, 有三个幻想乡的少女坐着喝茶。\n"
 
 #: src/cutscenes/intro.inc.h:10
 msgid "There was something unsettling in the air—"
@@ -85,7 +107,7 @@ msgstr "空气中弥漫着某种令人不安的气氛——"
 
 #: src/cutscenes/intro.inc.h:14
 msgid "What’s got ya both so down? Did I mess up the tea?"
-msgstr "你俩怎么都这么郁闷？是因为咱把茶搞砸了吗？"
+msgstr "你俩怎么都这么郁闷? 是因为咱把茶搞砸了吗? "
 
 #: src/cutscenes/intro.inc.h:15
 msgid ""
@@ -97,7 +119,7 @@ msgstr ""
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
-msgstr "茶没问题，我只是觉得很奇怪，不好形容那种感觉。"
+msgstr "茶没问题, 我只是觉得很奇怪, 不好形容那种感觉。"
 
 #: src/cutscenes/intro.inc.h:17
 msgid "I’m feeling something similar, I’m afraid."
@@ -105,11 +127,11 @@ msgstr "我也差不多……有点害怕。"
 
 #: src/cutscenes/intro.inc.h:21
 msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
-msgstr "神社外的铃声响起，有人往赛钱箱塞了钱。\n"
+msgstr "神社外的铃声响起, 有人往赛钱箱塞了钱。\n"
 
 #: src/cutscenes/intro.inc.h:22
 msgid "A minute later, there was another.\n"
-msgstr "一分钟后，又响了一声，\n"
+msgstr "一分钟后, 又响了一声, \n"
 
 #: src/cutscenes/intro.inc.h:23
 msgid "And another."
@@ -121,17 +143,17 @@ msgstr "肯定有些不对劲的地方……"
 
 #: src/cutscenes/intro.inc.h:28
 msgid "Isn’t it normally comforting for the shrine to receive donations?"
-msgstr "你的神社有人奉纳不是个好事情吗？"
+msgstr "你的神社有人奉纳不是个好事情吗? "
 
 #: src/cutscenes/intro.inc.h:29
 msgid "Normally it *would* be comforting, but…"
-msgstr "一般情况确实如此，但……"
+msgstr "一般情况确实如此, 但……"
 
 #: src/cutscenes/intro.inc.h:33
 msgid ""
 "Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
 "after another.\n"
-msgstr "神社之外，几乎所有妖怪之山的居民，纷纷排起长队。\n"
+msgstr "神社之外, 几乎所有妖怪之山的居民, 纷纷排起长队。\n"
 
 #: src/cutscenes/intro.inc.h:34
 msgid "Everyone seemed vaguely fearful."
@@ -139,7 +161,7 @@ msgstr "每个人似乎都隐隐约约地感到恐惧。"
 
 #: src/cutscenes/intro.inc.h:38
 msgid "Eh? What’s all this, then?"
-msgstr "额……到底发生了什么？"
+msgstr "额……到底发生了什么? "
 
 #: src/cutscenes/intro.inc.h:39
 msgid "We’ve come to ask a favour."
@@ -147,13 +169,13 @@ msgstr "我们是来请人帮忙的。"
 
 #: src/cutscenes/intro.inc.h:40
 msgid "What kinda favour?"
-msgstr "什么忙？"
+msgstr "什么忙? "
 
 #: src/cutscenes/intro.inc.h:44
 msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
-msgstr ""
+msgstr "一股神秘的力量正逐渐让妖怪和人类都陷入一种「无所不知」的强烈感觉中。\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -161,218 +183,237 @@ msgid ""
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
 msgstr ""
+"起初, 他们会突然解开一些一直困扰自己的简单问题, 例如机器的技术故障, 又或是引"
+"人注目的新闻标题。\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally.\n"
 msgstr ""
+"但随着事态进一步发展, 他们被这种「无所不知」的感觉完全遮蔽, 再也无法理性行"
+"事。\n"
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
 "Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
 "she had been carried away into madness."
-msgstr ""
+msgstr "妖怪之山通常受守矢神社的巫女保护, 但就连她也被搞得疯疯癫癫。"
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
-msgstr ""
+msgstr "早苗她现在一个劲儿地念叨着「游戏机」。"
 
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
-msgstr ""
+msgstr "诶? 就是那些你们在香霖堂找到的, 挂在电视机上的小玩具?"
 
 #: src/cutscenes/intro.inc.h:53
 msgid ""
 "Right, but she just won’t stop. I’ve seen her excited, but not like this."
-msgstr ""
+msgstr "没错, 可她就是停不下来. 我见过她兴奋的样子, 但从来没见过她这样。"
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
-msgstr ""
+msgstr "嗯……很着迷吗……"
 
 #: src/cutscenes/intro.inc.h:58
 msgid "Where the heck did *you* come from?!"
-msgstr ""
+msgstr "不是, 你从哪里窜出来的?!"
 
 #: src/cutscenes/intro.inc.h:59
 msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
 msgstr ""
+"呐……刚才听到你们的谈话了而已啦. 凭我的直觉, 加上你们描述的情况, 答案已经很明"
+"显了。"
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
-msgstr ""
+msgstr "是…这样吗? 愿意与我们分享一下吗? "
 
 #: src/cutscenes/intro.inc.h:64
 msgid ""
 "Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
 "in all directions from a singular point, given how indiscriminate it is."
 msgstr ""
+"妖怪之山上的某个存在正散发出强烈的诡异疯狂气息. 鉴于其无差别性, 显然是从某一"
+"点向四面八方扩散。"
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
-msgstr ""
+msgstr "瞬间涌入过多知识…… 嗯, 嗯, 这可能会致命, 至少对意志较弱的人而言。"
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
-msgstr ""
+msgstr "呵呵, 那你自己要去退治吗, 堇酱? "
 
 #: src/cutscenes/intro.inc.h:67
 msgid ""
 "A-ah, n-no, you all know the lay of the land better, a-after all, and with "
 "it being such a dire situation—"
-msgstr ""
+msgstr "啊、不了、您几位毕竟更熟悉这里的情况—— 况且事态都这么要命了——"
 
 #: src/cutscenes/intro.inc.h:71
 msgid ""
 "Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
 "the Moriya Gods.\n"
-msgstr ""
+msgstr "妖梦被从守矢神社的两尊大神后面探出头来的幽幽子大人吸引住了。\n"
 
 #: src/cutscenes/intro.inc.h:72
 msgid "Lady Yuyuko, why are you—?"
-msgstr ""
+msgstr "幽幽子大人, 你怎么——?"
 
 #: src/cutscenes/intro.inc.h:73
 msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
 msgstr ""
+"那些幽灵们似乎也被妖怪之山所吸引, 仿佛他们在渴望什么, 冥界越来越难以容纳它"
+"们......"
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr ""
+msgstr "明白, 我也要去调查吗? "
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
-msgstr ""
+msgstr "请吧."
 
 #: src/cutscenes/intro.inc.h:79
 msgid ""
 "Elsewhere at the shrine, the kappa were all huddled into a group, talking "
 "intensely in hushed tones…\n"
-msgstr ""
+msgstr "神社的另一处, 河童们聚作一团, 压低声音激烈讨论；\n"
 
 #: src/cutscenes/intro.inc.h:80
 msgid ""
 "And the tengu were furiously scribbling on their notepads, as if they’d just "
 "gotten the scoop of their careers.\n"
-msgstr ""
+msgstr "天狗们则在笔记本上疯狂涂写, 仿佛刚刚挖到了职业生涯中的独家猛料。\n"
 
 #: src/cutscenes/intro.inc.h:81
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
+"即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
-msgstr ""
+msgstr "魔理沙 （坏结局）"
 
 #: src/cutscenes/marisa_bad_end.inc.h:7
 #: src/cutscenes/marisa_extra_intro.inc.h:7
 msgid "— The Scarlet Devil Mansion\n"
-msgstr ""
+msgstr "—— 红魔馆\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr ""
+msgstr "一座位于东方幻想之地的宅邸。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
 "A nervous witch sat flipping through endless stacks of books, drinking tea "
 "instead of her usual sake…\n"
 msgstr ""
+"一位紧张的魔女坐在那里, 不停地翻阅着堆积如山的书籍, 喝着茶而非她惯常的清"
+"酒……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:13
 msgid "Hey Patchy, do ya got any more books on Magitech?"
-msgstr ""
+msgstr "额帕琪, 你这还有没有更多关于魔法科技的书? "
 
 #: src/cutscenes/marisa_bad_end.inc.h:14
 msgid ""
 "Yes, but I doubt they’ll be of much use. That machine is beyond that subject "
 "entirely."
-msgstr ""
+msgstr "有的, 但我怀疑它们用处不大。那台机器完全超出了这个范畴。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr ""
+msgstr "唉, 你可能又说对了, 像往常一样。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
-msgstr ""
+msgstr "魔理沙合上书, 任它砰地一声砸到地板上。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:20
 msgid "Mind your manners! That’s a very old tome!"
-msgstr ""
+msgstr "喂注意点啊! 那可是本非常古老的典籍! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:21
 msgid ""
 "It’s so irritatin’! I thought I solved everything but now that Tower’s just "
 "sittin’ there, ‘n the whole Mountain’s been quarantined…!"
 msgstr ""
+"真是烦死了! 我还以为我把一切都搞定了, 可现在那座塔就那么立在那儿, 整座山还被"
+"封锁了……! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:22
 msgid "It just ain’t satisfyin’, y’know?"
-msgstr ""
+msgstr "就是让人很不爽ZE, 你懂吧? "
 
 #: src/cutscenes/marisa_bad_end.inc.h:26
 msgid "I could destroy it! Make it go BOOM!"
-msgstr ""
+msgstr "那就把它炸了! 让它轰地一声灰飞烟灭! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
-msgstr ""
+msgstr "啊啊!…… 芙兰, 我之前是不是说过别再偷偷摸摸靠近别人了? "
 
 #: src/cutscenes/marisa_bad_end.inc.h:28
 msgid "Sorry!"
-msgstr ""
+msgstr "抱歉! "
 
 #: src/cutscenes/marisa_bad_end.inc.h:29
 msgid "Thank you for the offer, Flandre, but no."
-msgstr ""
+msgstr "谢谢你想帮忙, 芙兰朵露, 但还是算了吧。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:30
 msgid "Awww… how boring…"
-msgstr ""
+msgstr "啊……好无聊啊……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:34
 msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
-msgstr ""
+msgstr "和他们一起喝完茶后, 魔理沙在书架间徘徊, 寻找灵感。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
 "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
 "flat on her face.\n"
-msgstr ""
+msgstr "突然, 她感觉好像踩进了一个坑洞, 绊了一跤, 正脸朝下重重摔在地上。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:36
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
 msgstr ""
+"当她回头看向地面时, 除了那些排列整齐, 一尘不染的书架外, 什么也没看到。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
-msgstr ""
+msgstr "接着, 她注意到手底下有什么又冷又细的东西。"
 
 #: src/cutscenes/marisa_bad_end.inc.h:41
 msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
 msgstr ""
+"过了一会儿, 她意识到那大概是某种「智能设备」, 就是手持电脑之类的东西。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
 msgstr ""
+"这台设备比她见过的外界来的任何设备都要先进许多, 甚至比那个年轻神秘人的手机"
+"还更为强大。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
@@ -380,46 +421,58 @@ msgid ""
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
 msgstr ""
+"它兼具固态和液态的特性, 通过按压不同侧面可以迅速改变形状, 变成各种形态：手"
+"机, 书本, 带键盘的数码打字机……\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
 "Once Marisa worked out how to make it display something, the title of a book "
 "appeared on its dim screen…"
-msgstr ""
+msgstr "等魔理沙终于弄清楚如何让它显示内容时, 昏暗的屏幕上出现了一本书的书名……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:48
 msgid ""
 "Practical & Advanced Computational Applications of the Grand Unified Theory\n"
 "\n"
-msgstr ""
+msgstr "《大统一理论的实用与高级计算应用》\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:49
 msgid "— by Usami Renko"
-msgstr ""
+msgstr "—— 宇佐见莲子 著"
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "— Bad End —"
+msgstr "— 坏结局 —"
+
+#: src/cutscenes/marisa_bad_end.inc.h:53 src/cutscenes/reimu_bad_end.inc.h:58
+#: src/cutscenes/youmu_bad_end.inc.h:52
+msgid "Try to reach the end without using a Continue!"
+msgstr "试试不续关完成游戏吧!"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:2
 msgid "Marisa (Extra Stage Intro)"
-msgstr ""
+msgstr "魔理沙 (Extra引子)"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:8
 msgid "A haunted western mansion in an eastern wonderland."
-msgstr ""
+msgstr "一栋位于东方乐园中的阴森西式宅邸。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:12
 msgid "I get such a nervous feeling around the newcomers…"
-msgstr ""
+msgstr "我在新来者身边总是有点紧张……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:13
 msgid "They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"
-msgstr ""
+msgstr "没事啦没事啦! 你看她, 是不是还挺可爱的? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:14
 msgid "Sure, but… you said you knew them, from another world?"
-msgstr ""
+msgstr "当然, 但是……你说你从另一个世界就认识她们了? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:15
 msgid "Well, another me knew another them in another world."
-msgstr ""
+msgstr "嗯, 是另一个我在另一个世界认识了另一个她们。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:19
 msgid ""
@@ -427,20 +480,23 @@ msgid ""
 "infinity, folding onto ourselves, kinda like a really incredible katana "
 "gettin’ forged. It was intense!"
 msgstr ""
+"说真的, 我仿佛窥见了无数个可能的自我, 在无限时空中延伸, "
+"又不断折叠回自身, 就像一把绝世武士刀在淬炼成型。太震撼啦DA☆ZE"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:20
 msgid "It’s just like you to accidentally see the Time Knife…"
-msgstr ""
+msgstr "看到了「Time Knife」吗……确实符合你的风格。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:21
 msgid "The what-now?"
-msgstr ""
+msgstr "你说——什么? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:25
 msgid ""
 "Marisa had just finished accompanying Kurumi to do some ‘service’ on the "
 "Tower of Babel.\n"
 msgstr ""
+"魔理沙刚陪胡桃在巴别塔做完一些「小服务」。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:26
 msgid ""
@@ -448,71 +504,78 @@ msgid ""
 "amongst themselves off to the side of the library, laughing cheerfully over… "
 "tea?\n"
 msgstr ""
+"胡桃和宅邸的主人蕾米莉亚在图书馆一角大声地聊着八卦, "
+"两人愉快地笑着, 一边喝着……茶? \n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:27
 msgid "Marisa hoped it was tea, at least."
-msgstr ""
+msgstr "她们最好喝的是茶, 魔理沙想着。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:31
 msgid "Ah, it’s so nice to have a fresh face around here!"
-msgstr ""
+msgstr "啊, 这里终于有了张新面孔, 真是太好了! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:32
 msgid ""
 "Yeah! It was so boring being around that egghead pseudo-gami all the time."
 msgstr ""
+"是啊! 整天陪着那个书呆子伪神, 真是无聊到爆! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:33
 msgid ""
 "And my younger sister is a tad too reclusive to spend much time with me, "
 "these days…"
 msgstr ""
+"而且最近我那小妹妹也太内向了, 不太愿意花时间"
+"陪我……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:34
 msgid "Perhaps we could go out on the town sometime soon?"
-msgstr ""
+msgstr "也许咱们可以找个时间一起去人里逛逛? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:38
 msgid "Sure! Know any good spots? For, you know…"
-msgstr ""
+msgstr "好呀! 你知道有什么好地方吗? 就是, 嗯……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:39
 msgid "Oh yes, a few, but you must keep it down for now…"
-msgstr ""
+msgstr "呐……懂哒, 我知道几个地方, 但现在得小声点……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:40
 msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
-msgstr ""
+msgstr "六百六十六还有狂人日记, 我还在这儿呢! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:41
 msgid "It’s perfectly consensual, dear Ms. Kirisame, I assure you."
-msgstr ""
+msgstr "啊……雾雨小姐, 我说TA是自愿被吃的你信吗……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:45
 msgid "Forgive the young witch, she’s such a spoil-sport at times."
-msgstr ""
+msgstr "请原谅那个小女巫, 她有时候真是个扫兴鬼。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:46
 msgid "Mm, indeed~."
-msgstr ""
+msgstr "嗯, 确实呢～"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:47
 msgid "Ugh, and after I said y’all were cool…"
-msgstr ""
+msgstr "呃, 我刚还夸你们的……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:51
 msgid ""
 "It was then that a low rumble echoed through the chambers of the mansion. "
 "Slowly at first, but then gaining in intensity."
 msgstr ""
+"就在此时, 一阵低沉的轰鸣声在宅邸的厅堂中回荡起来。 "
+"起初还很微弱, 但随后逐渐增强, 愈演愈烈。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:55
 msgid "Huh? What’s that?"
-msgstr ""
+msgstr "嗯? 什么声音? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:56
 msgid "Perhaps the fairy maids are remodeling upstairs?"
-msgstr ""
+msgstr "也许是那些妖精女仆在楼上装修吧? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:57
 msgid ""
@@ -520,119 +583,139 @@ msgid ""
 "The mansion began to shake intense, as if down to its very foundation, "
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
+"\n"
+"红魔馆开始剧烈地震动起来, 似乎连地基都在颤抖, "
+"但随即又戛然而止, 就像它突然开始一样迅速结束。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
 "Before the dust had a chance to settle, an eerie, long siren began blaring "
 "in the distance outside the mansion."
 msgstr ""
+"还没一会, 红魔馆外面远处便响起了一阵诡异而悠长的警报声。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:62
 msgid "Huh?! That’s one of the sirens I had the kappa set up!"
-msgstr ""
+msgstr "啊? ! 是我让河童设置的那个警报! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:63
 msgid "Sirens?"
-msgstr ""
+msgstr "警报? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:64
 msgid "Yeah, to monitor the Tower of Babel in case anything changed."
-msgstr ""
+msgstr "没错, 主要是为了监测巴别塔, 以防有什么异变。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:65
 msgid "Ah heck, and I guess that means…"
-msgstr ""
+msgstr "糟了, 这么的话……意味着……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:69
 msgid "Y-you saw me back there, right?! You were there! I didn’t do anything!"
-msgstr ""
+msgstr "啊呀—你刚才看到咱在这对吧? ! 咱什么都没做呀! "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:70
 msgid ""
 "Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To "
 "keep the fairies out?"
 msgstr ""
+"没人说你干了啥坏事啊。你不过是关了个门而已, 对吧? "
+"为了把妖精们挡在外头? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:71
 msgid ""
 "Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
 "opens'?"
 msgstr ""
+"没、没错! 但……但会不会就像那句老话说的? "
+"「上帝关掉了一扇门, 就会打开另外一扇」? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:72
 msgid "What do ya mean?"
-msgstr ""
+msgstr "你这话是什么意思? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:76
 msgid "Kurumi got rather pale, even for a vampire."
-msgstr ""
+msgstr "胡桃脸色变得煞白, 即便对一个吸血鬼来说也是如此。"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:80
 msgid "Oh no…"
-msgstr ""
+msgstr "完蛋了……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:81
 msgid ""
 "Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
 "up. We’ll just go back, get the kappa, and—"
 msgstr ""
+"得了吧, 有啥快说啊。又不会怪你犯了错, "
+"大不了我们回去找河童, 然后——"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
-msgstr ""
+msgstr "呃, 那个……也许你该去检查一下? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:83
 msgid "Like, alone? Because I'd just get in your way?"
-msgstr ""
+msgstr "单独去吗? 因为咱会碍手碍脚吗? "
 
 #: src/cutscenes/marisa_extra_intro.inc.h:87
 msgid ""
 "But, uh, you know, there might be a really powerful enemy there now? So "
 "please be careful???"
 msgstr ""
+"可是, 呃……你也知道, 现在那里可能会出现一个非常强大的敌人? "
+"所以……请千万小心啊……"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:88
 msgid "Aw, are ya worried about me? That’s cute."
-msgstr ""
+msgstr "哎呀, 你是在担心我吗? 卡哇伊捏～"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:92
 msgid ""
 "Marisa grinned and magically summoned her broom, mounting it deftly, and "
 "shooting right out of an open window in a flash.\n"
 msgstr ""
+"魔理沙咧嘴一笑, 随即施展魔法召唤出她的扫帚, "
+"灵巧地一跃而上, 瞬间便从一扇敞开的窗户飞射而出。\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:93
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
 msgstr ""
+"她的目光紧紧锁定在妖怪之山上那座高耸着, "
+"不断震颤轰鸣的高塔之上……"
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
-msgstr ""
+msgstr "魔理沙（好结局）"
 
 #: src/cutscenes/marisa_good_end.inc.h:7
 msgid "— The Moriya Shrine\n"
-msgstr ""
+msgstr "—— 守矢神社\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:8
-msgid "A workaholic shrine at the top of of Yōkai Mountain."
-msgstr ""
+#: src/cutscenes/reimu_extra_intro.inc.h:8
+msgid "A workaholic shrine at the top of Yōkai Mountain."
+msgstr "一个坐落于妖怪之山峰顶的工作狂神社。"
 
 #: src/cutscenes/marisa_good_end.inc.h:12
 msgid ""
 "Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"
 msgstr ""
+"被击败之后, 那些外来者同意关闭她们的「巴别塔」。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
-msgstr ""
+msgstr "艾丽和胡桃被要求打扫守矢神社的地面……\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:14
 msgid ""
 "… which had become filthy from the local fairies partying non-stop, and some "
 "‘political demonstrations’ by the newly-formed ‘Insect Party’."
 msgstr ""
+"……这些地板因为妖精们没完没了的狂欢, 以及新成立的「昆虫党」"
+"进行的一些「政治示威」而变得肮脏不堪。"
 
 #: src/cutscenes/marisa_good_end.inc.h:18
 msgid ""
@@ -640,281 +723,332 @@ msgid ""
 "vector processing capabilities. Combined with other improvements, such as "
 "its DVD drive—"
 msgstr ""
+"——这玩意配备了一个全新的数学协处理器, 使其具备了先进的向量处理能力。 "
+"并且结合了其他改进, 例如DVD光驱——"
 
 #: src/cutscenes/marisa_good_end.inc.h:19
 msgid "Ah, I see. Fascinating. Wow. Incredible."
-msgstr ""
+msgstr "啊, 懂了。真有趣啊。哇哦, 太不可思议了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:20
 msgid "You two having fun?"
-msgstr ""
+msgstr "你俩玩的开心吗? "
 
 #: src/cutscenes/marisa_good_end.inc.h:21
 msgid "… y-yes, ma’am."
-msgstr ""
+msgstr "……是的, 神奈子夫人。"
 
 #: src/cutscenes/marisa_good_end.inc.h:25
 msgid ""
 "Seems like it’s taking a bit more time for the madness to wear off for her. "
 "How’s all that ‘knowledge’ working out for you, newcomer?"
 msgstr ""
+"看来她恢复正常还需要一点时间。 怎么样, 你得到的那些「知识」还受用吗, 新来的小家伙? "
 
 #: src/cutscenes/marisa_good_end.inc.h:26
 msgid ""
 "I remembered way more about retro video game consoles than I wanted to! And "
 "now *you’ve* gotta deal with it!"
 msgstr ""
+"我想到的关于复古游戏机的事情, 可比我想要的多太多了! 现在这些你也得承受了! "
 
 #: src/cutscenes/marisa_good_end.inc.h:27
 msgid ""
 "\n"
 "Elly nodded and smiled politely, trying to hold back tears of boredom."
 msgstr ""
+"\n"
+"艾丽点了点头, 礼貌地微笑着, 努力忍住因无聊而想要流出的眼泪。"
 
 #: src/cutscenes/marisa_good_end.inc.h:31
 msgid ""
 "In the end, the newcomers seemed to calm down once the effects of the Tower "
 "had worn off, just like everyone else in Gensōkyō.\n"
 msgstr ""
+"最后, 和幻想乡里的其他人一样, 这些新人在高塔的影响消退后, 似乎也逐渐平静了下来。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:32
 msgid ""
 "During an early afternoon, Marisa arrived with a picnic basket and a grin on "
 "her face."
 msgstr ""
+"午后, 魔理沙带着野餐篮, 脸上挂着灿烂的笑容来了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:36
 msgid "Ah, Ms. Kirisame. Hello again."
-msgstr ""
+msgstr "啊, 雾雨小姐, 又见面了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:37
 msgid "Yo, Elly!"
-msgstr ""
+msgstr "哟, 这不艾丽吗? "
 
 #: src/cutscenes/marisa_good_end.inc.h:38
 msgid "Do you… need something from me?"
-msgstr ""
+msgstr "你……需要我做什么吗? "
 
 #: src/cutscenes/marisa_good_end.inc.h:39
 msgid "Heck yeah I do! A drinkin’ partner!"
-msgstr ""
+msgstr "那当然啦DA☆ZE! 我需要一个陪我喝酒的小伙伴! "
 
 #: src/cutscenes/marisa_good_end.inc.h:43
 msgid "Isn’t it a little early for that?"
-msgstr ""
+msgstr "现在喝酒是不是有点太早了? "
 
 #: src/cutscenes/marisa_good_end.inc.h:44
 msgid "Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"
-msgstr ""
+msgstr "呐别这么死板嘛, 在无限的多元宇宙中, 总有个地方现在是中午吧? "
 
 #: src/cutscenes/marisa_good_end.inc.h:45
 msgid ""
 "\n"
 "Elly laughed. She wanted an excuse for a break anyways.\n"
 msgstr ""
+"\n"
+"艾丽笑了。反正她也正想找个休息的借口呢。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:46
 msgid ""
 "And so, they drank, and caught up on alternate worlds, uncanny timelines, "
 "and the strangeness of their circumstances.\n"
 msgstr ""
+"于是她们一边喝酒, 一边聊起了各自经历的平行世界, 诡异的时间线, 以及眼下这抽象的处境。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:50
 msgid ""
 "I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. "
 "Don’t ya know about Isaac Newton?"
 msgstr ""
+"哎呀, 你输掉那还用说嘛, 数学向来对魔法有点偏爱ZE。 "
+"难道你不知道艾萨克·牛顿的事吗? "
 
 #: src/cutscenes/marisa_good_end.inc.h:51
 msgid ""
 "The famous European mathematician? I studied his works, yes. But what about "
 "him?"
 msgstr ""
+"那位著名的欧洲数学家? 我是研究过他的著作, 但和他有啥关系? "
 
 #: src/cutscenes/marisa_good_end.inc.h:52
 msgid "He was an Alchemist!"
-msgstr ""
+msgstr "他可是个炼金术士! "
 
 #: src/cutscenes/marisa_good_end.inc.h:53
 msgid "He was a… what?!"
-msgstr ""
+msgstr "他是个……什么? ! "
 
 #: src/cutscenes/marisa_good_end.inc.h:57
 msgid ""
 "Yup. There’s even a copy of his occult book down at the library I frequent."
 msgstr ""
+"没错。我常去的那间图书馆里, 甚至还藏有他一本关于神秘学著作的抄本呢。"
 
 #: src/cutscenes/marisa_good_end.inc.h:58
 msgid "He was into a lotta wild stuff."
-msgstr ""
+msgstr "他可是涉猎了很多稀奇古怪的领域呢。"
 
 #: src/cutscenes/marisa_good_end.inc.h:59
 msgid "Kinda funny ya hadn’t heard of that, actually."
-msgstr ""
+msgstr "你居然没听说过这些……还挺有意思的。"
 
 #: src/cutscenes/marisa_good_end.inc.h:60
 msgid ""
 "Hah. That… *is* kind of funny, actually. I never ran across any of *those* "
 "books of his…"
 msgstr ""
+"哈哈, 这……确实还挺有趣的。我从来没见过他那些书……"
 
 #: src/cutscenes/marisa_good_end.inc.h:64
 msgid ""
 "Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
 msgstr ""
+"喂振作点嘛, 你爱在这儿待多久都行ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:65
 msgid "But what if this Gensōkyō collapses, too…?"
-msgstr ""
+msgstr "但如果这个幻想乡……也崩溃了怎么办? "
 
 #: src/cutscenes/marisa_good_end.inc.h:66
 msgid ""
 "It could! The Hakurei Barrier could fall tomorrow! But what’s the point in "
 "worryin’ about all that?"
 msgstr ""
+"当然有这种可能啊! 说不定明天博丽大结界就炸了! 但问题是, "
+"整天担心这些又有什么用呢? "
 
 #: src/cutscenes/marisa_good_end.inc.h:67
 msgid "Right now, I say we enjoy what we got!"
-msgstr ""
+msgstr "依我看, 咱们就该好好享受眼前拥有的一切DA☆ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:71
 msgid "I suppose you’re right."
-msgstr ""
+msgstr "我想你说得对。"
 
 #: src/cutscenes/marisa_good_end.inc.h:72
 msgid "Although, I have to ask… how did you remember me?"
-msgstr ""
+msgstr "不过, 我得问一下……你是怎么记得我的? "
 
 #: src/cutscenes/marisa_good_end.inc.h:73
 msgid "Oh, that’s easy. Mushrooms!"
-msgstr ""
+msgstr "哦, 那很简单啊。蘑菇! "
 
 #: src/cutscenes/marisa_good_end.inc.h:74
 msgid "Mush… rooms? As in, mycelium?"
-msgstr ""
+msgstr "蘑……菇? 你是说菌丝? "
 
 #: src/cutscenes/marisa_good_end.inc.h:78
 msgid ""
 "Yeah! A while ago, I was cookin’ up some especially powerful ones I found in "
 "a cave near the one-armed hermit’s house…"
 msgstr ""
+"正确! 前段时间, 我炖了些在独臂仙人家附近的洞穴里找到的, 特别厉害的蘑菇……"
 
 #: src/cutscenes/marisa_good_end.inc.h:79
 msgid "And then, BOOM, there was a small explosion!"
-msgstr ""
+msgstr "然后, 轰的一声, 突然发生了个小爆炸! "
 
 #: src/cutscenes/marisa_good_end.inc.h:80
 msgid ""
 "Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My "
 "lives were flashin’ before my eyes!"
 msgstr ""
+"我还没反应过来, 就看到外面出现了各种各样的「自己」。我的一生仿佛在眼前飞速闪现! "
 
 #: src/cutscenes/marisa_good_end.inc.h:81
 msgid ""
 "Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
 msgstr ""
+"总之, 虽然花了一点时间, 但我还是模模糊糊记起了那个吸血鬼小女孩胡桃。 "
+"后来当我看到你的时候, 我就在想: 哇贞德食泥鸭! ! "
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
-msgstr ""
+msgstr "太他喵荒了。你这个人, 简直荒到天了。"
 
 #: src/cutscenes/marisa_good_end.inc.h:86
 msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
-msgstr ""
+msgstr "但仔细想想, 在幻想乡这样的地方, 这似乎也算不上有多离奇了……"
 
 #: src/cutscenes/marisa_good_end.inc.h:87
 msgid ""
 "… and you were such a child when I met you. It’s odd to see you all grown "
 "up, even if it’s another you entirely."
 msgstr ""
+"……我与你初遇时, 你还只是个孩子。现在看到你已经长大成人, 即使"
+"这只是另一个「你」, 也总觉得有些奇妙。"
 
 #: src/cutscenes/marisa_good_end.inc.h:88
 msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
-msgstr ""
+msgstr "我可得让你知道, 我可一天都没变得更聪明ZE"
 
 #: src/cutscenes/marisa_good_end.inc.h:92
 msgid ""
 "Many residents of Gensōkyō wondered if the Tower would be a blight on the "
 "skyline for all eternity.\n"
 msgstr ""
+"幻想乡的许多居民都在纳闷, 那座塔会不会永远矗立在天际上, "
+"成为一道挥之不去的阴影。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:93
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
 msgstr ""
+"另一些人则在思考, 是否能够利用它的力量来造福众生。\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
 "But for the guardians of Gensōkyō, they would need to be vigilant, lest it "
 "suddenly spring to life again…"
 msgstr ""
+"但对于幻想乡的守护者们来说, 她们必须保持警惕, 以免它突然再度苏醒……"
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "— Good End —"
+msgstr "— 好结局 —"
+
+#: src/cutscenes/marisa_good_end.inc.h:98 src/cutscenes/reimu_good_end.inc.h:71
+#: src/cutscenes/youmu_good_end.inc.h:68
+msgid "The Extra Stage is not ready yet, sorry! ^_^'"
+msgstr "Ex面还没做好, 抱歉! ^_^"
 
 #: src/cutscenes/reimu_bad_end.inc.h:2
 msgid "Reimu (Bad Ending)"
-msgstr ""
+msgstr "灵梦 (坏结局)"
 
 #: src/cutscenes/reimu_bad_end.inc.h:9
 msgid ""
 "The Tower had powered down, yet the instigators were nowhere to be found.\n"
 msgstr ""
+"高塔已经关闭, 但始作俑者却无影无踪。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
-msgstr ""
+msgstr "灵梦回到了她的神社, 不确定自己是否真的做成了什么。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:11
 msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
 msgstr ""
+"山中的神明与妖怪们悄然在神社周围等待, 屏息凝神。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
-msgstr ""
+msgstr "灵梦叹了口气, 然后她当众大喊:\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:16
 msgid ""
 "Listen up! I stopped the spread of madness, but until further notice, Yōkai "
 "Mountain is off limits!"
 msgstr ""
+"全体目光向我看齐! 我虽然阻止了疯狂的蔓延, 但在进一步通知之前, "
+"妖怪之山一律禁止进入! "
 
 #: src/cutscenes/reimu_bad_end.inc.h:20
 msgid "Nobody was pleased with that.\n"
-msgstr ""
+msgstr "没有人对此感到满意。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:21
 msgid "The Moriya Gods were visibly shocked.\n"
-msgstr ""
+msgstr "守矢的俩大神感到极其震惊。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:22
 msgid ""
 "The kappa demanded that they be able to fetch their equipment, and tend to "
 "their hydroponic cucumber farms.\n"
 msgstr ""
+"河童们坚持要求她们必须取回自己的设备, "
+"以及照看她们的水培黄瓜农场。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
 "The tengu furiously scribbled down notes, once again as if they’d had the "
 "scoop of the century, before also beginning to make their own demands.\n"
 msgstr ""
+"天狗们疯狂地奋笔疾书, 仿佛又一次拿到了世纪大新闻, "
+"随后也开始提出自己的种种要求。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:27
 msgid ""
 "Once Reimu had managed to placate the crowd, she sat in the back of the "
 "Hakurei Shrine, bottle of sake in hand.\n"
 msgstr ""
+"等灵梦好不容易安抚完人群后, 她便坐在博丽神社的后院, "
+"手里握着一瓶清酒。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:28
 msgid ""
 "She didn’t feel like drinking, however. She cradled it without even "
 "uncorking it, sighing to herself."
 msgstr ""
+"然而她并没有那种兴致。她只是握着酒瓶, 甚至没有打开瓶塞, "
+"独自轻轻叹了口气。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:32
 msgid "Oh my, a little dissatisfied, aren’t we?"
-msgstr ""
+msgstr "哎呀呀, 很不甘心, 是吧? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:33
 msgid ""
@@ -922,119 +1056,126 @@ msgid ""
 "Reimu was never surprised by Yukari’s sudden appearances anymore, of "
 "course.\n"
 msgstr ""
+"\n"
+"当然, 灵梦早已不会因紫突然出现的样子感到惊讶了。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:34
 msgid "It’s unlike you to stop until everything is business as usual, Reimu."
-msgstr ""
+msgstr "这可不像你啊, 灵梦, 按你平时不都是非要一切恢复正常才肯罢休的吗? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:35
 msgid "Depressed?"
-msgstr ""
+msgstr "很沮丧吗? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:39
 msgid "Yeah. That place sucked."
-msgstr ""
+msgstr "是啊, 那个地方真让人提不起劲。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:40
 msgid "Perhaps I should’ve gone with you, hmm?"
-msgstr ""
+msgstr "或许我该跟你一起去的, 嗯哼? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:41
 msgid "Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?"
-msgstr ""
+msgstr "哈? 为啥? 你是想干脆把那整个地方与幻想乡直接隔离开吗? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:42
 msgid "That might be a bit much, even for me, dear."
-msgstr ""
+msgstr "那可能有点太夸张了, 就算是我也做不到那种地步啦, 灵梦酱。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:46
 msgid ""
 "Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
 "feel frustrated and… lonely?"
 msgstr ""
+"不管那「疯狂」到底是什么, 它也影响到我了。让我感到烦躁, "
+"还有……孤独? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
-msgstr ""
+msgstr "可我为什么会感到孤独呢? 这根本说不通啊。"
 
 #: src/cutscenes/reimu_bad_end.inc.h:51
 msgid "So, what will you do?"
-msgstr ""
+msgstr "那么, 你打算怎么办? "
 
 #: src/cutscenes/reimu_bad_end.inc.h:52
 msgid ""
 "Find a way to get rid of it, eventually. I’m sure there’s an answer "
 "somewhere out there…"
 msgstr ""
+"还是得想办法摆脱它, 我相信总会有解决的办法的……"
 
 #: src/cutscenes/reimu_bad_end.inc.h:53
 msgid ""
 "\n"
 "Yukari smiled.\n"
 msgstr ""
+"\n"
+"紫淡淡的笑了。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:54
 msgid "Glad to hear it. It’s your duty, after all."
-msgstr ""
+msgstr "很高兴听到你这么说。毕竟这是你的责任啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:2
 msgid "Reimu (Extra Stage Intro)"
-msgstr ""
+msgstr "灵梦 (Extra引子)"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr ""
-
-#: src/cutscenes/reimu_extra_intro.inc.h:8
-msgid "A workaholic shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "—— 守矢神社"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
 msgid ""
 "Reimu was reading a book she'd borrowed from the Human Village’s book rental "
 "store, Suzunaan."
 msgstr ""
+"灵梦正在读一本她从人间之里的租书店「铃奈庵」搞来的书。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:13
 msgid ""
 "It was her first ‘science fiction’ series, apparently about a flat, circular "
 "world that floated through space on the backs of four turtles…"
 msgstr ""
+"这是她第一次读「科幻」系列小说, 讲的似乎是一个平坦的"
+"圆形世界, 由四只乌龟驮着在太空中漂浮……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:17
 msgid "Suddenly, Yukari slid in through one of her gaps."
-msgstr ""
+msgstr "突然, 紫从打开的隙间蹦出来了。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:18
 msgid "As usual, Reimu could feel her presence right away.\n"
-msgstr ""
+msgstr "和往常一样, 灵梦立刻就感觉到了她的存在。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:19
 msgid ""
 "Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
 "with solemn, silent expressions."
 msgstr ""
+"奇怪的是, 蓝和橙也被拖来了, 以庄重而沉默的表情站在紫身后。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr ""
+msgstr "哎呀呀, 你居然也会在竞争对手的神社里消磨时间呢? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
-msgstr ""
+msgstr "我是来站岗执勤的。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:25
 msgid "Hm? Not trusting enough of Ms. Kochiya to—"
-msgstr ""
+msgstr "嗯? 难道你觉得东风谷小姐还不够靠谱, 所以——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:26
 msgid "No."
-msgstr ""
+msgstr "非也。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:30
 msgid "*giggle* I see."
-msgstr ""
+msgstr "(轻笑) 知道啦。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:31
 msgid ""
@@ -1042,335 +1183,378 @@ msgid ""
 "As if on cue, Elly came running up the steps of the Moriya Shrine, "
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
+"\n"
+"仿佛应声而至一般, 艾丽气喘吁吁地跑上了守矢神社的台阶, 身上"
+"还穿着一套神社的巫女服。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
 msgid ""
 "Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
 "meet—"
 msgstr ""
+"博丽小姐! 出大事了——啊抱歉, 原来有客人在, 很高兴见到您——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:36
 msgid "Wait, no, there’s no time for that!"
-msgstr ""
+msgstr "……不行, 现在没时间客套了! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:37
 msgid "Slow down. What’s wrong?"
-msgstr ""
+msgstr "你先冷静点, 到底发生什么事了? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:41
 msgid ""
 "Elly brought out some kind of small communicator device. It projected an "
 "image into the air, like an illusion.\n"
 msgstr ""
+"艾丽掏出一个小型通讯装置, 那设备将一幅影像投射到空中, 宛如幻象一般。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:42
 msgid "It’s the Tower! It’s spinning back up!"
-msgstr ""
+msgstr "是那座塔! 它又开始重新运转了! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:43
 msgid "Spinning? It looks completely stationary from here."
-msgstr ""
+msgstr "啥玩意? 从这里看它完全静止不动啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:44
 msgid ""
 "No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"
 msgstr ""
+"不! 我的意思是它正在开机, 正在充能! 管它叫什么! 总之那破塔要重新启动了! ! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:48
 msgid "Huh? It thought you were in control of it."
-msgstr ""
+msgstr "啊? 我还以为是你在控制它呢。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:49
 msgid ""
 "I am! I was! I should be…! But this device isn’t letting me do anything!"
 msgstr ""
+"本来是这样的! 我之前确实在控制它! 我本该能控制的……! 但这个装置"
+"现在完全不听我的指令了! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:50
 msgid ""
 "And I thought about going back to the Tower to turn it off again, but I-… "
 "no, i-it’s not safe to."
 msgstr ""
+"我本想返回高塔再把它关掉, 但……那里现在太危险了, 根本回不去啊。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:51
 msgid "Eh? Why not?"
-msgstr ""
+msgstr "诶? 为什么不行? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:55
 msgid "Hm? What’s all this, then?"
-msgstr ""
+msgstr "嗯? 到底发生了什么事啊? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:56
 msgid "Kurumi, the Tower's turning back on!"
-msgstr ""
+msgstr "胡桃, 高塔正在重新启动! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:57
 msgid ""
 "Huh?! But all I did was seal off the mansion's main doors, so the fairies "
 "would leave it alone, just like you asked!"
 msgstr ""
+"什么? ! 但我只是按你要求, 封住了宅子的大门, 好让那些妖精别进去"
+"捣乱而已啊! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:58
 msgid "I… what?!"
-msgstr ""
+msgstr "我……什么? ! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:62
 msgid ""
 "Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
 "the fairies stop playing inside of it'!"
 msgstr ""
+"你……你留了张纸条给我, 上面写着：“胡桃, 去把宅子的模块封闭起来, "
+"别让妖精们再进去玩了”! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:63
 msgid "So I did!!"
-msgstr ""
+msgstr "所以我才这么做的啊! ! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:64
 msgid ""
 "I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
 "I have a hard time with stroke order—"
 msgstr ""
+"我根本没给你留过这种纸条! 这字迹也不是我的! 你明明知道我写字笔顺总是乱的——"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:65
 msgid "Okay, excuse me, but what does this have to do with anything?"
-msgstr ""
+msgstr "额, 不好意思, 这跟现在的事情到底有什么关系啊? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:69
 msgid "I… I may have stolen it from someone."
-msgstr ""
+msgstr "我……我那个高塔可能是从别人那里偷来的。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:70
 msgid "That doesn't answer my question."
-msgstr ""
+msgstr "这并没有回答我的问题。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:71
 msgid "She’s… still trapped in there. I thought I'd sealed her away, though!"
-msgstr ""
+msgstr "她……还被困在里面。 可是我以为我已经把她封印住了啊! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:72
 msgid "There’s no way she should've been able to escape that!"
-msgstr ""
+msgstr "她根本不可能从那种封印中逃脱的! "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:76
 msgid ""
 "Elly and Kurumi got chilled expressions on their faces, falling completely "
 "silent.\n"
 msgstr ""
+"艾丽和胡桃的脸色瞬间变得苍白, 整个人僵住, 陷入了彻底的沉默。\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:77
 msgid "Reimu closed her book and sighed."
-msgstr ""
+msgstr "灵梦合上书本, 叹了口气。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:81
 msgid ""
 "Alright, okay, she’s a big scary monster. I had a feeling something like "
 "this might happen…"
 msgstr ""
+"行了行了, 是个又大又可怕的怪物对吧。我早就有种预感, 可能会出这种事……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:82
 msgid "Before you go, Reimu…"
-msgstr ""
+msgstr "在你走之前, 灵梦……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:83
 msgid "Huh? What now? Want to come with?"
-msgstr ""
+msgstr "嗯? 怎么了? 想一起去吗? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:87
 msgid ""
 "You do care very deeply about Gensōkyō, and everyone within it, don’t you?"
-msgstr ""
+msgstr "你其实非常在乎幻想乡, 以及生活在其中的每一个人, 对吧? "
 
 #: src/cutscenes/reimu_extra_intro.inc.h:88
 msgid ""
 "Even those who fundamenally threaten us. You even give the nastiest yōkai a "
 "chance at redemption."
 msgstr ""
+"即便是那些从根本上威胁着我们的存在, 还是最恶劣的妖怪, 你都愿意"
+"给他们一次赎罪的机会。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:89
 msgid "I admire that in you."
-msgstr ""
+msgstr "我欣赏你这一点。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:93
 msgid "Ehhhh? Why are you being so sincere? It’s freaking me out."
-msgstr ""
+msgstr "诶诶诶……? 怎么突然这么认真啊? 搞得我都有点发毛了。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:94
 msgid "Even you think I’m a huge softie, huh? How disappointing…"
-msgstr ""
+msgstr "连你也觉得我是个超级老好人是吧? 真是令人失望啊……"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:95
 msgid ""
 "\n"
 "Yukari remained silent, responding only with a gentle smile."
 msgstr ""
+"\n"
+"紫保持沉默, 只是轻轻一笑作为回应。"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:99
 msgid ""
 "In the distance, the Tower of Babel began to emit a low, eerie rumble, as "
 "Reimu flew off to meet her next challenge…"
 msgstr ""
+"远处, 巴别塔开始发出低沉而诡异的轰鸣声, 与此同时, 灵梦"
+"飞身而去, 迎向她下一个挑战……"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
-msgstr ""
+msgstr "灵梦 (好结局)"
 
 #: src/cutscenes/reimu_good_end.inc.h:8
 msgid "A rival shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "位于妖怪之山山顶的一座竞争对手神社。"
 
 #: src/cutscenes/reimu_good_end.inc.h:12
 msgid ""
 "Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"
 msgstr ""
+"听着, 早苗, 我不知道什么叫「速通」, 也完全不在乎! "
 
 #: src/cutscenes/reimu_good_end.inc.h:13
 msgid ""
 "You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
 "as quickly as possible, right?"
 msgstr ""
+"你真是个古板的人啊, 灵梦! 听好了, 你喜欢尽快解决异变, 对吧? "
 
 #: src/cutscenes/reimu_good_end.inc.h:14
 msgid "It’s like that, except with video games!"
-msgstr ""
+msgstr "就像那样, 只不过对象换成了电子游戏而已! "
 
 #: src/cutscenes/reimu_good_end.inc.h:15
 msgid "I don’t know anything about ‘video games’, either!"
-msgstr ""
+msgstr "老娘也不知道「电子游戏」是指什么! "
 
 #: src/cutscenes/reimu_good_end.inc.h:19
 msgid ""
 "The Tower had been shut down, ending the crisis of madness sweeping the "
 "land.\n"
 msgstr ""
+"高塔已被关闭, 席卷大地的疯狂危机也随之终结。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:20
 msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
 msgstr ""
+"几乎所有人都恢复了正常, 尽管仍有少数奇怪的家伙在哀叹他们失去了所谓的「知识」。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
+"胡桃和艾丽被征去清扫守矢神社的参拜道路, 作为她们所作所为的赎罪。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr ""
+msgstr "当然, 偶尔还会收到守矢神社神明们的一些奇怪要求……"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
-msgstr ""
+msgstr "真不敢相信! 核聚变真的有这么简单吗? ! "
 
 #: src/cutscenes/reimu_good_end.inc.h:27
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
 msgstr ""
+"是、是的, 只要调整一下那个系数, 再利用……来塑造磁场约束场就行了——"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
 "Of course! I was such a fool! I can’t believe I ever bothered attempting to "
 "harness the Yatagarasu!"
 msgstr ""
+"啊……我真是个大baka! 我居然还费尽心思去试图驾驭八咫乌, 简直"
+"比那个笨鸟还baka! "
 
 #: src/cutscenes/reimu_good_end.inc.h:29
 msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
+"终于, 我掌握了幻想乡现代化的最后关键技术, 终于能够防止能源危机波及我们了! "
+"核聚变能源如今已触手可及! "
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
-msgstr ""
+msgstr "啊……天哪, 您真的没事吗? "
 
 #: src/cutscenes/reimu_good_end.inc.h:34
 msgid "Heh heh, don’t worry, this is as normal as it gets for Kanako."
-msgstr ""
+msgstr "呵呵, 别担心, 这对神奈子来说已经算是最正常的状态了。"
 
 #: src/cutscenes/reimu_good_end.inc.h:35
 msgid "‘Normal’? Really?"
-msgstr ""
+msgstr "「正常」? 你认真的? "
 
 #: src/cutscenes/reimu_good_end.inc.h:36
 msgid ""
 "Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like "
 "this?"
 msgstr ""
+"神奈子是个绿色能源狂热者, 你不觉得她这样子挺可爱的吗? "
 
 #: src/cutscenes/reimu_good_end.inc.h:40
 msgid ""
 "In the midst of all this, Reimu was spending more time on Yōkai Mountain, "
 "claiming she was ‘keeping watch’."
 msgstr ""
+"在这纷乱之中, 灵梦却越来越多地待在妖怪之山上, 声称自己是在「监视」。"
 
 #: src/cutscenes/reimu_good_end.inc.h:44
 msgid "Hey, Elly."
-msgstr ""
+msgstr "嘿, 艾丽。"
 
 #: src/cutscenes/reimu_good_end.inc.h:45
 msgid "Ah, yes? Do you need something from me?"
-msgstr ""
+msgstr "啊, 怎么了? 你找我有什么事吗? "
 
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
 msgstr ""
+"我倒是有点意外, 你居然没有还在生大家的气, 一点都没有? "
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
-msgstr ""
+msgstr "你之前在上面简直像个辣脆头子一样大吼大叫。"
 
 #: src/cutscenes/reimu_good_end.inc.h:51
 msgid ""
 "It seems that the Tower's influence got to me, in the end. I thought I was "
 "stronger than that, but…"
 msgstr ""
+"看来那座高塔的影响最终还是波及到了我, 我以为自己能更坚强些, 但……"
 
 #: src/cutscenes/reimu_good_end.inc.h:52
 msgid "Of course, I’m still sad about my own Gensōkyō, but to go that far…"
 msgstr ""
+"当然, 我对自己世界的幻想乡依然感到悲伤, 但因此做到那种地步……还是太过分了。"
 
 #: src/cutscenes/reimu_good_end.inc.h:57
 msgid "What a weird machine. I wonder what the kappa think about it."
-msgstr ""
+msgstr "真是个奇怪的机器, 不知道那些河童会怎么看待它呢。"
 
 #: src/cutscenes/reimu_good_end.inc.h:58
 msgid ""
 "The kappa won’t touch the thing, and even Kanako has talked herself out of "
 "it."
 msgstr ""
+"那些河童根本不敢碰那玩意, 就连神奈子也已经打消了这个念头。"
 
 #: src/cutscenes/reimu_good_end.inc.h:59
 msgid ""
 "Still, it’s odd how there were forgotten yōkai from another Gensōkyō, though…"
 msgstr ""
+"不过, 这里竟然会出现来自另一个幻想乡的, 早已被遗忘的妖怪, 这还真是件奇怪的事啊……"
 
 #: src/cutscenes/reimu_good_end.inc.h:60
 msgid "Ah, whatever. As long as it stays quiet."
-msgstr ""
+msgstr "呐算了, 只要它安安静静的别出事就好。"
 
 #: src/cutscenes/reimu_good_end.inc.h:64
 msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
 msgstr ""
+"随着那种令人发狂的感觉消失, 每个人似乎都比平时更加放松, 仿佛"
+"卸下了沉重的负担。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
 "But for some reason, Reimu in particular seemed to have a difficult time "
 "settling down.\n"
-msgstr ""
+msgstr "但不知为何, 灵梦似乎特别难以平静下来。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:66
 msgid ""
 "And even as some grew to accept the Tower of Babel looming in the skyline, "
 "there were frequent mutterings over potentially getting rid of it entirely.\n"
 msgstr ""
+"尽管有些人逐渐接受了那座耸立在天际上的巴别塔, 但关于是否应该"
+"彻底将其拆除的议论仍不绝于耳。\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
-msgstr ""
+msgstr "不过, 除了某位「隙间妖怪」之外, 谁也不知道究竟该如何下手……"
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
@@ -1432,114 +1616,123 @@ msgstr "帕秋莉"
 
 #: src/cutscenes/youmu_bad_end.inc.h:2
 msgid "Yōmu (Bad Ending)"
-msgstr ""
+msgstr "妖梦 (坏结局)"
 
 #: src/cutscenes/youmu_bad_end.inc.h:7
 msgid "— The Tower of Babel"
-msgstr ""
+msgstr "—— 巴别塔"
 
 #: src/cutscenes/youmu_bad_end.inc.h:8
 msgid "The infernal machine from another world."
-msgstr ""
+msgstr "来自另一个世界的地狱机器。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:12
 msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
-msgstr ""
+msgstr "在如今耸立于幻想乡天际的高塔脚下……"
 
 #: src/cutscenes/youmu_bad_end.inc.h:13
 msgid ""
 "…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, "
 "stood over a makeshift grave, praying.\n"
 msgstr ""
+"全幻想乡兼冥界最NB的剑客, 魂魄妖梦, 站在一个临时堆砌的坟墓前祈祷。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:14
 msgid ""
 "No, she hadn’t murdered her opponent. It was, perhaps, a little more "
 "troubling than that…"
-msgstr ""
+msgstr "不, 她并没有谋杀她的对手。这件事, 或许比那还要令人不安一些……"
 
 #: src/cutscenes/youmu_bad_end.inc.h:18
 msgid "Tell me again… she simply vanished? In mid-air?"
-msgstr ""
+msgstr "再跟我说一遍……她就这么消失了? 在半空中? "
 
 #: src/cutscenes/youmu_bad_end.inc.h:19
 msgid "Yes. One moment she was there, and the next, she was not."
-msgstr ""
+msgstr "是的。前一刻她还在那里, 下一刻就不见了。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:20
 msgid ""
 "The vampire girl from before also disappeared, in addition to all of the "
 "loitering fairies."
 msgstr ""
+"之前那个吸血鬼也消失了, 还有所有那些闲逛的妖精也都不见了。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:21
 msgid ""
 "It was as if everything within it ceased to exist entirely, except myself."
-msgstr ""
+msgstr "仿佛其中的一切都彻底不复存在了，只剩下我自己。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:25
 msgid ""
 "Thus, I must assumed I have caused their demise in some way, despite my best "
 "intentions."
 msgstr ""
+"因此, 我不得不认为, 尽管出于最好的本意, 我还是以某种方式导致了他们的死亡。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:26
 msgid ""
 "That woman, Elly… we knew each other for such a short time, yet her passion "
 "and fury affected me so deeply."
 msgstr ""
+"那个女人，艾丽……我们相识的时间如此短暂, 可她的激情与怒火却深深触动了我。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:27
 msgid ""
 "Hmm… I don’t sense any lost souls here, and nobody liked that passed through "
 "the Netherworld."
-msgstr ""
+msgstr "嗯……可我在这里感觉不到任何迷失的灵魂，而且也没有人曾经到过冥界。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:28
 msgid ""
 "I doubt she has truly died, then… ah, but all this ‘parallel universes’ "
 "stuff is beyond me, hehehe."
 msgstr ""
+"那我就该怀疑她应该没有真正死去…… 啊，不过这些「平行宇宙」的事情嘛, "
+"可就超出我的理解范围外啦, 哈哈。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:32
 msgid ""
 "The Tower had ceased functioning, returning the land and yōkai around it to "
 "some semblance of status quo.\n"
 msgstr ""
+"高塔已停止运转, 周围的土地与妖怪们恢复到了近似于原来的状态。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:33
 msgid ""
 "But the instigators were nowhere to be found. It was as if they had never "
 "existed.\n"
-msgstr ""
+msgstr "但那些始作俑者却无处可寻, 仿佛她们从未存在过一般。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:34
 msgid ""
 "Yōmu's newfound fearlessness had been tempered as well, replaced with a "
 "sense of loss."
 msgstr ""
+"妖梦之前所持有的无畏之心也已消退，取而代之的是一种失落感。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:38
 msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
-msgstr ""
+msgstr "感谢您屈尊应允在下这古怪的请求，幽幽子大人。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
-msgstr ""
+msgstr "哎呀别放在心上啦, 你做得很棒了！"
 
 #: src/cutscenes/youmu_bad_end.inc.h:40
 msgid ""
 "But since we’re in the neighbourhood… do you think the kappa are running one "
 "of their famous festival grill stands?"
 msgstr ""
+"不过既然我们走到这了……你觉得河童们会不会在附近摆烧烤摊啊？"
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
-msgstr ""
+msgstr "或许是为了庆祝事件顺利解决搞的吧……？"
 
 #: src/cutscenes/youmu_bad_end.inc.h:42
 msgid "We could go on a fun date! And I’m feeling a bit peckish…"
-msgstr ""
+msgstr "那我们就去好好看看吧！而且我也有点饿了……"
 
 #: src/cutscenes/youmu_bad_end.inc.h:46
 msgid ""
@@ -1547,160 +1740,175 @@ msgid ""
 "(From A Safe Distance)’ festival, to encourage human and yōkai tourism after "
 "everyone had been scared off by the Tower.\n"
 msgstr ""
+"妖怪之山的河童们正在举办一场名为「远观奇塔(请保持安全距离)」的节日庆典, "
+"旨在高塔事件吓跑众人之后, 重新吸引人类与妖怪前来观光旅游。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:47
 msgid "Although, Yōmu found it difficult to enjoy herself, of course.\n"
-msgstr ""
+msgstr "不过，她当然还是很难真正享受其中。\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:48
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
 msgstr ""
+"她仍希望那位怒火中烧、秉持正义的持镰者, 依然在那等待着与她再度对决……"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:2
 msgid "Yōmu (Extra Stage Intro)"
-msgstr ""
+msgstr "妖梦 (Extra引子)"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:7
 msgid "— The Netherworld"
-msgstr ""
+msgstr "——冥界"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:8
 msgid "The nexus between life and death."
-msgstr ""
+msgstr "生与死所系的纽带。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:12
 msgid ""
 "The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
 "between the sakura trees of the ethereal realm.\n"
 msgstr ""
+"两位剑术大师, 魂魄妖梦与艾丽, 正在缥缈之境的樱花树下, 享受一场暮色"
+"中的对决。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:13
 msgid ""
 "The swordswoman was showing the scythe-bearer one of her favourite past-"
 "times: the mid-air bisecting sakura petals.\n"
 msgstr ""
+"那位剑客正在向持镰者展示她钟爱的消遣之一: 在半空中将樱花花瓣一分为二。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:14
 msgid "Yōmu was quite proud of herself, and Elly equally as impressed."
-msgstr ""
+msgstr "妖梦十分甚至九分的自豪，而艾丽也同样感到印象深刻。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:18
 msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
 msgstr ""
+"正当她们欢愉之际, 突然——艾丽从裙袋里掏出一个小装置。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
 "It was a communication device of some sort that seemed to be vibrating "
 "vigorously, projecting an illusion into the air…\n"
 msgstr ""
+"那是个某种通讯装置, 正剧烈地震动着, 并在空中投射出一道幻象……\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:20
 msgid "Elly's expression suddenly ran cold."
-msgstr ""
+msgstr "艾丽的神情骤然冷至冰点。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:24
 msgid "Hm? Is something the matter, my dear?"
-msgstr ""
+msgstr "嗯？艾丽酱, 出什么事了吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:25
 msgid "The Tower…! No, it can’t be! But I…!"
-msgstr ""
+msgstr "那高塔……! 不，这不可能！可是我……！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:26
 msgid "Has something changed?"
-msgstr ""
+msgstr "有什么变故吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:27
 msgid "It’s turning back on! In fact, at its current rate of power, it could—"
-msgstr ""
+msgstr "它正在重新启动! 照它目前的充能速度, 恐怕——"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:31
 msgid "… there’s no other explanation for this."
-msgstr ""
+msgstr "……只有一种可能了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:32
 msgid "It’s her… the one I told you about."
-msgstr ""
+msgstr "是她……就是我跟你提过的那位。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:33
 msgid ""
 "The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
 "Tower from."
 msgstr ""
+"那个救了我, 却又操控了我的人。那个把我……从高塔中「解放」出来的人。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:37
 msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
-msgstr ""
+msgstr "妖梦深吸一口气，收剑入鞘，轻轻叹了口气。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:38
 msgid "I see. So, she’s arrived on her own after all."
-msgstr ""
+msgstr "我明白了。所以, 她终究还是亲自下场了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:39
 msgid ""
 "I-I thought she would be imprisoned forever, until we were ready! But "
 "somehow, somehow she’s—"
 msgstr ""
+"我……我以为她会被永远囚禁, 直到我们准备好面对她的那一天! 可不知怎的, 她她她——"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:40
 msgid ""
 "… she’s freed herself from her prison, and she no doubt intends to finish "
 "what she started."
 msgstr ""
+"……她已经从自己的牢狱中脱身, 而且毫无疑问的是她打算完成当初未竟之事。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:41
 msgid "I see. Then it appears we no longer possess the luxury of time."
-msgstr ""
+msgstr "明白。看来我们已再不能坐以待毙了。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:45
 msgid "Yōmu took Elly's hands between her own, grinning confidently.\n"
-msgstr ""
+msgstr "妖梦将艾丽的双手合在自己掌中, 自信地一笑。\n"
+# 666牵上手了
 
 #: src/cutscenes/youmu_extra_intro.inc.h:46
 msgid "Elly! Let’s face her now, together!"
-msgstr ""
+msgstr "艾丽! 那就让我们现在一起面对她吧！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:47
 msgid "I-I… I thought we'd have more time! It’s too soon!"
-msgstr ""
+msgstr "我……我原以为我们还有更多时间! 现在还没准备好啊喂！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:48
 msgid ""
 "I’m worried the machine will influence me again! I can’t put you at risk "
 "again, and I can’t go with you!"
 msgstr ""
+"我担心那台机器会再次影响我! 我绝不能再让你陷入危险, 也不能跟你一起去！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:49
 msgid "Please forgive me, Yōmu!"
-msgstr ""
+msgstr "请你原谅我, 妖梦！"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:53
 msgid "I completely understand."
-msgstr ""
+msgstr "我完全理解这一点。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:54
 msgid "You… do?"
-msgstr ""
+msgstr "你……真的？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:55
 msgid ""
 "Yes, of course. There’s a time and place to face one’s fears. This is not "
 "your time or place, even somewhat literally."
 msgstr ""
+"是的。直面恐惧也需恰当时机与场合, 而此刻无论从哪方面来说, 都不是属于你的时机或战场。"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:56
 msgid ""
 "However, don’t think you've gotten off so easily. When I return, it shall be "
 "your turn to pay for dinner. Understand?"
 msgstr ""
+"不过嘛, 可别以为这样就轻松脱身了。等我回来, 可就轮到你请我吃饭了, 明白吗？"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:60
 msgid "Elly couldn’t help but laugh, despite her fears.\n"
-msgstr ""
+msgstr "尽管心里还是很害怕, 艾莉还是绷不住哈哈大笑起来。\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:61
 msgid ""
@@ -1708,168 +1916,197 @@ msgid ""
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
 msgstr ""
+"与艾丽和幽幽子大人道别后, 妖梦重返幻想乡, 朝着那座地狱般的高塔而去——"
+"此时高塔已开始震颤、呻吟, 仿佛末日将至……"
 
 #: src/cutscenes/youmu_good_end.inc.h:2
 msgid "Yōmu (Good Ending)"
-msgstr ""
+msgstr "妖梦 (好结局)"
 
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
-msgstr ""
+msgstr "位于妖怪之山山顶的一座庄严的神社。"
 
 #: src/cutscenes/youmu_good_end.inc.h:12
 msgid ""
 "Atop the Mountain, the Tower of Babel stood silently, as if a sleeping giant."
-msgstr ""
+msgstr "在山顶上，巴别塔静静矗立，宛如一位沉睡的巨人。"
 
 #: src/cutscenes/youmu_good_end.inc.h:13
 msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
+"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量他们的技艺……"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
 "I’m sure you’re aware that the classic scythe was used by farmers, and was "
 "sometimes repurposed as a makeshift weapon—"
 msgstr ""
+"我相信你清楚, 传统的长柄镰刀原本是农民使用的农具, 偶尔也会被临时改作武器——"
 
 #: src/cutscenes/youmu_good_end.inc.h:18
 msgid ""
 "Yes, of course. Some of the finest martial arts evolved from the practices "
 "of common folk—"
 msgstr ""
+"当然, 但一些最精妙的武术正是源于人民群众的日常实践——"
+# 学文科学的
 
 #: src/cutscenes/youmu_good_end.inc.h:22
 msgid ""
 "After the incident, Elly and Kurumi agreed to surrender, and disabled the "
 "Tower's ability to ‘enlighten’.\n"
 msgstr ""
+"在那件事后, 艾丽和胡桃同意投降, 并关闭了高塔的所谓「启蒙」能力。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:23
 msgid ""
 "Their dispositions softened considerably, and they apologized profusely for "
 "what they had tried to do.\n"
 msgstr ""
+"她们的态度明显缓和了许多, 并为自己曾做的事情再三道歉。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:24
 msgid ""
 "But even as everyone else returned to their usual selves, it seemed that "
 "Konpaku Yōmu had retained nearly all of the newfound confidence…"
 msgstr ""
+"然而, 就在其他人都恢复如常之际, 魂魄妖梦那份新获得的「自信」似乎"
+"几近全部保留了……"
 
 #: src/cutscenes/youmu_good_end.inc.h:28
 msgid "This Gensōkyō is so different compared to the one I was used to."
-msgstr ""
+msgstr "这个幻想乡与我所熟悉的那个大不相同呢。"
 
 #: src/cutscenes/youmu_good_end.inc.h:29
 msgid "What was your Gensōkyō like, if I may ask?"
-msgstr ""
+msgstr "如果可以的话, 能告诉我你那个幻想乡是什么样子的吗？"
 
 #: src/cutscenes/youmu_good_end.inc.h:30
 msgid ""
 "Mostly, a lot smaller. Practically barren compared to this one. It felt more "
 "like a road-side food stand."
 msgstr ""
+"小得多, 跟这里相比简直可以说是太荒凉了, 感觉最多称得上大路边的一条小巷子。"
 
 #: src/cutscenes/youmu_good_end.inc.h:31
 msgid "Hmm, fascinating…"
-msgstr ""
+msgstr "嗯，真有意思……"
 
 #: src/cutscenes/youmu_good_end.inc.h:35
 msgid ""
 "I know I said this before, but I still feel like a fool after everything."
 msgstr ""
+"我知道我已经说过一次了, 但经历这件事后, 我还是觉得自己像个baka。"
 
 #: src/cutscenes/youmu_good_end.inc.h:36
 msgid "I was miserable about my home, but to go that far…"
-msgstr ""
+msgstr "我虽然对自己的家乡感到痛苦，但也不该做到那种地步……"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
-msgstr ""
+msgstr "看来, 被那「疯狂」吞噬得最深的, 反而是我自己。"
 
 #: src/cutscenes/youmu_good_end.inc.h:38
 msgid ""
 "I know everyone here accepted my apology, but I’m still truly sorry for what "
 "I did."
 msgstr ""
+"我知道大伙都接受了我的道歉, 但我对自己所做的一切依然深感歉意。"
 
 #: src/cutscenes/youmu_good_end.inc.h:42
 msgid "Your pain was legitimate, even if your expression of it was not."
-msgstr ""
+msgstr "没事啦, 你的痛苦确有其事, 即便你表达痛苦的方式并不恰当。"
 
 #: src/cutscenes/youmu_good_end.inc.h:43
 msgid ""
 "Now that you've recognized that, you are welcome here, like anyone else."
 msgstr ""
+"既然你已经意识到了自己的错误, 那就欢迎你留在这里。"
 
 #: src/cutscenes/youmu_good_end.inc.h:44
 msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
 msgstr ""
+"明天只要幽幽子大人没有拜托我做什么事情, 我带你去好好参观冥界和幻想乡"
+"都有些什么！"
 
 #: src/cutscenes/youmu_good_end.inc.h:45
 msgid ""
 "Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
 "generous, so it shall be my treat!"
 msgstr ""
+"或许我们可以去附近一家很受欢迎的拉面店逛逛, 今天心情好, 我来买单！"
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
-msgstr ""
+msgstr "噢噢! 那真是太好了！"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
-msgstr ""
+msgstr "但……那个, 我该回神社继续干活了。"
 
 #: src/cutscenes/youmu_good_end.inc.h:51
 msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
+"希望那个绿毛巫女别再跟我滔滔不绝地讲那些过时的娱乐小科技了……"
 
 #: src/cutscenes/youmu_good_end.inc.h:52
 msgid ""
 "I commend you for complying with your penance, despite its… cruel hardships."
 msgstr ""
+"我钦佩你始终如一地为自己所为赎罪, 尽管这条道路充满残酷与……艰辛,"
 
 #: src/cutscenes/youmu_good_end.inc.h:53
 msgid ""
 "\n"
 "The pair of them laughed.\n"
 msgstr ""
+"\n"
+"两人都哈哈大笑起来。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:57
 msgid ""
 "The two blademasters had become practically inseparable in an incredibly "
 "short time.\n"
 msgstr ""
+"这两位剑术大师短短几天内几乎变得形影不离。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:58
 msgid ""
 "As they spent many evenings dueling, practicing, and drinking merrily, many "
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
+"她们在无数个夜晚切磋剑术、练习技艺、畅饮欢谈, 许多人都感叹居然见到妖梦这么兴奋。"
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
 "Despite the incident being resolved, nobody had figured out how to remove "
 "the Tower, and most were too anxious to even think about it.\n"
 msgstr ""
+"尽管事件已经平息, 却仍无人想出办法拆除那座高塔, 而大多数人甚至吓得"
+"根本不敢去想这件事。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:63
 msgid ""
 "And with its lingering, menacing visage blighting the skyline, many wondered "
 "if the Tower was truly inert and harmless.\n"
 msgstr ""
+"而高塔那挥之不去, 令人不安的黑影依然矗立于幻想乡的天际线, 许多人"
+"不禁怀疑, 这座高塔是否真的已经彻底沉寂, 再无威胁。\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:64
 msgid ""
 "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion "
 "discussed details of an ancient future’s past…"
 msgstr ""
+"与此同时, 在冥界, 某位「隙间妖怪」与她那跟幽灵一样的同伴, 正低声谈论着"
+"某个「古老未来」的往昔……"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:91
 #: src/stages/stage1/cirno.c:27
@@ -1878,45 +2115,46 @@ msgstr "琪露诺"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:92
 msgid "Thermodynamic Ice Fairy"
-msgstr ""
+msgstr "热力学的冰之妖精"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:102
 #: src/stages/stage2/hina.c:41
 msgid "Kagiyama Hina"
-msgstr "键山雏"
+msgstr "键山 雏"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:103
 msgid "Gyroscopic Pestilence God"
-msgstr ""
+msgstr "回旋的厄神"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
 msgid "Wriggle Nightbug"
 msgstr "莉格露·奈特巴格"
+# 为啥咱突然想到了辉格党
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:125
 msgid "Insect Rights Activist"
-msgstr ""
+msgstr "昆虫权利活动家"
 
 #: src/dialog/dialog_macros.h:74 src/menu/charprofile.c:136
 msgid "High-Society Phlebotomist"
-msgstr ""
+msgstr "上流的吸血技师"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
 #: src/stages/stage5/iku.c:108
 msgid "Nagae Iku"
-msgstr "永江衣玖"
+msgstr "永江 衣玖"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:147
 msgid "Fulminologist of the Heavens"
-msgstr ""
+msgstr "天界的闪电学家"
 
 #: src/dialog/dialog_macros.h:76 src/menu/charprofile.c:158
 msgid "The Theoretical Reaper"
-msgstr ""
+msgstr "理论收割者"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr "又下雪了？可我把冬衣刚收起来诶。"
+msgstr "又下雪了? 可我把冬衣刚收起来诶。"
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
@@ -1924,35 +2162,35 @@ msgstr "……而且夏天已经过了一半。"
 
 #: src/dialog/marisa.c:28
 msgid "Don’t you like the cold weather???"
-msgstr "难道泥不喜欢冷天吗？？？"
+msgstr "难道泥不喜欢冷天吗? ? ? "
 
 #: src/dialog/marisa.c:32
 msgid "It should be winter all the time!"
-msgstr "应该一直都是冬天才对！"
+msgstr "应该一直都是冬天才对! "
 
 #: src/dialog/marisa.c:35
 msgid "Mind paying to get my coat cleaned, then?"
-msgstr "那你愿意出钱把我的外套拿去洗洗吗？"
+msgstr "那你愿意出钱把我的外套拿去洗洗吗? "
 
 #: src/dialog/marisa.c:37
 msgid "I was gonna get it done in the fall, but now…"
-msgstr "我本打算秋天的时候去洗的，但现在……"
+msgstr "我本打算秋天的时候去洗的, 但现在……"
 
 #: src/dialog/marisa.c:40
 msgid "Why would I do that?! You’re never going to pay me back!"
-msgstr "泥个大坏蛋！根本不还钱！"
+msgstr "泥个大坏蛋! 根本不还钱! "
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr "咱要把泥冻成冰立方！"
+msgstr "咱要把泥冻成大冰块! "
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr "真的吗？我倒是更喜欢刨冰呢。"
+msgstr "真的吗? 我倒是更喜欢刨冰呢。"
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
-msgstr "你干嘛不去找你那个来自地狱的新朋友玩呢？"
+msgstr "你干嘛不去找你那个来自地狱的新朋友玩呢? "
 
 #: src/dialog/marisa.c:61
 msgid "Maybe then it’d be more of a fair fight."
@@ -1964,7 +2202,7 @@ msgstr "啊啊啊……"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr "咱、咱上次打赢她了！下次泥也一样打败！"
+msgstr "咱、咱上次打赢她了! 下次泥也一样打败! "
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
@@ -1972,15 +2210,15 @@ msgstr "好吧好吧。"
 
 #: src/dialog/marisa.c:82
 msgid "Geez, this place is kinda sad now."
-msgstr "唉，现在这个地方还真是有点凄凉啊。"
+msgstr "唉, 现在这个地方还真是有点凄凉啊。"
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr "话说回来，到底是什么让那些妖怪变得这么奇怪ZE"
+msgstr "话说回来, 到底是什么让那些妖怪变得这么奇怪ZE"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
-msgstr "你好，雾雨小姐。"
+msgstr "你好, 雾雨小姐。"
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
@@ -1988,7 +2226,7 @@ msgstr "你看起来还是和以往一样鲁莽。我建议你最好回头。"
 
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
-msgstr "谢谢你的建议！不过我会无视的DA☆ZE"
+msgstr "谢谢你的建议! 不过我会无视的DA☆ZE"
 
 #: src/dialog/marisa.c:93
 msgid "See ya."
@@ -2000,7 +2238,7 @@ msgstr "哎呀……你还真是个叛逆的家伙。"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
-msgstr "居然这么自信，就这么无视我的警告。"
+msgstr "居然这么自信, 就这么无视我的警告。"
 
 #: src/dialog/marisa.c:101
 msgid "I’ll take that as a compliment."
@@ -2010,11 +2248,11 @@ msgstr "我就当这是在夸我了。"
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
-msgstr "那么，你知道那些不听长辈话的调皮女孩会有什么下场吗？"
+msgstr "那么, 你知道那些不听长辈话的调皮女孩会有什么 下场吗? "
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
-msgstr "她们会接连好几年都厄运缠身！"
+msgstr "她们会接连好几年都厄运缠身! "
 
 #: src/dialog/marisa.c:118
 msgid "You’re way more snippy than usual today."
@@ -2030,7 +2268,7 @@ msgstr "你、你太狠了……"
 
 #: src/dialog/marisa.c:122
 msgid "Don’t you see I was just trying to keep you safe…?"
-msgstr "难道你没明白我刚才只是想保护你吗……？"
+msgstr "难道你没明白我刚才只是想保护你吗……? "
 
 #: src/dialog/marisa.c:124
 msgid "Don’t get all motherly on me now."
@@ -2043,55 +2281,55 @@ msgstr "这辈子我已经受够那种事了。"
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
-msgstr "天啊，我越往上走，大家就越癫了. 这到底是怎么回事？"
+msgstr "天啊, 我越往上走, 大家就越癫了. 这到底是怎么回事? "
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
-msgstr "等你见到他们的头领再说吧！"
+msgstr "等你见到他们的头领再说吧! "
 
 #: src/dialog/marisa.c:148
 msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
-msgstr "是啊，我肯定得好好问他们头领一堆问题ZE"
+msgstr "是啊, 我肯定得好好问他们头领一堆问题ZE"
 
 #: src/dialog/marisa.c:151
 msgid "Feel free to go ahead. I’m listening."
-msgstr "你尽管说吧，我在听着呢。"
+msgstr "你尽管说吧, 我在听着呢。"
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr "哦，你就是那个信使？"
+msgstr "哦, 你就是那个信使? "
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
-msgstr "能帮我带个话吗？"
+msgstr "能帮我带个话吗? "
 
 #: src/dialog/marisa.c:159
 msgid "Um, OBVIOUSLY I’m not the messenger!"
-msgstr "额，你觉得我像信使？"
+msgstr "额, 你觉得我像信使? "
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
-msgstr "我可是昆虫界的伟大领袖！"
+msgstr "我可是昆虫界的伟大领袖! "
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr "伟大领袖？啥玩意，昆虫们还成立工会了不成？"
+msgstr "伟大领袖? 啥玩意, 昆虫们还成立工会了不成? "
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
-msgstr "不！我都说了，我就是领袖！我就是黑幕！"
+msgstr "不! 我都说了, 我就是领袖! 我就是黑幕! "
 
 #: src/dialog/marisa.c:169
 msgid "So, what’s your question?"
-msgstr "所以你有何问题？"
+msgstr "所以你有何问题? "
 
 #: src/dialog/marisa.c:172
 msgid "Hmm, guess I forgot."
-msgstr "嗯，看来我给忘了。"
+msgstr "嗯, 看来我给忘了。"
 
 #: src/dialog/marisa.c:173
 msgid "What’s yer deal, anyways?"
-msgstr "不管怎样，你到底什么来头？"
+msgstr "不管怎样, 你到底什么来头? "
 
 #: src/dialog/marisa.c:176
 msgid "We insects have three demands:"
@@ -2099,15 +2337,15 @@ msgstr "我们昆虫一族有三大要求："
 
 #: src/dialog/marisa.c:177
 msgid "First: say nay to insect spray!"
-msgstr "第一：拒绝杀虫剂！"
+msgstr "第一：拒绝杀虫剂! "
 
 #: src/dialog/marisa.c:178
 msgid "Second: swat the swatters!"
-msgstr "第二：消灭苍蝇拍！"
+msgstr "第二：消灭苍蝇拍! "
 
 #: src/dialog/marisa.c:180
 msgid "Third: the right to bite!"
-msgstr "第三：随便叮咬人！"
+msgstr "第三：随便叮咬人! "
 
 #: src/dialog/marisa.c:181
 msgid "Fourth—!"
@@ -2117,11 +2355,11 @@ msgstr "第四——!"
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
-msgstr "行行行挺有意思的，但我还有更重要的事 要办。"
+msgstr "行行行挺有意思的, 但我还有更重要的事要办。"
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
-msgstr "……你根本就搞不清楚状况，对吧？"
+msgstr "……你根本就搞不清楚状况, 对吧? "
 
 #: src/dialog/marisa.c:189
 msgid "Maybe I know more than you think."
@@ -2129,33 +2367,33 @@ msgstr "也许我知道的比你想象的要多。"
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
-msgstr "但我绝不会把这些告诉你们这群窃取昆虫 荣耀的篡位者！"
+msgstr "但我绝不会把这些告诉你们这群窃取昆虫 荣耀的篡位者! "
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
-msgstr "确实比平常更难缠，但还不够ZE"
+msgstr "确实比平常更难缠, 但还不够ZE"
 
 #: src/dialog/marisa.c:206
 msgid "Where’d ya pick up those new moves, anyway?"
-msgstr "话说，你那些新招式是在哪儿学来的？"
+msgstr "话说, 你那些新招式是在哪儿学来的? "
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
-msgstr "啊这……那是我们辉煌昆虫祖先的伟大幻象 告诉我的！"
+msgstr "啊这…… 那是我们辉煌昆虫祖先的伟大幻象告诉我的! "
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
-msgstr "就是在碳……碳——碳素时代的祖先！"
+msgstr "就是在碳……碳——碳素时代的祖先! "
 
 #: src/dialog/marisa.c:212
 msgid "‘Glorious insect past’? ‘Carbs’?"
-msgstr "「辉煌的昆虫祖先」？「碳素时代」？"
+msgstr "「辉煌的昆虫祖先」? 「碳素时代」? "
 
 #: src/dialog/marisa.c:214
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
-msgstr "哦，你该不会是说石炭纪吧？就是那个巨型虫子—— 呃，巨型昆虫横行的时期。"
+msgstr "哦, 你该不会是说石炭纪吧? 就是那个巨型虫子—— 呃, 巨型昆虫横行的时期。"
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
@@ -2167,11 +2405,11 @@ msgstr "我很少见到她那么兴奋……"
 
 #: src/dialog/marisa.c:219
 msgid "Yeah, that!"
-msgstr "对，就是那个！"
+msgstr "对, 就是那个! "
 
 #: src/dialog/marisa.c:221
 msgid "Do you want to be an ally in our glorious conquest…?"
-msgstr "你愿意成为我们辉煌征服之路的盟友吗……？"
+msgstr "你愿意成为我们辉煌征服之路的盟友吗……? "
 
 #: src/dialog/marisa.c:224
 msgid "Maybe later."
@@ -2183,716 +2421,725 @@ msgstr "其实永远不会ZE"
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
-msgstr ""
+msgstr "哇哦, 一座神秘与魔力的豪宅! "
 
 #: src/dialog/marisa.c:245
 msgid "… how generic can you get?"
-msgstr ""
+msgstr "……额，还能不能再俗套一点? "
 
 #: src/dialog/marisa.c:248
 msgid "And to top it off, a western witch!"
-msgstr ""
+msgstr "没错! 更过分的是你还是一个西式魔女! "
 
 #: src/dialog/marisa.c:250
 msgid "Seen it a thousand times already. It’s such a boring motif."
-msgstr ""
+msgstr "真是个无聊的老套题材, 已经看过一千遍了。"
 
 #: src/dialog/marisa.c:253
 msgid "Right? But I make up for it with my devilish charm."
-msgstr ""
+msgstr "有点松弛对吧? 但我迷人的邪魅魅力弥补了这一点。"
 
 #: src/dialog/marisa.c:256
 msgid "But that theme is so overdone…"
-msgstr ""
+msgstr "但那个题材早就被用烂了……"
 
 #: src/dialog/marisa.c:258
 msgid "What’s next? A maid?"
-msgstr ""
+msgstr "接下来是不是该来个妹抖长了? "
 
 #: src/dialog/marisa.c:260
 msgid ""
 "A little girl with almost no dialogue who becomes a fan-favourite anyways?"
-msgstr ""
+msgstr "一个几乎不说话的小女孩, 结果照样成为粉丝最爱? "
 
 #: src/dialog/marisa.c:261
 msgid "One that’ll have her personality massacred by the fans?"
-msgstr ""
+msgstr "而且性格还被粉丝们曲解得面目全非? "
 
 #: src/dialog/marisa.c:264
 msgid ""
 "Maybe they’ll even make her something edgy like a vampire to drive up sales."
-msgstr ""
+msgstr "也许他们甚至还会把她改成什么暗黑系的吸血鬼, 就为了多卖几份同人志。"
 
 #: src/dialog/marisa.c:267
 msgid "Ugh! Maybe I’ve been reading too much manga that those tengu churn out."
-msgstr ""
+msgstr "呃, 也许我漫画看得太多了, 就是那些天狗们炮制出来的那种。"
 
 #: src/dialog/marisa.c:270
 msgid "The tengu write manga now?"
-msgstr ""
+msgstr "天狗现在还写漫画? "
 
 #: src/dialog/marisa.c:272
 msgid "Writin’ pure ficiton is more honest for them, I guess."
-msgstr ""
+msgstr "我想对他们来说, 干脆注明「纯属虚构」反而更诚实吧"
 
 #: src/dialog/marisa.c:276
 msgid "Yeah, duh?"
-msgstr ""
+msgstr "是啊, 这还用说? "
 
 #: src/dialog/marisa.c:277
 msgid "Of course, most of it is garbage that only weirdos like!"
-msgstr ""
+msgstr "当然啦, 那些大部分都是垃圾, 也就只有怪胎才会喜欢! "
 
 #: src/dialog/marisa.c:279
 msgid "And don’t EVEN get me started on certain character designs! So generic!"
-msgstr ""
+msgstr "我还没提起某些简直俗到不行的角色设计呢! "
 
 #: src/dialog/marisa.c:282
 msgid "Maybe they oughta hire someone with some fashion sense."
-msgstr ""
+msgstr "也许他们该雇个有点时尚品味的人吧。"
 
 #: src/dialog/marisa.c:285
 msgid "That’d be me, then!"
-msgstr ""
+msgstr "那不就是我了嘛! "
 
 #: src/dialog/marisa.c:286
 msgid "My ideas would surely make a splash, if they’d recognize my talent!"
-msgstr ""
+msgstr "要是他们能意识到我的才华, 我的创意绝对会一鸣惊人! "
 
 #: src/dialog/marisa.c:289
 msgid "Eh? Maybe…"
-msgstr ""
+msgstr "呃? 也许……"
 
 #: src/dialog/marisa.c:292
 msgid "Huh?!"
-msgstr ""
+msgstr "嗯? ! "
 
 #: src/dialog/marisa.c:295
 msgid "Your outfit’s missin’ somethin'…"
-msgstr ""
+msgstr "你的穿搭还缺了点什么……"
 
 #: src/dialog/marisa.c:298
 msgid "H-Hmph! I could say the same about you!"
-msgstr ""
+msgstr "哼! 我也可以这么说你吧! "
 
 #: src/dialog/marisa.c:300
 msgid "Seriously, it’s just a plain generic witch outfit!"
-msgstr ""
+msgstr "你那套魔女服平平无奇、毫无新意! "
 
 #: src/dialog/marisa.c:303
 msgid "That’s just because it’s summer!"
-msgstr ""
+msgstr "那只是因为现在是夏天而已! "
 
 #: src/dialog/marisa.c:305
 msgid ""
 "My winter petticoats are legendary. Girls across Gensōkyō talk about ‘em."
-msgstr ""
+msgstr "我的冬季衬裙可以闪瞎整个幻想乡女生们的 24K钛合金狗眼DA☆ZE"
 
 #: src/dialog/marisa.c:307
 msgid "In fact, there’s a few of ‘em, uh, deeper inside this mansion."
-msgstr ""
+msgstr "其实还有几个女孩子不怎么觉得, 呃, 就在这豪宅的更深处。"
 
 #: src/dialog/marisa.c:309
 msgid "So I’ll be headin’ in, then."
-msgstr ""
+msgstr "所以我就进去ZE"
 
 #: src/dialog/marisa.c:313
 msgid "Oh, I’m not letting you go without a fight!"
-msgstr ""
+msgstr "哦, 想就这么进去? 先打一架再说! "
 
 #: src/dialog/marisa.c:315
 msgid "Let’s see who’s the most fashionable here, witch!"
-msgstr ""
+msgstr "让我看看到底谁才配得上「最时尚」, 死女巫! "
 
 #: src/dialog/marisa.c:329
 msgid "Whoever has the best petticoat wins. It’s a scientific fact."
-msgstr ""
+msgstr "谁的衬裙更出众谁就赢, 这可是科学事实。"
 
 #: src/dialog/marisa.c:331
 msgid "… but since when do I care about scientific facts?"
-msgstr ""
+msgstr "……不过我什么时候在意过科学事实ZE"
 
 #: src/dialog/marisa.c:333
 msgid "W-wait, what was I doing again?"
-msgstr ""
+msgstr "等、等等, 我刚才到底在做什么来着? "
 
 #: src/dialog/marisa.c:334
 msgid "(Y-yeah, that’s it, play it off as amnesia…"
-msgstr ""
+msgstr "（呃, 对, 就这么装失忆蒙混过去……"
 
 #: src/dialog/marisa.c:335
 msgid "(But, hmm… haven’t I seen this nerdy-looking girl before…?)"
-msgstr ""
+msgstr "（但是, 嗯…… 我以前好像见过这个看起来书呆子气的女孩子……? ）"
 
 #: src/dialog/marisa.c:336
 msgid "Uuu, I don’t remember anything at all!!"
-msgstr ""
+msgstr "呜呜呜, 我什么都不记得了啦! ! "
 
 #: src/dialog/marisa.c:339
 msgid "Ah, sorry, sorry. I think ya slipped ‘n hit your head."
-msgstr ""
+msgstr "啊, 抱歉抱歉, 你大概是滑倒撞到头了。"
 
 #: src/dialog/marisa.c:341
 msgid "I’m Gensōkyō’s… petticoat inspector."
-msgstr ""
+msgstr "我是幻想乡的……衬裙监察官。"
 
 #: src/dialog/marisa.c:343
 msgid "I’m here to inspect the petticoats in this here mansion."
-msgstr ""
+msgstr "我来这儿就是为了检查这栋豪宅里的衬裙。"
 
 #: src/dialog/marisa.c:345
 msgid "Ya were just lettin’ me in, so I’ll be off, then."
-msgstr ""
+msgstr "你刚刚正要让我进去呢, 那我就不客气ZE"
 
 #: src/dialog/marisa.c:348
 msgid "Uhm, I kind of doubt that…"
-msgstr ""
+msgstr "呃……我对此表示严重怀疑……"
 
 #: src/dialog/marisa.c:350
 msgid "Not that I could stop you, anyways…"
-msgstr ""
+msgstr "不过反正我也拦不住你就是了……"
 
 #: src/dialog/marisa.c:352
 msgid "Ugh, I didn’t sign up to get beaten like this!"
-msgstr ""
+msgstr "呃, 我可没答应要被这么暴揍一顿的! "
 
 #: src/dialog/marisa.c:355
 msgid "‘Sign up’? I thought you didn’t remember anything."
-msgstr ""
+msgstr "没答应? 我怎么记得你刚才还什么都不记得了呢? "
 
 #: src/dialog/marisa.c:358
 msgid "N-Nevermind!"
-msgstr ""
+msgstr "别、别管了啦! "
 
 #: src/dialog/marisa.c:375
 msgid "This place is fascinatin’!"
-msgstr ""
+msgstr "这地方真迷人! "
 
 #: src/dialog/marisa.c:376
 msgid "I gotta tell Nitori!"
-msgstr ""
+msgstr "我得跟荷取说一下ZE"
 
 #: src/dialog/marisa.c:379
 msgid "I would not recommend getting too enamoured, young witch."
-msgstr ""
+msgstr "我劝你不要太着迷, 小魔女。"
 
 #: src/dialog/marisa.c:381
 msgid "I’m surprised to see you here. How have you been?"
-msgstr ""
+msgstr "居然在这碰见你, 最近怎么样啊? "
 
 #: src/dialog/marisa.c:383
 msgid "What grimoire would this be in…?"
-msgstr ""
+msgstr "这会记载在哪本魔法书里呢……? "
 
 #: src/dialog/marisa.c:384
 msgid "Hmm… probably a major illusion of some kind…?"
-msgstr ""
+msgstr "嗯……可能是某种大型幻术……? "
 
 #: src/dialog/marisa.c:385
 msgid ""
 "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…"
-msgstr ""
+msgstr "这比起让砖块变轻要容易得多, 而且还是个不错的伪装……"
 
 #: src/dialog/marisa.c:389
 msgid "… pardon me, are you conversing with yourself?"
-msgstr ""
+msgstr "……打扰一下, 你是在自言自语吗? "
 
 #: src/dialog/marisa.c:392
 msgid "Huh? No, I was askin’ ya a question."
-msgstr ""
+msgstr "啥? 没有啊, 我是在问你问题来着。"
 
 #: src/dialog/marisa.c:394
 msgid "An interesting theory, I suppose."
-msgstr ""
+msgstr "一个有趣的理论, 我想是的。"
 
 #: src/dialog/marisa.c:396
 msgid "It’d make sense though, right?"
-msgstr ""
+msgstr "不过这么想是合理的, 对吧? "
 
 #: src/dialog/marisa.c:398
 msgid ""
 "It appeared outta nowhere. If it were real brick, the air displacement alone "
 "woulda caused a huge noise…"
 msgstr ""
+"这塔完全是凭空出现的, 如果是真正的砖块, 光是空气被排开就会发出巨大的声响……"
 
 #: src/dialog/marisa.c:399
 msgid "And it’d take so much power, too."
-msgstr ""
+msgstr "而且那也会消耗巨大的魔力。"
 
 #: src/dialog/marisa.c:400
 msgid "Definitely an illusion, then."
-msgstr ""
+msgstr "那就肯定是幻术了。"
 
 #: src/dialog/marisa.c:402
 msgid "The premise of your theory is flawed, unfortunately."
-msgstr ""
+msgstr "不幸的是, 你的理论前提就有问题。"
 
 #: src/dialog/marisa.c:405
 msgid "The technology on display here is beyond our current comprehension."
-msgstr ""
+msgstr "这里展示的技术远远超出了我们目前的理解范围。"
 
 #: src/dialog/marisa.c:408
 msgid "Technology? Whoa, so yer sayin’ this is REAL brick?!"
-msgstr ""
+msgstr "技术? 呜哇, 你是说这些砖头是真家伙? ! "
 
 #: src/dialog/marisa.c:410
 msgid "*tap tap*"
-msgstr ""
+msgstr "（拍了一下）"
 
 #: src/dialog/marisa.c:412
 msgid ""
 "It’s so cold it’s almost creepy, like it was suckin’ magic right outta my "
 "fingers."
-msgstr ""
+msgstr "它冷得有点吓人, 好像直接从我的手指里把魔力吸走了一样。"
 
 #: src/dialog/marisa.c:414
 msgid "But that means the tower… has corporeal form?!"
-msgstr ""
+msgstr "但那就意味着, 这座塔……是真实存在的实体? ! "
 
 #: src/dialog/marisa.c:415
 msgid "Dang! Now I GOTTA meet the owner!"
-msgstr ""
+msgstr "天哪! 现在我非得见见这塔的主人不可了! "
 
 #: src/dialog/marisa.c:416
 msgid "What grimoires does she got to pull somethin’ like this off?!"
-msgstr ""
+msgstr "她得拥有什么样的魔法书, 才能办到这种事啊? ! "
 
 #: src/dialog/marisa.c:419
 msgid "I-I would imagine she does not use grimoires, or magic."
-msgstr ""
+msgstr "我……我想她应该并不使用魔法书, 也不依靠魔法。"
 
 #: src/dialog/marisa.c:421
 msgid ""
 "This is highly complex machinery, likely relying on advanced computational—"
-msgstr ""
+msgstr "这是极为复杂的机械装置, 很可能依赖于先进的计算系统——"
 
 #: src/dialog/marisa.c:423
 msgid "But then, what’s the power source?"
-msgstr ""
+msgstr "但那样的话, 它的能量来源又是什么? "
 
 #: src/dialog/marisa.c:424
 msgid "Not even nuclear fusion could sustain somethin’ like this!"
-msgstr ""
+msgstr "就连核聚变都不可能维持这种规模的运转! "
 
 #: src/dialog/marisa.c:427
 msgid "I-I am not sure of its exact mechanics—"
-msgstr ""
+msgstr "我……我不确定它的具体运作原理——"
 
 #: src/dialog/marisa.c:430
 msgid "Where’d y’say she was?"
-msgstr ""
+msgstr "你刚说她在哪儿来着? "
 
 #: src/dialog/marisa.c:433
 msgid "You mean…?"
-msgstr ""
+msgstr "你指……"
 
 #: src/dialog/marisa.c:436
 msgid "The owner, o’ course! Upstairs, right?"
-msgstr ""
+msgstr "当然是指那塔的主人啦! 在楼上, 对吧? "
 
 #: src/dialog/marisa.c:439
 msgid ""
 "Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
 "divulge any further information, for your own protection."
 msgstr ""
+"也许是因为这个高度上稀薄的空气让你有些头晕了, 出于对你的安全考虑, 我不能再透"
+"露更多信息。"
 
 #: src/dialog/marisa.c:442
 msgid "What’s her name?"
-msgstr ""
+msgstr "她名字呢? "
 
 #: src/dialog/marisa.c:444
 msgid "Why are you not listening to me…?"
-msgstr ""
+msgstr "你为什么就是不肯听我说呢……? "
 
 #: src/dialog/marisa.c:447
 msgid "Do ya got any tips on talkin’ to her, maybe make her loosen up a bit?"
-msgstr ""
+msgstr "你就没有什么建议啊, 教我怎么跟她聊几句, 也许能让她放松一点? "
 
 #: src/dialog/marisa.c:449
 msgid "I don’t wanna blow my chance."
-msgstr ""
+msgstr "我可不想搞砸这个机会ZE"
 
 #: src/dialog/marisa.c:452
 msgid ""
 "I am trying to spare you further peril, yet all you can do is talk over me. "
 "Be more considerate."
 msgstr ""
+"我正试图让你避开更大的危险, 而你却只会打断我说话。 请有点分寸, 多为别人考虑一"
+"下。"
 
 #: src/dialog/marisa.c:453
 msgid ""
 "I had expectations that you would be able to approach this with a clear head "
 "and resolve this incident, but it seems—"
-msgstr ""
+msgstr "我本以为你能冷静地面对这件事, 并妥善解决这个事件, 但看来——"
 
 #: src/dialog/marisa.c:456
 msgid "Ah, I see, I see. I’ll have to turn on the ol’ Kirisame charm."
-msgstr ""
+msgstr "啊, 我懂了ZE。 这回得祭出我那老练的雾雨流魔法了。"
 
 #: src/dialog/marisa.c:459
 msgid "I get it, I get it."
-msgstr ""
+msgstr "就这样DA☆ZE"
 
 #: src/dialog/marisa.c:460
 msgid "Haven’t done ‘femme fatale’ in a while, but…"
-msgstr ""
+msgstr "好一阵子没玩过「蛇蝎美人」那招了, 不过……"
 
 #: src/dialog/marisa.c:464
 msgid "Enough!"
-msgstr ""
+msgstr "够了! "
 
 #: src/dialog/marisa.c:465
 msgid ""
 "It is said that specifically applied electro-stimulation can ease the mind."
-msgstr ""
+msgstr "据说闪电五连鞭, 足以让人耗子尾汁, "
 
 #: src/dialog/marisa.c:467
 msgid "Allow me to put that into practice for you!"
-msgstr ""
+msgstr "就让你体验一下吧! "
 
 #: src/dialog/marisa.c:479
 msgid "So this place runs on electricity, eh? Hmm…"
-msgstr ""
+msgstr "这么说这地方是用电的? 嗯……"
 
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
-msgstr ""
+msgstr "哎呀, 希望这没让我的头发变得太毛躁。"
 
 #: src/dialog/marisa.c:495
 msgid "Y’know, for my big first impression ‘n all."
-msgstr ""
+msgstr "毕竟这是我的首次亮相, 要留个好印象嘛。"
 
 #: src/dialog/marisa.c:498
 msgid "F-For the last time, she’ll have nothing to teach you…"
-msgstr ""
+msgstr "我……我最后说一遍, 她根本没什么可教你的……"
 
 #: src/dialog/marisa.c:499
 msgid ""
 "Her powers rely on technology and the scientific method. Of that much, I am "
 "sure."
-msgstr ""
+msgstr "她的力量依赖于科技和科学方法, 这一点可以确定。"
 
 #: src/dialog/marisa.c:502
 msgid ""
 "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?"
-msgstr ""
+msgstr "难得一次早苗不在身边, 没法对这些科学小玩意兴奋地滔滔不绝了, 是吧? "
 
 #: src/dialog/marisa.c:505
 msgid ""
 "Ah well, I know how to operate one of those Intelligent Phones, and that’s "
 "plenty advanced, so I should be fine."
-msgstr ""
+msgstr "没事啦, 我知道怎么用智能手机, 那玩意儿已经够先进了, 所以应该没问题ZE"
 
 #: src/dialog/marisa.c:507
 msgid "By the way, have ya been hearing that strange voice?"
-msgstr ""
+msgstr "对了, 你有没有听到那个奇怪的声音? "
 
 #: src/dialog/marisa.c:509
 msgid "Strange voice?"
-msgstr ""
+msgstr "奇怪的声音? "
 
 #: src/dialog/marisa.c:512
 msgid "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever."
-msgstr ""
+msgstr "就是它一直跟我说我脑子不清楚啊、 想歪了之类的。"
 
 #: src/dialog/marisa.c:513
 msgid "Probably just those weird madness rays tryin’ to get me."
-msgstr ""
+msgstr "大概又是那些奇怪的疯癫镭射想来影响我吧。"
 
 #: src/dialog/marisa.c:516
 msgid "Ugh, you fool."
-msgstr ""
+msgstr "呃你这个baka。"
 
 #: src/dialog/marisa.c:518
 msgid ""
 "But perhaps you are thinking just well enough to resolve this incident after "
 "all…"
-msgstr ""
+msgstr "但也许你现在的想法, 恰好足以解决这次事件……"
 
 #: src/dialog/marisa.c:521
 msgid "Ah! There’s that voice again!"
-msgstr ""
+msgstr "啊! 那个声音又来了! "
 
 #: src/dialog/marisa.c:523
 msgid "So strange…"
-msgstr ""
+msgstr "真邪门啊……"
 
 #: src/dialog/marisa.c:540
 msgid "I’ve been waiting for you to make your move."
-msgstr ""
+msgstr "我一直等着你出手呢。"
 
 #: src/dialog/marisa.c:542
 msgid "Sneaking around as you are, and yet still so loud somehow."
-msgstr ""
+msgstr "偷偷摸摸地行动, 却不知怎么还是这么吵。"
 
 #: src/dialog/marisa.c:545
 msgid "Hmm…"
-msgstr ""
+msgstr "嗯……"
 
 #: src/dialog/marisa.c:548
 msgid ""
 "Did you really think I wouldn’t notice all the commotion you caused inside "
 "the tower?"
-msgstr ""
+msgstr "你真的以为, 你在塔内造成的骚动我会毫无察觉吗? "
 
 #: src/dialog/marisa.c:550
 msgid "Hmmmmmmm…"
-msgstr ""
+msgstr "嗯哼……"
 
 #: src/dialog/marisa.c:553
 msgid "Stop being an insolent brat and speak up!"
-msgstr ""
+msgstr "别再像个无礼的小屁孩一样, 给我大声说话! "
 
 #: src/dialog/marisa.c:556
 msgid "… sigh."
-msgstr ""
+msgstr "……额"
 
 #: src/dialog/marisa.c:559
 msgid "… w-what is it?"
-msgstr ""
+msgstr "……怎么? "
 
 #: src/dialog/marisa.c:561
 msgid "Ya don’t look like a magician after all."
-msgstr ""
+msgstr "你看起来根本不像个魔法使啊。"
 
 #: src/dialog/marisa.c:562
 msgid "I’m pretty disappointed."
-msgstr ""
+msgstr "真是有点失望ZE"
 
 #: src/dialog/marisa.c:563
 msgid "Honestly, this might be the most disappointing incident yet."
-msgstr ""
+msgstr "说真的, 可能是迄今为止最令人失望的一次ZE"
 
 #: src/dialog/marisa.c:566
 msgid "You’re after… magic?"
-msgstr ""
+msgstr "你想要……魔法? "
 
 #: src/dialog/marisa.c:568
 msgid "Hah! You’ll regret wasting your time on such nonsense."
-msgstr ""
+msgstr "哈! 你竟把时间浪费在这种荒唐事上, 迟早会后悔的。"
 
 #: src/dialog/marisa.c:569
 msgid "Soon, you’ll see the error of—"
-msgstr ""
+msgstr "很快你就会意识到自己的错误了——"
 
 #: src/dialog/marisa.c:571
 msgid "Do ya know how boring it is to be a magician in Gensōkyō these days?"
-msgstr ""
+msgstr "你知道如今在幻想乡当个魔法使有多无聊吗? "
 
 #: src/dialog/marisa.c:574
 msgid "I couldn’t possibly care about—"
-msgstr ""
+msgstr "我根本不在乎——"
 
 #: src/dialog/marisa.c:576
 msgid "Seriously! Recently it’s just been ‘God this’ and ‘Otherworld that’."
-msgstr ""
+msgstr "真的是够了! 最近整天都是什么这个神啊、 那个异界啊的。"
 
 #: src/dialog/marisa.c:577
 msgid "Reimu’s been pickin’ up some sweet skills, but me? Nothin’!"
-msgstr ""
+msgstr "灵梦倒是学到了一堆厉害的本事, 可我呢? 什么都没捞着! "
 
 #: src/dialog/marisa.c:578
 msgid "Gods use magic too, but they’re like her! They don’t need books!"
-msgstr ""
+msgstr "神明也会使用魔法, 但她们就像她一样! 根本不需要魔法书! "
 
 #: src/dialog/marisa.c:579
 msgid "But I do! And I end up empty handed every dang time!"
-msgstr ""
+msgstr "但我需要啊! 可每次到最后都两手空空! "
 
 #: src/dialog/marisa.c:582
 msgid "I SAID I don’t CARE about your stupid little sorc—"
-msgstr ""
+msgstr "我说了我才不在乎你那无聊的魔法把戏——"
 
 #: src/dialog/marisa.c:584
 msgid ""
 "I saw this place ‘n I was all, ‘Whoa! Is this all enchantments ‘n stuff?!’"
-msgstr ""
+msgstr "我看到这个地方时心里还想着: “哇! 这里该不会全是魔法阵之类的东西吧? ”"
 
 #: src/dialog/marisa.c:586
 msgid "I got really excited!"
-msgstr ""
+msgstr "我超兴奋的DA☆ZE"
 
 #: src/dialog/marisa.c:587
 msgid "‘Maybe I could get a new trump-card outta this’ is what I thought."
-msgstr ""
+msgstr "我当时就想: “说不定我能从这里搞到一张新王牌呢。”"
 
 #: src/dialog/marisa.c:589
 msgid "But obviously yer a shinigami or somethin’. And I didn’t see a library…"
-msgstr ""
+msgstr "但显然你是个死神之类的东西吧。 而且我也没看到什么图书馆……"
 
 #: src/dialog/marisa.c:590
 msgid "I guess that oarfish from before was right."
-msgstr ""
+msgstr "看来之前那条浆鱼说得没错啊。"
 
 #: src/dialog/marisa.c:591
 msgid "Master Spark’s good ‘n all, but it’ll only get me so far in life…"
-msgstr ""
+msgstr "Master Spark是挺厉害的, 但在人生中光靠这个也走不了多远啊……"
 
 #: src/dialog/marisa.c:594 src/dialog/youmu.c:226 src/dialog/youmu.c:542
 msgid "…"
-msgstr ""
+msgstr "……"
 
 #: src/dialog/marisa.c:595
 msgid "*sigh*"
-msgstr ""
+msgstr "（叹气）"
 
 #: src/dialog/marisa.c:596
 msgid "Are you finally done?"
-msgstr ""
+msgstr "你终于说完了? "
 
 #: src/dialog/marisa.c:598
 msgid "Is this some kind of joke?!"
-msgstr ""
+msgstr "你开玩笑呢? ! "
 
 #: src/dialog/marisa.c:600
 msgid "How does every version of you just keep mocking me?!"
-msgstr ""
+msgstr "为什么每一个版本的你都只会一直嘲笑我? ! "
 
 #: src/dialog/marisa.c:602
 msgid ""
 "What, you mean last time? At least then you were guardin’ some powerful "
 "thingy I coulda used."
-msgstr ""
+msgstr "你说上次? 至少那时候你还守着某个能派上用场的强力玩意ZE"
 
 #: src/dialog/marisa.c:603
 msgid "I’m tryin’ to remember, was that timeline a bust, too?"
-msgstr ""
+msgstr "让我想想, 那条时间线……也是彻底失败了吗? "
 
 #: src/dialog/marisa.c:605
 msgid ""
 "At least I met Yūka, right? Did ya know she ended up givin’ me my trademark "
 "spell?"
-msgstr ""
+msgstr "至少那次我还遇到了幽香对吧? 你知道吗, 最后她还给了我标志性的专属魔法ZE"
 
 #: src/dialog/marisa.c:606
 msgid "Not right then, ‘n not voluntarily, but—"
-msgstr ""
+msgstr "虽然不是立刻给的, 也不是她心甘情愿的——, 但——"
 
 #: src/dialog/marisa.c:609
 msgid "Y-you remember that?! But how—?!"
-msgstr ""
+msgstr "你、你还记得那件事? ! 可怎么会——? ! "
 
 #: src/dialog/marisa.c:610
 msgid ""
 "… ugh, nevermind! It’s not as if you could possibly grasp the Tower’s true "
 "power."
-msgstr ""
+msgstr "……呃, 算了! 反正你也根本不可能理解这座塔的真正力量。"
 
 #: src/dialog/marisa.c:612
 msgid ""
 "After all, I can already sense your feeble mind succumbing to its might!"
-msgstr ""
+msgstr "毕竟, 我能感觉到你那孱弱的意识正在屈服于它的力量! "
 
 #: src/dialog/marisa.c:615
 msgid "Eh? I’m not depressed or anythin’. I’m just disappointed."
-msgstr ""
+msgstr "诶? 我可没有你这种玉玉症, 只是失望ZE"
 
 #: src/dialog/marisa.c:618
 msgid ""
 "I-It’s not about being ‘depressed’! It’s about being overwhelmed with the "
 "vast knowledge of the universe!"
-msgstr ""
+msgstr "我、我才没有抑郁! 我是被如宇宙般浩瀚的知识所震撼, 所压倒啊! "
 
 #: src/dialog/marisa.c:619
 msgid ""
 "Once you realize the true potential of reality, you’ll go mad with knowledge!"
-msgstr ""
+msgstr "一旦你意识到现实真正的潜能, 知识就会让你陷入疯狂! "
 
 #: src/dialog/marisa.c:620
 msgid "Don’t you see?! Nothing can stop us now! For we are—!"
-msgstr ""
+msgstr "你还不明白吗? ! 现在再也没有什么能阻止我了! 因为我——! "
 
 #: src/dialog/marisa.c:623
 msgid ""
 "But I’m already mad with knowledge! Why do ya think I drink all the time?!"
-msgstr ""
+msgstr "我早就被知识逼疯了! 你以为我为啥整天喝酒啊? ! "
 
 #: src/dialog/marisa.c:624
 msgid "My mind’s always racin’ with this ‘n that…"
-msgstr ""
+msgstr "我的脑子总是被这样那样的事搅得飞转……"
 
 #: src/dialog/marisa.c:625
 msgid ""
 "Ya think this is any different than how I usually live?! Get over y’erself!"
-msgstr ""
+msgstr "你以为这跟我平时的生活有什么不一样吗? ! 别太把自己当回事了! "
 
 #: src/dialog/marisa.c:627
 msgid "Now, I gotta ask… ya really, seriously don’t got anything?"
-msgstr ""
+msgstr "现在, 我可得问一句…… 你真的啥都没有? "
 
 #: src/dialog/marisa.c:628
 msgid "A single bookshelf?! A few loose scribbled notes?!"
-msgstr ""
+msgstr "一个书架? ! 几页乱涂乱画的破笔记? ! "
 
 #: src/dialog/marisa.c:629
 msgid ""
 "Heck, I’ll even take one of those little glowy tablet thingies with all "
 "those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
 msgstr ""
+"就是那些发着光的小平板也行啊! 上面全是那些亮得刺眼的“PDF”文件, 虽然看得我眼睛"
+"疼, 但——"
 
 #: src/dialog/marisa.c:632
 msgid ""
 "Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you "
 "any longer!"
-msgstr ""
+msgstr "既然你明显是在拿这事儿当笑话, 那就不必多言! "
 
 #: src/dialog/marisa.c:635
 msgid ""
 "Oh c’mon, turn the madness-whatever off ‘n we’ll go out for drinks! There’s "
 "this nice new bar in town with a cute—"
 msgstr ""
+"哎呀你别闹了, 把什么疯狂啊神力啊都收一收, 咱们出去喝一杯DA☆ZE! 人间之里新开了"
+"家不错的食堂, 老板娘还挺可爱的——"
 
 #: src/dialog/marisa.c:637
 msgid "There’s no force in this world that would make me turn back now!"
-msgstr ""
+msgstr "这世上没有任何力量能让我回头! "
 
 #: src/dialog/marisa.c:640
 msgid "Someone as ‘ordinary’ as you getting in our way may be impressive…"
-msgstr ""
+msgstr "像你这样平凡的人竟敢挡我的路, 或许也算得上有点本事……"
 
 #: src/dialog/marisa.c:642
 msgid "But there’s no place for sorcery in our enlightened vision of Gensōkyō!"
-msgstr ""
+msgstr "但在我们对幻想乡的愿景中, 没有魔法使的一席之地! "
 
 #: src/dialog/marisa.c:644
 msgid "Now, succumb to the madness!"
-msgstr ""
+msgstr "现在, 向疯狂屈服吧! "
 
 #: src/dialog/marisa.c:657
 msgid "Are ya sure ya don’t got a spellbook laying around?! Nothin’ at all?!"
-msgstr ""
+msgstr "你确定身边连本破咒语书都没有吗? ! 啥都没有? ! "
 
 #: src/dialog/marisa.c:659
 msgid "Are you still on about that?! Fine, see what good it does you!"
-msgstr ""
+msgstr "你还在纠结这个? ! 好啊那就随你便, 看你能捞到什么! "
 
 #: src/dialog/marisa.c:661
 msgid ""
 "Your pitiful magic amounts to nothing against the true nature of reality!"
-msgstr ""
+msgstr "你那可怜的魔法, 在现实的本质面前根本一文不值! "
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
-msgstr "夏天下雪？怎么感觉有点熟悉……"
+msgstr "夏天下雪? 怎么感觉有点熟悉……"
 
 #: src/dialog/reimu.c:52
 msgid "Nobody can stop me now!"
-msgstr "现在没人能阻止咱啦！"
+msgstr "现在没人能阻止咱啦! "
 
 #: src/dialog/reimu.c:56
 msgid "Mwahahaha!"
-msgstr "哇哈哈哈！"
+msgstr "哇哈哈哈! "
 
 #: src/dialog/reimu.c:59
 msgid "What’s gotten into you all of a sudden?"
-msgstr "哦，你是不是该想起什么了呢？"
+msgstr "哦, 你是不是该想起什么了呢? "
 
 #: src/dialog/reimu.c:63
 msgid "Gah! Y-you again?! Are you here to get in the way of my plans?!"
-msgstr "嘎！泥又来了？！泥是来妨碍咱的计划吗？！"
+msgstr "嘎! 泥又来了? ! 泥是来妨碍咱的计划吗? ! "
 
 #: src/dialog/reimu.c:65
 msgid "What ‘plans'? Freezing frogs?"
-msgstr "啥计划？冻青蛙？"
+msgstr "啥计划? 冻青蛙? "
 
 #: src/dialog/reimu.c:67
 msgid "Anyway, I don’t really care. So if you could just—"
@@ -2900,40 +3147,40 @@ msgstr "反正我实际又不在乎。所以嘛如果你——"
 
 #: src/dialog/reimu.c:71
 msgid "I’ll never tell you! Prepare to be chilled to the bone!"
-msgstr "咱才不会告诉你！准备好被冻个透心凉吧！"
+msgstr "咱才不会告诉你! 准备好被冻个透心凉吧! "
 
 #: src/dialog/reimu.c:90
 msgid "Chill out! I didn’t mean it like that!"
-msgstr "哎呀冷静一下吖！咱不是内个意思啊啊啊啊！"
+msgstr "哎呀冷静一下吖! 咱不是内个意思啊啊啊啊! "
 
 #: src/dialog/reimu.c:92
 msgid "You could have just let me through, you know."
-msgstr "你又不是不清楚，本可以老老实实让我通过的。"
+msgstr "你又不是不清楚, 本可以老老实实让我通过的。"
 
 #: src/dialog/reimu.c:93
 msgid "Not fair! You broke the rules! I wasn’t ready yet…"
-msgstr "不公平！泥犯规！咱还没有准备好......"
+msgstr "不公平! 泥犯规! 咱还没有准备好......"
 
 #: src/dialog/reimu.c:112
 msgid ""
 "With those loudmouthed kappa gone, the mountain feels practically deserted."
-msgstr "没有那些大嘴巴的河童，这座山感觉好荒芜啊。"
+msgstr "没有那些大嘴巴的河童, 这座山感觉好荒芜啊。"
 
 #: src/dialog/reimu.c:114
 msgid "I almost miss them."
-msgstr "确实，好想他们啊。"
+msgstr "确实, 好想他们啊。"
 
 #: src/dialog/reimu.c:117
 msgid "Ah, it’s Ms. Hakurei."
-msgstr "啊，是博丽小姐。"
+msgstr "啊, 是博丽小姐。"
 
 #: src/dialog/reimu.c:121
 msgid "I thought you might come."
-msgstr "如我所料，你可能会来。"
+msgstr "如我所料, 你可能会来。"
 
 #: src/dialog/reimu.c:123
 msgid "But once again, you’re trying to go places you shouldn’t."
-msgstr "但和上一次一样——你又试图踏入不应踏足的地方。"
+msgstr "但和上一次一样—— 你又试图踏入不应踏足的地方。"
 
 #: src/dialog/reimu.c:124
 msgid "What a troubled girl…"
@@ -2945,17 +3192,17 @@ msgstr "“被遗弃”的就这么多......"
 
 #: src/dialog/reimu.c:129
 msgid "Do you even know what you’re protecting me from this time?"
-msgstr "你到底知不知道你是在保护我挡啥伤害啊喂？"
+msgstr "你到底知不知道你是在保护我挡啥伤害啊喂? "
 
 #: src/dialog/reimu.c:134
 msgid ""
 "A bright girl like you should know that Yōkai Mountain is especially "
 "dangerous today."
-msgstr "像你这样聪明的女孩子应该知道，妖怪之山今天非常非常危险。"
+msgstr "像你这样聪明的女孩子应该知道, 妖怪之山今天非常非常危险。"
 
 #: src/dialog/reimu.c:136
 msgid "You ought to turn back now, my dear."
-msgstr "亲爱的，你现在应该回头了。"
+msgstr "亲爱的, 你现在应该回头了。"
 
 #: src/dialog/reimu.c:139
 msgid "(She… she completely ignored my question.)"
@@ -2963,11 +3210,11 @@ msgstr "（她......她完全无视我的问题。)"
 
 #: src/dialog/reimu.c:141
 msgid "Does it matter that the Gods asked me to come this time?"
-msgstr "这次是几位大神请我来的，这难道不重要吗？"
+msgstr "这次是几位大神请我来的, 这难道不重要吗? "
 
 #: src/dialog/reimu.c:145
 msgid "I know better than the mountain Gods this time."
-msgstr "这次，我比这山上的神明们更清楚。"
+msgstr "这次, 我比这山上的神明们更清楚。"
 
 #: src/dialog/reimu.c:146
 msgid "If you do not turn back immediately, I’ll have to repel you by force."
@@ -2985,13 +3232,13 @@ msgstr "输了……我觉得你可以进去了吧"
 msgid ""
 "You should know by now that I can handle it. Why are you being so "
 "overbearing?"
-msgstr "你应该清晰明白我能应付得了，你为啥这么霸道呢？"
+msgstr "你应该清晰明白我能应付得了, 你为啥这么霸道呢? "
 
 #: src/dialog/reimu.c:169
 msgid ""
 "Just don’t say I didn’t warn you, when you inevitably get mauled by "
 "whatever’s out there…"
-msgstr "哎，等外面那些东西找上门时，可别说我没提醒过你会被撕成碎片……"
+msgstr "哎, 等外面那些东西找上门时, 可别说我没提醒过你会被撕成碎片……"
 
 #: src/dialog/reimu.c:172
 msgid "(Ignored again…)"
@@ -3001,63 +3248,63 @@ msgstr "（又在无视我……）"
 msgid ""
 "Aside from everyone being whipped up into a frenzy, I can’t see anything "
 "abnormal yet."
-msgstr "除了所有人都陷入狂热之外，还看不出有什么异常。"
+msgstr "除了所有人都陷入狂热之外, 还看不出有什么异常。"
 
 #: src/dialog/reimu.c:191
 msgid "Well, to your human eyes, insects may seem ‘normal’…"
-msgstr "好吧，在人眼看来，我们昆虫可能看起来「普通」......"
+msgstr "好吧, 在人眼看来, 我们昆虫可能看起来「普通」......"
 
 #: src/dialog/reimu.c:195
 msgid "… but there was a time when we reigned supreme!"
-msgstr "但曾经有一段时间，我们凌驾于所有人之上！"
+msgstr "但曾经有一段时间, 我们凌驾于所有人之上! "
 
 #: src/dialog/reimu.c:198
 msgid "Eh? You? Aren’t you a bit far from home?"
-msgstr "额，你是不是离家太远了？"
+msgstr "额, 你是不是离家太远了? "
 
 #: src/dialog/reimu.c:199
 msgid ""
 "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
-msgstr "还有，「凌驾于所有人之上」是什么鬼，我可没听说昆虫统治过幻想乡。"
+msgstr "还有, 「凌驾于所有人之上」是什么鬼, 我可没听说昆虫统治过幻想乡。"
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
-msgstr "离家很远？但你闯入了我的秘密基地！"
+msgstr "离家很远? 但你闯入了我的秘密基地! "
 
 #: src/dialog/reimu.c:205
 msgid "Haven’t you heard of the Car—…"
-msgstr "你没听说过螃——"
+msgstr "你没听说过碳——"
 
 #: src/dialog/reimu.c:206
 msgid "Carb—…"
-msgstr "螃蟹吗……"
+msgstr "碳素吗……"
 
 #: src/dialog/reimu.c:208
 msgid "That period of history?"
-msgstr "那段历史？"
+msgstr "什么那段历史? "
 
 #: src/dialog/reimu.c:209
 msgid "It was the greatest time, everyone should’ve heard of it by now!"
-msgstr "那可是最美好的时光，大家应该都听说过！"
+msgstr "那可是最美好的时光, 大家应该都听说过! "
 
 #: src/dialog/reimu.c:211
 msgid ""
 "Seems pretty far-fetched to me, honestly. But you yōkai are always coming up "
 "with the craziest theories…"
 msgstr ""
-"什么野史，牵强的不忍直视。不过考虑到你们妖怪总是用这些最癫疯的脑回路......"
+"什么野史, 牵强的不忍直视。不过考虑到 你们妖怪总是用这些最癫疯的脑回路......"
 
 #: src/dialog/reimu.c:214
 msgid "Don’t lump us great insects in with common yōkai!"
-msgstr "不要把我们伟大的昆虫和普通妖怪混为一谈！"
+msgstr "不要把我们伟大的昆虫和普通妖怪混为一谈! "
 
 #: src/dialog/reimu.c:216
 msgid "I’m going to restore us to our rightful glory of old!"
-msgstr "M！I！G！A！我要让昆虫再次伟大！"
+msgstr "M! I! G! A! 我要让昆虫再次伟大! "
 
 #: src/dialog/reimu.c:219
 msgid "Giant insects? But you’re tiny."
-msgstr "巨大的昆虫吗？但你还是太弱了。"
+msgstr "巨大的昆虫吗? 但你还是太弱了。"
 
 #: src/dialog/reimu.c:221
 msgid "And I still don’t know what you mean by ‘glory of old.’"
@@ -3069,11 +3316,11 @@ msgstr "你似乎没怎么学过我们的历史。"
 
 #: src/dialog/reimu.c:226
 msgid "Allow me to be your teacher!"
-msgstr "容我教教你！"
+msgstr "容我教教你! "
 
 #: src/dialog/reimu.c:240
 msgid "Giant insects roaming Gensōkyō, huh?"
-msgstr "幻想乡爬的那些巨型昆虫，是吧？"
+msgstr "幻想乡爬的那些巨型昆虫, 是吧? "
 
 #: src/dialog/reimu.c:241
 msgid "Sounds like one of Sanae’s ‘nuclear’ experiments."
@@ -3085,7 +3332,7 @@ msgstr "但-但我很清楚……昆虫的辉煌过去……"
 
 #: src/dialog/reimu.c:246
 msgid "Don’t you have a pretty sweet deal as it is, though?"
-msgstr "不过你现在的情况已经挺不错了吧？"
+msgstr "不过你现在的情况已经挺不错了吧? "
 
 #: src/dialog/reimu.c:247
 msgid "You practically own Gensōkyō’s forests."
@@ -3093,11 +3340,11 @@ msgstr "你几近拥有了一大片幻想乡的森林。"
 
 #: src/dialog/reimu.c:249
 msgid "But can’t we ever hope for more…?"
-msgstr "但我们难道就不能期待更多吗……？"
+msgstr "但我们难道就不能期待更多吗……? "
 
 #: src/dialog/reimu.c:267
 msgid "Huh? There’s a mansion jutting out of this tower?"
-msgstr "啊？这塔里还有栋这么大的豪宅？"
+msgstr "啊? 这塔里还有栋这么大的宅子? "
 
 #: src/dialog/reimu.c:269
 msgid "This makes even less sense than usual."
@@ -3105,112 +3352,114 @@ msgstr "不太合理的说。"
 
 #: src/dialog/reimu.c:275
 msgid "And who are you supposed to be?"
-msgstr "那你又是谁？"
+msgstr "那么……你又是谁? "
 
 #: src/dialog/reimu.c:279
 msgid "Oi, that’s what I should be asking!"
-msgstr "哎呀，这不是我的台词吗！"
+msgstr "哎呀, 这不是我的台词吗! "
 
 #: src/dialog/reimu.c:282 src/dialog/youmu.c:322
 msgid "…?"
-msgstr "……？"
+msgstr "……? "
 
 #: src/dialog/reimu.c:284
 msgid "And what are you doing, anyways?"
-msgstr "那你在干什么？"
+msgstr "哦，那你在干啥子? "
 
 #: src/dialog/reimu.c:285
 msgid "Are you behind all these… strange thoughts everyone’s having?"
-msgstr "这一切……大家产生的「奇怪想法」，是你在背后操纵吗？"
+msgstr "这一切……大家产生的「奇怪想法」, 是你在背后操纵吗? "
 
 #: src/dialog/reimu.c:289
 msgid ""
 "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with "
 "you…"
-msgstr "我不知道你说的「奇怪想法」是什么意思，但我会坦诚地告诉你……"
+msgstr "我不知道你说的「奇怪想法」是什么意思, 但我会坦诚地告诉你……"
 
 #: src/dialog/reimu.c:290
 msgid "Your clothing is giving me some strange thoughts!"
-msgstr "你的衣服让我产生了一些「奇怪想法」！"
+msgstr "你的衣服让我产生了一些「奇怪想法」! "
 
 #: src/dialog/reimu.c:291
 msgid "Where’d you even get that outfit?! Dumpster diving?! For real!"
-msgstr "你这身衣服到底从哪弄来的？！该不会是捡破烂捡来的吧？！真的假的！"
+msgstr "你这身衣服到底从哪弄来的? ! 该不会是捡破烂捡来的吧? ! "
 
 #: src/dialog/reimu.c:294
 msgid "Ugh, another prissy mansion-dweller."
-msgstr "呃，又是一个跟深井冰一样的豪宅里的家伙。"
+msgstr "呃, 又是一个跟深井冰一样的宅子里的家伙。"
 
 #: src/dialog/reimu.c:296
 msgid "I thought I remembered you from somewhere, but no. Absolutely not."
-msgstr "我总觉得在哪儿见过你，但死活想不起来。"
+msgstr "我总觉得在哪儿见过你, 但死活想不起来。"
 
 #: src/dialog/reimu.c:298
 msgid "Just… stop whatever it is you’re doing, right now."
-msgstr "你……立刻停下你正在做的这一切。"
+msgstr "算了……立刻停下你正在做的这一切。"
 
 #: src/dialog/reimu.c:301
 msgid "Once you get some fashion sense, maybe I will!"
-msgstr "但凡你这家伙有点时尚潮流，也许我就照办了！"
+msgstr "但凡你这家伙有点时尚潮流, 也许我就照办了! "
 
 #: src/dialog/reimu.c:304
 msgid "… so you *are* behind this, huh?"
-msgstr "……所以这事背后都是你，嗯？"
+msgstr "……所以这事背后都是你, 嗯? "
 
 #: src/dialog/reimu.c:306
 msgid "Besides, haven’t you ever seen a shrine maiden before?"
-msgstr "再说了，你没见过巫女吗？"
+msgstr "再说了, 你没见过巫女吗? "
 
 #: src/dialog/reimu.c:309
 msgid "You’re a shrine maiden?"
-msgstr "你**是巫女？"
+msgstr "你**是巫女? "
 
 #: src/dialog/reimu.c:311
 msgid "More like… BRINE maiden!"
-msgstr "我看你像歌姬吧！"
+msgstr "我看你像歌姬吧! "
+# （brine是什么玩意啊，深海少女? ）
+# （额，brine maiden居然是一副画，不过中文里的brine和shrine听起来就不是一个东西）
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
-msgstr "没错啊，这就是巫女穿的制服。"
+msgstr "没错啊, 这就是巫女穿的制服。"
 
 #: src/dialog/reimu.c:316
 msgid "Uniform? Are you kidding me?!"
-msgstr "制服？你认真的？"
+msgstr "制服? 你认真的? "
 
 #: src/dialog/reimu.c:317
 msgid ""
 "I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
-msgstr "我以前见过真正的巫女，她和你一点也不像！"
+msgstr "我以前见过真正的巫女, 她和你一点也不像! "
 
 #: src/dialog/reimu.c:318
 msgid ""
 "What’s with those patterns, anyways? It’s completely unorthodox! It’s not "
 "even using the right type of fabric!"
-msgstr "这些图案到底是怎么回事？完全不正统！连布料都选错了！"
+msgstr "这些图案到底是怎么回事? 完全不正统! 连布料都选错了! "
 
 #: src/dialog/reimu.c:320
 msgid "Get out of here, fake-maiden!"
-msgstr "快滚开，你这个冒牌货！"
+msgstr "快滚开, 你这个冒牌货! "
 
 #: src/dialog/reimu.c:323
 msgid "… ARGH!"
-msgstr "……你干嘛嗨嗨哟！"
+msgstr "……你干嘛嗨嗨哟! "
 
 #: src/dialog/reimu.c:325
 msgid "Listen!! It’s HARD to find clothes I can wear every day on the job!"
-msgstr "直视我！Look in my eyes！你知道我找适合每天上班的衣服有多难吗！"
+msgstr "直视我! Look in my eyes! 你知道我找适合每天上班的衣服有多难吗! "
 
 #: src/dialog/reimu.c:326
 msgid "It has to fit a certain style!"
-msgstr "必须符合某种风格！"
+msgstr "必须符合某种风格! "
 
 #: src/dialog/reimu.c:327
 msgid "And only a few fabrics feel good to wear!"
-msgstr "而且只有少数面料穿起来感觉很舒服！"
+msgstr "而且只有少数面料穿起来感觉很舒服! "
 
 #: src/dialog/reimu.c:328
 msgid "I can’t stand scratchy wool or slippery silk!"
-msgstr "粗糙的羊毛或滑溜的丝绸都不行！"
+msgstr "粗糙的羊毛或滑溜的丝绸都不行! "
 
 #: src/dialog/reimu.c:329
 msgid "Everything else feels terrible against my skin—"
@@ -3218,15 +3467,15 @@ msgstr "其余的在我皮肤上都感觉很糟糕——"
 
 #: src/dialog/reimu.c:332
 msgid "Whoa, hey, sorry, didn’t mean to make you all—"
-msgstr "咳咳咳首先我不是针对你们，但——"
+msgstr "呜啊, 很抱歉, 首先咱不是针对你啦——"
 
 #: src/dialog/reimu.c:336
 msgid "I *hate* prissy mansion dwellers!"
-msgstr "老娘讨厌你们这群住在豪宅里的深井冰！"
+msgstr "老娘讨厌你们这群住在宅子里的深井冰! "
 
 #: src/dialog/reimu.c:338
 msgid "Let’s just get this over with!"
-msgstr "赶紧解决这一切吧！"
+msgstr "是时候把你就地正法了! "
 
 #: src/dialog/reimu.c:352
 msgid "That’s what you get for insulting my outfit like that."
@@ -3238,23 +3487,23 @@ msgstr "啊啊啊……"
 
 #: src/dialog/reimu.c:355
 msgid "W-wait, what happened?"
-msgstr "等、等一下，发生什么事了？"
+msgstr "等、等一下, 发生什么事了? "
 
 #: src/dialog/reimu.c:357
 msgid "What do you mean ‘what happened’?"
-msgstr "哦，你在指什么？"
+msgstr "哦, 你在指什么? "
 
 #: src/dialog/reimu.c:359
 msgid "(M-maybe if I fake having amnesia… yeah, that’s it…!)"
-msgstr "（要、要不假装失忆了……嗯，就这样……！）"
+msgstr "（要、要不假装失忆了……嗯, 就这样……! ）"
 
 #: src/dialog/reimu.c:361
 msgid "O-oof, my head! Ow! How did I even get here???"
-msgstr "哎呀呀难受难受真难受，头疼头疼好头疼……"
+msgstr "哎呀呀难受难受真难受, 头疼头疼好头疼……"
 
 #: src/dialog/reimu.c:362
 msgid "W-wait! Aren’t you that girl from a long while back?"
-msgstr "等等！你不是很久以前的那个女孩吗？"
+msgstr "等等! 你不是很久以前的那个女孩纸吗? "
 
 #: src/dialog/reimu.c:365
 msgid "I don’t remember you at all."
@@ -3262,29 +3511,29 @@ msgstr "可我一点也不记得你了。"
 
 #: src/dialog/reimu.c:367
 msgid "But somehow, so familiar…"
-msgstr "但不知为何，这么熟悉……"
+msgstr "但不知为何, 这么熟悉……"
 
 #: src/dialog/reimu.c:369
 msgid ""
 "This feeling is annoying, whatever it is. Make it stop, or tell me how to "
 "make it stop."
-msgstr "算了不管它是什么，现在让它停下来，或者告诉 我怎么让它停止。"
+msgstr "算了不管它是什么, 现在让它停下来, 或者告诉我怎么让它停止。"
 
 #: src/dialog/reimu.c:372
 msgid "Huh? I-I don’t know! I barely remember anything!"
-msgstr "啊？我、我不知道！我几乎什么都不记得了！"
+msgstr "啊? 我、我不知道! 咱什么都不记得了呀! "
 
 #: src/dialog/reimu.c:373
 msgid "(Ugh, her outfit really does suck though…)"
-msgstr "（唉，不过她的穿搭确实很差劲……）"
+msgstr "（唉, 不过她的穿搭确实很差劲……）"
 
 #: src/dialog/reimu.c:375
 msgid "(Just another victim…?)"
-msgstr "（大概只是另一个受害者……？）"
+msgstr "（这家伙大概只是另一个受害者……? ）"
 
 #: src/dialog/reimu.c:377
 msgid "I’ll deal with you after I figure out whatever's happening here."
-msgstr "等我弄清楚这里发生的一切之后，我再处理你。"
+msgstr "等我弄清楚这里发生的一切之后, 我再处理你。"
 
 #: src/dialog/reimu.c:394
 msgid "I’ve got a bad feeling about this…"
@@ -3296,23 +3545,23 @@ msgstr "但也许我只是对这座塔跟转转一样转个不停 感到恶心�
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
-msgstr "或者这仅仅是塔存在带来的副作用？"
+msgstr "或者这仅仅是高塔的存在带来的副作用? "
 
 #: src/dialog/reimu.c:404
 msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
-msgstr "哦，是你啊。你刚才为什么要攻击我？"
+msgstr "哈, 是你啊。你刚才为什么要攻击我? "
 
 #: src/dialog/reimu.c:408
 msgid "Ah, apologies. It must have been friendly fire."
-msgstr "啊抱歉，误伤误伤。"
+msgstr "啊抱歉, 误伤误伤。"
 
 #: src/dialog/reimu.c:410
 msgid "Things are quite hectic here. I beg your understanding."
-msgstr "这边忙得不可开交，恳请理解。"
+msgstr "这边忙得不可开交, 恳请理解。"
 
 #: src/dialog/reimu.c:411
 msgid "But it has been a while, has it not?"
-msgstr "确实有段时间没联系了，对吧？"
+msgstr "确实有段时间没联系了, 对吧? "
 
 #: src/dialog/reimu.c:414
 msgid "Err, right, yes, it has been a while. Nice to see you again."
@@ -3326,18 +3575,18 @@ msgstr "这塔确实与众不同呢。"
 msgid ""
 "Since word spread through the clouds, I’ve learned that the culprit is "
 "connected to ‘parallel universes.’"
-msgstr "自从消息传遍云端后，我得知罪魁祸首与“平行 宇宙”有关。"
+msgstr "自从消息传到云端后, 我得知罪魁祸首与「平行宇宙」有关。"
 
 #: src/dialog/reimu.c:421
 msgid ""
 "You mean like Otherworlds? That’s not too out of the ordinary these days."
-msgstr "你是说其他世界？这在今天也不算什么稀奇事。"
+msgstr "你是说其他世界? 这在今天也不算什么稀奇事。"
 
 #: src/dialog/reimu.c:423
 msgid ""
 "This feels different though. It’s like the walls are sucking up faith into a "
 "void."
-msgstr "但这次似乎不一样，就好像高墙把信仰吸到了 「虚空」一样。"
+msgstr "但这次似乎不一样, 就好像高墙把对神明的信仰吸到了 「虚空」一样。"
 
 #: src/dialog/reimu.c:424
 msgid "I’m surprised the fairies are surviving at all…"
@@ -3345,7 +3594,7 @@ msgstr "我很惊讶这些妖精竟然还活蹦乱跳的……"
 
 #: src/dialog/reimu.c:426
 msgid "But what are you even doing here?"
-msgstr "但你在这里做什么？"
+msgstr "但你在这里做什么? "
 
 #: src/dialog/reimu.c:429
 msgid "It is not just the Netherworld and Gensōkyō being affected."
@@ -3359,7 +3608,7 @@ msgstr "就连天界那个大小姐性格都变的奇怪起来。"
 
 #: src/dialog/reimu.c:434
 msgid "It’s spreading that fast?!"
-msgstr "靠，传播这么快？！"
+msgstr "靠, 传播这么快? ! "
 
 #: src/dialog/reimu.c:437
 msgid "Initially, I had no plans towards interfering."
@@ -3369,19 +3618,19 @@ msgstr "本来吗我没打算干涉。"
 msgid ""
 "However, the tower’s psychological effects began to intensify, and I began "
 "to fear that nobody would take charge."
-msgstr "然而，这座塔的心理影响开始加剧，我担心没有人来垫底。"
+msgstr "然而, 这座塔的心理影响开始加剧, 我担心没有人来垫底。"
 
 #: src/dialog/reimu.c:443
 msgid "(Do people have this little faith in me…?)"
-msgstr "（别人对我就这么没信心吗……？）"
+msgstr "（别人对我就这么没信心吗……? ）"
 
 #: src/dialog/reimu.c:446
 msgid "As more minds began to fall prey, I considered a theory…"
-msgstr "随着越来越多的人开始陷入这种状态，我想出了 一个理论……"
+msgstr "随着越来越多的人开始陷入这种状态, 我想出了一个理论……"
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
-msgstr "这台机器是否与幻想的存在格格不入？"
+msgstr "这台机器是否与幻想的存在格格不入? "
 
 #: src/dialog/reimu.c:450
 msgid "That may be why you feel a sense of dread about the place."
@@ -3389,54 +3638,54 @@ msgstr "这也许就是为什么你对这个地方感到恐惧的原因。"
 
 #: src/dialog/reimu.c:453
 msgid "Well, that settles it. Where’s the owner, then?"
-msgstr "好了，事情解决了。那么，这塔的所有者在哪儿呢？"
+msgstr "好了, 事情解决了。 那么, 这塔的所有者在哪儿呢? "
 
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
-msgstr "坦白说，我不确定你是否能担此大任。"
+msgstr "负责任的说, 我不确定你是否能担此大任。"
 
 #: src/dialog/reimu.c:457
 msgid ""
 "You are still relatively composed, yes, but your mental state seems to be "
 "deteriorating."
-msgstr "虽你仍然相对镇定，但你的精神状态正在「恶化」。"
+msgstr "虽你仍然相对镇定, 但你的精神状态正在「恶化」。"
 
 #: src/dialog/reimu.c:460
 msgid "Deteriorating? But I just got here!"
-msgstr "恶化？可我才刚到这里！"
+msgstr "恶化? 可我才刚到这里! "
 
 #: src/dialog/reimu.c:463
 msgid ""
 "You are still so worrisome. You ought to go home before you lose yourself."
-msgstr "你还是这么让人操心。趁还没迷失自己，赶紧回家吧。"
+msgstr "你还是这么让人操心。趁还没迷失自己, 赶紧回家吧。"
 
 #: src/dialog/reimu.c:466
 msgid "No!"
-msgstr "不要！"
+msgstr "不要! "
 
 #: src/dialog/reimu.c:469
 msgid "I beg your pardon?"
-msgstr "再说一遍？"
+msgstr "你说什么? "
 
 #: src/dialog/reimu.c:471
 msgid "Don’t keep telling me how little you think of me. I’m sick of it!"
-msgstr "别总是跟我说你有多看不起我。我受够了！"
+msgstr "别总是跟我说你有多看不起我。我受够了! "
 
 #: src/dialog/reimu.c:473
 msgid "I’m going to give everyone a reason to have faith in me!"
-msgstr "我要让每个人都有理由相信我！"
+msgstr "我要让每个人都有理由相信我! "
 
 #: src/dialog/reimu.c:475
 msgid "It seems your resolve is unwavering. Very well, then."
-msgstr "看来你的决心坚定不移。那么，来吧。"
+msgstr "看来你的决心坚定不移。很好, 那么来吧,"
 
 #: src/dialog/reimu.c:476
 msgid "Allow me to test your resistance to their infuriating machine!"
-msgstr "以这松果弹抖闪电鞭，检验你那不变的决心！"
+msgstr "以这松果弹抖闪电鞭, 检验你那不变的决心! "
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
-msgstr ""
+msgstr "雷云? 咱现在居然在这么高的地方了? "
 
 #: src/dialog/reimu.c:502
 msgid "Ah…"
@@ -3448,11 +3697,11 @@ msgstr "我觉得你可能搞错了什么……"
 
 #: src/dialog/reimu.c:506
 msgid "Somehow I don’t feel too satisfied by that."
-msgstr "不知道为啥，我感觉有点不爽呢。"
+msgstr "不知道为啥, 我感觉有点不爽呢。"
 
 #: src/dialog/reimu.c:509
 msgid "To be honest with you, I’m glad you arrived after all."
-msgstr "说实话，我很高兴你终于来了。"
+msgstr "说实话, 我很高兴你终于来了。"
 
 #: src/dialog/reimu.c:510
 msgid "I know now that I would not have been able to defeat her."
@@ -3462,15 +3711,15 @@ msgstr "我现在知道我不可能打败她。"
 msgid ""
 "Since you’re still able to think clearly, perhaps Gensōkyō will be saved "
 "after all."
-msgstr "既然你还能清醒地思考，或许幻想乡终究还是 能得救的。"
+msgstr "既然你还能清醒地思考, 或许幻想乡终究还是能得救的。"
 
 #: src/dialog/reimu.c:515
 msgid "Finally."
-msgstr "最后，"
+msgstr "最后, "
 
 #: src/dialog/reimu.c:517
 msgid "But you’re right. This is bigger than Gensōkyō."
-msgstr "你说得对，这是一个远高于幻想乡的存在。"
+msgstr "你说得对, 这是一个远高于幻想乡的存在。"
 
 #: src/dialog/reimu.c:518
 msgid "I’ll need to take this seriously."
@@ -3482,11 +3731,11 @@ msgstr "非常高兴能听到你这样说。"
 
 #: src/dialog/reimu.c:537
 msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
-msgstr "啧啧啧，看来有只忠实的走狗擅闯了我们的地盘。"
+msgstr "啧啧啧, 看来有只小老鼠擅闯了我们的地盘。"
 
 #: src/dialog/reimu.c:541
 msgid "How strange. You should’ve lost your mind by now."
-msgstr "挺意外的，你现在应该也疯了才对。"
+msgstr "挺意外的, 你现在应该也疯了才对。"
 
 #: src/dialog/reimu.c:544
 msgid "Just turn it off already."
@@ -3494,43 +3743,43 @@ msgstr "你现在就把它关掉吧。"
 
 #: src/dialog/reimu.c:545
 msgid "I’m not in the mood to argue, so don’t push me!"
-msgstr "我没心情争论，所以可别逼我，自裁吧！"
+msgstr "我没心情争论, 所以可别逼我, 自裁吧! "
 
 #: src/dialog/reimu.c:549
 msgid "Bold of you to barge into MY tower and give ME orders!"
-msgstr "好好好，你竟敢闯入我的塔向我发号施令！"
+msgstr "好好好, 你竟敢闯入我的塔然后还向我发号施令! "
 
 #: src/dialog/reimu.c:550
 msgid "I still remember what you did to Lady Kazami and I back then!"
-msgstr "我还记得当时你对我和风见大人做的事！"
+msgstr "我还记得当时你对我和风见大人做的事! "
 
 #: src/dialog/reimu.c:553
 msgid "And what was that, again?"
-msgstr "啥玩意？"
+msgstr "啥玩意? "
 
 #: src/dialog/reimu.c:554
 msgid "I’m getting a familiar feeling just looking at you, but…"
-msgstr "看着你我就有一种熟悉的感觉，但是……"
+msgstr "看着你我就有一种熟悉的感觉, 但是……"
 
 #: src/dialog/reimu.c:557
 msgid "Is this a joke?! Are you trying to mock me?!"
-msgstr "开玩笑？！你是在嘲笑我吗？！"
+msgstr "开玩笑? ! 你是在嘲笑我吗? ! "
 
 #: src/dialog/reimu.c:560
 msgid ""
 "I think I would’ve remembered a giant tower that makes people go mad with "
 "power!"
-msgstr "我想一座让人疯癫的高塔可不该忘记。"
+msgstr "我想一座让人疯癫的高塔可不该忘记啊喂! "
 
 #: src/dialog/reimu.c:561
 msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
-msgstr "不是你指控别人的时候好歹说一下罪名吧？"
+msgstr "而且, 你指控别人的时候好歹说一下罪名吧? "
 
 #: src/dialog/reimu.c:564
 msgid "Ah. I see."
-msgstr "啊，我明白了。"
+msgstr "啊, 我明白了。"
 
 #: src/dialog/reimu.c:566
 msgid "Fine. I will."
@@ -3546,35 +3795,35 @@ msgstr "这座塔是近期发明的。它的存在本身就对多个 科学领�
 msgid ""
 "The denizens of this Gensōkyō ought to have been thankful for its vast "
 "scientific knowledge…"
-msgstr "这个幻想乡的居民本应感谢这里丰富的科学知识……"
+msgstr "这个幻想乡的居民, 本应感谢这里丰富的科学知识……"
 
 #: src/dialog/reimu.c:570
 msgid "But alas, we have other plans."
-msgstr "但遗憾的是，我们还有其他计划。"
+msgstr "但遗憾的是, 我们还有其他计划。"
 
 #: src/dialog/reimu.c:573
 msgid "‘This’ Gensōkyō…?"
-msgstr "「这个」幻想乡……？"
+msgstr "「这个」幻想乡……? "
 
 #: src/dialog/reimu.c:576
 msgid "Somehow, it feels like more of a punishment."
-msgstr "不知为何，这玩意感觉更像是一种惩戒。"
+msgstr "可我感觉这玩意, 更像是某种惩罚之类的东西。"
 
 #: src/dialog/reimu.c:577
 msgid "Ever heard of ‘ignorance is bliss’?"
-msgstr "听说过「无知即幸运」吗？"
+msgstr "听说过「无知即福」吗? "
 
 #: src/dialog/reimu.c:578
 msgid ""
 "There won’t be anyone to rule over, or whatever, if you make them all lose "
 "it."
-msgstr "如果你让他们都失控了，就没有统治对象了，大抵就这个意思。"
+msgstr "如果你用知识让他们都失控了, 你就没有统治对象了, 大抵就这个意思。"
 
 #: src/dialog/reimu.c:580
 msgid ""
 "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around "
 "it."
-msgstr "巴别塔能够「启迪」那些有幸身处其周围的人。"
+msgstr "这巴别塔, 能够「启迪」那些有幸身处其周围的人。"
 
 #: src/dialog/reimu.c:582
 msgid "Anyone unable to comprehend its brilliance will be driven to madness."
@@ -3584,942 +3833,949 @@ msgstr "任何无法理解其辉煌的人都会陷入疯狂。"
 msgid ""
 "But this is simply retribution for the crimes that have been committed "
 "against us!"
-msgstr "但这不过是对针对我们所犯罪行的报应！"
+msgstr "但这不过是你们所犯下的罪行应得的报应! "
 
 #: src/dialog/reimu.c:587
 msgid "‘Parallel universes’, is that it?"
-msgstr "「平行宇宙」就这个样？"
+msgstr "「其他平行宇宙」就这个样? "
 
 #: src/dialog/reimu.c:590
 msgid "Hmm? Is that what you think this Gensōkyō is?"
-msgstr "嗯？你以为这个幻想乡就是这样的吗？"
+msgstr "嗯? 你认为这个幻想乡就是这样的吗? "
 
 #: src/dialog/reimu.c:593
 msgid "You tell me! You’re the megalomaniac!"
-msgstr "你自己说的！你个宇宙无敌偏执狂！"
+msgstr "你自己说的! 你个宇宙无敌自大狂! "
 
 #: src/dialog/reimu.c:595
 msgid "Do you hate me because some other Reimu did something? Is that it?"
-msgstr "你是因为其他灵梦做了什么事才这么恨我的吗？是吗？"
+msgstr "你是因为其他灵梦做了什么事才这么恨我的吧? "
 
 #: src/dialog/reimu.c:596
 msgid "But then what does that have to do with any of us?!"
-msgstr "但这与我们有什么关系呢？！"
+msgstr "但这与我们有什么关系呢? ! "
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr "对于一名「科学家」来说，你的说法毫无意义！"
+msgstr "对于一名「科学家」来说, 你的说法毫无意义! "
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
-msgstr "大概你已经干脆忘了，就像忘了我们其他人一样！"
+msgstr "你大概已经干脆忘了这些恶行, 就像忘了我们其他人一样! "
 
 #: src/dialog/reimu.c:603
 msgid ""
 "Only the privileged, such as Lady Kazami, made it out! The rest of us were "
 "lost!"
-msgstr "只有像风见大人这样的特权人士才能逃出来！我们其他人都神隐了！"
+msgstr "只有像风见大人这样的特权人士才能逃出来! 我们其他人都神隐了! "
 
 #: src/dialog/reimu.c:606
 msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
-msgstr "你指的是风见幽香？我想还带个爱丽丝对吧？"
+msgstr "你指的是风见幽香? 我想还带个爱丽丝对吧? "
 
 #: src/dialog/reimu.c:607
 msgid ""
 "I remember when I first met Alice, and she said some weird things too, just "
 "like you are now."
-msgstr "我记得第一次见到爱丽丝的时候，她也说了一些奇怪的话，就像你现在这样。"
+msgstr "我记得第一次见到爱丽丝的时候, 她也说了一些奇怪的话, 就像你现在这样。"
 
 #: src/dialog/reimu.c:609
 msgid "But she didn’t go around threatening everyone!"
-msgstr "但她可没有像你这个深井冰到处威胁大家！"
+msgstr "但她可没有像你这个深井冰到处威胁大家! "
 
 #: src/dialog/reimu.c:612
 msgid ""
 "We weren’t as lucky! And as reparation, we will take control of this "
 "Gensōkyō!"
-msgstr "我们可没那么幸运！作为补偿，我们将掌控这个幻想乡！"
+msgstr "我们可没那么幸运! 作为补偿, 我们将统治这个幻想乡! "
 
 #: src/dialog/reimu.c:613
 msgid "We will make it so we will NEVER be forgotten!"
-msgstr "我们将努力让我们再不会被遗忘！"
+msgstr "我们将努力让我们再不会被遗忘! "
 
 #: src/dialog/reimu.c:616
 msgid "Even in Gensōkyō, you can be forgotten, huh?"
-msgstr "但在幻想乡，你也是被遗忘的东西吧？"
+msgstr "可既然出现在幻想乡, 你也注定是被遗忘的东西吧? "
 
 #: src/dialog/reimu.c:617
 msgid ""
 "What a miserable thought. No wonder I felt terrible just seeing this place!"
-msgstr "真是悲惨的想法。难怪我看到这个地方就感觉很糟糕！"
+msgstr "真是悲惨的想法, 难怪我看到这个地方就感觉很糟糕! "
 
 #: src/dialog/reimu.c:619
 msgid "Turn it off, or being forgotten will be the least of your worries!"
-msgstr "赶紧关掉它吧，之后你就不必担忧被遗忘了！"
+msgstr "赶紧关掉它吧, 之后你就不必担忧被遗忘了! "
 
 #: src/dialog/reimu.c:623
 msgid "It’s too late for that! Soon, all of Gensōkyō will become enlightened!"
-msgstr "已经太迟了！很快，幻想乡的所有人都会醒悟的！"
+msgstr "已经太迟了! 很快, 幻想乡的所有人都会醒悟的! "
 
 #: src/dialog/reimu.c:625
 msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
-msgstr "可怜的巫女，你难道不明白吗？科学是深不可测的力量，无可匹敌！"
+msgstr "可怜的巫女, 你难道不明白吗? 科学是深不可测的力量, 无可匹敌! "
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
-msgstr "我们不会再被遗忘了！"
+msgstr "我们不会再被遗忘了! "
 
 #: src/dialog/reimu.c:639
 msgid "Is that it? Are you finally done?"
-msgstr "就这样搞定了？"
+msgstr "嗯? 就这样搞定了? "
 
 #: src/dialog/reimu.c:640
 msgid "Y-you think this is over?! The time of reckoning is upon you!"
-msgstr "你、你以为这就结束了吗？！清算的时刻到了！"
+msgstr "你、你以为这就结束了吗? ! 清算的时刻到了! "
 
 #: src/dialog/reimu.c:641
 msgid "Gaze upon the ultimate truth of the universe, and tremble!"
-msgstr "凝视宇宙的终极真理，颤抖吧！"
+msgstr "凝视宇宙的终极真理, 颤抖吧! "
 
 #: src/dialog/youmu.c:24
 msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
-msgstr ""
+msgstr "飘落的雪花也能可以和樱花一样美丽吗……"
 
 #: src/dialog/youmu.c:27
 msgid "Hey!"
-msgstr ""
+msgstr "嘿! "
 
 #: src/dialog/youmu.c:30
 msgid "I’m cooler than you, so get off my lake!"
-msgstr ""
+msgstr "咱比泥更酷, 快离开咱的湖! "
 
 #: src/dialog/youmu.c:32
 msgid "I can see you’re quite cold, yes."
-msgstr ""
+msgstr "嗯, 看得出来你确实挺冷的。"
 
 #: src/dialog/youmu.c:34
 msgid ""
 "I tend to dislike dueling those weaker than myself, so I’d appreciate it if "
 "you’d step aside."
-msgstr ""
+msgstr "我向来不喜欢与弱于自己的人决斗, 所以麻烦让开一下。"
 
 #: src/dialog/youmu.c:37
 msgid "Hah! Maybe YOU should step aside, then!"
-msgstr ""
+msgstr "哈! 泥才应该让开! "
 
 #: src/dialog/youmu.c:40
 msgid ""
 "I suppose it’s as good a time as any to practice my Snowflake-Destruction "
 "Technique."
-msgstr ""
+msgstr "我想现在正是练习我的「崩雪术」的好时机。"
 
 #: src/dialog/youmu.c:44
 msgid ""
 "But if I turn you into a snowflake, you’ll have to chop yourself in half!"
-msgstr ""
+msgstr "啦如果咱把泥冻成雪花, 是不是要把自己劈了呢? "
 
 #: src/dialog/youmu.c:58
 msgid "The cold is no good for such fine blades…"
-msgstr ""
+msgstr "寒冷对这把利刃没什么好处……"
 
 #: src/dialog/youmu.c:60
 msgid "Y-you should be careful with t-those!"
-msgstr ""
+msgstr "啊啊啊泥小心点啊! "
 
 #: src/dialog/youmu.c:63
 msgid "Yes, that’s what I was just saying."
-msgstr ""
+msgstr "刚才我说的就是这个意思。"
 
 #: src/dialog/youmu.c:80
 msgid "So this is Yōkai Mountain…"
-msgstr ""
+msgstr "所以这里就是妖怪之山……"
 
 #: src/dialog/youmu.c:81
 msgid "A shame, I’ve heard this is usually quite a lovely place."
-msgstr ""
+msgstr "真遗憾, 我听说这里平常是个非常美丽的地方。"
 
 #: src/dialog/youmu.c:84
 msgid "Oh my, what’s this? A new face?"
-msgstr ""
+msgstr "哦? 新面孔? "
 
 #: src/dialog/youmu.c:86
 msgid "And who might you be, dear?"
-msgstr ""
+msgstr "你叫什么呢, 亲爱的? "
 
 #: src/dialog/youmu.c:88
 msgid "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate—"
-msgstr ""
+msgstr "在下魂魄妖梦, 受幽幽子大人之命前来调查——"
 
 #: src/dialog/youmu.c:91
 msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
-msgstr ""
+msgstr "我从没听说过你所说的这个“幽幽子大人”, 但我不能对此置之不理。"
 
 #: src/dialog/youmu.c:94
 msgid ""
 "Young girls such as yourself shouldn’t be sent to do such dangerous errands!"
-msgstr ""
+msgstr "像你这么年轻的女孩, 不该被派去执行如此危险的任务! "
 
 #: src/dialog/youmu.c:97
 msgid "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—"
-msgstr ""
+msgstr "谢谢夸奖, 但容我展示少女剑客的威光——"
 
 #: src/dialog/youmu.c:98
 msgid "—having mastered my technique over *decades*—"
-msgstr ""
+msgstr "——磨练数十年的剑术臻于精湛——"
 
 #: src/dialog/youmu.c:99
 msgid "—dare I say even the best in Gensōkyō—"
-msgstr ""
+msgstr "——已在幻想乡无人可敌——"
 
 #: src/dialog/youmu.c:102
 msgid ""
 "Aww… but you’re so adorable! No way someone like you could be into that."
-msgstr ""
+msgstr "哎呀……但你实在太可爱了! 像你这样的人怎么可能真的会那些呢。"
 
 #: src/dialog/youmu.c:103
 msgid ""
 "Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage "
 "phase?"
-msgstr ""
+msgstr "你确定你这个「少女剑客的威光」的说法 不是什么青春期中二病发作吗? "
 
 #: src/dialog/youmu.c:106
 msgid "It’s not a PHASE, mo—"
-msgstr ""
+msgstr "并非中二, 妈——"
 
 #: src/dialog/youmu.c:108
 msgid "…!!"
-msgstr ""
+msgstr "……! ! "
 
 #: src/dialog/youmu.c:123
 msgid "Did you just call me ‘mom’…?"
-msgstr ""
+msgstr "你刚刚……叫我“妈妈”了? "
 
 #: src/dialog/youmu.c:126
 msgid "I did not."
-msgstr ""
+msgstr "没有。"
 
 #: src/dialog/youmu.c:127
 msgid "It must be the madness overcoming you."
-msgstr ""
+msgstr "一定是这疯狂逐渐吞噬了你。"
 
 #: src/dialog/youmu.c:128
 msgid "Yes, indeed."
-msgstr ""
+msgstr "大概是这样吧。"
 
 #: src/dialog/youmu.c:131
 msgid "My, my…~"
-msgstr ""
+msgstr "我、我的……~"
 
 #: src/dialog/youmu.c:134
 msgid "Don’t you dare."
-msgstr ""
+msgstr "还请安静。"
 
 #: src/dialog/youmu.c:150
 msgid "The further I go into this forest, the more restless I feel."
-msgstr ""
+msgstr "越往这片森林深处走去, 就感觉越不安。"
 
 #: src/dialog/youmu.c:152
 msgid "Something is definitely amiss."
-msgstr ""
+msgstr "情况绝对不对劲。"
 
 #: src/dialog/youmu.c:155
 msgid "Amiss?"
-msgstr ""
+msgstr "不对劲? "
 
 #: src/dialog/youmu.c:157
 msgid "Perhaps you’re frightened by our growing, overwhelming influence?"
-msgstr ""
+msgstr "也许你是被我们蒸蒸日上的影响力吓到了? "
 
 #: src/dialog/youmu.c:160
 msgid "Bugs do not concern me at the moment."
-msgstr ""
+msgstr "目前而言, 虫子对我不足为惧。"
 
 #: src/dialog/youmu.c:163
 msgid "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!"
-msgstr ""
+msgstr "合计现在所有昆虫都叫「虫子」了? 好好好……"
 
 #: src/dialog/youmu.c:165
 msgid "Ever heard of beetles? Flies? Show us some respect!"
-msgstr ""
+msgstr "你听说过甲虫、苍蝇吗? 好歹也给我们一点尊重! "
 
 #: src/dialog/youmu.c:168
 msgid "Apologies, I meant no offense."
-msgstr ""
+msgstr "抱歉, 在下并无冒犯之意。"
 
 #: src/dialog/youmu.c:170
 msgid ""
 "I am on a mission from Lady Yuyuko to end whatever is causing the disturbance"
 "—"
-msgstr ""
+msgstr "我奉幽幽子大人之命前来, 终结这场动乱的源头——"
 
 #: src/dialog/youmu.c:173
 msgid "Oh, oh, I understand now."
-msgstr ""
+msgstr "哦哦, 知道了。"
 
 #: src/dialog/youmu.c:175
 msgid ""
 "The power wielded by an army of giant insects would surely raise some "
 "concerns."
-msgstr ""
+msgstr "一支由巨型昆虫组成的军队所掌握的力量, 确实足以令人担忧。"
 
 #: src/dialog/youmu.c:177
 msgid "Simply put, we want to restore our rightful place in history!"
-msgstr ""
+msgstr "简单来说, 我们要夺回我们在历史中应有的地位! "
 
 #: src/dialog/youmu.c:178
 msgid ""
 "It’s only natural that the lower inhabitants of the mountain would get "
 "nervous in the face of our natural dominance."
 msgstr ""
+"面对我们与生俱来的统治力, 山上那些底层居民感到紧张, 也是再自然不过的事了。"
 
 #: src/dialog/youmu.c:180
 msgid "Your apology is accepted. You shall not fear our wrath—"
-msgstr ""
+msgstr "我们接受你的道歉, 你将不必畏惧我们的怒火——"
 
 #: src/dialog/youmu.c:183
 msgid "… no, no, bugs alone wouldn’t cause this kind of disturbance…"
-msgstr ""
+msgstr "……不, 单靠虫子是不会引起这种程度的骚动的……"
 
 #: src/dialog/youmu.c:185
 msgid "All they’re capable of is ruining my carefully manicured garden."
-msgstr ""
+msgstr "它们顶多也就是毁掉我精心打理的庭院罢了。"
 
 #: src/dialog/youmu.c:187
 msgid "Did you just say you’re…"
-msgstr ""
+msgstr "你刚刚是说你是个……? "
 
 #: src/dialog/youmu.c:189
 msgid "… a gardener?!"
-msgstr ""
+msgstr "园艺师? ! "
 
 #: src/dialog/youmu.c:194
 msgid "Your true face is finally revealed!"
-msgstr ""
+msgstr "你的真实面目终于暴露了! "
 
 #: src/dialog/youmu.c:195
 msgid ""
 "My light shines brighter than ever now! I shall teach this lowly usurper due "
 "respect!"
 msgstr ""
+"我的光芒此刻比以往任何时候都要耀眼! 我定要让这个卑微的篡位者学会应有的尊重! "
 
 #: src/dialog/youmu.c:196
 msgid "So that we may live above beyond your green thumb once and for all!"
-msgstr ""
+msgstr "这样我们便能凌驾于你那别样的园艺技术了! "
 
 #: src/dialog/youmu.c:210
 msgid "Are you aware of the legend of the Tonbokiri?"
-msgstr ""
+msgstr "你知晓「蜻蛉切」的传说吗? "
 
 #: src/dialog/youmu.c:211
 msgid ""
 "It was said its blade could cut insects in half simply by them landing on it."
-msgstr ""
+msgstr "据说, 它的刀刃锋利到只要昆虫一落在上面, 就会被切成两半。"
 
 #: src/dialog/youmu.c:213
 msgid "Undoubtedly, that is what has transpired today."
-msgstr ""
+msgstr "今日在下所展示的便是如此。"
 
 #: src/dialog/youmu.c:215
 msgid "That’s not the past I saw…"
-msgstr ""
+msgstr "那不是我所见到的过去……"
 
 #: src/dialog/youmu.c:217
 msgid "How unfortunate for you."
-msgstr ""
+msgstr "对你来说, 真是不幸啊。"
 
 #: src/dialog/youmu.c:219
 msgid ""
 "Fear not. I will end your delusional madness and restore justice and order "
 "to the—"
-msgstr ""
+msgstr "不必害怕。我将终结你这荒诞的疯狂, 恢复这片土地应有的正义与秩序——"
 
 #: src/dialog/youmu.c:221
 msgid "… ugh, that’s a little much, even for me, isn’t it?"
-msgstr ""
+msgstr "……呃, 这台词好像有点太中二了, 连我自己都觉得有点尴尬……"
 
 #: src/dialog/youmu.c:223
 msgid "Seems about right, honestly…"
-msgstr ""
+msgstr "老实说, 好像你说的没啥问题……"
 
 #: src/dialog/youmu.c:242
 msgid "A-ha, I must be close to the true entrance now."
-msgstr ""
+msgstr "啊哈, 我现在一定离真正的入口不远了。"
 
 #: src/dialog/youmu.c:244
 msgid "This tower… I can already feel it…"
-msgstr ""
+msgstr "这高塔……我有一种预感……"
 
 #: src/dialog/youmu.c:246
 msgid "Could this be a challenge worthy of my skills…?!"
-msgstr ""
+msgstr "难道会有足以让我全力以赴的挑战吗……? ! "
 
 #: src/dialog/youmu.c:250
 msgid "Really? This mansion is actually pretty trashy, though."
-msgstr ""
+msgstr "真的吗? 不过这宅子实际上还挺破烂的啊。"
 
 #: src/dialog/youmu.c:252
 msgid "Who might you be?"
-msgstr ""
+msgstr "你是? "
 
 #: src/dialog/youmu.c:256
 msgid "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!"
-msgstr ""
+msgstr "哼! 我叫胡桃, 一朵在恶俗海洋中独自绽放的黑玫瑰! "
 
 #: src/dialog/youmu.c:257
 msgid "You better remember that!"
-msgstr ""
+msgstr "你最好给我牢牢记住! "
 
 #: src/dialog/youmu.c:260
 msgid "Perhaps I will."
-msgstr ""
+msgstr "也许我会的。"
 
 #: src/dialog/youmu.c:262
 msgid "Are you an associate of this… mansion-tower’s denizens, then?"
-msgstr ""
+msgstr "那么, 你是这座宅子与高塔里住民的同伙吗? "
 
 #: src/dialog/youmu.c:265
 msgid "Of course not! Who do you take me for?!"
-msgstr ""
+msgstr "当然不是! 你把我当成什么人了? ! "
 
 #: src/dialog/youmu.c:266
 msgid ""
 "No WAY I’d want to associate myself with the dweebs running this mansion!"
-msgstr ""
+msgstr "我怎么可能想去跟这宅子里那群深井冰混在一起! "
 
 #: src/dialog/youmu.c:267
 msgid "They dress like they’ve fallen out of a bad 80s anime!"
-msgstr ""
+msgstr "她们穿得就像从一部糟糕的80年代动漫里掉出来的一样! "
 
 #: src/dialog/youmu.c:270
 msgid "I see. I have no immediate reason to distrust you."
-msgstr ""
+msgstr "原来如此, 我目前没有立刻不信任你的理由。"
 
 #: src/dialog/youmu.c:272
 msgid "… what’s an ‘80s anime’, though, if I may ask?"
-msgstr ""
+msgstr "……不过, 恕我询问一下, 什么是「80年代动漫」? "
 
 #: src/dialog/youmu.c:275
 msgid "I don’t know, don’t ask me!"
-msgstr ""
+msgstr "我不造啊, 别问我! "
 
 #: src/dialog/youmu.c:276
 msgid ""
 "The lady in the tower talks about it a lot, so it must be something horrible "
 "for sure."
-msgstr ""
+msgstr "塔里的那位女士经常提到它, 肯定是什么非常可怕的东西没错。"
 
 #: src/dialog/youmu.c:279
 msgid "Didn’t you just say you weren’t associated with them?"
-msgstr ""
+msgstr "但似乎你刚才说你和他们没关系。"
 
 #: src/dialog/youmu.c:281
 msgid "Yeah, but I was lying to see how gullible you were."
-msgstr ""
+msgstr "诶嘿, 我那是骗你的, 想看看你有多好骗。"
 
 #: src/dialog/youmu.c:284
 msgid "O-of course. I-I knew that."
-msgstr ""
+msgstr "额……我、我早清楚了。"
 
 #: src/dialog/youmu.c:286
 msgid "I wanted to see if you’d come clean."
-msgstr ""
+msgstr "只是想看看你会不会主动坦白。"
 
 #: src/dialog/youmu.c:288
 msgid "My true challenge lies beyond you. Step aside."
-msgstr ""
+msgstr "我真正的目标在你身后。就此离开, 没人会受伤。"
 
 #: src/dialog/youmu.c:292
 msgid "Nope. You’ve got a dance with a gorgeous vampire scheduled first!"
-msgstr ""
+msgstr "没门, 你得先跟我这位美艳的吸血鬼跳支舞才行! "
 
 #: src/dialog/youmu.c:293
 msgid "En garde, brooding swordsgirl!"
-msgstr ""
+msgstr "挥出利刃吧, 忧郁的少女剑客! "
 
 #: src/dialog/youmu.c:307
 msgid "Despite your inferior technique, I must thank you."
-msgstr ""
+msgstr "尽管你的剑术尚显拙劣, 但我仍要感谢你。"
 
 #: src/dialog/youmu.c:308
 msgid ""
 "‘Dancing’ with you has been a pleasant distraction on the path to completing "
 "my mission."
-msgstr ""
+msgstr "与阁下的「共舞」为我完成任务的旅途 增添了一段愉快的插曲。"
 
 #: src/dialog/youmu.c:310
 msgid "Tell your ‘leader’ that I am coming for them."
-msgstr ""
+msgstr "告诉你们的首领, 我马上就到。"
 
 #: src/dialog/youmu.c:312
 msgid "(She earnestly talks like a manga anti-hero…)"
-msgstr ""
+msgstr "（她认真起来说话简直就像个漫画里的反英雄……）"
 
 #: src/dialog/youmu.c:314
 msgid "O-Oh, okay then!"
-msgstr ""
+msgstr "哦、哦, 好吧! "
 
 #: src/dialog/youmu.c:316
 msgid "I’m sick of guarding this creepy, spooky mansion anyways."
-msgstr ""
+msgstr "反正我也受够了看守这座阴森诡异的宅子。"
 
 #: src/dialog/youmu.c:319
 msgid "S-… spooky?"
-msgstr ""
+msgstr "诡、诡异? "
 
 #: src/dialog/youmu.c:324
 msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
 msgstr ""
+"……是啊! 我本来以为会是什么科学实验之类的, 结果她们硬是把它弄成了鬼屋, 还搞出"
+"幽灵啊什么的! "
 
 #: src/dialog/youmu.c:327
 msgid "G-…"
-msgstr ""
+msgstr "幽——……"
 
 #: src/dialog/youmu.c:328
 msgid "GHOSTS?!"
-msgstr ""
+msgstr "幽灵? ! "
 
 #: src/dialog/youmu.c:330
 msgid "Scary vengeful ghosts! Trying to kill you, even!"
-msgstr ""
+msgstr "可怕的复仇幽灵! 甚至还会想要杀了你呢! "
 
 #: src/dialog/youmu.c:331
 msgid "But surely a strong swordsgirl like yourself could handle it."
-msgstr ""
+msgstr "不过, 像你这样强大的剑客, 应该应付得来吧。"
 
 #: src/dialog/youmu.c:334
 msgid "B-Bring it on! Nothing will stand in my way!"
-msgstr ""
+msgstr "嗯, 放马过来! 没有什么能阻挡我! "
 
 #: src/dialog/youmu.c:337
 msgid "(Teehee, so gullible.)"
-msgstr ""
+msgstr "（嘻嘻, 真是容易上当呢。）"
 
 #: src/dialog/youmu.c:354
 msgid "Incredible. Truly astounding."
-msgstr ""
+msgstr "真是令人震惊啊。"
 
 #: src/dialog/youmu.c:356
 msgid "Yes, the final battle approaches. I can feel it."
-msgstr ""
+msgstr "没错, 我感觉最终决战即将到来。"
 
 #: src/dialog/youmu.c:358
 msgid ""
 "Will it be a legendary duel? One to go down in the history of Gensōkyō?!"
-msgstr ""
+msgstr "这会是一场传奇般的对决吗? 一场足以载入幻想乡史册的决斗吗? ! "
 
 #: src/dialog/youmu.c:361
 msgid "Oh, the gardener from the Netherworld?"
-msgstr ""
+msgstr "哦, 冥界的园艺师? "
 
 #: src/dialog/youmu.c:363
 msgid "It’s no surprise to see you here."
-msgstr ""
+msgstr "看到你在这里, 也不足为奇了。"
 
 #: src/dialog/youmu.c:364
 msgid "Your mistress has been taken by the Tower’s presence, I assume?"
-msgstr ""
+msgstr "我猜, 你的主人已经被这座塔的力量所迷惑了吧? "
 
 #: src/dialog/youmu.c:367
 msgid "Lady Yuyuko is in a safe, undisclosed location."
-msgstr ""
+msgstr "幽幽子大人现在在一个未知的安全地点。"
 
 #: src/dialog/youmu.c:369
 msgid "The Hakurei Shrine, I presume?"
-msgstr ""
+msgstr "我猜是博丽神社对吧? "
 
 #: src/dialog/youmu.c:372
 msgid "Wh-who told you?! Are you in league with them too?!"
-msgstr ""
+msgstr "谁……谁告诉你的? ! 难道你也和她们一伙的吗? ! "
 
 #: src/dialog/youmu.c:375
 msgid "Of course not, but where else would she be at a time like this?"
-msgstr ""
+msgstr "当然不是啦。不过在这种时候, 她还能去哪儿呢? "
 
 #: src/dialog/youmu.c:378
 msgid "Hmph. Perhaps we have become too predictable."
-msgstr ""
+msgstr "哼, 也许我们确实变得太容易被看透了。"
 
 #: src/dialog/youmu.c:379
 msgid "I am here to settle this matter. You need not concern yourself—"
-msgstr ""
+msgstr "我来此是为了了结此事。阁下不必插手——"
 
 #: src/dialog/youmu.c:382
 msgid "On the contrary, I would say."
-msgstr ""
+msgstr "我倒不这么认为呢。"
 
 #: src/dialog/youmu.c:385
 msgid "I decided to do some research on my own."
-msgstr ""
+msgstr "我之前决定自己去调查一番。"
 
 #: src/dialog/youmu.c:386
 msgid "This tower is controlled by a machine…"
-msgstr ""
+msgstr "这座塔是由一台机器控制的……"
 
 #: src/dialog/youmu.c:388
 msgid ""
 "… and the machine’s effects seem to go well beyond Gensōkyō’s boundaries."
-msgstr ""
+msgstr "……而这台机器的影响似乎远远超出了幻想乡的边界。"
 
 #: src/dialog/youmu.c:391
 msgid "Including the heavens, I presume? I see."
-msgstr ""
+msgstr "包括天界在内? 原来如此。"
 
 #: src/dialog/youmu.c:393
 msgid "Fear not. I will allow nothing to stand in my way."
-msgstr ""
+msgstr "不必担心。在下决不允许任何事物阻挡去路。"
 
 #: src/dialog/youmu.c:395
 msgid ""
 "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this "
 "incident once and—"
-msgstr ""
+msgstr "魂魄妖梦, 无上的生与死之少女剑客, 将彻底了结这起事件, 并——"
 
 #: src/dialog/youmu.c:398
 msgid ""
 "It seems that the machine has also overinflated your ego, Swordswoman of "
 "Hakugyokurō."
-msgstr ""
+msgstr "看来那台机器不仅扭曲了现实, 还膨胀了你的自尊心啊, 白玉楼的剑客。"
 
 #: src/dialog/youmu.c:400
 msgid "Would caution not be prudent in this situation?"
-msgstr ""
+msgstr "在这种情况下, 谨慎行事难道不是更明智的选择吗? "
 
 #: src/dialog/youmu.c:403
 msgid "Overinflated ego? Nonsense."
-msgstr ""
+msgstr "自负? 胡说八道。"
 
 #: src/dialog/youmu.c:404
 msgid ""
 "During my recent battles, I have achieved a flow state most blademasters "
 "only dream of!"
-msgstr ""
+msgstr "在最近的战斗中, 我已进入了一种连顶尖剑豪都只能梦寐以求的「心流之境」! "
 
 #: src/dialog/youmu.c:406
 msgid ""
 "Through that, I have realized the true form of my previously-incomplete "
 "yōkai-vanquishing technique!"
-msgstr ""
+msgstr "正因如此, 我终于领悟了自己那曾不完整的退魔剑技的真正形态! "
 
 #: src/dialog/youmu.c:409
 msgid "Is that so?"
-msgstr ""
+msgstr "是……是这样吗? "
 
 #: src/dialog/youmu.c:412
 msgid "More doubt from ignorant skeptics, I see."
-msgstr ""
+msgstr "我明白了, 又是那些无知的家伙在无端质疑。"
 
 #: src/dialog/youmu.c:414
 msgid "Shall we duel so that I may demonstrate to your satisfaction?!"
-msgstr ""
+msgstr "那么, 要来一场决斗, 让你心服口服吗? ! "
 
 #: src/dialog/youmu.c:417
 msgid "W-wait, that is not what I meant, I simply—"
-msgstr ""
+msgstr "等等啊, 我并不是那个意思, 我只是——"
 
 #: src/dialog/youmu.c:419
 msgid "I can see it in your expression! The doubt! The fear!"
-msgstr ""
+msgstr "我从你的表情上就能看出来! 那怀疑! 那恐惧! "
 
 #: src/dialog/youmu.c:420
 msgid ""
 "But I have become one with my swords, achieving a perfection that no other "
 "before me has been able—"
-msgstr ""
+msgstr "但我已然与我的剑合而为一, 达到了前人从未企及的完美之境——"
 
 #: src/dialog/youmu.c:424
 msgid "Ah, I haven’t the time for this nonsense!"
-msgstr ""
+msgstr "啊, 我没空陪你纠缠这些无聊的废话了! "
 
 #: src/dialog/youmu.c:425
 msgid "I will not allow you to march onwards to your demise!"
-msgstr ""
+msgstr "我绝不能让你就这样大步迈向毁灭! "
 
 #: src/dialog/youmu.c:427
 msgid "Finally! Then, witness the overwhelming strength of my Rōkanken!"
-msgstr ""
+msgstr "很好! 那么, 就让你见识一下我楼观剑的无上威严吧! "
 
 #: src/dialog/youmu.c:439
 msgid "Lightning? Hmph. I can outrun it with ease."
-msgstr ""
+msgstr "闪电? 哼, 我轻松就能跑赢它。"
 
 #: src/dialog/youmu.c:453
 msgid "All according to plan."
-msgstr ""
+msgstr "一切都在计划之中。"
 
 #: src/dialog/youmu.c:455
 msgid "Your logic is so twisted…"
-msgstr ""
+msgstr "你的逻辑真是扭曲……"
 
 #: src/dialog/youmu.c:456
 msgid ""
 "Alas, it cannot be helped. You have likely been affected since before your "
 "arrival."
-msgstr ""
+msgstr "唉, 我也束手无策了, 你很可能在到这之前就已经被影响很深了。"
 
 #: src/dialog/youmu.c:457
 msgid "I have no choice but to let you through, despite my reservations."
-msgstr ""
+msgstr "尽管我心存顾虑, 但别无选择, 只能让你过去。"
 
 #: src/dialog/youmu.c:458
 msgid "Perhaps pure intentions lurk behind that ego of yours."
-msgstr ""
+msgstr "也许在你那嚣张的外表之下, 藏着一颗纯粹的初心。"
 
 #: src/dialog/youmu.c:460
 msgid "And perhaps I truly have gone mad. What of it?"
-msgstr ""
+msgstr "也许我确实已经疯了。那又如何? "
 
 #: src/dialog/youmu.c:461
 msgid "My mission is crystal clear:"
-msgstr ""
+msgstr "我的使命无比清晰："
 
 #: src/dialog/youmu.c:463
 msgid ""
 "… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all "
 "connected realms!"
-msgstr ""
+msgstr "执行幽幽子大人的任务, 为幻想乡及其他地方带来和平! "
 
 #: src/dialog/youmu.c:464
 msgid "I will not fail!"
-msgstr ""
+msgstr "我绝不会失败! "
 
 #: src/dialog/youmu.c:466
 msgid "I-I see."
-msgstr ""
+msgstr "嗯……"
 
 #: src/dialog/youmu.c:467
 msgid ""
 "Ascend the staircase. You will find the perpetrator waiting for you there."
-msgstr ""
+msgstr "登上那道阶梯吧, 你会在那里找到幕后黑手。"
 
 #: src/dialog/youmu.c:468
 msgid ""
 "Be prepared. The technology she possesses is from a so-called ‘parallel "
 "universe’."
-msgstr ""
+msgstr "做好准备。她所掌握的科技, 来自一个所谓的「平行宇宙」。"
 
 #: src/dialog/youmu.c:469
 msgid ""
 "It is unlike anything any of us have encountered before. Even I am not sure "
 "of its specifics."
 msgstr ""
+"它与我们任何人以前遇到过的任何事物都截然不同, 就连我也无法确定其具体原理。"
 
 #: src/dialog/youmu.c:472
 msgid ""
 "Fear not, I will slice her infernal machine in half like an invasive weed."
-msgstr ""
+msgstr "不必担心, 我会将她那邪恶的机器一刀两断, 斩尽芜杂! "
 
 #: src/dialog/youmu.c:489
 msgid "Ah."
-msgstr ""
+msgstr "啊, "
 
 #: src/dialog/youmu.c:491
 msgid "Ahaha."
-msgstr ""
+msgstr "啊哈哈, "
 
 #: src/dialog/youmu.c:493
 msgid "Ah-hahaha!"
-msgstr ""
+msgstr "啊哈哈哈哈哈哈哈……"
 
 #: src/dialog/youmu.c:494
 msgid "Yes. Yes! This is it!"
-msgstr ""
+msgstr "没错没错, 就是这里! "
 
 #: src/dialog/youmu.c:495
 msgid "What a magnificent arena for a heroic final battle!!"
-msgstr ""
+msgstr "多么壮丽的战场, 正适合英雄的最后一战! ! "
 
 #: src/dialog/youmu.c:498
 msgid "Nothing seems to slow you down, hmm?"
-msgstr ""
+msgstr "似乎什么都无法阻挡你前进的脚步吗? 啥玩意? "
 
 #: src/dialog/youmu.c:501
 msgid ""
 "Such an annoyance. But that’s to be expected of the folk of this Gensōkyō."
-msgstr ""
+msgstr "真是麻烦。不过, 这也是这个幻想乡之人的本色, 不足为奇。"
 
 #: src/dialog/youmu.c:503
 msgid "And I see that you’re a master of the blade, a shinigami no less!"
-msgstr ""
+msgstr "我发现你是一位剑术大师, 还是一位死神! "
 
 #: src/dialog/youmu.c:505
 msgid "Absolutely splendid!"
-msgstr ""
+msgstr "简直太棒了! "
 
 #: src/dialog/youmu.c:508
 msgid "Ah, I’m no shinigami, especially not now."
-msgstr ""
+msgstr "啊, 我不是什么死神, 尤其是现在。"
 
 #: src/dialog/youmu.c:511
 msgid ""
 "The scythe is a rather particular weapon, you must understand. Forgive me "
 "presumptiveness."
-msgstr ""
+msgstr "你明白的, 镰刀是一种相当罕见的武器, 请原谅在下的冒昧揣测。"
 
 #: src/dialog/youmu.c:513
 msgid ""
 "I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō."
-msgstr ""
+msgstr "哦, 原来如此。我过去在真正的幻想乡里, 曾以这把镰刀作为守门人的依仗。"
 
 #: src/dialog/youmu.c:515
 msgid "Now, it will be the sigil of a new era!"
-msgstr ""
+msgstr "如今, 它将成为一个崭新时代的象征! "
 
 #: src/dialog/youmu.c:517
 msgid "One that we, the ‘forgotten’, will reign over!"
-msgstr ""
+msgstr "一个由我们这些「被遗忘者」所主宰的新时代! "
 
 #: src/dialog/youmu.c:519
 msgid "Such an unwieldy weapon… for anyone to choose it willingly…"
-msgstr ""
+msgstr "如此笨重的武器……竟有人愿意主动选择它……"
 
 #: src/dialog/youmu.c:520
 msgid "Either you’re incredibly skilled, or incredibly foolish."
-msgstr ""
+msgstr "要么你极为精通, 要么就是一个大baka。"
 
 #: src/dialog/youmu.c:522
 msgid "I wish to find that out!"
-msgstr ""
+msgstr "我正想亲自验证一下! "
 
 #: src/dialog/youmu.c:523
 msgid "After our duel, let us meet and discuss our techniques!"
-msgstr ""
+msgstr "等我们决斗之后, 不如坐下来切磋一番各自的技艺吧! "
 
 #: src/dialog/youmu.c:526
 msgid "Techniques? Hah!"
-msgstr ""
+msgstr "技艺? 呵! "
 
 #: src/dialog/youmu.c:527
 msgid "I’m sure our existence means nothing to you! And the feeling is mutual!"
-msgstr ""
+msgstr "我确信我们的存在对你而言毫无意义! 而我们对你也毫不在乎! "
 
 #: src/dialog/youmu.c:530
 msgid "On the contrary, scythe-bearer!"
-msgstr ""
+msgstr "恰恰相反, 持镰者! "
 
 #: src/dialog/youmu.c:531
 msgid "You’ve created an impeccable stage for our final confrontation."
-msgstr ""
+msgstr "阁下为我们最后的对决, 搭建了一个无与伦比的舞台。"
 
 #: src/dialog/youmu.c:533
 msgid ""
 "But first, please, tell me: what is your mission? What is it you desire?"
-msgstr ""
+msgstr "但在那之前请告诉我: 你在谋划什么? 你在渴望什么? "
 
 #: src/dialog/youmu.c:535
 msgid ""
 "For us to share this… intimate moment, I desire to know everything about you."
-msgstr ""
+msgstr "为了让我们一起享受…… 这如此「微妙」的时刻, 我渴望了解你的一切。"
 
 #: src/dialog/youmu.c:538
 msgid "…!"
-msgstr ""
+msgstr "……!"
 
 #: src/dialog/youmu.c:539
 msgid "O-Our mission, is t-to—"
-msgstr ""
+msgstr "我……我们的任务, 是去——"
 
 #: src/dialog/youmu.c:544
 msgid "… is to avenge our forgotten f-friends!"
-msgstr ""
+msgstr "……是为了替我们那些被遗忘的朋友们复仇! "
 
 #: src/dialog/youmu.c:545
 msgid ""
 "We will create a new era of Gensōkyō, where the truly forgotten can live "
 "another day!"
-msgstr ""
+msgstr "我们将开创幻想乡的新纪元, 让那些真正被遗忘的存在也能重获新生! "
 
 #: src/dialog/youmu.c:546
 msgid ""
 "Soon, the residents of this land will be driven mad beyond comprehension, "
 "and be ripe to conquer!"
-msgstr ""
+msgstr "很快, 这片土地上的居民将陷入无法想象的疯狂, 彻底沦为任人宰割的猎物! "
 
 #: src/dialog/youmu.c:548
 msgid "So you wish to avenge your fallen compatriots… how noble…"
-msgstr ""
+msgstr "所以, 你想为逝去的同胞复仇…… 多么高尚啊……"
 
 #: src/dialog/youmu.c:549
 msgid "I can feel it move me to tears…"
-msgstr ""
+msgstr "这悲壮之情令我热泪盈眶……"
 
 #: src/dialog/youmu.c:551
 msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
-msgstr ""
+msgstr "哎呀, 但是我从冥界的幽幽子大人得到的任务似乎与你冲突了。"
 
 #: src/dialog/youmu.c:552
 msgid ""
 "I cannot allow you to drive my compatriots mad, or to subjugate my home!"
-msgstr ""
+msgstr "我绝不能容许你让我的同胞陷入疯狂, 更不能让你奴役我的家园! "
 
 #: src/dialog/youmu.c:554
 msgid "Perhaps, in another time and place, we could have been friends!"
-msgstr ""
+msgstr "或许, 在另一个时空, 我们本可以成为朋友! "
 
 #: src/dialog/youmu.c:557
 msgid ""
 "B-Being friends with you h-heartless folk would be a sin! I could never!"
-msgstr ""
+msgstr "与你们这些冷酷无情之人为友, 本身就是一种罪过! 我绝不可能! "
 
 #: src/dialog/youmu.c:560
 msgid "What a tragedy!"
-msgstr ""
+msgstr "多么可悲啊! "
 
 #: src/dialog/youmu.c:563
 msgid "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?!"
-msgstr ""
+msgstr "你一心想要成为这个幻想乡的大英雄, 对吧? ! "
 
 #: src/dialog/youmu.c:565
 msgid ""
 "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!"
 msgstr ""
+"理所当然! 我的目标和你一心想要成为「你的」幻想乡的英雄, 又有什么不同呢? ! "
 
 #: src/dialog/youmu.c:567
 msgid "We’re not so different, you and I."
-msgstr ""
+msgstr "你和我并没有什么区别。"
 
 #: src/dialog/youmu.c:570
 msgid "Your courage is admirable, I’ll give you that."
-msgstr ""
+msgstr "你的勇气令人钦佩, 这一点我必须承认。"
 
 #: src/dialog/youmu.c:572
 msgid "But there’s an enormous difference between us, swordswoman."
-msgstr ""
+msgstr "但我们之间有一个巨大的区别, 剑客啊。"
 
 #: src/dialog/youmu.c:578
 msgid "For I possess the knowledge of science and rationality!"
-msgstr ""
+msgstr "我掌握着科学与理性的力量! "
 
 #: src/dialog/youmu.c:579
 msgid ""
 "In a magic-filled world like this, they cut through delusional opponents "
 "with unparalleled precision!"
 msgstr ""
+"在这个充满魔法的世界里, 科学与理性能以无与伦比的精准, 斩断那些虚妄的对手! "
 
 #: src/dialog/youmu.c:580
 msgid ""
 "Let’s see what good your swords do you when you fall prey to true "
 "enlightenment!"
-msgstr ""
+msgstr "且看看当你陷入真正的「觉醒」之时, 手中的刀剑还能为你带来什么用处! "
 
 #: src/dialog/youmu.c:594
 msgid "Impressive! You’ve pushed me to 10% of my true power!"
-msgstr ""
+msgstr "最后请恕我直言, 你个人机东西! 我就用了一成功力就不行了? "
 
 #: src/dialog/youmu.c:596
 msgid "Your despicable pride will be your downfall!"
-msgstr ""
+msgstr "你那可鄙的骄傲, 终将导致你的覆灭! "
 
 #: src/dialog/youmu.c:598
 msgid "Behold, your judgement before the true nature of reality!"
-msgstr ""
+msgstr "见证吧——在现实的真正本质面前, 你的审判即将降临! "
 
 #: src/difficulty.c:20
 msgid "Easy"
@@ -4538,9 +4794,9 @@ msgid "Lunatic"
 msgstr ""
 
 #: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1347
+#: src/menu/options.c:1350
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #: src/gamepad.c:109
 msgid "Unknown device"
@@ -4562,16 +4818,16 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:812
-#: src/menu/options.c:876 src/menu/options.c:1020 src/menu/options.c:1129
-#: src/menu/options.c:1209 src/menu/replayview.c:471
+#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:815
+#: src/menu/options.c:879 src/menu/options.c:1023 src/menu/options.c:1132
+#: src/menu/options.c:1212 src/menu/replayview.c:471
 #: src/menu/spellpractice.c:67
 msgid "Back"
-msgstr ""
+msgstr "返回"
 
 #: src/gamepad.c:876
 msgid "Guide"
-msgstr ""
+msgstr "教程"
 
 #: src/gamepad.c:877
 msgid "Start"
@@ -4587,11 +4843,11 @@ msgstr "右摇杆"
 
 #: src/gamepad.c:880
 msgid "Left Bumper"
-msgstr ""
+msgstr "左肩键"
 
 #: src/gamepad.c:881
 msgid "Right Bumper"
-msgstr ""
+msgstr "右肩键"
 
 #: src/gamepad.c:882
 msgid "Up"
@@ -4631,7 +4887,7 @@ msgstr ""
 
 #: src/gamepad.c:891
 msgid "Touchpad"
-msgstr ""
+msgstr "触摸板"
 
 #: src/gamepad.c:892
 msgid "Misc 2"
@@ -4655,11 +4911,11 @@ msgstr ""
 
 #: src/gamepad.c:902 src/gamepad.c:917
 msgid "Left Trigger"
-msgstr ""
+msgstr "左扳机"
 
 #: src/gamepad.c:903 src/gamepad.c:918
 msgid "Right Trigger"
-msgstr ""
+msgstr "右扳机"
 
 #: src/gamepad.c:904
 msgid "Stick Up"
@@ -4678,24 +4934,20 @@ msgid "Stick Right"
 msgstr ""
 
 #: src/gamepad.c:913
-#, fuzzy
 msgid "Left X"
-msgstr "左摇杆"
+msgstr ""
 
 #: src/gamepad.c:914
-#, fuzzy
 msgid "Left Y"
-msgstr "左摇杆"
+msgstr ""
 
 #: src/gamepad.c:915
-#, fuzzy
 msgid "Right X"
-msgstr "右摇杆"
+msgstr ""
 
 #: src/gamepad.c:916
-#, fuzzy
 msgid "Right Y"
-msgstr "右摇杆"
+msgstr ""
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -4729,9 +4981,9 @@ msgstr ""
 "\n"
 "她正从她繁忙的小说阅读日程中抽身去解决异变。\n"
 "\n"
-"大体上，她对过去的时代有一种模糊的感伤。\n"
+"大体上, 她对过去的时代有一种模糊的感伤。\n"
 "\n"
-"不管怎样，当妖怪之山的住民们啜泣着登门求助时，她也只能暂且搁下书卷，整装出发"
+"不管怎样, 当妖怪之山的住民们啜泣着登门求助时, 她也只能暂且搁下书卷, 整装出发"
 "了。"
 
 #: src/menu/charprofile.c:71
@@ -4760,12 +5012,12 @@ msgid ""
 msgstr ""
 "自信而活跃的魔女。\n"
 "\n"
-"对魔法的极限与现实的本质的好奇一如既往，而当她听闻“诡异疯狂”的传闻时，她的好"
+"对魔法的极限与现实的本质的好奇一如既往, 而当她听闻“诡异疯狂”的传闻时, 她的好"
 "奇便占据了上风。\n"
 "\n"
 "但可能这本“魔法书”还是永远没人去读才更好?\n"
 "\n"
-"区区这样的警告才不会阻拦她的脚步，就这样踏上征程。"
+"区区这样的警告才不会阻拦她的脚步, 就这样踏上征程。"
 
 #: src/menu/charprofile.c:81
 msgid "Konpaku Yōmu"
@@ -4798,11 +5050,11 @@ msgid ""
 msgstr ""
 "某种意义上生死之间的少女剑客。\n"
 "\n"
-"“当你们在玩游戏时，我在研习剑术。”——这大概会是她的台词。\n"
+"“当你们在玩游戏时, 我在研习剑术。”——这大概会是她的台词。\n"
 "\n"
-"性格对什么事都认真过头，但还很害怕自己的另外一半(半灵)。\n"
+"性格对什么事都认真过头, 但还很害怕自己的另外一半(半灵)。\n"
 "\n"
-"尽管如此，她还是被幽幽子大人委以重任，希望她不会因此被冲昏头脑。"
+"尽管如此, 她还是被幽幽子大人委以重任, 希望她不会因此被冲昏头脑。"
 
 #: src/menu/charprofile.c:93
 msgid "Fairy"
@@ -4823,7 +5075,7 @@ msgid ""
 msgstr ""
 "呆萌可爱的冰之妖精。\n"
 "\n"
-"可能她最近在和秘神与地狱妖精的决斗后感到不太开心？\n"
+"可能她最近在和秘神与地狱妖精的对决后感到不太开心? \n"
 "\n"
 "还是对她手下留情吧。"
 
@@ -4844,11 +5096,11 @@ msgid ""
 "\n"
 "You’re old enough to decide your own path in life, though."
 msgstr ""
-"妖怪之山的守护者，她的角动量突破天际！\n"
+"妖怪之山的守护者, 她的角动量突破天际! \n"
 "\n"
-"她可能有些过分担忧你的健康和安全，甚至到了令人窒息的程度。\n"
+"她可能有些过分担忧你的健康和安全, 甚至到了令人窒息的程度。\n"
 "\n"
-"然而，你已经到了该选择自己人生道路的年龄了。"
+"然而, 你已经到了该选择自己人生道路的年龄了。"
 
 #: src/menu/charprofile.c:113 src/stages/stage3/scuttle.c:37
 msgid "Scuttle"
@@ -4856,15 +5108,15 @@ msgstr ""
 
 #: src/menu/charprofile.c:114
 msgid "Agile Insect Engineer"
-msgstr ""
+msgstr "敏捷昆虫工程师"
 
 #: src/menu/charprofile.c:115
 msgid "Bombardier Beetle"
-msgstr ""
+msgstr "庞巴迪甲虫"
 
 #: src/menu/charprofile.c:116
 msgid "Full Stack 'Web' Development"
-msgstr ""
+msgstr "全栈「Web」开发"
 
 #: src/menu/charprofile.c:117
 msgid ""
@@ -4874,6 +5126,11 @@ msgid ""
 "The majority of insects do not scheme grand revolutions, yet their presence "
 "alone is enough to upset the course of events."
 msgstr ""
+"并非所有事物都可计算, 而这个「bug」似乎在你追踪"
+"真正元凶的过程中, 悄然潜入了某个决定性的岔路口。\n"
+"\n"
+"绝大多数昆虫并不谋划翻天覆地的革命, "
+"但它们的存在本身已足以颠覆事件的走向。"
 
 #: src/menu/charprofile.c:126
 msgid "Insect"
@@ -4893,11 +5150,11 @@ msgid ""
 "If she thinks she has a raw evolutionary deal, someone ought to tell her "
 "about the trilobites…"
 msgstr ""
-"一只发光的小虫子——或者说昆虫？——远离了她惯常出没的领地。\n"
+"一只发光的小虫子——或者说昆虫? ——远离了她惯常出没的领地。\n"
 "\n"
-"她坚信昆虫在演化长河中失去了“应有的地位”。\n"
+"她坚信昆虫在演化长河中失去了「应有的地位」。\n"
 "\n"
-"如果她真的自认遭受进化的不公，应该来个人给她科普一点三叶虫的历史……"
+"如果她真的自认遭受进化的不公, 应该来个人给她科普一点三叶虫的历史……"
 
 #: src/menu/charprofile.c:137
 msgid "Vampire"
@@ -4917,11 +5174,11 @@ msgid ""
 "\n"
 "Everyone’s got multiple side-hustles these days…"
 msgstr ""
-"来自过去的吸血鬼异变。难道她不知道幻想乡已经有了新的吸血鬼了吗？\n"
+"来自过去的吸血鬼异变。难道她不知道幻想乡已经有了新的吸血鬼了吗? \n"
 "\n"
-"她擅长吸血，但她现在的工作倒是当门卫，而且实际更热衷于买衣服。\n"
+"她擅长吸血, 但她现在的工作倒是当门卫, 而且实际更热衷于买衣服。\n"
 "\n"
-"现在谁还没有几份副业呢……"
+"不过现在谁还没有几个业余爱好呢……"
 
 #: src/menu/charprofile.c:148
 msgid "Oarfish"
@@ -4929,7 +5186,7 @@ msgstr "桨鱼"
 
 #: src/menu/charprofile.c:149
 msgid "Meteorology (Fulminology)"
-msgstr "学(雷电学)"
+msgstr "气象学(雷电学)"
 
 #: src/menu/charprofile.c:150
 msgid ""
@@ -4941,11 +5198,11 @@ msgid ""
 "Despite being so formal and stuffy, she seems to be the only one who knows "
 "what’s going on."
 msgstr ""
-"云端的信使，同时是一个业余气象学家。\n"
+"云端的信使, 同时是一个业余气象学家。\n"
 "\n"
 "她最近似乎读了太多过时的精神病学教材。\n"
 "\n"
-"尽管举止刻板拘谨，她却是唯一洞悉全局之人。"
+"尽管举止刻板拘谨, 她却是唯一洞悉全局之人。"
 
 #: src/menu/charprofile.c:159
 msgid "Shinigami(?)"
@@ -4970,7 +5227,7 @@ msgstr ""
 "\n"
 "她显然给自己找了一位在理论物理的“暗之艺术”领域的导师。她的副业是个自大狂。\n"
 "\n"
-"她真正地立于世界之巅，没有闲心去理会她脚下的一切。当她的通天之塔开始倾颓时，"
+"她真正地立于世界之巅, 没有闲心去理会她脚下的一切。 当她的通天之塔开始倾颓时, "
 "还望莫让坠落的砖石伤及下方无辜的妖怪。"
 
 #: src/menu/charprofile.c:168
@@ -4979,7 +5236,7 @@ msgstr "锁定"
 
 #: src/menu/charprofile.c:172
 msgid "You have not unlocked this character yet!"
-msgstr "你还没解锁这个角色呢！"
+msgstr "你还没解锁这个角色呢! "
 
 #: src/menu/charprofile.c:192
 msgid "Species"
@@ -4991,11 +5248,11 @@ msgstr "研究领域"
 
 #: src/menu/charprofile.c:223 src/menu/media.c:56
 msgid "Character Profiles"
-msgstr ""
+msgstr "角色档案"
 
 #: src/menu/charprofile.c:269
 msgid "Press [Fire] for alternate expressions"
-msgstr "按[Fire]键查看差分"
+msgstr "按[射击]键查看差分"
 
 #: src/menu/charselect.c:166
 msgid "Intuition"
@@ -5007,25 +5264,31 @@ msgstr "科学"
 
 #: src/menu/charselect.c:174
 msgid "Select Character"
-msgstr ""
+msgstr "选择角色"
 
 #: src/menu/difficultyselect.c:44
 msgid ""
 "For those just beginning\n"
 "their academic careers"
 msgstr ""
+"为初学者设计\n"
+"STG的生涯刚刚开始"
 
 #: src/menu/difficultyselect.c:45
 msgid ""
 "All those years of study\n"
 "have finally paid off"
 msgstr ""
+"苦心沉淀多年\n"
+"努力得到回报。"
 
 #: src/menu/difficultyselect.c:46
 msgid ""
 "You must really\n"
 "love books"
 msgstr ""
+"你疑似有点\n"
+"爱上书本了"
 
 #: src/menu/difficultyselect.c:47
 msgid ""
@@ -5033,14 +5296,17 @@ msgid ""
 "or live long enough to\n"
 "become a professor"
 msgstr ""
+"你要么死掉,\n"
+"或者活到\n"
+"成为教授那天"
 
 #: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
-msgstr ""
+msgstr "选择难度"
 
 #: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
-msgstr ""
+msgstr "加载快速存档"
 
 #: src/menu/gameovermenu.c:62
 msgid "Spell Failed"
@@ -5048,25 +5314,25 @@ msgstr ""
 
 #: src/menu/gameovermenu.c:64
 msgid "Restart"
-msgstr ""
+msgstr "重开"
 
 #: src/menu/gameovermenu.c:66 src/menu/gameovermenu.c:84
 msgid "Give up"
-msgstr ""
+msgstr "撤退, 保存实力"
 
 #: src/menu/gameovermenu.c:69
 msgid "Game Over"
-msgstr ""
+msgstr "满身疮痍"
 
 #: src/menu/gameovermenu.c:76
 #, c-format
 msgid "Continue (%i)"
-msgstr ""
+msgstr "我不甘心! (%i)"
 
 #: src/menu/gameovermenu.c:78
 #, c-format
 msgid "Continue"
-msgstr ""
+msgstr "我不甘心!"
 
 #: src/menu/gameovermenu.c:82 src/menu/ingamemenu.c:137
 msgid "Restart the Game"
@@ -5074,14 +5340,14 @@ msgstr "推把"
 
 #: src/menu/gameovermenu.c:84
 msgid "Return to Title"
-msgstr ""
+msgstr "返回标题界面"
 
 #: src/menu/ingamemenu.c:133
 msgid "Game Paused"
 msgstr "游戏暂停"
 
-#: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1135
+#: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 
+#: src/menu/options.c:1138
 msgid "Options"
 msgstr ""
 
@@ -5091,7 +5357,7 @@ msgstr "返回游戏"
 
 #: src/menu/ingamemenu.c:138
 msgid "Stop the Game"
-msgstr "退出游戏"
+msgstr "结束游戏"
 
 #: src/menu/ingamemenu.c:159
 msgid "Replay Paused"
@@ -5151,11 +5417,11 @@ msgstr ""
 
 #: src/menu/media.c:58
 msgid "Replay Cutscenes"
-msgstr ""
+msgstr "过场动画重播"
 
 #: src/menu/musicroom.c:124
 msgid "Now playing"
-msgstr ""
+msgstr "正在播放"
 
 #: src/menu/musicroom.c:170
 msgid ""
@@ -5164,322 +5430,380 @@ msgid ""
 "\n"
 "If you wish to hear it anyway, please select it again to confirm."
 msgstr ""
+"\n"
+"你还没解锁此曲目呢! \n"
+"\n"
+"若仍想试听, 请再次选择以确认。"
 
 #: src/menu/musicroom.c:178
 msgid ""
 "\n"
 "No comment available"
 msgstr ""
+"\n"
+"暂无评论可用"
 
 #: src/menu/musicroom.c:234
 msgid "Unknown track"
-msgstr ""
+msgstr "未知曲目"
 
 #: src/menu/options.c:494
 msgid "Reset all settings to defaults?"
-msgstr ""
+msgstr "重置所有设置为默认值吗? "
 
 #: src/menu/options.c:500
 msgid "Reset all settings to the last saved values?"
-msgstr ""
+msgstr "重置所有设置为上次保存的值吗? "
 
-#: src/menu/options.c:701
+#: src/menu/options.c:577 src/menu/options.c:768
+msgid "on"
+msgstr "开"
+
+#: src/menu/options.c:578 src/menu/options.c:769
+msgid "off"
+msgstr "关"
+
+#: src/menu/options.c:704
 msgid "Yes"
-msgstr ""
+msgstr "是哒"
 
-#: src/menu/options.c:702
+#: src/menu/options.c:705
 msgid "No"
-msgstr ""
-
-#: src/menu/options.c:730
-msgid "Video Options"
-msgstr ""
+msgstr "不要"
 
 #: src/menu/options.c:733
+msgid "Video Options"
+msgstr "显示设置"
+
+#: src/menu/options.c:736
 msgid "Fullscreen"
-msgstr ""
+msgstr "全屏"
 
-#: src/menu/options.c:738
+#: src/menu/options.c:741
 msgid "Display"
-msgstr ""
+msgstr "显示"
 
-#: src/menu/options.c:742
+#: src/menu/options.c:745
 msgid "Window size"
 msgstr "窗口尺寸"
 
-#: src/menu/options.c:747
+#: src/menu/options.c:750
 msgid "Renderer resolution"
 msgstr "渲染分辨率"
 
-#: src/menu/options.c:752
+#: src/menu/options.c:755
 msgid "Resizable window"
 msgstr "可调整大小窗口"
 
-#: src/menu/options.c:759
+#: src/menu/options.c:762
 msgid "Pause the game when not focused"
 msgstr "不聚焦窗口时暂停游戏"
 
-#: src/menu/options.c:763
+#: src/menu/options.c:766
 msgid "Vertical synchronization"
 msgstr "垂直同步"
 
 #: src/menu/options.c:772
+msgid "adaptive"
+msgstr "自适应"
+
+#: src/menu/options.c:775
 msgid "Skip frames"
 msgstr "跳帧"
 
-#: src/menu/options.c:780
+#: src/menu/options.c:783
 msgid "Overall rendering quality"
 msgstr "整体渲染质量"
 
-#: src/menu/options.c:784
+#: src/menu/options.c:787
 msgid "Draw background"
 msgstr "背景绘制"
 
-#: src/menu/options.c:788
+#: src/menu/options.c:791
 msgid "Background rendering quality"
 msgstr "背景渲染质量"
 
-#: src/menu/options.c:795
+#: src/menu/options.c:798
 msgid "Anti-aliasing"
 msgstr "抗锯齿"
 
 #: src/menu/options.c:800
+msgid "none"
+msgstr "禁用"
+
+#: src/menu/options.c:801
+msgid "fxaa"
+msgstr ""
+
+#: src/menu/options.c:803
 msgid "Particle effects"
 msgstr "粒子质量"
 
-#: src/menu/options.c:805
+#: src/menu/options.c:805 src/menu/options.c:810
+msgid "minimal"
+msgstr "最小"
+
+#: src/menu/options.c:806 src/menu/options.c:812
+msgid "full"
+msgstr "完整"
+
+#: src/menu/options.c:808
 msgid "Postprocessing effects"
 msgstr "后处理效果"
 
-#: src/menu/options.c:833
+#: src/menu/options.c:811
+msgid "fast"
+msgstr "快速"
+
+#: src/menu/options.c:836
 msgid "Gamepad Controls"
-msgstr ""
+msgstr "手柄控制"
 
-#: src/menu/options.c:835 src/menu/options.c:1028
+#: src/menu/options.c:838 src/menu/options.c:1031
 msgid "Move up"
-msgstr ""
+msgstr "向上移动"
 
-#: src/menu/options.c:839 src/menu/options.c:1032
+#: src/menu/options.c:842 src/menu/options.c:1035
 msgid "Move down"
-msgstr ""
+msgstr "向下移动"
 
-#: src/menu/options.c:843 src/menu/options.c:1036
+#: src/menu/options.c:846 src/menu/options.c:1039
 msgid "Move left"
-msgstr ""
+msgstr "向左移动"
 
-#: src/menu/options.c:847 src/menu/options.c:1040
+#: src/menu/options.c:850 src/menu/options.c:1043
 msgid "Move right"
-msgstr ""
+msgstr "向右移动"
 
-#: src/menu/options.c:853 src/menu/options.c:1046
+#: src/menu/options.c:856 src/menu/options.c:1049
 msgid "Shoot"
-msgstr ""
+msgstr "射击"
 
-#: src/menu/options.c:857 src/menu/options.c:1050
+#: src/menu/options.c:860 src/menu/options.c:1053
 msgid "Focus"
-msgstr ""
+msgstr "低速"
 
-#: src/menu/options.c:861 src/menu/options.c:1054
+#: src/menu/options.c:864 src/menu/options.c:1057
 msgid "Use Spell Card"
-msgstr ""
+msgstr "使用符卡"
 
-#: src/menu/options.c:865 src/menu/options.c:1058
+#: src/menu/options.c:868 src/menu/options.c:1061
 msgid "Power Surge / Discharge"
-msgstr ""
+msgstr "能量浪涌 / 结束浪涌"
 
-#: src/menu/options.c:871 src/menu/options.c:1072
+#: src/menu/options.c:874 src/menu/options.c:1075
 msgid "Skip dialog"
-msgstr ""
-
-#: src/menu/options.c:949
-#, c-format
-msgid "Press any button on your gamepad to exit joystick testing mode"
-msgstr ""
+msgstr "跳过对话"
 
 #: src/menu/options.c:952
 #, c-format
+msgid "Press any button on your gamepad to exit joystick testing mode"
+msgstr "按下手柄上任意键退出手柄测试模式"
+
+#: src/menu/options.c:955
+#, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
-msgstr ""
+msgstr "按下手柄上的 %s 键进入手柄测试模式"
 
-#: src/menu/options.c:965
+#: src/menu/options.c:968
 msgid "Gamepad Options"
-msgstr ""
+msgstr "手柄设置"
 
-#: src/menu/options.c:976
+#: src/menu/options.c:979
 msgid "Enable Gamepad/Joystick support"
-msgstr ""
+msgstr "启用手柄/摇杆支持"
 
-#: src/menu/options.c:980
+#: src/menu/options.c:983
 msgid "Device"
-msgstr ""
+msgstr "设备"
 
-#: src/menu/options.c:986 src/menu/options.c:1197
+#: src/menu/options.c:989 src/menu/options.c:1200
 msgid "Customize controls…"
-msgstr ""
+msgstr "自定义控制…"
 
-#: src/menu/options.c:990
+#: src/menu/options.c:993
 msgid "Remap square input into circular"
-msgstr ""
+msgstr "将方形输入重新映射为圆形"
 
-#: src/menu/options.c:996
+#: src/menu/options.c:999
 msgid "Direction snap factor"
-msgstr ""
+msgstr "方向吸附因子"
 
-#: src/menu/options.c:1000
+#: src/menu/options.c:1003
 msgid "Diagonal bias"
-msgstr ""
+msgstr "对角线偏向"
 
-#: src/menu/options.c:1007
+#: src/menu/options.c:1010
 msgid "Dead zone"
-msgstr ""
+msgstr "盲区"
 
-#: src/menu/options.c:1011
+#: src/menu/options.c:1014
 msgid "Maximum zone"
-msgstr ""
+msgstr "最大区域"
 
-#: src/menu/options.c:1015
+#: src/menu/options.c:1018
 msgid "Sensitivity"
-msgstr ""
+msgstr "灵敏度"
 
-#: src/menu/options.c:1026
+#: src/menu/options.c:1029
 msgid "Controls"
 msgstr ""
 
-#: src/menu/options.c:1064
+#: src/menu/options.c:1067
 msgid "Toggle fullscreen"
-msgstr ""
+msgstr "切换全屏"
 
-#: src/menu/options.c:1068
+#: src/menu/options.c:1071
 msgid "Take a screenshot"
-msgstr ""
+msgstr "截屏"
 
-#: src/menu/options.c:1078
+#: src/menu/options.c:1081
 msgid "Toggle audio"
-msgstr ""
+msgstr "切换音频模式"
 
-#: src/menu/options.c:1084
+#: src/menu/options.c:1087
 msgid "Stop the game immediately"
-msgstr ""
+msgstr "立即结束游戏"
 
-#: src/menu/options.c:1088
+#: src/menu/options.c:1091
 msgid "Restart the game immediately"
-msgstr ""
+msgstr "立即推把"
 
-#: src/menu/options.c:1092
+#: src/menu/options.c:1095
 msgid "Quick save"
-msgstr ""
+msgstr "快速保存"
 
-#: src/menu/options.c:1096
+#: src/menu/options.c:1099
 msgid "Quick load"
-msgstr ""
+msgstr "快速加载"
 
-#: src/menu/options.c:1103
+#: src/menu/options.c:1106
 msgid "Toggle God mode"
-msgstr ""
+msgstr "切换上帝模式"
 
-#: src/menu/options.c:1107
+#: src/menu/options.c:1110
 msgid "Skip stage"
-msgstr ""
+msgstr "跳过本关卡"
 
-#: src/menu/options.c:1111
+#: src/menu/options.c:1114
 msgid "Power up"
-msgstr ""
+msgstr "提升灵力"
 
-#: src/menu/options.c:1115
+#: src/menu/options.c:1118
 msgid "Power down"
-msgstr ""
+msgstr "降低灵力"
 
-#: src/menu/options.c:1119
+#: src/menu/options.c:1122
 msgid "Disable background rendering (HoM effect)"
-msgstr ""
+msgstr "禁用背景渲染（HoM效果）"
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1126
 msgid "Toggle collision areas overlay"
-msgstr ""
+msgstr "切换子弹判定可视化"
 
-#: src/menu/options.c:1139
+#: src/menu/options.c:1142
 msgid "Player name"
-msgstr ""
+msgstr "玩家名称"
 
-#: src/menu/options.c:1146
+#: src/menu/options.c:1149
 msgid "Save replays"
-msgstr ""
+msgstr "保存Replay策略"
+
+#: src/menu/options.c:1151
+msgid "always"
+msgstr "总是"
 
 #: src/menu/options.c:1152
+msgid "never"
+msgstr "永不"
+
+#: src/menu/options.c:1153
+msgid "ask"
+msgstr "询问"
+
+#: src/menu/options.c:1155
 msgid "Auto-restart in Spell Practice"
-msgstr ""
+msgstr "Spell Practice自动重开"
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1159
 msgid "Power in Spell and Stage Practice"
-msgstr ""
+msgstr "练习模式默认灵力"
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1167
 msgid "Shoot by default"
-msgstr ""
+msgstr "默认启用射击"
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1171
 msgid "Automatic Power Surge activation"
-msgstr ""
+msgstr "自动激活能量浪涌"
 
-#: src/menu/options.c:1172
+#: src/menu/options.c:1175
 msgid "Boss healthbar style"
-msgstr ""
+msgstr "Boss血量条风格"
 
 #: src/menu/options.c:1177
+msgid "classic"
+msgstr "经典"
+
+#: src/menu/options.c:1178
+msgid "modern"
+msgstr "现代"
+
+#: src/menu/options.c:1180
 msgid "Floating score text visibility"
-msgstr ""
+msgstr "浮动分数文字可见性"
 
-#: src/menu/options.c:1183
+#: src/menu/options.c:1186
 msgid "SFX Volume"
-msgstr ""
+msgstr "音效音量"
 
-#: src/menu/options.c:1187
+#: src/menu/options.c:1190
 msgid "BGM Volume"
-msgstr ""
+msgstr "BGM音量"
 
-#: src/menu/options.c:1191
+#: src/menu/options.c:1194
 msgid "Mute audio"
-msgstr ""
+msgstr "静音"
 
-#: src/menu/options.c:1196
+#: src/menu/options.c:1199
 msgid "Video options…"
 msgstr "显示选项"
 
-#: src/menu/options.c:1198
+#: src/menu/options.c:1201
 msgid "Gamepad & Joystick options…"
-msgstr ""
-
-#: src/menu/options.c:1202
-msgid "Reload from last saved"
-msgstr ""
+msgstr "手柄与摇杆选项"
 
 #: src/menu/options.c:1205
+msgid "Reload from last saved"
+msgstr "从上次保存的配置重加载"
+
+#: src/menu/options.c:1208
 msgid "Reset to defaults"
-msgstr ""
+msgstr "重置为默认选项"
 
-#: src/menu/options.c:1338
+#: src/menu/options.c:1341
 msgid "Press a key to assign, ESC to cancel"
-msgstr ""
+msgstr "请按对应键指派键位，按ESC取消"
 
-#: src/menu/options.c:1378
+#: src/menu/options.c:1381
 msgid "All devices"
-msgstr ""
+msgstr "全部设备"
 
-#: src/menu/options.c:1384
+#: src/menu/options.c:1387
 msgid "No devices available"
-msgstr ""
+msgstr "无设备可用"
 
-#: src/menu/options.c:1426
+#: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1427
+#: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1443
+#: src/menu/options.c:1446
 msgid "Unbound"
-msgstr ""
+msgstr "未绑定"
 
 #: src/menu/replayview.c:87
 msgid "Failed to load replay events"
@@ -5488,25 +5812,25 @@ msgstr "无法加载Replay事件"
 #: src/menu/replayview.c:96
 #, c-format
 msgid "Can't replay this stage: unknown stage ID %X"
-msgstr ""
+msgstr "无法重播本关卡: 未知关卡ID %X"
 
 #: src/menu/replayview.c:103
 #, c-format
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
-msgstr ""
+msgstr "无法重播本关卡: 未知操纵角色/机体 %X/%X"
 
 #: src/menu/replayview.c:136
 #, c-format
 msgid "Unknown stage %X"
-msgstr ""
+msgstr "未知关卡 %X"
 
 #: src/menu/replayview.c:466
 msgid "No replays available. Play the game and record some!"
-msgstr ""
+msgstr "没有Replay可用。打几把游戏录点吧! "
 
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
-msgstr ""
+msgstr "获取Replay列表时出现问题 :("
 
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
@@ -5531,10 +5855,11 @@ msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
 msgstr ""
+"魔法导弹与激光—— 一对简单明了的组合, 从未让你失望. 所以为何停滞不前呢? "
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
-msgstr ""
+msgstr "纯恋「Galactic Spark」(星河火花)"
 
 #: src/plrmodes/marisa_b.c:554
 msgid "Stellar Vortex"
@@ -5545,25 +5870,26 @@ msgid ""
 "As many bullets as there are stars in the sky. Some of them are bound to "
 "hit. That's called “homing”, right?"
 msgstr ""
+"天上有多少颗星星, 就有多少颗子弹, 最后肯定有一些会击中目标, 这也是一种「诱"
+"导」, 对吧? "
 
 #: src/plrmodes/marisa_b.c:556
-#, fuzzy
 msgid "Magic Sign “Stellar Vortex”"
-msgstr "里奇之御札「时空曲率」"
+msgstr "魔符「Stellar Vortex」(星环漩涡)"
 
 #: src/plrmodes/reimu_a.c:897
 msgid "Yōkai Buster"
-msgstr ""
+msgstr "Youkai Buster"
 
 #: src/plrmodes/reimu_a.c:898
 msgid ""
 "The tried-and-true: homing amulets and sharp needles. You don’t have the "
 "luxury of time to think about aiming."
-msgstr ""
+msgstr "久经考验的诱导护符与封魔针, 不必思考怎么瞄准敌人, 干就完了! "
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr ""
+msgstr "灵符「梦想封印   裂」"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -5573,11 +5899,11 @@ msgstr ""
 msgid ""
 "Turn your understanding of reality upside-down, and tie the boundaries of "
 "spacetime into knots as easily as the ribbons in your hair."
-msgstr ""
+msgstr "它将颠覆你对真实的认知: 将时空的边界系成结, 如同你发间的丝带般轻易。"
 
 #: src/plrmodes/reimu_b.c:715
 msgid "Dream Sign “Ethereal Boundary Rupture”"
-msgstr ""
+msgstr "梦符「幻之结界冲击波」"
 
 #: src/plrmodes/youmu_a.c:708
 msgid "Soul Reflection"
@@ -5588,34 +5914,132 @@ msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
 msgstr ""
+"人类与幽灵携手同行, 向这最后的目标前进, 你的二元之躯会助你一臂之力…… 或者说一"
+"尾之力。"
 
 #: src/plrmodes/youmu_a.c:710
 msgid "Soul Sign “Reality-Piercing Apparition”"
-msgstr ""
+msgstr "魂符「斩断现世的幽魂」"
 
 #: src/plrmodes/youmu_b.c:620
-#, fuzzy
 msgid "Haunting Revelation"
-msgstr "启示之巅"
+msgstr ""
 
 #: src/plrmodes/youmu_b.c:621
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
 msgstr ""
+"鬼魂是真实存在的, 但它们并不可怕。 当然, 除非你恰好挡在了一位 决心已定的持剑"
+"女士面前……"
 
 #: src/plrmodes/youmu_b.c:622
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
-msgstr ""
+msgstr "神盾剑「西行无向斩」"
 
 #: src/stage.c:622
 #, c-format
 msgid "BGM: %s"
 msgstr ""
 
+#: src/stagedraw.c:1294
+msgid "Hi-Score:"
+msgstr ""
+
+#: src/stagedraw.c:1295
+msgid "Score:"
+msgstr ""
+
+#: src/stagedraw.c:1296
+msgid "Lives:"
+msgstr "剩余人数"
+
+#: src/stagedraw.c:1297
+msgid "Spell Cards:"
+msgstr "Spell Card"
+
+#: src/stagedraw.c:1301
+msgid "Power:"
+msgstr "灵力"
+
+#: src/stagedraw.c:1302
+msgid "Value:"
+msgstr "得点"
+
+#: src/stagedraw.c:1303
+msgid "Volts:"
+msgstr "电压"
+
+#: src/stagedraw.c:1304
+msgid "Graze:"
+msgstr ""
+
+#: src/stagedraw.c:1313 src/stagedraw.c:1314
+msgid "N/A"
+msgstr ""
+
+#: src/stagedraw.c:1326
+msgid "Next:"
+msgstr "奖残:"
+
+#: src/stagedraw.c:1352
+msgid "Fragments:"
+msgstr "碎片:"
+
+#: src/stagedraw.c:1465
+msgid "God Mode is enabled!"
+msgstr "上帝模式已启用! "
+
+#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+msgid ""
+"Voltage        \n"
+"    Overdrive!"
+msgstr ""
+
+#: src/stagedraw.c:1879
+msgid "Demo"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "All Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1893
+msgid "Stage Clear!"
+msgstr ""
+
+#: src/stagedraw.c:1897
+msgid "Stage Clear bonus"
+msgstr "Stage Clear奖励"
+
+#: src/stagedraw.c:1898
+msgid "Life bonus"
+msgstr "余残奖励"
+
+#: src/stagedraw.c:1899
+msgid "Voltage bonus"
+msgstr "电压奖励"
+
+#: src/stagedraw.c:1900
+msgid "Graze bonus"
+msgstr "擦弹奖励"
+
+#: src/stagedraw.c:1904
+msgid "All Clear bonus"
+msgstr "All Clear奖励"
+
+#: src/stagedraw.c:1909
+#, c-format
+msgid "Difficulty bonus (+%i%%)"
+msgstr "难度奖励 (+%i%%)"
+
+#: src/stagedraw.c:1919
+msgid "Press Fire to continue"
+msgstr "按射击键继续……"
+
 #: src/stageinfo.c:49
 msgid "Spell"
-msgstr ""
+msgstr "符卡"
 
 #: src/stageinfo.c:129
 msgid "Stage 1"
@@ -5674,21 +6098,20 @@ msgid "Descent into Madness"
 msgstr "堕入疯狂"
 
 #: src/stages/stage1/spells/snow_halation.c:187
-#, fuzzy
 msgid "What are you doing??"
-msgstr "泥在干神马？"
+msgstr "泥在干神马? "
 
 #: src/stages/stage1/spells/snow_halation.c:188
 msgid "Dodge it properly!"
-msgstr "好好躲避吧！"
+msgstr "好好躲避吧! "
 
 #: src/stages/stage1/spells/snow_halation.c:189
 msgid "I bet you can’t do it! Idiot!"
-msgstr "咱敢打赌你做不到！baka！"
+msgstr "咱敢打赌你做不到! baka! "
 
 #: src/stages/stage1/spells/snow_halation.c:190
 msgid "I spent so much time on this attack!"
-msgstr "咱可沉淀了很久的！"
+msgstr "咱可沉淀了很久的! "
 
 #: src/stages/stage1/spells/snow_halation.c:191
 msgid "Maybe it is too smart for secondaries!"
@@ -5739,9 +6162,8 @@ msgid "Lottery Sign “Monty Hall Danmaku”"
 msgstr "运符「Monty Hall Danmaku」(三门弹幕)"
 
 #: src/stages/stage2/wriggle.c:15
-#, fuzzy
 msgid "Wriggle"
-msgstr "莉格露·奈特巴格"
+msgstr "莉格露"
 
 #: src/stages/stage3/stage3.c:32
 msgid "Disruption “Logic Bomb”"
@@ -5761,12 +6183,11 @@ msgstr "虫符「Firefly Storm」（飞萤风暴）"
 
 #: src/stages/stage3/stage3.c:57
 msgid "Lamp Sign “Light Singularity”"
-msgstr "灯符「Light Singularity」（奇异之光）"
+msgstr "灯符「Light Singularity」(奇异之光）"
 
 #: src/stages/stage3/wriggle.c:31
-#, fuzzy
 msgid "Wriggle EX"
-msgstr "莉格露·奈特巴格"
+msgstr "莉格露 EX"
 
 #: src/stages/stage4/stage4.c:30
 msgid "Bloodless “Gate of Walachia”"
@@ -5782,19 +6203,19 @@ msgstr "无血「红色尖刺」"
 
 #: src/stages/stage4/stage4.c:48
 msgid "Limit “Animate Wall”"
-msgstr "界限「Animate Wall」（生命高墙）"
+msgstr "界限「Animate Wall」(生命高墙）"
 
 #: src/stages/stage4/stage4.c:53
 msgid "Summoning “Demon Wall”"
-msgstr "召唤「Demon Wall」（恶魔高墙）"
+msgstr "召唤「Demon Wall」(恶魔高墙）"
 
 #: src/stages/stage4/stage4.c:58
 msgid "Power Sign “Blow the Walls”"
-msgstr "掠食「Vampiric Vapor」（吸血鬼气化）"
+msgstr "力符「炸翻高墙」"
 
 #: src/stages/stage4/stage4.c:63
 msgid "Predation “Vampiric Vapor”"
-msgstr "力符「炸翻高墙」"
+msgstr "掠食「Vampiric Vapor」(吸血鬼气化)"
 
 #: src/stages/stage4/stage4.c:70
 msgid "Blood Magic “Vlad’s Army”"
@@ -5842,7 +6263,7 @@ msgstr "开普勒之御札「Orbital Clockwork」(星轨发条)"
 
 #: src/stages/stage6/stage6.c:39
 msgid "Maxwell Sign “Wave Theory”"
-msgstr "麦克斯韦之御札「Wave Theory」（波动学说）"
+msgstr "麦克斯韦之御札「Wave Theory」(波动学说）"
 
 #: src/stages/stage6/stage6.c:47
 msgid "Eigenstate “Many-World Interpretation”"
@@ -5881,7 +6302,7 @@ msgstr ""
 
 #: po/extra_strings.c:2
 msgid "Divine Correction for Outliers"
-msgstr ""
+msgstr "对异类的神之修正"
 
 #: po/extra_strings.c:3 po/extra_strings.c:7 po/extra_strings.c:11
 #: po/extra_strings.c:23 po/extra_strings.c:27 po/extra_strings.c:31
@@ -5906,6 +6327,14 @@ msgid ""
 "Ultimately, I can’t decide if I did the original justice with this one or "
 "not, but I know it holds a special place in my heart."
 msgstr ""
+"改编一个角色现有的主题曲, 还是创作一个全新的主题曲, 这很难抉择, "
+"ZUN自己可能也很难抉择。\n"
+"\n"
+"我知道我的优势在于后者, 最终创作出了那种通常在塔顶才能听到的"
+"狂风暴雨般的旋律, 衣玖的原创主题曲格外的不错, 以至于我接受了这个挑战。\n"
+"\n"
+"直到最后, 我也无法确定这首歌是否具备原作的精髓, 但我知道"
+"它在我心中已占有一席之地。"
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
@@ -5924,7 +6353,7 @@ msgstr ""
 "\n"
 "Existential Field有一种灵动与未来的感觉。\n"
 "\n"
-"温柔的不像雷雨，更像是……彩虹。"
+"温柔的不像雷雨, 更像是……彩虹。"
 
 #: po/extra_strings.c:10
 msgid "Dream Cycle"
@@ -5941,9 +6370,9 @@ msgid ""
 msgstr ""
 "结局的主题曲。\n"
 "\n"
-"好同学们，我们今天都学到了些什么？\n"
+"好同学们, 我们今天都学到了些什么? \n"
 "\n"
-"啊没错：知识恰如禁果；孕育光明亦滋生黑暗。 下课下课，自机们也是时候去放松一下"
+"啊没错: 知识恰如禁果; 孕育光明亦滋生黑暗。下课下课, 自机们也是时候去放松一下"
 "开香槟了。"
 
 #: po/extra_strings.c:14
@@ -5965,18 +6394,18 @@ msgid ""
 "any other PS theme.\n"
 "What else were you expecting?"
 msgstr ""
-"啊啊啊啊啊，Akari桑，为什么咱要给这曲子起名字啊喂？!\n"
-"咱创作的每一首歌都是由接收者命名的说，\n"
+"啊啊啊啊啊, Akari桑, 为什么咱要给这曲子起名字啊喂? !\n"
+"咱创作的每一首歌都是由接收者命名的说, \n"
 "你别给咱上压力呀……\n"
 "\n"
-"咳咳咳……没错，这是一首结算分数和满身疮痍界面的主题曲。\n"
-"它融合了最终Boss主题曲和神奈子主题曲的部分内容，就像 其他Player Score主题曲一"
+"咳咳咳……没错, 这是一首结算分数和满身疮痍界面的主题曲。\n"
+"它融合了最终Boss主题曲和神奈子主题曲的部分内容, 就像 其他Player Score主题曲一"
 "样。\n"
-"你在期待什么？"
+"你在期待什么? "
 
 #: po/extra_strings.c:18
 msgid "Unsettling Knowledge"
-msgstr ""
+msgstr "糟心的知识"
 
 #: po/extra_strings.c:19
 msgid "jneen-collective"
@@ -5991,7 +6420,7 @@ msgid ""
 msgstr ""
 "开幕过场动画的主题曲。\n"
 "\n"
-"噼噼啪啪，闪闪发亮，这就是「世界之外的知识」. 可能带着些许险恶，是否值得信赖"
+"噼噼啪啪, 闪闪发亮, 这就是「世界之外的知识」. 可能带着些许险恶, 是否值得信赖"
 "尚不明确. "
 
 #: po/extra_strings.c:22
@@ -6004,6 +6433,8 @@ msgid ""
 "\n"
 "Many paths branch from one. Echoes from across the sea yield a new adventure."
 msgstr ""
+"很好的阐释了「泰西」。\n"
+"一条大道, 岔路千条。彼岸回声, 奇遇新生。"
 
 #: po/extra_strings.c:26
 msgid "Logic Bombardier"
@@ -6022,10 +6453,18 @@ msgid ""
 "Supposing she were to appear as a boss, I think it might sound different "
 "given a different role in the incident."
 msgstr ""
+"一首献给我最喜欢角色的隐藏主题曲……\n"
+"\n"
+"我想尝试利用Scuttle在道中出现时的旋律, 并将其发展成一首完整的歌曲。\n"
+"\n"
+"结果很有趣! 她的主题旋律就像她的存在一样, 格外的实验性呢。\n"
+"\n"
+"假设她以关底Boss的身份登场, 考虑到在事件中所扮演的不同角色, "
+"我觉得她的曲子可能会呈现出不一样的感觉。"
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
-msgstr ""
+msgstr "雾所引的迷蒙闹戏"
 
 #: po/extra_strings.c:33
 msgid ""
@@ -6034,6 +6473,10 @@ msgid ""
 "A relaxing mist illustrated with subdued instruments. Familiar shadows stir "
 "trouble just out of view. Ripples of times past dance across Misty Lake."
 msgstr ""
+"一面的主题曲。\n"
+"\n"
+"令人心旷神怡的薄雾, 配以柔和的乐器袅袅浮现。 熟悉的身影在视野外"
+"搅动着纷扰, 往昔的涟漪荡漾在雾之湖上。"
 
 #: po/extra_strings.c:34
 msgid "An Impish Reflection on the Water"
@@ -6051,14 +6494,14 @@ msgid ""
 msgstr ""
 "琪露诺的主题曲。\n"
 "\n"
-"这一次，她觉得自己一如既往的勇敢，且更为强大。\n"
+"这一次, 她觉得自己一如既往的勇敢, 且更为强大。\n"
 "\n"
-"然而嘛，她其实只是个小麻烦，就有点冷且吹弹可破。 主角们对这家伙的恶作剧置之不"
-"理，继续前进。"
+"然而嘛, 她其实只是个小麻烦, 就有点冷且吹弹可破。 主角们对这家伙的恶作剧置之不"
+"理, 继续前进。"
 
 #: po/extra_strings.c:38
 msgid "Treasure the Wager, Treasure the Odds"
-msgstr ""
+msgstr "珍惜赌注, 珍惜机遇"
 
 #: po/extra_strings.c:41
 msgid ""
@@ -6068,10 +6511,15 @@ msgid ""
 "deceptively fast-paced theme, to be sure. One excitable example makes a "
 "brief appearance. The rhythm of this theme is meant to make you feel lucky."
 msgstr ""
+"二面的主题曲。\n"
+"\n"
+"这条平静祥和的道路, 却难免会出现不少麻烦的家伙——确实如此, "
+"这听起来像一首快节奏的曲子。但有一段短暂出现的令人舒畅的旋律, "
+"这段律动旨在让你感到幸运。"
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
-msgstr ""
+msgstr "暗黑神明的欢乐登场"
 
 #: po/extra_strings.c:45
 msgid ""
@@ -6082,10 +6530,16 @@ msgid ""
 "It’s a little merciful sometimes, but you still have to do your best, no "
 "matter what. Gambling might be a poor stress-reliever…"
 msgstr ""
+"键山雏的主题曲。\n"
+"\n"
+"这次, 一切决于运气之上。\n"
+"\n"
+"有时候转转会比较仁慈点, 但无论如何, 你还是得尽力而为。 "
+"毕竟赌博并不是有效降低压力的好方法……"
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
-msgstr ""
+msgstr "斐索的发现 ~ Lightray Vector"
 
 #: po/extra_strings.c:49
 msgid ""
@@ -6096,6 +6550,11 @@ msgid ""
 "eyes. A fluttering little bug feels most at home in the dead of night, and "
 "most alive in a sea of light."
 msgstr ""
+"三面的主题曲。\n"
+"\n"
+"在黑暗中视物通常并非易事。它吸引着你, 将你吞没, 如同淹没感官的烈焰。"
+"但这一次, 或许最好保护好双眼。一只振翅的小飞虫在夜深时分最是自在, "
+"于光的海洋中最是活跃。"
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
@@ -6111,6 +6570,13 @@ msgid ""
 "\n"
 "Sounds a little “beach”-like in the introduction…"
 msgstr ""
+"莉格露·奈特巴格的主题曲。\n"
+"\n"
+"一只非常有动力的虫子。她站在世界之巅! ——不不不, 站在世界之巅的是另外一个人, "
+"她现在最多站在通道的中央。不管怎样, 她知道只要下定决心, 她就能淦翻全场, "
+"对吧? \n"
+"\n"
+"开头听起来有点像“beach”……"
 
 #: po/extra_strings.c:54
 msgid "Evidence of Ki Domestication"
@@ -6127,10 +6593,17 @@ msgid ""
 "\n"
 "Smells like rust."
 msgstr ""
+"四面的主题曲。\n"
+"\n"
+"又回到东方的风格了……就像钟摆来回摆动一样。\n"
+"这首曲子的灵感来自于一位生活在大海彼岸的难以捉摸的音乐家, "
+"他因其音乐中受到中国的影响而闻名。\n"
+"\n"
+"嗯, 有一股铁锈的味道。"
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
-msgstr ""
+msgstr "边际的绯红 ~ The Red Word"
 
 #: po/extra_strings.c:61
 msgid ""
@@ -6140,6 +6613,11 @@ msgid ""
 "more comfortable than a Lake of Blood, but this confrontation is anything "
 "but. A mix of fears make the walls feel like they’re closing in."
 msgstr ""
+"胡桃的主题曲。\n"
+"\n"
+"旧面孔, 新梦想。她找到了新家, 比当年的血之湖还要舒适一些。"
+"然而这次对峙却绝非温柔, 交织的恐惧令人感到四面楚歌, "
+"高墙仿佛正逐渐逼近。"
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
@@ -6160,10 +6638,10 @@ msgid ""
 msgstr ""
 "五面的主题曲。\n"
 "\n"
-"又回来了……那首歌怎么唱的？“No reason to get excited…”\n"
+"又回来了……那首歌怎么唱的? “No reason to get excited…”\n"
 "\n"
-"老实说，这歌其实是如今东西方影响力交融的产物。 如果说之前的BGM风格像钟摆般两"
-"极摆动, 那么这曲就如同 交流电般持续振荡。\n"
+"老实说, 这歌其实是如今东西方影响力交融的产物。 如果说之前的BGM风格像钟摆般两"
+"极摆动, 那么这曲就如同交流电般持续振荡。\n"
 "\n"
 "在此塔上, 攀登者须防失足之险, 故当目视顶峰, 步步为营, 行差踏错半步不得. "
 
@@ -6182,11 +6660,13 @@ msgid ""
 "Iku provides the first tribulation."
 msgstr ""
 "永江衣玖的主题曲。\n"
+"\n"
 "这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. 想象一下, 在猛烈的雷雨中攀"
 "登高塔, 还要努力不感到疲惫.\n"
 "\n"
 "而衣玖, 便是千刀万剐之始."
 
+# 坏了译者感觉自己也被巴别塔影响了
 #: po/extra_strings.c:70
 msgid "Summit of Revelations"
 msgstr "启示之巅"
@@ -6200,10 +6680,15 @@ msgid ""
 "A grand architectural marvel may take thousands of years to complete… this "
 "song was no different! But the end result feels like a great discovery."
 msgstr ""
+"六面的主题曲。\n"
+"\n"
+"登塔凌顶可见天下, 然其间险峻几何? \n"
+"\n"
+"千秋伟业宛若筑就传世鸿篇——此曲亦不外如是! 终章奏响时, 恍若重大发现般的顿悟。"
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
-msgstr ""
+msgstr "大宇宙论之战 ~ The Vacuum Catastrophe"
 
 #: po/extra_strings.c:77
 msgid ""
@@ -6216,10 +6701,17 @@ msgid ""
 "She may have been a lowly gate guard the last time you saw her, but the "
 "apple’s fallen on her head. She’s a guard of a different kind of gate now."
 msgstr ""
+"艾丽的一阶段主题曲。\n"
+"\n"
+"一位故人。我常从这般构想中获得启迪: 无名之辈湮没于时光的"
+"微末之躯, 历经沉寂终抵云霄。\n"
+"\n"
+"上回相见时她或是卑微门吏, 然苹果砸落头顶顿悟天机。 "
+"而今她镇守的早已是另一重天门。"
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
-msgstr ""
+msgstr "神化的涌现属性 ~ Ambivalent Soul"
 
 #: po/extra_strings.c:81
 msgid ""
@@ -6231,6 +6723,12 @@ msgid ""
 "\n"
 "Elly is a new person now, so an arrange wouldn’t speak the truth."
 msgstr ""
+"艾丽的二阶段主题曲。"
+"\n"
+"世间最令人敬畏的玄奇伟力, 终究非凡胎肉眼所能企及。然确有"
+"天纵奇才之辈, 或已筑就连通此岸与彼岸的通天之桥……\n"
+"\n"
+"艾丽已然升格新人, 口中便再无真理。"
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
@@ -6247,3 +6745,9 @@ msgid ""
 "series of dark curtains to pull back, each new finding more magnificent and "
 "imperceptible than the last."
 msgstr ""
+"艾丽的终符主题曲。\n"
+"\n"
+"世间那些最具雄心又不可或缺的伟业, 注定要包罗万象。世人多视科学为"
+"既定知识之集合, 宛若所有「伟大发现」皆已尘埃落定的封闭琥珀—— "
+"然事实恰恰相反。科学实乃永无止境的重重帷幕, 每次揭开都展现出比先前"
+"更加壮丽而精微的奇观。"
