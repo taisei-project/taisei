@@ -3164,7 +3164,7 @@ msgstr "不公平! 泥犯规! 咱还没有准备好......"
 #: src/dialog/reimu.c:112
 msgid ""
 "With those loudmouthed kappa gone, the mountain feels practically deserted."
-msgstr "没有那些大嘴巴的河童, 这座山感觉好荒芜啊。"
+msgstr "没有那些大嘴巴的河童, 这座山感觉好荒凉啊。"
 
 #: src/dialog/reimu.c:114
 msgid "I almost miss them."
@@ -3188,7 +3188,7 @@ msgstr "多么麻烦的孩子......"
 
 #: src/dialog/reimu.c:127
 msgid "So much for ‘deserted’…"
-msgstr "“被遗弃”的就这么多......"
+msgstr "啊……我刚才还说这地方很「荒凉」的……"
 
 #: src/dialog/reimu.c:129
 msgid "Do you even know what you’re protecting me from this time?"
@@ -3265,7 +3265,7 @@ msgstr "额, 你是不是离家太远了? "
 #: src/dialog/reimu.c:199
 msgid ""
 "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
-msgstr "还有, 「凌驾于所有人之上」是什么鬼, 我可没听说昆虫统治过幻想乡。"
+msgstr "还有, 「凌驾于所有人之上」是什么鬼? 我可没听说昆虫统治过幻想乡。"
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
@@ -3681,7 +3681,7 @@ msgstr "看来你的决心坚定不移。很好, 那么来吧,"
 
 #: src/dialog/reimu.c:476
 msgid "Allow me to test your resistance to their infuriating machine!"
-msgstr "以这松果弹抖闪电鞭, 检验你那不变的决心! "
+msgstr "以这松果弹抖闪电鞭, 检验你对那byd机器的抵抗力! "
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
@@ -3857,7 +3857,7 @@ msgstr "但这与我们有什么关系呢? ! "
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr "对于一名「科学家」来说, 你的说法毫无意义! "
+msgstr "作为一名「科学家」, 你的说辞毫无意义! "
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
@@ -5328,6 +5328,7 @@ msgstr "满身疮痍"
 #, c-format
 msgid "Continue (%i)"
 msgstr "我不甘心! (%i)"
+# （浅唱大帝音）
 
 #: src/menu/gameovermenu.c:78
 #, c-format
@@ -5463,11 +5464,11 @@ msgstr "开"
 msgid "off"
 msgstr "关"
 
-#: src/menu/options.c:704
+#: src/menu/options.c:704 src/menu/savereplay.c:134
 msgid "Yes"
 msgstr "是哒"
 
-#: src/menu/options.c:705
+#: src/menu/options.c:705 src/menu/savereplay.c:135
 msgid "No"
 msgstr "不要"
 
@@ -5795,11 +5796,11 @@ msgstr "无设备可用"
 
 #: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
-msgstr ""
+msgstr "请移动坐标轴进行指派，按返回键取消"
 
 #: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
-msgstr ""
+msgstr "请按下一个按键进行指派，按返回键取消"
 
 #: src/menu/options.c:1446
 msgid "Unbound"
@@ -5831,6 +5832,10 @@ msgstr "没有Replay可用。打几把游戏录点吧! "
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
 msgstr "获取Replay列表时出现问题 :("
+
+#: src/menu/savereplay.c:67
+msgid "Save Replay?"
+msgstr "保存Replay吗？"
 
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
@@ -6116,10 +6121,11 @@ msgstr "咱可沉淀了很久的! "
 #: src/stages/stage1/spells/snow_halation.c:191
 msgid "Maybe it is too smart for secondaries!"
 msgstr ""
+# 什么玩意
 
 #: src/stages/stage1/spells/snow_halation.c:192
 msgid "I think you don’t even understand the timer!"
-msgstr ""
+msgstr "咱觉得泥根本不懂计时器！"
 
 #: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
@@ -6600,6 +6606,7 @@ msgstr ""
 "他因其音乐中受到中国的影响而闻名。\n"
 "\n"
 "嗯, 有一股铁锈的味道。"
+# 周文中？（by Deepseek V3.2-Exp）
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
