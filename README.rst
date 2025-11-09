@@ -20,7 +20,7 @@ Taisei Project is an open source fan-game set in the world of `Tōhō Project
 (STG), also known as a “bullet hell” or “danmaku.” STGs are fast-paced games focused around pattern recognition and
 mastery through practice.
 
-Taisei Project is highly portable, and is written in C11, using SDL2 with an OpenGL renderer. It is officially supported
+Taisei Project is highly portable, and is written in C11, using SDL3 with an OpenGL renderer. It is officially supported
 on Windows, Linux, macOS, and through WebGL-enabled browsers such as Firefox and Chromium-based browsers (Chrome, Edge,
 etc). It can also be compiled for a number of other operating systems.
 
@@ -48,7 +48,7 @@ Installation
 ------------
 
 You can find precompiled binaries of the complete game on the `Releases
-<https://github.com/taisei-project/taisei/releases>`__ page on GitHub, available for Windows (x86/x64), Linux, and
+<https://github.com/taisei-project/taisei/releases>`__ page on GitHub, available for Windows (x64), Linux, and
 macOS.
 
 An experimental build for Nintendo Switch (homebrew) also exists (use at your own risk).
