@@ -2308,7 +2308,7 @@ msgstr "Dieu Gyroscopique de la Peste"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
 msgid "Wriggle Nightbug"
-msgstr ""
+msgstr "Insecte nocturne frétillant"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:125
 msgid "Insect Rights Activist"
@@ -2321,7 +2321,7 @@ msgstr "Phlébotomiste de la haute société"
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
 #: src/stages/stage5/iku.c:108
 msgid "Nagae Iku"
-msgstr ""
+msgstr "Nagae Iku"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:147
 msgid "Fulminologist of the Heavens"
@@ -2333,634 +2333,656 @@ msgstr "La Faucheuse Théorique"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr ""
+msgstr "De la neige encore ? Mais je viens de ranger mon manteau d’hiver."
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
-msgstr ""
+msgstr "…alors qu’on est déjà à la moitié de l’été."
 
 #: src/dialog/marisa.c:28
 msgid "Don’t you like the cold weather???"
-msgstr ""
+msgstr "Tu n’aimes pas le temps froid???"
 
 #: src/dialog/marisa.c:32
 msgid "It should be winter all the time!"
-msgstr ""
+msgstr "Il devrait toujours faire hiver!"
 
 #: src/dialog/marisa.c:35
 msgid "Mind paying to get my coat cleaned, then?"
-msgstr ""
+msgstr "Tu pourrais payer pour faire nettoyer mon manteau, alors?"
 
 #: src/dialog/marisa.c:37
 msgid "I was gonna get it done in the fall, but now…"
-msgstr ""
+msgstr "J’allais le faire à l’automne, mais maintenant…"
 
 #: src/dialog/marisa.c:40
 msgid "Why would I do that?! You’re never going to pay me back!"
-msgstr ""
+msgstr "Pourquoi je ferais ça?! Tu ne vas jamais me rembourser!"
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr ""
+msgstr "Je vais te transformer en glaçon!"
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr ""
+msgstr "Vraiment? Je préfère la glace pilée, moi."
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
-msgstr ""
+msgstr "Pourquoi tu n’irais pas jouer avec ton nouvel ami, celui de l’Enfer?"
 
 #: src/dialog/marisa.c:61
 msgid "Maybe then it’d be more of a fair fight."
-msgstr ""
+msgstr "Peut-être que ce serait un combat plus équitable alors."
 
 #: src/dialog/marisa.c:63
 msgid "Ouch…"
-msgstr ""
+msgstr "Aïe…"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr ""
+msgstr "J-je veux dire, la dernière fois elle a perdu! Et la prochaine fois, ce sera ton tour!"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
-msgstr ""
+msgstr "Oui, oui."
 
 #: src/dialog/marisa.c:82
 msgid "Geez, this place is kinda sad now."
-msgstr ""
+msgstr "Pff, cet endroit est un peu triste maintenant."
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr ""
+msgstr "Qu’est-ce qui ferait que les yōkai deviennent bizarres, de toute façon?"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
-msgstr ""
+msgstr "Eh bien bonjour, Mlle Kirisame."
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
-msgstr ""
+msgstr "Tu sembles aussi imprudente que d’habitude. Je recommande de rebrousser chemin."
 
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
-msgstr ""
+msgstr "Merci pour le conseil! Je vais l’ignorer, cependant."
 
 #: src/dialog/marisa.c:93
 msgid "See ya."
-msgstr ""
+msgstr "À plus."
 
 #: src/dialog/marisa.c:97
 msgid "Oh my… you’re quite the rebellious one, aren’t you?"
-msgstr ""
+msgstr "Oh là… tu es vraiment rebelle, n’est-ce pas?"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
-msgstr ""
+msgstr "Une telle confiance, ignorer mon avertissement ainsi."
 
 #: src/dialog/marisa.c:101
 msgid "I’ll take that as a compliment."
-msgstr ""
+msgstr "Je prends ça comme un compliment."
 
 #: src/dialog/marisa.c:104
 msgid ""
 "And do you know what happens to naughty girls who don’t listen to their "
 "elders?"
 msgstr ""
+"Et sais-tu ce qui arrive aux filles désobéissantes qui n’écoutent pas leurs "
+"aînés?"
 
 #: src/dialog/marisa.c:105
 msgid "They get showered in misfortune for years!"
-msgstr ""
+msgstr "Elles se font couvrir de malheurs pendant des années!"
 
 #: src/dialog/marisa.c:118
 msgid "You’re way more snippy than usual today."
-msgstr ""
+msgstr "Tu es bien plus grincheuse que d’habitude aujourd’hui."
 
 #: src/dialog/marisa.c:119
 msgid "It’s kinda annoyin’, honestly."
-msgstr ""
+msgstr "C’est un peu agaçant, honnêtement."
 
 #: src/dialog/marisa.c:121
 msgid "H-how mean…"
-msgstr ""
+msgstr "Q-quelle méchanceté…"
 
 #: src/dialog/marisa.c:122
 msgid "Don’t you see I was just trying to keep you safe…?"
-msgstr ""
+msgstr "Tu ne vois pas que j’essayais juste de te protéger…?"
 
 #: src/dialog/marisa.c:124
 msgid "Don’t get all motherly on me now."
-msgstr ""
+msgstr "Ne deviens pas maternelle maintenant."
 
 #: src/dialog/marisa.c:126
 msgid "I’ve had enough of that for a lifetime."
-msgstr ""
+msgstr "J’en ai eu assez pour toute une vie."
 
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
 msgstr ""
+"Pff, tout le monde devient encore plus imprudent plus je monte. Que se passe-t-il?"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
-msgstr ""
+msgstr "Attends de rencontrer leur chef!"
 
 #: src/dialog/marisa.c:148
 msgid "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure."
-msgstr ""
+msgstr "Oui, je vais devoir poser plein de questions à leur chef, c’est sûr."
 
 #: src/dialog/marisa.c:151
 msgid "Feel free to go ahead. I’m listening."
-msgstr ""
+msgstr "Vas-y, je t’écoute."
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr ""
+msgstr "Oh, tu es le messager?"
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
-msgstr ""
+msgstr "Tu pourrais transmettre un message?"
 
 #: src/dialog/marisa.c:159
 msgid "Um, OBVIOUSLY I’m not the messenger!"
-msgstr ""
+msgstr "Euh, ÉVIDEMMENT je ne suis pas le messager!"
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
-msgstr ""
+msgstr "Oui, je suis le grand leader des insectes!"
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr ""
+msgstr "Grand leader? Quoi, les insectes se sont syndiqués ou quoi?"
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
-msgstr ""
+msgstr "Non! Je t’ai dit, je suis le leader! Le cerveau!"
 
 #: src/dialog/marisa.c:169
 msgid "So, what’s your question?"
-msgstr ""
+msgstr "Alors, quelle est ta question?"
 
 #: src/dialog/marisa.c:172
 msgid "Hmm, guess I forgot."
-msgstr ""
+msgstr "Hmm, je suppose que j’ai oublié."
 
 #: src/dialog/marisa.c:173
 msgid "What’s yer deal, anyways?"
-msgstr ""
+msgstr "C’est quoi ton affaire, de toute façon?"
 
 #: src/dialog/marisa.c:176
 msgid "We insects have three demands:"
-msgstr ""
+msgstr "Nous, les insectes, avons trois demandes:"
 
 #: src/dialog/marisa.c:177
 msgid "First: say nay to insect spray!"
-msgstr ""
+msgstr "Premièrement: dites non aux sprays insecticides!"
 
 #: src/dialog/marisa.c:178
 msgid "Second: swat the swatters!"
-msgstr ""
+msgstr "Deuxièmement: frappez les tapettes!"
 
 #: src/dialog/marisa.c:180
 msgid "Third: the right to bite!"
-msgstr ""
+msgstr "Troisièmement: le droit de mordre!"
 
 #: src/dialog/marisa.c:181
 msgid "Fourth—!"
-msgstr ""
+msgstr "Quatrièmement—!"
 
 #: src/dialog/marisa.c:184
 msgid ""
 "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff "
 "to do."
 msgstr ""
+"D’accord, d’accord, c’est super tout ça, mais honnêtement j’ai des choses "
+"plus importantes à faire."
 
 #: src/dialog/marisa.c:185
 msgid "… and ya don’t got a clue about what’s goin’ on, do ya?"
-msgstr ""
+msgstr "… et tu n’as aucune idée de ce qui se passe, hein?"
 
 #: src/dialog/marisa.c:189
 msgid "Maybe I know more than you think."
-msgstr ""
+msgstr "Peut-être que j’en sais plus que tu ne le crois."
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
-msgstr ""
+msgstr "Mais ce n’est RIEN que je dirais à un usurpateur de la gloire des insectes!"
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
-msgstr ""
+msgstr "Plus coriace que d’habitude, mais pas assez."
 
 #: src/dialog/marisa.c:206
 msgid "Where’d ya pick up those new moves, anyway?"
-msgstr ""
+msgstr "Où as-tu appris ces nouveaux mouvements, de toute façon?"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
-msgstr ""
+msgstr "Ah! C’était, euh… la grande vision de notre glorieux passé d’insectes!"
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
-msgstr ""
+msgstr "C’était à l’époque du Car—… Carb—… l’époque des Glucides!"
 
 #: src/dialog/marisa.c:212
 msgid "‘Glorious insect past’? ‘Carbs’?"
-msgstr ""
+msgstr "‘Glorieux passé des insectes’? ‘Glucides’?"
 
 #: src/dialog/marisa.c:214
 msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
 msgstr ""
+"Oh, tu dois vouloir dire la période carbonifère. Avec les insectes géants— euh, "
+"les insectes, et tout ça."
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
-msgstr ""
+msgstr "Je me souviens de ce médecin à Eientei qui s’enflammait à ce sujet une fois."
 
 #: src/dialog/marisa.c:217
 msgid "Only time I’d seen her so excited…"
-msgstr ""
+msgstr "La seule fois où je l’ai vue aussi excitée…"
 
 #: src/dialog/marisa.c:219
 msgid "Yeah, that!"
-msgstr ""
+msgstr "Oui, ça!"
 
 #: src/dialog/marisa.c:221
 msgid "Do you want to be an ally in our glorious conquest…?"
-msgstr ""
+msgstr "Veux-tu être un allié dans notre glorieuse conquête…?"
 
 #: src/dialog/marisa.c:224
 msgid "Maybe later."
-msgstr ""
+msgstr "Peut-être plus tard."
 
 #: src/dialog/marisa.c:226
 msgid "Probably never."
-msgstr ""
+msgstr "Probablement jamais."
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
-msgstr ""
+msgstr "Oh wow, un manoir mystérieux et magique!"
 
 #: src/dialog/marisa.c:245
 msgid "… how generic can you get?"
-msgstr ""
+msgstr "… ça peut être plus banal?"
 
 #: src/dialog/marisa.c:248
 msgid "And to top it off, a western witch!"
-msgstr ""
+msgstr "Et pour couronner le tout, une sorcière occidentale!"
 
 #: src/dialog/marisa.c:250
 msgid "Seen it a thousand times already. It’s such a boring motif."
-msgstr ""
+msgstr "Je l’ai déjà vu mille fois. C’est un motif tellement ennuyeux."
 
 #: src/dialog/marisa.c:253
 msgid "Right? But I make up for it with my devilish charm."
-msgstr ""
+msgstr "N’est-ce pas? Mais je compense avec mon charme diabolique."
 
 #: src/dialog/marisa.c:256
 msgid "But that theme is so overdone…"
-msgstr ""
+msgstr "Mais ce thème est tellement surutilisé…"
 
 #: src/dialog/marisa.c:258
 msgid "What’s next? A maid?"
-msgstr ""
+msgstr "Et ensuite? Une servante?"
 
 #: src/dialog/marisa.c:260
 msgid ""
 "A little girl with almost no dialogue who becomes a fan-favourite anyways?"
-msgstr ""
+msgstr "Une petite fille avec presque aucun dialogue qui devient quand même "
+"la préférée des fans?"
 
 #: src/dialog/marisa.c:261
 msgid "One that’ll have her personality massacred by the fans?"
-msgstr ""
+msgstr "Une dont la personnalité sera massacrée par les fans?"
 
 #: src/dialog/marisa.c:264
 msgid ""
 "Maybe they’ll even make her something edgy like a vampire to drive up sales."
-msgstr ""
+msgstr "Peut-être qu’ils en feront même quelque chose de tendance comme un "
+"vampire pour augmenter les ventes."
 
 #: src/dialog/marisa.c:267
 msgid "Ugh! Maybe I’ve been reading too much manga that those tengu churn out."
-msgstr ""
+msgstr "Beurk! Peut-être que j’ai trop lu de mangas que ces tengu pondent."
 
 #: src/dialog/marisa.c:270
 msgid "The tengu write manga now?"
-msgstr ""
+msgstr "Les tengu écrivent des mangas maintenant?"
 
 #: src/dialog/marisa.c:272
 msgid "Writin’ pure ficiton is more honest for them, I guess."
-msgstr ""
+msgstr "Écrire de la pure fiction est plus honnête pour eux, je suppose."
 
 #: src/dialog/marisa.c:276
 msgid "Yeah, duh?"
-msgstr ""
+msgstr "Ouais, bah sûr?"
 
 #: src/dialog/marisa.c:277
 msgid "Of course, most of it is garbage that only weirdos like!"
-msgstr ""
+msgstr "Bien sûr, la plupart est des déchets que seuls les bizarres aiment!"
 
 #: src/dialog/marisa.c:279
 msgid "And don’t EVEN get me started on certain character designs! So generic!"
-msgstr ""
+msgstr "Et ne me lance même pas sur certains designs de personnages! Tellement banals!"
 
 #: src/dialog/marisa.c:282
 msgid "Maybe they oughta hire someone with some fashion sense."
-msgstr ""
+msgstr "Peut-être qu’ils devraient engager quelqu’un avec un vrai sens de la mode."
 
 #: src/dialog/marisa.c:285
 msgid "That’d be me, then!"
-msgstr ""
+msgstr "Ce serait moi, alors!"
 
 #: src/dialog/marisa.c:286
 msgid "My ideas would surely make a splash, if they’d recognize my talent!"
-msgstr ""
+msgstr "Mes idées feraient sûrement sensation, s’ils reconnaissaient mon talent!"
 
 #: src/dialog/marisa.c:289
 msgid "Eh? Maybe…"
-msgstr ""
+msgstr "Hein? Peut-être…"
 
 #: src/dialog/marisa.c:292
 msgid "Huh?!"
-msgstr ""
+msgstr "Hein?!"
 
 #: src/dialog/marisa.c:295
 msgid "Your outfit’s missin’ somethin'…"
-msgstr ""
+msgstr "Il manque quelque chose à ta tenue…"
 
 #: src/dialog/marisa.c:298
 msgid "H-Hmph! I could say the same about you!"
-msgstr ""
+msgstr "H-Hmph ! Je pourrais dire la même chose de toi!"
 
 #: src/dialog/marisa.c:300
 msgid "Seriously, it’s just a plain generic witch outfit!"
-msgstr ""
-
+msgstr "Sérieusement, c’est juste une tenue de sorcière toute simple et banale!"
 #: src/dialog/marisa.c:303
 msgid "That’s just because it’s summer!"
-msgstr ""
+msgstr "C’est juste parce que c’est l’été!"
 
 #: src/dialog/marisa.c:305
 msgid ""
 "My winter petticoats are legendary. Girls across Gensōkyō talk about ‘em."
 msgstr ""
+"Mes jupons d’hiver sont légendaires. Les filles de tout Gensōkyō en parlent."
 
 #: src/dialog/marisa.c:307
 msgid "In fact, there’s a few of ‘em, uh, deeper inside this mansion."
-msgstr ""
+msgstr "En fait, il y en a quelques-uns, euh, plus profondément dans ce manoir."
 
 #: src/dialog/marisa.c:309
 msgid "So I’ll be headin’ in, then."
-msgstr ""
+msgstr "Alors je vais y aller, alors."
 
 #: src/dialog/marisa.c:313
 msgid "Oh, I’m not letting you go without a fight!"
-msgstr ""
+msgstr "Oh, je ne vais pas te laisser passer sans te battre!"
 
 #: src/dialog/marisa.c:315
 msgid "Let’s see who’s the most fashionable here, witch!"
-msgstr ""
+msgstr "Voyons qui est la plus fashion ici, sorcière!"
 
 #: src/dialog/marisa.c:329
 msgid "Whoever has the best petticoat wins. It’s a scientific fact."
-msgstr ""
+msgstr "Celle qui a le meilleur jupon gagne. C’est un fait scientifique."
 
 #: src/dialog/marisa.c:331
 msgid "… but since when do I care about scientific facts?"
-msgstr ""
+msgstr "… mais depuis quand je me soucie des faits scientifiques?"
 
 #: src/dialog/marisa.c:333
 msgid "W-wait, what was I doing again?"
-msgstr ""
+msgstr "A-attends, qu’est-ce que je faisais déjà?"
 
 #: src/dialog/marisa.c:334
 msgid "(Y-yeah, that’s it, play it off as amnesia…"
-msgstr ""
+msgstr "(O-oui, c’est ça, fais comme si j’avais perdu la mémoire…"
 
 #: src/dialog/marisa.c:335
 msgid "(But, hmm… haven’t I seen this nerdy-looking girl before…?)"
-msgstr ""
+msgstr "(Mais, hmm… je n’ai pas déjà vu cette fille à l’air geek quelque part…?)"
 
 #: src/dialog/marisa.c:336
 msgid "Uuu, I don’t remember anything at all!!"
-msgstr ""
+msgstr "Uuu, je ne me souviens de rien du tout!!"
 
 #: src/dialog/marisa.c:339
 msgid "Ah, sorry, sorry. I think ya slipped ‘n hit your head."
-msgstr ""
+msgstr "Ah, désolée, désolée. Je crois que tu as glissé et frappé ta tête."
 
 #: src/dialog/marisa.c:341
 msgid "I’m Gensōkyō’s… petticoat inspector."
-msgstr ""
+msgstr "Je suis l’inspectrice des jupons… de Gensōkyō."
 
 #: src/dialog/marisa.c:343
 msgid "I’m here to inspect the petticoats in this here mansion."
-msgstr ""
+msgstr "Je suis ici pour inspecter les jupons de ce manoir."
 
 #: src/dialog/marisa.c:345
 msgid "Ya were just lettin’ me in, so I’ll be off, then."
-msgstr ""
+msgstr "Tu venais juste de me laisser entrer, alors je vais y aller."
 
 #: src/dialog/marisa.c:348
 msgid "Uhm, I kind of doubt that…"
-msgstr ""
+msgstr "Euh, j’en doute un peu…"
 
 #: src/dialog/marisa.c:350
 msgid "Not that I could stop you, anyways…"
-msgstr ""
+msgstr "Pas que je puisse t’arrêter, de toute façon…"
 
 #: src/dialog/marisa.c:352
 msgid "Ugh, I didn’t sign up to get beaten like this!"
-msgstr ""
+msgstr "Beurk, je ne me suis pas inscrite pour me faire battre comme ça!"
 
 #: src/dialog/marisa.c:355
 msgid "‘Sign up’? I thought you didn’t remember anything."
-msgstr ""
+msgstr "‘S’inscrire‘? Je croyais que tu ne te souvenais de rien."
 
 #: src/dialog/marisa.c:358
 msgid "N-Nevermind!"
-msgstr ""
+msgstr "Laisse tomber!"
 
 #: src/dialog/marisa.c:375
 msgid "This place is fascinatin’!"
-msgstr ""
+msgstr "Cet endroit est fascinant!"
 
 #: src/dialog/marisa.c:376
 msgid "I gotta tell Nitori!"
-msgstr ""
+msgstr "Je dois le dire à Nitori!"
 
 #: src/dialog/marisa.c:379
 msgid "I would not recommend getting too enamoured, young witch."
-msgstr ""
+msgstr "Je ne recommande pas de trop t’éprendre, jeune sorcière."
 
 #: src/dialog/marisa.c:381
 msgid "I’m surprised to see you here. How have you been?"
-msgstr ""
+msgstr "Je suis surprise de te voir ici. Comment vas-tu?"
 
 #: src/dialog/marisa.c:383
 msgid "What grimoire would this be in…?"
-msgstr ""
+msgstr "Dans quel grimoire cela se trouverait-il…?"
 
 #: src/dialog/marisa.c:384
 msgid "Hmm… probably a major illusion of some kind…?"
-msgstr ""
+msgstr "Hmm… probablement une illusion majeure d’une certaine sorte…?"
 
 #: src/dialog/marisa.c:385
 msgid ""
 "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…"
 msgstr ""
+"Ce serait plus facile que de rendre les briques sans poids, et c’est "
+"un bon déguisement…"
 
 #: src/dialog/marisa.c:389
 msgid "… pardon me, are you conversing with yourself?"
-msgstr ""
+msgstr "… excusez-moi, parlez-vous tout seul?"
 
 #: src/dialog/marisa.c:392
 msgid "Huh? No, I was askin’ ya a question."
-msgstr ""
+msgstr "Hein ? Non, je te posais une question."
 
 #: src/dialog/marisa.c:394
 msgid "An interesting theory, I suppose."
-msgstr ""
+msgstr "Une théorie intéressante, je suppose."
 
 #: src/dialog/marisa.c:396
 msgid "It’d make sense though, right?"
-msgstr ""
+msgstr "Ça aurait du sens, non?"
 
 #: src/dialog/marisa.c:398
 msgid ""
 "It appeared outta nowhere. If it were real brick, the air displacement alone "
 "woulda caused a huge noise…"
 msgstr ""
+"Cela est apparu de nulle part. Si c’étaient de vraies briques, le déplacement "
+"de l’air seul aurait fait un énorme bruit…"
 
 #: src/dialog/marisa.c:399
 msgid "And it’d take so much power, too."
-msgstr ""
+msgstr "Et ça demanderait tellement de puissance, aussi."
 
 #: src/dialog/marisa.c:400
 msgid "Definitely an illusion, then."
-msgstr ""
+msgstr "Définitivement une illusion, alors."
 
 #: src/dialog/marisa.c:402
 msgid "The premise of your theory is flawed, unfortunately."
-msgstr ""
+msgstr "La prémisse de ta théorie est malheureusement erronée."
 
 #: src/dialog/marisa.c:405
 msgid "The technology on display here is beyond our current comprehension."
-msgstr ""
+msgstr "La technologie exposée ici dépasse notre compréhension actuelle."
 
 #: src/dialog/marisa.c:408
 msgid "Technology? Whoa, so yer sayin’ this is REAL brick?!"
-msgstr ""
+msgstr "Technologie ? Whoa, tu veux dire que ce sont de VRAIES briques?!"
 
 #: src/dialog/marisa.c:410
 msgid "*tap tap*"
-msgstr ""
+msgstr "*tap tap*"
 
 #: src/dialog/marisa.c:412
 msgid ""
 "It’s so cold it’s almost creepy, like it was suckin’ magic right outta my "
 "fingers."
 msgstr ""
+"C’est tellement froid que c’en est presque flippant, comme si ça aspirait "
+"la magie de mes doigts."
 
 #: src/dialog/marisa.c:414
 msgid "But that means the tower… has corporeal form?!"
-msgstr ""
+msgstr "Mais ça veut dire que la tour… a une forme corporelle?!"
 
 #: src/dialog/marisa.c:415
 msgid "Dang! Now I GOTTA meet the owner!"
-msgstr ""
+msgstr "Mince ! Maintenant je DOIS rencontrer le propriétaire!"
 
 #: src/dialog/marisa.c:416
 msgid "What grimoires does she got to pull somethin’ like this off?!"
-msgstr ""
+msgstr "Quels grimoires possède-t-elle pour réussir un truc pareil?!"
 
 #: src/dialog/marisa.c:419
 msgid "I-I would imagine she does not use grimoires, or magic."
-msgstr ""
+msgstr "J-je suppose qu’elle n’utilise ni grimoires, ni magie."
 
 #: src/dialog/marisa.c:421
 msgid ""
 "This is highly complex machinery, likely relying on advanced computational—"
-msgstr ""
+msgstr "C’est une machinerie très complexe, probablement basée sur des calculs avancés—"
 
 #: src/dialog/marisa.c:423
 msgid "But then, what’s the power source?"
-msgstr ""
+msgstr "Mais alors, quelle est la source d’énergie?"
 
 #: src/dialog/marisa.c:424
 msgid "Not even nuclear fusion could sustain somethin’ like this!"
-msgstr ""
+msgstr "Même la fusion nucléaire ne pourrait soutenir quelque chose comme ça!"
 
 #: src/dialog/marisa.c:427
 msgid "I-I am not sure of its exact mechanics—"
-msgstr ""
+msgstr "J-je ne suis pas sûre de son mécanisme exact—"
 
 #: src/dialog/marisa.c:430
 msgid "Where’d y’say she was?"
-msgstr ""
+msgstr "Où as‑tu dit qu’elle était?"
 
 #: src/dialog/marisa.c:433
 msgid "You mean…?"
-msgstr ""
+msgstr "Tu veux dire…?"
 
 #: src/dialog/marisa.c:436
 msgid "The owner, o’ course! Upstairs, right?"
-msgstr ""
+msgstr "Le propriétaire, oui bien sûr! À l’étage, non?"
 
 #: src/dialog/marisa.c:439
 msgid ""
 "Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
 "divulge any further information, for your own protection."
 msgstr ""
+"Peut-être que l’atmosphère rare à cette altitude t’a affecté. "
+"Je ne divulguerai aucune autre information, pour ta propre protection."
 
 #: src/dialog/marisa.c:442
 msgid "What’s her name?"
-msgstr ""
+msgstr "Quel est son nom?"
 
 #: src/dialog/marisa.c:444
 msgid "Why are you not listening to me…?"
-msgstr ""
+msgstr "Pourquoi ne m’écoutes‑tu pas…?"
 
 #: src/dialog/marisa.c:447
 msgid "Do ya got any tips on talkin’ to her, maybe make her loosen up a bit?"
-msgstr ""
+msgstr "As‑tu des conseils pour lui parler, peut-être la faire se détendre un peu?"
 
 #: src/dialog/marisa.c:449
 msgid "I don’t wanna blow my chance."
-msgstr ""
+msgstr "Je ne veux pas gâcher ma chance."
 
 #: src/dialog/marisa.c:452
 msgid ""
 "I am trying to spare you further peril, yet all you can do is talk over me. "
 "Be more considerate."
 msgstr ""
+"J’essaie de t’épargner davantage de dangers, et tout ce que tu fais c’est "
+"parler par-dessus moi. Sois plus attentif."
 
 #: src/dialog/marisa.c:453
 msgid ""
 "I had expectations that you would be able to approach this with a clear head "
 "and resolve this incident, but it seems—"
 msgstr ""
+"J’avais espéré que tu aborderais cela avec un esprit clair et résoudrais cet "
+"incident, mais il semble—"
 
 #: src/dialog/marisa.c:456
 msgid "Ah, I see, I see. I’ll have to turn on the ol’ Kirisame charm."
-msgstr ""
+msgstr "Ah, je vois, je vois. Il va falloir que j’active le vieil charme Kirisame."
 
 #: src/dialog/marisa.c:459
 msgid "I get it, I get it."
-msgstr ""
+msgstr "Je comprends, je comprends."
 
 #: src/dialog/marisa.c:460
 msgid "Haven’t done ‘femme fatale’ in a while, but…"
-msgstr ""
+msgstr "Ça fait un moment que je n’ai pas fait ‘femme fatale’, mais…"
 
 #: src/dialog/marisa.c:464
 msgid "Enough!"
-msgstr ""
+msgstr "Assez!"
 
 #: src/dialog/marisa.c:465
 msgid ""
 "It is said that specifically applied electro-stimulation can ease the mind."
 msgstr ""
+"On dit que l’électrostimulation appliquée de manière spécifique peut apaiser l’esprit."
 
 #: src/dialog/marisa.c:467
 msgid "Allow me to put that into practice for you!"
@@ -2968,120 +2990,126 @@ msgstr "Permets-moi de mettre cela en pratique pour toi!"
 
 #: src/dialog/marisa.c:479
 msgid "So this place runs on electricity, eh? Hmm…"
-msgstr ""
+msgstr "Alors cet endroit fonctionne à l’électricité, eh? Hmm…"
 
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
-msgstr ""
+msgstr "Oof, j’espère que ça n’a pas rendu mes cheveux trop frisottés."
 
 #: src/dialog/marisa.c:495
 msgid "Y’know, for my big first impression ‘n all."
-msgstr ""
+msgstr "Tu sais, pour ma grande première impression et tout."
 
 #: src/dialog/marisa.c:498
 msgid "F-For the last time, she’ll have nothing to teach you…"
-msgstr ""
+msgstr "P-Pour la dernière fois, elle n’a rien à t’enseigner…"
 
 #: src/dialog/marisa.c:499
 msgid ""
 "Her powers rely on technology and the scientific method. Of that much, I am "
 "sure."
 msgstr ""
+"Ses pouvoirs reposent sur la technologie et la méthode scientifique. De ça, j’en suis sûre."
 
 #: src/dialog/marisa.c:502
 msgid ""
 "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?"
 msgstr ""
+"La seule fois où Sanae n’est pas là pour s’extasier sur toutes ces choses sciencey, eh?"
 
 #: src/dialog/marisa.c:505
 msgid ""
 "Ah well, I know how to operate one of those Intelligent Phones, and that’s "
 "plenty advanced, so I should be fine."
 msgstr ""
+"Eh bien, je sais comment utiliser un de ces Intelligent Phones, et c’est "
+"déjà bien avancé, donc je devrais m’en sortir."
 
 #: src/dialog/marisa.c:507
 msgid "By the way, have ya been hearing that strange voice?"
-msgstr ""
+msgstr "Au fait, as‑tu entendu cette voix étrange?"
 
 #: src/dialog/marisa.c:509
 msgid "Strange voice?"
-msgstr ""
+msgstr "Voix étrange?"
 
 #: src/dialog/marisa.c:512
 msgid "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever."
-msgstr ""
+msgstr "Ouais, elle me dit sans cesse que je ne réfléchis pas correctement ou je ne sais quoi."
 
 #: src/dialog/marisa.c:513
 msgid "Probably just those weird madness rays tryin’ to get me."
-msgstr ""
+msgstr "Probablement juste ces rayons de folie bizarres qui essaient de m’atteindre."
 
 #: src/dialog/marisa.c:516
 msgid "Ugh, you fool."
-msgstr ""
+msgstr "Beurk, espèce d’idiot."
 
 #: src/dialog/marisa.c:518
 msgid ""
 "But perhaps you are thinking just well enough to resolve this incident after "
 "all…"
 msgstr ""
+"Mais peut-être que tu réfléchis juste assez pour résoudre cet incident après tout…"
 
 #: src/dialog/marisa.c:521
 msgid "Ah! There’s that voice again!"
-msgstr ""
+msgstr "Ah ! Voilà cette voix encore!"
 
 #: src/dialog/marisa.c:523
 msgid "So strange…"
-msgstr ""
+msgstr "Tellement étrange…"
 
 #: src/dialog/marisa.c:540
 msgid "I’ve been waiting for you to make your move."
-msgstr ""
+msgstr "J’attendais que tu fasses ton mouvement."
 
 #: src/dialog/marisa.c:542
 msgid "Sneaking around as you are, and yet still so loud somehow."
-msgstr ""
+msgstr "Tu te faufiles ainsi, et pourtant tu es quand même si bruyant somehow."
 
 #: src/dialog/marisa.c:545
 msgid "Hmm…"
-msgstr ""
+msgstr "Hmm…"
 
 #: src/dialog/marisa.c:548
 msgid ""
 "Did you really think I wouldn’t notice all the commotion you caused inside "
 "the tower?"
 msgstr ""
+"Pensais‑tu vraiment que je ne remarquerais pas tout le vacarme que tu as causé inside la tour?"
 
 #: src/dialog/marisa.c:550
 msgid "Hmmmmmmm…"
-msgstr ""
+msgstr "Hmmmmmmm…"
 
 #: src/dialog/marisa.c:553
 msgid "Stop being an insolent brat and speak up!"
-msgstr ""
+msgstr "Arrête d’être un morveux insolent et speak up!"
 
 #: src/dialog/marisa.c:556
 msgid "… sigh."
-msgstr ""
+msgstr "…"
 
 #: src/dialog/marisa.c:559
 msgid "… w-what is it?"
-msgstr ""
+msgstr "… Q-Qu'est-ce que c'est?"
 
 #: src/dialog/marisa.c:561
 msgid "Ya don’t look like a magician after all."
-msgstr ""
+msgstr "Tu n’as finalement pas l’air d’un magicien."
 
 #: src/dialog/marisa.c:562
 msgid "I’m pretty disappointed."
-msgstr ""
+msgstr "Je suis assez déçue."
 
 #: src/dialog/marisa.c:563
 msgid "Honestly, this might be the most disappointing incident yet."
-msgstr ""
+msgstr "Honnêtement, c’est peut-être l’incident le plus décevant yet."
 
 #: src/dialog/marisa.c:566
 msgid "You’re after… magic?"
-msgstr ""
+msgstr "Tu es à la recherche de… magie?"
 
 #: src/dialog/marisa.c:568
 msgid "Hah! You’ll regret wasting your time on such nonsense."
