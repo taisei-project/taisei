@@ -300,7 +300,7 @@ msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
-"即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
+"即便此处已远离妖怪之山, 那「诡异疯狂」的影响似乎仍未消散, 持续将所有人推向疯癫……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
@@ -313,7 +313,7 @@ msgstr "—— 红魔馆\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr "一座位于东方幻想之地的宅邸。\n"
+msgstr "一座位于东方幻想之地的西式宅邸。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
@@ -335,7 +335,7 @@ msgstr "有的, 但我怀疑它们用处不大。那台机器完全超出了这�
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr "唉, 你可能又说对了, 像往常一样。"
+msgstr "唉, 你可能又像平常一样说对了ZE"
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
@@ -381,7 +381,7 @@ msgstr "啊……好无聊啊……"
 msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
-msgstr "和他们一起喝完茶后, 魔理沙在书架间徘徊, 寻找灵感。\n"
+msgstr "和她们一起喝完茶后, 魔理沙在书架间徘徊, 寻找灵感。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
@@ -1020,7 +1020,7 @@ msgid ""
 "their hydroponic cucumber farms.\n"
 msgstr ""
 "河童们坚持要求她们必须取回自己的设备, "
-"以及照看她们的水培黄瓜农场。\n"
+"以及照看他们的水培黄瓜农场。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
@@ -1668,7 +1668,7 @@ msgid ""
 "Thus, I must assumed I have caused their demise in some way, despite my best "
 "intentions."
 msgstr ""
-"因此, 我不得不认为, 尽管出于最好的本意, 我还是以某种方式导致了他们的死亡。"
+"因此, 我不得不认为, 尽管出于最好的本意, 我还是以某种方式导致了她们的死亡。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:26
 msgid ""
@@ -1937,7 +1937,7 @@ msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
-"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量他们的技艺……"
+"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量她们的技艺……"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
@@ -6404,7 +6404,7 @@ msgstr ""
 "咱创作的每一首歌都是由接收者命名的说, \n"
 "你别给咱上压力呀……\n"
 "\n"
-"咳咳咳……没错, 这是一首结算分数和满身疮痍界面的主题曲。\n"
+"咳咳咳……没错, 这是一首满身疮痍界面的主题曲。\n"
 "它融合了最终Boss主题曲和神奈子主题曲的部分内容, 就像 其他Player Score主题曲一"
 "样。\n"
 "你在期待什么? "
@@ -6758,3 +6758,23 @@ msgstr ""
 "既定知识之集合, 宛若所有「伟大发现」皆已尘埃落定的封闭琥珀—— "
 "然事实恰恰相反。科学实乃永无止境的重重帷幕, 每次揭开都展现出比先前"
 "更加壮丽而精微的奇观。"
+
+#: src/stages/stage6/nonspells/boss_nonspell_3.c:64
+msgid "Paradigm Shift!"
+msgstr "范式转移！"
+
+#: src/stages/stage6/spells/toe.c:662
+msgid "Symmetry broken!"
+msgstr "对称性被破坏！"
+
+#: src/stages/stage6/spells/toe.c:775
+msgid "Coupling the Higgs!"
+msgstr "希格斯耦合！"
+
+#: src/stages/stage6/spells/toe.c:781
+msgid "Perturbation theory"
+msgstr "微扰理论"
+
+#: src/stages/stage6/spells/toe.c:782
+msgid "breaking down!"
+msgstr "崩溃了！"
