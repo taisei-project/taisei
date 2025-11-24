@@ -300,7 +300,7 @@ msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
 msgstr ""
-"即便此处已远离妖怪之山, 那诡异疯狂的影响似乎仍未消散, 持续将所有人推向疯癫……"
+"即便此处已远离妖怪之山, 那「诡异疯狂」的影响似乎仍未消散, 持续将所有人推向疯癫……"
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
@@ -313,7 +313,7 @@ msgstr "—— 红魔馆\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:8
 msgid "A peculiar western mansion in an eastern wonderland.\n"
-msgstr "一座位于东方幻想之地的宅邸。\n"
+msgstr "一座位于东方幻想之地的西式宅邸。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:12
 msgid ""
@@ -335,7 +335,7 @@ msgstr "有的, 但我怀疑它们用处不大。那台机器完全超出了这�
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr "唉, 你可能又说对了, 像往常一样。"
+msgstr "唉, 你可能又像平常一样说对了ZE"
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
@@ -381,7 +381,7 @@ msgstr "啊……好无聊啊……"
 msgid ""
 "After having tea with the pair of them, Marisa wandered the stacks, looking "
 "for inspiration.\n"
-msgstr "和他们一起喝完茶后, 魔理沙在书架间徘徊, 寻找灵感。\n"
+msgstr "和她们一起喝完茶后, 魔理沙在书架间徘徊, 寻找灵感。\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:35
 msgid ""
@@ -1020,7 +1020,7 @@ msgid ""
 "their hydroponic cucumber farms.\n"
 msgstr ""
 "河童们坚持要求她们必须取回自己的设备, "
-"以及照看她们的水培黄瓜农场。\n"
+"以及照看他们的水培黄瓜农场。\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:23
 msgid ""
@@ -1668,7 +1668,7 @@ msgid ""
 "Thus, I must assumed I have caused their demise in some way, despite my best "
 "intentions."
 msgstr ""
-"因此, 我不得不认为, 尽管出于最好的本意, 我还是以某种方式导致了他们的死亡。"
+"因此, 我不得不认为, 尽管出于最好的本意, 我还是以某种方式导致了她们的死亡。"
 
 #: src/cutscenes/youmu_bad_end.inc.h:26
 msgid ""
@@ -1937,7 +1937,7 @@ msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
-"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量他们的技艺……"
+"而在下方的极其凡尔赛的守矢神社里, 两个剑术大师正在较量她们的技艺……"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
@@ -3164,7 +3164,7 @@ msgstr "不公平! 泥犯规! 咱还没有准备好......"
 #: src/dialog/reimu.c:112
 msgid ""
 "With those loudmouthed kappa gone, the mountain feels practically deserted."
-msgstr "没有那些大嘴巴的河童, 这座山感觉好荒芜啊。"
+msgstr "没有那些大嘴巴的河童, 这座山感觉好荒凉啊。"
 
 #: src/dialog/reimu.c:114
 msgid "I almost miss them."
@@ -3188,7 +3188,7 @@ msgstr "多么麻烦的孩子......"
 
 #: src/dialog/reimu.c:127
 msgid "So much for ‘deserted’…"
-msgstr "“被遗弃”的就这么多......"
+msgstr "啊……我刚才还说这地方很「荒凉」的……"
 
 #: src/dialog/reimu.c:129
 msgid "Do you even know what you’re protecting me from this time?"
@@ -3265,7 +3265,7 @@ msgstr "额, 你是不是离家太远了? "
 #: src/dialog/reimu.c:199
 msgid ""
 "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
-msgstr "还有, 「凌驾于所有人之上」是什么鬼, 我可没听说昆虫统治过幻想乡。"
+msgstr "还有, 「凌驾于所有人之上」是什么鬼? 我可没听说昆虫统治过幻想乡。"
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
@@ -3681,7 +3681,7 @@ msgstr "看来你的决心坚定不移。很好, 那么来吧,"
 
 #: src/dialog/reimu.c:476
 msgid "Allow me to test your resistance to their infuriating machine!"
-msgstr "以这松果弹抖闪电鞭, 检验你那不变的决心! "
+msgstr "以这松果弹抖闪电鞭, 检验你对那byd机器的抵抗力! "
 
 #: src/dialog/reimu.c:489
 msgid "Thunder clouds? Are we really that high up?"
@@ -3857,7 +3857,7 @@ msgstr "但这与我们有什么关系呢? ! "
 
 #: src/dialog/reimu.c:598
 msgid "For a ‘scientist’, you’re not making a whole lot of sense!"
-msgstr "对于一名「科学家」来说, 你的说法毫无意义! "
+msgstr "作为一名「科学家」, 你的说辞毫无意义! "
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
@@ -5328,6 +5328,7 @@ msgstr "满身疮痍"
 #, c-format
 msgid "Continue (%i)"
 msgstr "我不甘心! (%i)"
+# （浅唱大帝音）
 
 #: src/menu/gameovermenu.c:78
 #, c-format
@@ -5463,11 +5464,11 @@ msgstr "开"
 msgid "off"
 msgstr "关"
 
-#: src/menu/options.c:704
+#: src/menu/options.c:704 src/menu/savereplay.c:134
 msgid "Yes"
 msgstr "是哒"
 
-#: src/menu/options.c:705
+#: src/menu/options.c:705 src/menu/savereplay.c:135
 msgid "No"
 msgstr "不要"
 
@@ -5795,11 +5796,11 @@ msgstr "无设备可用"
 
 #: src/menu/options.c:1429
 msgid "Move an axis to assign, Back to cancel"
-msgstr ""
+msgstr "请移动坐标轴进行指派，按返回键取消"
 
 #: src/menu/options.c:1430
 msgid "Press a button to assign, Back to cancel"
-msgstr ""
+msgstr "请按下一个按键进行指派，按返回键取消"
 
 #: src/menu/options.c:1446
 msgid "Unbound"
@@ -5831,6 +5832,10 @@ msgstr "没有Replay可用。打几把游戏录点吧! "
 #: src/menu/replayview.c:468
 msgid "There was a problem getting the replay list :("
 msgstr "获取Replay列表时出现问题 :("
+
+#: src/menu/savereplay.c:67
+msgid "Save Replay?"
+msgstr "保存Replay吗？"
 
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
@@ -6116,10 +6121,11 @@ msgstr "咱可沉淀了很久的! "
 #: src/stages/stage1/spells/snow_halation.c:191
 msgid "Maybe it is too smart for secondaries!"
 msgstr ""
+# 什么玩意
 
 #: src/stages/stage1/spells/snow_halation.c:192
 msgid "I think you don’t even understand the timer!"
-msgstr ""
+msgstr "咱觉得泥根本不懂计时器！"
 
 #: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
@@ -6398,7 +6404,7 @@ msgstr ""
 "咱创作的每一首歌都是由接收者命名的说, \n"
 "你别给咱上压力呀……\n"
 "\n"
-"咳咳咳……没错, 这是一首结算分数和满身疮痍界面的主题曲。\n"
+"咳咳咳……没错, 这是一首满身疮痍界面的主题曲。\n"
 "它融合了最终Boss主题曲和神奈子主题曲的部分内容, 就像 其他Player Score主题曲一"
 "样。\n"
 "你在期待什么? "
@@ -6600,6 +6606,7 @@ msgstr ""
 "他因其音乐中受到中国的影响而闻名。\n"
 "\n"
 "嗯, 有一股铁锈的味道。"
+# 周文中？（by Deepseek V3.2-Exp）
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
@@ -6751,3 +6758,23 @@ msgstr ""
 "既定知识之集合, 宛若所有「伟大发现」皆已尘埃落定的封闭琥珀—— "
 "然事实恰恰相反。科学实乃永无止境的重重帷幕, 每次揭开都展现出比先前"
 "更加壮丽而精微的奇观。"
+
+#: src/stages/stage6/nonspells/boss_nonspell_3.c:64
+msgid "Paradigm Shift!"
+msgstr "范式转移！"
+
+#: src/stages/stage6/spells/toe.c:662
+msgid "Symmetry broken!"
+msgstr "对称性被破坏！"
+
+#: src/stages/stage6/spells/toe.c:775
+msgid "Coupling the Higgs!"
+msgstr "希格斯耦合！"
+
+#: src/stages/stage6/spells/toe.c:781
+msgid "Perturbation theory"
+msgstr "微扰理论"
+
+#: src/stages/stage6/spells/toe.c:782
+msgid "breaking down!"
+msgstr "崩溃了！"

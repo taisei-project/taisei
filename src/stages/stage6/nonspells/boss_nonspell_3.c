@@ -8,6 +8,7 @@
 
 #include "nonspells.h"
 #include "stagetext.h"
+#include "i18n/i18n.h"
 
 #include "common_tasks.h"
 
@@ -60,7 +61,7 @@ DEFINE_EXTERN_TASK(stage6_boss_paradigm_shift) {
 
 	stage_unlock_bgm("stage6boss_phase1");
 	stage_start_bgm("stage6boss_phase2");
-	stagetext_add("Paradigm Shift!", VIEWPORT_W/2.0 + I * (VIEWPORT_H/2.0+64), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 120, 10, 30);
+	stagetext_add(_("Paradigm Shift!"), VIEWPORT_W/2.0 + I * (VIEWPORT_H/2.0+64), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 120, 10, 30);
 	stage_shake_view(200);
 
 	INVOKE_TASK(baryons_spawn, ENT_BOX(boss), ARGS.baryons);
