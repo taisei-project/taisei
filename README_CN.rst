@@ -17,7 +17,7 @@
 <https://zh.wikipedia.org/wiki/东方Project>`__ 同人游戏。 这是一款竖版弹幕射击游戏（STG）,
 STG是节奏明快的游戏，注重模式识别并通过反复练习来掌握技巧。
 
-泰西Project具备高可移植性, 以C11规范编写, 使用SDL2和OpenGL渲染器。官方支持
+泰西Project具备高可移植性, 以C11规范编写, 使用SDL3和OpenGL渲染器。官方支持
 Windows, GNU/Linux, macOS, 以及带有WebGL的浏览器（Firefox与基于Chromium的浏览器(Chrome, Edge），它也可以编译到其他操作系统里。
 
 想要看实机截图, 可以去 `我们的网站 <https://taisei-project.org/media>`__.
@@ -36,13 +36,13 @@ Windows, GNU/Linux, macOS, 以及带有WebGL的浏览器（Firefox与基于Chrom
 虽然对东方Project有一定的了解会有所帮助，但即使不了解，也可以享受到本游戏的乐趣。
 
 
-欲了解更多同人文化， `点这里 <https://zh.wikipedia.org/wiki/同人>`__.
+欲了解更多同人文化， `点这里 <https://zh.wikipedia.org/wiki/同人文化>`__.
 
 安装
 ------------
 
 你可以在Github上的 `Releases
-<https://github.com/taisei-project/taisei/releases>`__ 界面获取编译好的二进制文件, 有Windows (x86/x64), GNU/Linux, 和macOS的可用文件。
+<https://github.com/taisei-project/taisei/releases>`__ 界面获取编译好的二进制文件, 有Windows (x64), GNU/Linux, 和macOS的可用文件。
 
 还有适用于 Nintendo Switch（自制软件）的实验版本（风险自负）。
 
@@ -55,7 +55,7 @@ Windows, GNU/Linux, macOS, 以及带有WebGL的浏览器（Firefox与基于Chrom
 获取源代码
 ^^^^^^^^^^^^^^^^^^^^^
 
-Git源
+Git
 ______
 
 建议使用 ``git`` 获取源代码:
@@ -66,7 +66,7 @@ ______
 
 每当拉入新代码、检查另一个分支或执行任何 ``git`` 操作时，你也可以运行 ``git submodule update`` 。  ``./pull`` 和 ``./checkout`` 帮助脚本可以自动完成此操作。
 
-Archive
+存档
 _______
 
 ⚠️ **注意**: 由于 GitHub 打包源代码的方式，主仓库上的“Download ZIP”链接 *不起作用* ,
@@ -103,7 +103,7 @@ Replay，截图以及配置文件的位置
 故障排除
 ---------------
 
-在我们的 `文档章节 <./doc/README.rst>`__ 可以找到很多有价值的信息。
+在我们的 `文档章节 <./doc/README_CN.rst>`__ 可以找到很多有价值的信息。
 
 如果您在编译或运行泰西时遇到任何问题，请去 `打开一个issue <https://github.com/taisei-project/taisei/issues>`__.
 
