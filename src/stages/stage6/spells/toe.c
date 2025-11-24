@@ -8,6 +8,8 @@
 
 #include "spells.h"
 
+#include "i18n/i18n.h"
+
 #include "../draw.h"
 
 #define LASER_LENGTH 60
@@ -657,7 +659,7 @@ TASK(toe_part_symmetry, { BoxedBoss boss; }) {
 
 	play_sfx("charge_generic");
 	play_sfx("boom");
-	stagetext_add("Symmetry broken!", VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stagetext_add(_("Symmetry broken!"), VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
 	stage_shake_view(10);
 
 	PARTICLE(
@@ -770,14 +772,14 @@ DEFINE_EXTERN_TASK(stage6_spell_toe) {
 	WAIT(YUKAWATIME);
 
 	play_sfx("charge_generic");
-	stagetext_add("Coupling the Higgs!", VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stagetext_add(_("Coupling the Higgs!"), VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
 	stage_shake_view(10);
 
 	WAIT(BREAKTIME - YUKAWATIME);
 
 	play_sfx("charge_generic");
-	stagetext_add("Perturbation theory", VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
-	stagetext_add("breaking down!", VIEWPORT_W / 2.0+ I * VIEWPORT_H / 4.0 + 30 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stagetext_add(_("Perturbation theory"), VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stagetext_add(_("breaking down!"), VIEWPORT_W / 2.0+ I * VIEWPORT_H / 4.0 + 30 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
 	stage_shake_view(10);
 
 	INVOKE_SUBTASK_DELAYED(35, toe_part_break_fermions, ENT_BOX(boss));
