@@ -13,11 +13,14 @@
 
 #define I18N_LOCALEID_SYSTEM  "system"
 #define I18N_LOCALEID_BUILTIN "en"
+#define I18N_LOCALENAME_SYSTEM  N_("System")
+#define I18N_LOCALENAME_BUILTIN "English"
 
 void i18n_init(void);
 void i18n_shutdown(void);
 void i18n_set_locale(const char *locale_id);
 const char *const *i18n_list_locales(size_t *num_locales);
+const char *i18n_get_locale_name(const char *locale_id);
 
 const char *_i18n_translate_prehashed(const char *msgid, hash_t hash);
 
