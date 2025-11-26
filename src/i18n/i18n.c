@@ -11,6 +11,7 @@
 #include "config.h"
 #include "log.h"
 #include "resource/locale.h"
+#include "resource/resource.h"
 #include "util.h"
 #include "util/env.h"
 
@@ -181,3 +182,15 @@ const char *_i18n_translate_prehashed(const char *msgid, hash_t hash) {
 
 	return result;
 }
+
+const char *i18n_get_locale_name(const char *locale_id) {
+	const char *placeholder = N_("__NAME__");
+
+	auto locale = res_get_data(RES_LOCALE, locale_id, RESF_DEFAULT);
+	const char *name = i18n_locale_get_translation_prehashed(locale, N_(placeholder), htutil_hashfunc_string(placeholder));
+	if(strcmp(name, placeholder) == 0) {
+		return locale_id;
+	}
+	return name;
+}
+

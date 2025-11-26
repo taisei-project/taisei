@@ -1192,10 +1192,10 @@ MenuData* create_options_menu(void) {
 	const char *const *locale_ids = i18n_list_locales(&num_locales);
 	add_menu_entry(m, N_("Language"), do_nothing,
 		b = bind_option(CONFIG_LOCALE, bind_locale_get, bind_locale_set)
-	);	bind_addvalue(b, I18N_LOCALEID_SYSTEM);
-		bind_addvalue(b, I18N_LOCALEID_BUILTIN);
+	);	bind_addvalue(b, I18N_LOCALENAME_SYSTEM);
+		bind_addvalue(b, I18N_LOCALENAME_BUILTIN);
 		for(int i = 0; i < num_locales; i++) {
-			bind_addvalue(b, locale_ids[i]);
+			bind_addvalue(b, i18n_get_locale_name(locale_ids[i]));
 		}
 
 	add_menu_entry(m, N_("Save replays"), do_nothing,
