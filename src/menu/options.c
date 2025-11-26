@@ -616,8 +616,8 @@ static void options_menu_input(MenuData*);
 static void draw_options_menu(MenuData*);
 
 static void bind_onoff(OptionBinding *b) {
-	bind_addvalue(b, _("on"));
-	bind_addvalue(b, _("off"));
+	bind_addvalue(b, N_("on"));
+	bind_addvalue(b, N_("off"));
 }
 
 static bool entry_is_active(MenuData *m, int idx) {
@@ -743,8 +743,8 @@ static void confirm_dialog(MenuData *m, void *a) {
 	sub->flags = MF_Transient | MF_Abortable;
 	sub->transition = NULL;
 	sub->context = m->context;
-	add_menu_entry(sub, _("Yes"), confirm_reset, NULL);
-	add_menu_entry(sub, _("No"), menu_action_close, NULL);
+	add_menu_entry(sub, N_("Yes"), confirm_reset, NULL);
+	add_menu_entry(sub, N_("No"), menu_action_close, NULL);
 	sub->cursor = 1;
 
 	OptionsMenuContext *ctx = m->context;
@@ -775,46 +775,46 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	MenuData *m = create_options_menu_base(_("Video Options"));
 	OptionBinding *b;
 
-	add_menu_entry(m, _("Fullscreen"), do_nothing,
+	add_menu_entry(m, N_("Fullscreen"), do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		b->dependence = bind_fullscreen_dependence;
 
-	add_menu_entry(m, _("Display"), do_nothing,
+	add_menu_entry(m, N_("Display"), do_nothing,
 		b = bind_video_display(CONFIG_VID_DISPLAY)
 	);
 
-	add_menu_entry(m, _("Window size"), do_nothing,
+	add_menu_entry(m, N_("Window size"), do_nothing,
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;
 		b->dependence = bind_resolution_dependence;
 
-	add_menu_entry(m, _("Renderer resolution"), do_nothing,
+	add_menu_entry(m, N_("Renderer resolution"), do_nothing,
 		b = bind_fb_resolution()
 	);	b->dependence = bind_fb_resolution_dependence;
 		b->pad++;
 
-	add_menu_entry(m, _("Resizable window"), do_nothing,
+	add_menu_entry(m, N_("Resizable window"), do_nothing,
 		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		b->dependence = bind_resizable_dependence;
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Pause the game when not focused"), do_nothing,
+	add_menu_entry(m, N_("Pause the game when not focused"), do_nothing,
 		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Vertical synchronization"), do_nothing,
+	add_menu_entry(m, N_("Vertical synchronization"), do_nothing,
 		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, _("on"));
-		bind_addvalue(b, _("off"));
+	);	bind_addvalue(b, N_("on"));
+		bind_addvalue(b, N_("off"));
 
 	if(video_query_capability(VIDEO_CAP_VSYNC_ADAPTIVE) != VIDEO_NEVER_AVAILABLE) {
-		bind_addvalue(b, _("adaptive"));
+		bind_addvalue(b, N_("adaptive"));
 	}
 
-	add_menu_entry(m, _("Skip frames"), do_nothing,
+	add_menu_entry(m, N_("Skip frames"), do_nothing,
 		b = bind_option(CONFIG_VID_FRAMESKIP, bind_common_intplus1_get, bind_common_intplus1_set)
 	);	bind_addvalue(b, "0");
 		bind_addvalue(b, "½");
@@ -822,39 +822,39 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Overall rendering quality"), do_nothing,
+	add_menu_entry(m, N_("Overall rendering quality"), do_nothing,
 		b = bind_scale(CONFIG_FG_QUALITY, 0.1, 1.0, 0.05)
 	);
 
-	add_menu_entry(m, _("Draw background"), do_nothing,
+	add_menu_entry(m, N_("Draw background"), do_nothing,
 		b = bind_option(CONFIG_NO_STAGEBG, bind_common_onoff_inverted_get, bind_common_onoff_inverted_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Background rendering quality"), do_nothing,
+	add_menu_entry(m, N_("Background rendering quality"), do_nothing,
 		b = bind_scale(CONFIG_BG_QUALITY, 0.1, 1.0, 0.05)
 	);	b->dependence = bind_bgquality_dependence;
 		b->pad++;
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Anti-aliasing"), do_nothing,
+	add_menu_entry(m, N_("Anti-aliasing"), do_nothing,
 		b = bind_option(CONFIG_FXAA, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, _("none"));
-		bind_addvalue(b, _("fxaa"));
+	);	bind_addvalue(b, N_("none"));
+		bind_addvalue(b, N_("fxaa"));
 
-	add_menu_entry(m, _("Particle effects"), do_nothing,
+	add_menu_entry(m, N_("Particle effects"), do_nothing,
 		b = bind_option(CONFIG_PARTICLES, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, _("minimal"));
-		bind_addvalue(b, _("full"));
+	);	bind_addvalue(b, N_("minimal"));
+		bind_addvalue(b, N_("full"));
 
-	add_menu_entry(m, _("Postprocessing effects"), do_nothing,
+	add_menu_entry(m, N_("Postprocessing effects"), do_nothing,
 		b = bind_option(CONFIG_POSTPROCESS, bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, _("minimal"));
-		bind_addvalue(b, _("fast"));
-		bind_addvalue(b, _("full"));
+	);	bind_addvalue(b, N_("minimal"));
+		bind_addvalue(b, N_("fast"));
+		bind_addvalue(b, N_("full"));
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -877,48 +877,48 @@ static bool gamepad_enabled_depencence(void) {
 static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
 	MenuData *m = create_options_menu_base(_("Gamepad Controls"));
 
-	add_menu_entry(m, _("Move up"), do_nothing,
+	add_menu_entry(m, N_("Move up"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
 	);
 
-	add_menu_entry(m, _("Move down"), do_nothing,
+	add_menu_entry(m, N_("Move down"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_DOWN)
 	);
 
-	add_menu_entry(m, _("Move left"), do_nothing,
+	add_menu_entry(m, N_("Move left"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_LEFT)
 	);
 
-	add_menu_entry(m, _("Move right"), do_nothing,
+	add_menu_entry(m, N_("Move right"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Shoot"), do_nothing,
+	add_menu_entry(m, N_("Shoot"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
 	);
 
-	add_menu_entry(m, _("Focus"), do_nothing,
+	add_menu_entry(m, N_("Focus"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, _("Use Spell Card"), do_nothing,
+	add_menu_entry(m, N_("Use Spell Card"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
 	);
 
-	add_menu_entry(m, _("Power Surge / Discharge"), do_nothing,
+	add_menu_entry(m, N_("Power Surge / Discharge"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SPECIAL)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Skip dialog"), do_nothing,
+	add_menu_entry(m, N_("Skip dialog"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -1018,51 +1018,51 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 	OptionBinding *b;
 
 #ifndef __SWITCH__
-	add_menu_entry(m, _("Enable Gamepad/Joystick support"), do_nothing,
+	add_menu_entry(m, N_("Enable Gamepad/Joystick support"), do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Device"), do_nothing,
+	add_menu_entry(m, N_("Device"), do_nothing,
 		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)
 	);	b->dependence = gamepad_enabled_depencence;
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Customize controls…"), enter_options_menu_gamepad_controls, NULL);
+	add_menu_entry(m, N_("Customize controls…"), enter_options_menu_gamepad_controls, NULL);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Remap square input into circular"), do_nothing,
+	add_menu_entry(m, N_("Remap square input into circular"), do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_SQUARECIRCLE, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Direction snap factor"), do_nothing,
+	add_menu_entry(m, N_("Direction snap factor"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP, 0, 1, 0.05)
 	);
 
-	add_menu_entry(m, _("Diagonal bias"), do_nothing,
+	add_menu_entry(m, N_("Diagonal bias"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP_DIAG_BIAS, -1, 1, 0.05)
 	);	b->pad++;
 
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Dead zone"), do_nothing,
+	add_menu_entry(m, N_("Dead zone"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
 	);
 
-	add_menu_entry(m, _("Maximum zone"), do_nothing,
+	add_menu_entry(m, N_("Maximum zone"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_MAXZONE, 0, 1, 0.01)
 	);
 
-	add_menu_entry(m, _("Sensitivity"), do_nothing,
+	add_menu_entry(m, N_("Sensitivity"), do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_SENS, -2, 2, 0.05)
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -1070,108 +1070,108 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 static MenuData* create_options_menu_controls(MenuData *parent) {
 	MenuData *m = create_options_menu_base(_("Controls"));
 
-	add_menu_entry(m, _("Move up"), do_nothing,
+	add_menu_entry(m, N_("Move up"), do_nothing,
 		bind_keybinding(CONFIG_KEY_UP)
 	);
 
-	add_menu_entry(m, _("Move down"), do_nothing,
+	add_menu_entry(m, N_("Move down"), do_nothing,
 		bind_keybinding(CONFIG_KEY_DOWN)
 	);
 
-	add_menu_entry(m, _("Move left"), do_nothing,
+	add_menu_entry(m, N_("Move left"), do_nothing,
 		bind_keybinding(CONFIG_KEY_LEFT)
 	);
 
-	add_menu_entry(m, _("Move right"), do_nothing,
+	add_menu_entry(m, N_("Move right"), do_nothing,
 		bind_keybinding(CONFIG_KEY_RIGHT)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Shoot"), do_nothing,
+	add_menu_entry(m, N_("Shoot"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SHOT)
 	);
 
-	add_menu_entry(m, _("Focus"), do_nothing,
+	add_menu_entry(m, N_("Focus"), do_nothing,
 		bind_keybinding(CONFIG_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, _("Use Spell Card"), do_nothing,
+	add_menu_entry(m, N_("Use Spell Card"), do_nothing,
 		bind_keybinding(CONFIG_KEY_BOMB)
 	);
 
-	add_menu_entry(m, _("Power Surge / Discharge"), do_nothing,
+	add_menu_entry(m, N_("Power Surge / Discharge"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SPECIAL)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Toggle fullscreen"), do_nothing,
+	add_menu_entry(m, N_("Toggle fullscreen"), do_nothing,
 		bind_keybinding(CONFIG_KEY_FULLSCREEN)
 	);
 
-	add_menu_entry(m, _("Take a screenshot"), do_nothing,
+	add_menu_entry(m, N_("Take a screenshot"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SCREENSHOT)
 	);
 
-	add_menu_entry(m, _("Skip dialog"), do_nothing,
+	add_menu_entry(m, N_("Skip dialog"), do_nothing,
 		bind_keybinding(CONFIG_KEY_SKIP)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Toggle audio"), do_nothing,
+	add_menu_entry(m, N_("Toggle audio"), do_nothing,
 		bind_keybinding(CONFIG_KEY_TOGGLE_AUDIO)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Stop the game immediately"), do_nothing,
+	add_menu_entry(m, N_("Stop the game immediately"), do_nothing,
 		bind_keybinding(CONFIG_KEY_STOP)
 	);
 
-	add_menu_entry(m, _("Restart the game immediately"), do_nothing,
+	add_menu_entry(m, N_("Restart the game immediately"), do_nothing,
 		bind_keybinding(CONFIG_KEY_RESTART)
 	);
 
-	add_menu_entry(m, _("Quick save"), do_nothing,
+	add_menu_entry(m, N_("Quick save"), do_nothing,
 		bind_keybinding(CONFIG_KEY_QUICKSAVE)
 	);
 
-	add_menu_entry(m, _("Quick load"), do_nothing,
+	add_menu_entry(m, N_("Quick load"), do_nothing,
 		bind_keybinding(CONFIG_KEY_QUICKLOAD)
 	);
 
 #ifdef DEBUG
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Toggle God mode"), do_nothing,
+	add_menu_entry(m, N_("Toggle God mode"), do_nothing,
 		bind_keybinding(CONFIG_KEY_IDDQD)
 	);
 
-	add_menu_entry(m, _("Skip stage"), do_nothing,
+	add_menu_entry(m, N_("Skip stage"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HAHAIWIN)
 	);
 
-	add_menu_entry(m, _("Power up"), do_nothing,
+	add_menu_entry(m, N_("Power up"), do_nothing,
 		bind_keybinding(CONFIG_KEY_POWERUP)
 	);
 
-	add_menu_entry(m, _("Power down"), do_nothing,
+	add_menu_entry(m, N_("Power down"), do_nothing,
 		bind_keybinding(CONFIG_KEY_POWERDOWN)
 	);
 
-	add_menu_entry(m, _("Disable background rendering (HoM effect)"), do_nothing,
+	add_menu_entry(m, N_("Disable background rendering (HoM effect)"), do_nothing,
 		bind_keybinding(CONFIG_KEY_NOBACKGROUND)
 	);
 
-	add_menu_entry(m, _("Toggle collision areas overlay"), do_nothing,
+	add_menu_entry(m, N_("Toggle collision areas overlay"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HITAREAS)
 	);
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -1181,7 +1181,7 @@ MenuData* create_options_menu(void) {
 	OptionBinding *b;
 
 #ifndef __SWITCH__
-	add_menu_entry(m, _("Player name"), do_nothing,
+	add_menu_entry(m, N_("Player name"), do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
 	);
 
@@ -1200,15 +1200,15 @@ MenuData* create_options_menu(void) {
 
 	add_menu_entry(m, N_("Save replays"), do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
-	);	bind_addvalue(b, _("always"));
-		bind_addvalue(b, _("never"));
-		bind_addvalue(b, _("ask"));
+	);	bind_addvalue(b, N_("always"));
+		bind_addvalue(b, N_("never"));
+		bind_addvalue(b, N_("ask"));
 
-	add_menu_entry(m, _("Auto-restart in Spell Practice"), do_nothing,
+	add_menu_entry(m, N_("Auto-restart in Spell Practice"), do_nothing,
 		b = bind_option(CONFIG_SPELLSTAGE_AUTORESTART,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Power in Spell and Stage Practice"), do_nothing,
+	add_menu_entry(m, N_("Power in Spell and Stage Practice"), do_nothing,
 		b = bind_option(CONFIG_PRACTICE_POWER, bind_power_get, bind_power_set)
 	);	bind_addvalue(b, "0.0");
 		bind_addvalue(b, "1.0");
@@ -1216,41 +1216,41 @@ MenuData* create_options_menu(void) {
 		bind_addvalue(b, "3.0");
 		bind_addvalue(b, "4.0");
 
-	add_menu_entry(m, _("Shoot by default"), do_nothing,
+	add_menu_entry(m, N_("Shoot by default"), do_nothing,
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Automatic Power Surge activation"), do_nothing,
+	add_menu_entry(m, N_("Automatic Power Surge activation"), do_nothing,
 		b = bind_option(CONFIG_AUTO_SURGE,      bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
-	add_menu_entry(m, _("Boss healthbar style"), do_nothing,
+	add_menu_entry(m, N_("Boss healthbar style"), do_nothing,
 		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
-	);	bind_addvalue(b, _("classic"));
-		bind_addvalue(b, _("modern"));
+	);	bind_addvalue(b, N_("classic"));
+		bind_addvalue(b, N_("modern"));
 
-	add_menu_entry(m, _("Floating score text visibility"), do_nothing,
+	add_menu_entry(m, N_("Floating score text visibility"), do_nothing,
 		b = bind_scale(CONFIG_SCORETEXT_ALPHA, 0, 1, 0.05)
 	);
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("SFX Volume"), do_nothing,
+	add_menu_entry(m, N_("SFX Volume"), do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
-	add_menu_entry(m, _("BGM Volume"), do_nothing,
+	add_menu_entry(m, N_("BGM Volume"), do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
-	add_menu_entry(m, _("Mute audio"), do_nothing,
+	add_menu_entry(m, N_("Mute audio"), do_nothing,
 		b = bind_option(CONFIG_MUTE_AUDIO,  bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
-	add_menu_entry(m, _("Video options…"), enter_options_menu_video, NULL);
-	add_menu_entry(m, _("Customize controls…"), enter_options_menu_controls, NULL);
-	add_menu_entry(m, _("Gamepad & Joystick options…"), enter_options_menu_gamepad, NULL);
+	add_menu_entry(m, N_("Video options…"), enter_options_menu_video, NULL);
+	add_menu_entry(m, N_("Customize controls…"), enter_options_menu_controls, NULL);
+	add_menu_entry(m, N_("Gamepad & Joystick options…"), enter_options_menu_gamepad, NULL);
 	add_menu_separator(m);
 
 	auto e = add_menu_entry(
@@ -1261,7 +1261,7 @@ MenuData* create_options_menu(void) {
 	e->transition = NULL;
 	add_menu_separator(m);
 
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	return m;
 }
@@ -1329,7 +1329,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 		color_mul_scalar(&clr, 0.5f);
 	}
 
-	text_draw(e->name, &(TextParams) {
+	text_draw(_(e->name), &(TextParams) {
 		.pos = { (1 + (bind ? bind->pad : 0)) * OPTIONS_ACTIVE_X_OFFSET - e->drawdata, OPTIONS_ITEM_HEIGHT*i },
 		.color = &clr,
 	});
@@ -1360,7 +1360,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				} else if(bind->values) {
 					for(int j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valrange_max && !bind->displaysingle) {
-							origin -= text_width(res_font("standard"), bind->values[j+1], 0) + 5;
+							origin -= text_width(res_font("standard"), _(bind->values[j+1]), 0) + 5;
 						}
 
 						if(val == j) {
@@ -1602,7 +1602,7 @@ static void draw_options_menu(MenuData *menu) {
 	OptionsMenuContext *ctx = menu->context;
 	r_state_push();
 	draw_options_menu_bg(menu);
-	draw_menu_title(menu, ctx->title);
+	draw_menu_title(menu, _(ctx->title));
 	draw_menu_list(menu, OPTIONS_X_MARGIN, OPTIONS_Y_MARGIN, options_draw_item, SCREEN_H * 1.1, menu);
 	r_state_pop();
 
