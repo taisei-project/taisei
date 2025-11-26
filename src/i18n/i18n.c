@@ -131,7 +131,7 @@ void i18n_set_locale(const char *locale_id) {
 		SDL_free(locales);
 	} else if(strcasecmp(locale_id, I18N_LOCALEID_BUILTIN)) {
 		for(size_t j = 0; j < i18n.num_known_locales; j++) {
-			if(strcasecmp(i18n.known_locales[j], locale_id)) {
+			if(strcasecmp(i18n.known_locales[j], locale_id) == 0) {
 				chosen = j;
 				break;
 			}
@@ -151,9 +151,11 @@ void i18n_set_locale(const char *locale_id) {
 			if(!i18n.active_locale) {
 				chosen = -1;
 			}
-
-			log_info("Active locale is now %s", chosen > -1 ? i18n.known_locales[chosen] : I18N_LOCALEID_BUILTIN);
+		} else {
+			i18n.active_locale = NULL;
 		}
+
+		log_info("Active locale is now %s", chosen > -1 ? i18n.known_locales[chosen] : I18N_LOCALEID_BUILTIN);
 
 		i18n.active_locale_idx = chosen;
 	}
