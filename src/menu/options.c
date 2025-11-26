@@ -465,6 +465,48 @@ static int bind_resolution_set(OptionBinding *b, int v) {
 	return v;
 }
 
+static int bind_locale_set(OptionBinding *b, int v) {
+	size_t num_locales;
+	auto locale_ids = i18n_list_locales(&num_locales);
+
+	const char *locale_id = NULL;
+
+	if(v == 0) {
+		locale_id = I18N_LOCALEID_SYSTEM;
+	} else if(v == 1) {
+		locale_id = I18N_LOCALEID_BUILTIN;
+	} else {
+		int idx = v - 2;
+		assert(idx >= 0 && idx < num_locales);
+		locale_id = locale_ids[idx];
+	}
+
+	i18n_set_locale(locale_id);
+	config_set_str(b->configentry, locale_id);
+	return v;
+}
+
+static int bind_locale_get(OptionBinding *b) {
+	size_t num_locales;
+	auto locale_ids = i18n_list_locales(&num_locales);
+
+	const char *locale_id = config_get_str(b->configentry);
+
+	if(strcasecmp(locale_id, I18N_LOCALEID_SYSTEM) == 0) {
+		return 0;
+	}
+	if(strcasecmp(locale_id, I18N_LOCALEID_BUILTIN) == 0) {
+		return 1;
+	}
+	for(int i = 0; i < num_locales; i++) {
+		if(strcasecmp(locale_ids[i], locale_id) == 0) {
+			return i+2;
+		}
+	}
+	log_warn("unknown locale id '%s'", locale_id);
+	return 0;
+}
+
 static int bind_power_set(OptionBinding *b, int v) {
 	return config_set_int(b->configentry, v * 100) / 100;
 }
@@ -1146,7 +1188,17 @@ MenuData* create_options_menu(void) {
 	add_menu_separator(m);
 #endif
 
-	add_menu_entry(m, _("Save replays"), do_nothing,
+	size_t num_locales;
+	const char *const *locale_ids = i18n_list_locales(&num_locales);
+	add_menu_entry(m, N_("Language"), do_nothing,
+		b = bind_option(CONFIG_LOCALE, bind_locale_get, bind_locale_set)
+	);	bind_addvalue(b, I18N_LOCALEID_SYSTEM);
+		bind_addvalue(b, I18N_LOCALEID_BUILTIN);
+		for(int i = 0; i < num_locales; i++) {
+			bind_addvalue(b, locale_ids[i]);
+		}
+
+	add_menu_entry(m, N_("Save replays"), do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, _("always"));
 		bind_addvalue(b, _("never"));
