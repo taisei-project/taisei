@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-26 15:01-0400\n"
+"POT-Creation-Date: 2025-11-24 06:59-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -6656,6 +6656,26 @@ msgstr "Stromkreis “Überladung”"
 msgid "Bombs?"
 msgstr "Bomben?"
 
+#: src/stages/stage6/nonspells/boss_nonspell_3.c:64
+msgid "Paradigm Shift!"
+msgstr "Paradigmenwechsel!"
+
+#: src/stages/stage6/spells/toe.c:662
+msgid "Symmetry broken!"
+msgstr "Symmetrie gebrochen!"
+
+#: src/stages/stage6/spells/toe.c:775
+msgid "Coupling the Higgs!"
+msgstr "Higgs-Kopplung!"
+
+#: src/stages/stage6/spells/toe.c:781
+msgid "Perturbation theory"
+msgstr "Störungstheorie"
+
+#: src/stages/stage6/spells/toe.c:782
+msgid "breaking down!"
+msgstr "bricht zusammen!"
+
 #: src/stages/stage6/stage6.c:29
 msgid "Newton Sign “Occam’s Razor”"
 msgstr "Newton-Zeichen “Occam’s Messer”"
@@ -6985,7 +7005,7 @@ msgid ""
 "\n"
 "Sounds a little “beach”-like in the introduction…"
 msgstr ""
-"Wriggle Nichtbugs Thema.\n"
+"Wriggle Nightbugs Thema.\n"
 "\n"
 "Ein sehr motivierter Käfer. Sie ist die Königin der Welt! — Nein, das ist "
 "wer anders, sie ist in der Mitte eines Tunnels. Egal, sie weiß sie kann "

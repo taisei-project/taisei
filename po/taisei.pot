@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-26 15:01-0400\n"
+"POT-Creation-Date: 2025-11-24 06:59-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5953,6 +5953,26 @@ msgstr ""
 
 #: src/stages/stage5/timeline.c:34
 msgid "Bombs?"
+msgstr ""
+
+#: src/stages/stage6/nonspells/boss_nonspell_3.c:64
+msgid "Paradigm Shift!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:662
+msgid "Symmetry broken!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:775
+msgid "Coupling the Higgs!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:781
+msgid "Perturbation theory"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:782
+msgid "breaking down!"
 msgstr ""
 
 #: src/stages/stage6/stage6.c:29
