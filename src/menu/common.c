@@ -14,6 +14,7 @@
 #include "cutscenes/cutscene.h"
 #include "difficultyselect.h"
 #include "global.h"
+#include "i18n/i18n.h"
 #include "mainmenu.h"
 #include "menu.h"
 #include "progress.h"
@@ -267,7 +268,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 		if(draw && i < m->entries.num_elements-1) {
 			draw(e, i, m->entries.num_elements, userdata);
 		} else if(e->name) {
-			text_draw(e->name, &(TextParams) {
+			text_draw(_(e->name), &(TextParams) {
 				.pos = { 20 - e->drawdata, 20*i },
 				.shader_ptr = text_shader,
 			});

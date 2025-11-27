@@ -9,6 +9,7 @@
 #include "dialog.h"
 
 #include "global.h"
+#include "i18n/i18n.h"
 #include "portrait.h"
 #include "resource/font.h"
 
@@ -335,7 +336,7 @@ void dialog_draw(Dialog *dialog) {
 		clr = dialog->text.fading_out->color;
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->text.fading_out->text, dialog_bg_rect.w, &(TextParams) {
+		text_draw_wrapped(_(dialog->text.fading_out->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
@@ -351,7 +352,7 @@ void dialog_draw(Dialog *dialog) {
 		clr = dialog->text.current->color;
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->text.current->text, dialog_bg_rect.w, &(TextParams) {
+		text_draw_wrapped(_(dialog->text.current->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * dialog->text.current->opacity, 0 }},

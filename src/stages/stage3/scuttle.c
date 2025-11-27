@@ -34,7 +34,7 @@ void stage3_draw_scuttle_spellbg(Boss *h, int time) {
 }
 
 Boss *stage3_spawn_scuttle(cmplx pos) {
-	Boss *scuttle = create_boss(_("Scuttle"), "scuttle", pos);
+	Boss *scuttle = create_boss(N_("Scuttle"), "scuttle", pos);
 	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);

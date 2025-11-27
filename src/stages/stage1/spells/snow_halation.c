@@ -184,13 +184,13 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 
 		if(cabs(global.plr.pos - center) > 200) {
 			const char *text[] = {
-				_("What are you doing??"),
-				_("Dodge it properly!"),
-				_("I bet you can’t do it! Idiot!"),
-				_("I spent so much time on this attack!"),
-				_("Maybe it is too smart for secondaries!"),
-				_("I think you don’t even understand the timer!"),
-				_("You- You Idiootttt!"),
+				N_("What are you doing??"),
+				N_("Dodge it properly!"),
+				N_("I bet you can’t do it! Idiot!"),
+				N_("I spent so much time on this attack!"),
+				N_("Maybe it is too smart for secondaries!"),
+				N_("I think you don’t even understand the timer!"),
+				N_("You- You Idiootttt!"),
 			};
 
 			if(cheater < ARRAY_SIZE(text)) {

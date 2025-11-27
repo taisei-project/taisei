@@ -192,7 +192,7 @@ static void replayview_draw_messagebox(MenuData* m) {
 	float width  = text_width(res_font("standard"), e->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
-	text_draw(e->name, &(TextParams) {
+	text_draw(_(e->name), &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha),
 		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 },
@@ -223,7 +223,8 @@ static void replayview_draw_stagemenu(MenuData *m) {
 			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
-		text_draw(e->name, &(TextParams) {
+		log_warn("%s", e->name);
+		text_draw(_(e->name), &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 20*i },
 			.color = &clr,
@@ -463,12 +464,12 @@ MenuData *create_replayview_menu(void) {
 	int r = fill_replayview_menu(m);
 
 	if(!r) {
-		add_menu_entry(m, _("No replays available. Play the game and record some!"), menu_action_close, NULL);
+		add_menu_entry(m, N_("No replays available. Play the game and record some!"), menu_action_close, NULL);
 	} else if(r < 0) {
-		add_menu_entry(m, _("There was a problem getting the replay list :("), menu_action_close, NULL);
+		add_menu_entry(m, N_("There was a problem getting the replay list :("), menu_action_close, NULL);
 	} else {
 		add_menu_separator(m);
-		add_menu_entry(m, _("Back"), menu_action_close, NULL);
+		add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 	}
 
 	return m;

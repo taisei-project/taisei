@@ -130,12 +130,12 @@ MenuData *create_ingame_menu(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
-		.title = _("Game Paused"),
+		.title = N_("Game Paused"),
 	});
-	add_menu_entry(m, _("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, _("Return to Game"), menu_action_close, NULL);
-	add_menu_entry(m, _("Restart the Game"), restart_game, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, _("Stop the Game"), return_to_title, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Return to Game"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Restart the Game"), restart_game, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Stop the Game"), return_to_title, NULL)->transition = TransFadeBlack;
 	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
@@ -156,13 +156,13 @@ MenuData *create_ingame_menu_replay(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
-		.title = _("Replay Paused"),
+		.title = N_("Replay Paused"),
 	});
-	add_menu_entry(m, _("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, _("Continue Watching"), menu_action_close, NULL);
-	add_menu_entry(m, _("Restart the Stage"), restart_game, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, _("Skip the Stage"), skip_stage, NULL)->transition = TransFadeBlack;
-	add_menu_entry(m, _("Stop Watching"), return_to_title, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Continue Watching"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Restart the Stage"), restart_game, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Skip the Stage"), skip_stage, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Stop Watching"), return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;
 	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
@@ -203,7 +203,7 @@ void draw_ingame_menu(MenuData *menu) {
 	if(ctx && ctx->title) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		r_color(RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)));
-		text_draw(ctx->title, &(TextParams) {
+		text_draw(_(ctx->title), &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, -2 * 35 },
 		});
@@ -222,7 +222,7 @@ void draw_ingame_menu(MenuData *menu) {
 			r_color(RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu))));
 		}
 
-		text_draw(e->name, &(TextParams) {
+		text_draw(_(e->name), &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, i * 35 },
 		});

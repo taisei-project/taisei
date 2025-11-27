@@ -116,21 +116,21 @@ MenuData* create_main_menu(void) {
 
 	ptrdiff_t stage_practice_idx, spell_practice_idx;
 
-	add_menu_entry(m, _("Start Story"), start_game, NULL);
-	add_menu_entry(m, _("Start Extra"), NULL, NULL);
-	stage_practice_entry = add_menu_entry(m, _("Stage Practice"), menu_action_enter_stagepractice, NULL);
+	add_menu_entry(m, N_("Start Story"), start_game, NULL);
+	add_menu_entry(m, N_("Start Extra"), NULL, NULL);
+	stage_practice_entry = add_menu_entry(m, N_("Stage Practice"), menu_action_enter_stagepractice, NULL);
 	stage_practice_idx = dynarray_indexof(&m->entries, stage_practice_entry);
-	spell_practice_entry = add_menu_entry(m, _("Spell Practice"), menu_action_enter_spellpractice, NULL);
+	spell_practice_entry = add_menu_entry(m, N_("Spell Practice"), menu_action_enter_spellpractice, NULL);
 	spell_practice_idx = dynarray_indexof(&m->entries, spell_practice_entry);
 #ifdef DEBUG
-	add_menu_entry(m, _("Select Stage"), menu_action_enter_stagemenu, NULL);
+	add_menu_entry(m, N_("Select Stage"), menu_action_enter_stagemenu, NULL);
 #endif
-	add_menu_entry(m, _("Replays"), menu_action_enter_replayview, NULL);
-	add_menu_entry(m, _("Media Room"), menu_action_enter_media, NULL);
-	add_menu_entry(m, _("Options"), menu_action_enter_options, NULL);
+	add_menu_entry(m, N_("Replays"), menu_action_enter_replayview, NULL);
+	add_menu_entry(m, N_("Media Room"), menu_action_enter_media, NULL);
+	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL);
 
 	if(!taisei_is_quit_hidden()) {
-		add_menu_entry(m, _("Quit"), menu_action_close, NULL)->transition = TransFadeBlack;
+		add_menu_entry(m, N_("Quit"), menu_action_close, NULL)->transition = TransFadeBlack;
 		m->input = main_menu_input;
 	}
 
@@ -187,7 +187,7 @@ void draw_main_menu(MenuData *menu) {
 			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
-		text_draw(e->name, &(TextParams) {
+		text_draw(_(e->name), &(TextParams) {
 			.pos = { 50 - 15 * e->drawdata, 20 * (i - menu->drawdata[1]) },
 			.font = "standard",
 		});
