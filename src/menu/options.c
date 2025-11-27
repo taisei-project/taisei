@@ -1197,6 +1197,7 @@ MenuData* create_options_menu(void) {
 		for(int i = 0; i < num_locales; i++) {
 			bind_addvalue(b, i18n_get_locale_name(locale_ids[i]));
 		}
+		b->displaysingle = true;
 
 	add_menu_entry(m, N_("Save replays"), do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
