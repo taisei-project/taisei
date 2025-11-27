@@ -28,7 +28,7 @@ void stage3_draw_wriggle_spellbg(Boss *b, int time) {
 }
 
 Boss *stage3_spawn_wriggle(cmplx pos) {
-	Boss *wriggle = create_boss(_("Wriggle EX"), "wriggleex", pos);
+	Boss *wriggle = create_boss(N_("Wriggle EX"), "wriggleex", pos);
 	boss_set_portrait(wriggle, "wriggle", NULL, "proud");
 	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);

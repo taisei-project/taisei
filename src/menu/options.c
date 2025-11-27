@@ -1254,10 +1254,10 @@ MenuData* create_options_menu(void) {
 	add_menu_separator(m);
 
 	auto e = add_menu_entry(
-		m, _("Reload from last saved"), confirm_dialog, (void*)&dialog_reset_saved);
+		m, N_("Reload from last saved"), confirm_dialog, (void*)&dialog_reset_saved);
 	e->transition = NULL;
 	e = add_menu_entry(
-		m, _("Reset to defaults"), confirm_dialog, (void*)&dialog_reset_default);
+		m, N_("Reset to defaults"), confirm_dialog, (void*)&dialog_reset_default);
 	e->transition = NULL;
 	add_menu_separator(m);
 
@@ -1369,7 +1369,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 							clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
 						}
 
-						text_draw(bind->values[j], &(TextParams) {
+						text_draw(_(bind->values[j]), &(TextParams) {
 							.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,

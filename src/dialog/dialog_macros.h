@@ -40,7 +40,7 @@
 #define ACTOR_LEFT(_name) ACTOR(_name, DIALOG_SIDE_LEFT)
 #define ACTOR_RIGHT(_name) ACTOR(_name, DIALOG_SIDE_RIGHT)
 
-#define MSG(_actor, _text) dialog_message(&dialog, &_actor, _(_text))
+#define MSG(_actor, _text) dialog_message(&dialog, &_actor, N_(_text))
 #define MSG_UNSKIPPABLE(_actor, _delay, _text) dialog_message_unskippable(&dialog, &_actor, _text, _delay)
 #define FACE(_actor, _face) dialog_actor_set_face(&_actor, #_face)
 #define VARIANT(_actor, _variant) dialog_actor_set_variant(&_actor, #_variant)
@@ -68,9 +68,9 @@
 #define PRELOAD_FACE(face) \
 	portrait_preload_face_sprite(ARGS.preload_group, _charname, #face, ARGS.preload_rflags)
 
-#define TITLE_CIRNO(actor) TITLE(actor, _("Cirno"), _("Thermodynamic Ice Fairy"))
-#define TITLE_HINA(actor) TITLE(actor, _("Kagiyama Hina"), _("Gyroscopic Pestilence God"));
-#define TITLE_WRIGGLE(actor) TITLE(actor, _("Wriggle Nightbug"), _("Insect Rights Activist"));
-#define TITLE_KURUMI(actor) TITLE(actor, _("Kurumi"), _("High-Society Phlebotomist"));
-#define TITLE_IKU(actor) TITLE(actor, _("Nagae Iku"), _("Fulminologist of the Heavens"));
-#define TITLE_ELLY(actor) TITLE(actor, _("Elly"), _("The Theoretical Reaper"));
+#define TITLE_CIRNO(actor) TITLE(actor, N_("Cirno"), N_("Thermodynamic Ice Fairy"))
+#define TITLE_HINA(actor) TITLE(actor, N_("Kagiyama Hina"), N_("Gyroscopic Pestilence God"));
+#define TITLE_WRIGGLE(actor) TITLE(actor, N_("Wriggle Nightbug"), N_("Insect Rights Activist"));
+#define TITLE_KURUMI(actor) TITLE(actor, N_("Kurumi"), N_("High-Society Phlebotomist"));
+#define TITLE_IKU(actor) TITLE(actor, N_("Nagae Iku"), N_("Fulminologist of the Heavens"));
+#define TITLE_ELLY(actor) TITLE(actor, N_("Elly"), N_("The Theoretical Reaper"));

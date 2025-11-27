@@ -24,7 +24,7 @@ void stage1_draw_cirno_spellbg(Boss *c, int time) {
 }
 
 Boss *stage1_spawn_cirno(cmplx pos) {
-	Boss *cirno = create_boss(_("Cirno"), "cirno", pos);
+	Boss *cirno = create_boss(N_("Cirno"), "cirno", pos);
 	boss_set_portrait(cirno, "cirno", NULL, "normal");
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
 	cirno->glowcolor = *RGB(0.2, 0.35, 0.5);
