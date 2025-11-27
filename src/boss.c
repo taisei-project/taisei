@@ -741,7 +741,7 @@ void draw_boss_overlay(Boss *boss) {
 			draw_spell_name(boss, t_spell, radial_style);
 		}
 
-		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, res_font("standard"), RGBA(o, o, o, o));
+		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, _(boss->name), res_font("standard"), RGBA(o, o, o, o));
 
 		float remaining = boss->hud.attack_timer;
 		Color clr_int, clr_fract;
