@@ -995,6 +995,16 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	}
 }
 
+const char *attacktype_name(AttackType t) {
+	switch(t) {
+		case AT_Spellcard:      return _("Normal");
+		case AT_SurvivalSpell:  return _("Survival");
+		case AT_ExtraSpell:     return _("Extra");
+		case AT_Move:           return _("Move");
+		default:                return _("Unknown");
+	}
+}
+
 int attacktype_start_delay(AttackType t) {
 	switch(t) {
 		case AT_ExtraSpell: return ATTACK_START_DELAY_EXTRA;
