@@ -242,5 +242,6 @@ void _begin_boss_attack_task(const BossAttackTaskArgs *args)
 #define INIT_BOSS_ATTACK(_args) _init_boss_attack_task(_args)
 #define BEGIN_BOSS_ATTACK(_args) _begin_boss_attack_task(_args)
 
+const char *attacktype_name(AttackType t) attr_const;
 int attacktype_start_delay(AttackType t) attr_const;
 int attacktype_end_delay(AttackType t) attr_const;
