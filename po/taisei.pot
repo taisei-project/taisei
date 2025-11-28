@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-26 17:01-0500\n"
+"POT-Creation-Date: 2025-11-28 09:41-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,6 +51,27 @@ msgstr ""
 
 #: src/boss.c:988 src/stagedraw.c:1915
 msgid "Total"
+msgstr ""
+
+#: src/boss.c:1000 src/difficulty.c:21
+msgid "Normal"
+msgstr ""
+
+#: src/boss.c:1001
+msgid "Survival"
+msgstr ""
+
+#: src/boss.c:1002
+msgid "Extra"
+msgstr ""
+
+#: src/boss.c:1003
+msgid "Move"
+msgstr ""
+
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
+#: src/menu/options.c:1403
+msgid "Unknown"
 msgstr ""
 
 #: src/camcontrol.c:211
@@ -4562,21 +4583,12 @@ msgstr ""
 msgid "Easy"
 msgstr ""
 
-#: src/difficulty.c:21
-msgid "Normal"
-msgstr ""
-
 #: src/difficulty.c:22
 msgid "Hard"
 msgstr ""
 
 #: src/difficulty.c:23
 msgid "Lunatic"
-msgstr ""
-
-#: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1402
-msgid "Unknown"
 msgstr ""
 
 #: src/gamepad.c:109
@@ -4601,8 +4613,7 @@ msgstr ""
 
 #: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
 #: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
-#: src/menu/options.c:1264 src/menu/replayview.c:471
-#: src/menu/spellpractice.c:67
+#: src/menu/options.c:1265 src/menu/replayview.c:472
 msgid "Back"
 msgstr ""
 
@@ -5108,7 +5119,7 @@ msgstr ""
 msgid "Stage Practice"
 msgstr ""
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:21
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:217
 msgid "Spell Practice"
 msgstr ""
 
@@ -5116,7 +5127,7 @@ msgstr ""
 msgid "Select Stage"
 msgstr ""
 
-#: src/menu/mainmenu.c:128 src/menu/replayview.c:358
+#: src/menu/mainmenu.c:128 src/menu/replayview.c:359
 msgid "Replays"
 msgstr ""
 
@@ -5328,7 +5339,7 @@ msgstr ""
 msgid "Device"
 msgstr ""
 
-#: src/menu/options.c:1031 src/menu/options.c:1252
+#: src/menu/options.c:1031 src/menu/options.c:1253
 msgid "Customize controls…"
 msgstr ""
 
@@ -5420,103 +5431,103 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
-#: src/menu/options.c:1201
+#: src/menu/options.c:1202
 msgid "Save replays"
 msgstr ""
 
-#: src/menu/options.c:1203
+#: src/menu/options.c:1204
 msgid "always"
 msgstr ""
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1205
 msgid "never"
 msgstr ""
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1206
 msgid "ask"
 msgstr ""
 
-#: src/menu/options.c:1207
+#: src/menu/options.c:1208
 msgid "Auto-restart in Spell Practice"
 msgstr ""
 
-#: src/menu/options.c:1211
+#: src/menu/options.c:1212
 msgid "Power in Spell and Stage Practice"
 msgstr ""
 
-#: src/menu/options.c:1219
+#: src/menu/options.c:1220
 msgid "Shoot by default"
 msgstr ""
 
-#: src/menu/options.c:1223
+#: src/menu/options.c:1224
 msgid "Automatic Power Surge activation"
 msgstr ""
 
-#: src/menu/options.c:1227
+#: src/menu/options.c:1228
 msgid "Boss healthbar style"
 msgstr ""
 
-#: src/menu/options.c:1229
+#: src/menu/options.c:1230
 msgid "classic"
 msgstr ""
 
-#: src/menu/options.c:1230
+#: src/menu/options.c:1231
 msgid "modern"
 msgstr ""
 
-#: src/menu/options.c:1232
+#: src/menu/options.c:1233
 msgid "Floating score text visibility"
 msgstr ""
 
-#: src/menu/options.c:1238
+#: src/menu/options.c:1239
 msgid "SFX Volume"
 msgstr ""
 
-#: src/menu/options.c:1242
+#: src/menu/options.c:1243
 msgid "BGM Volume"
 msgstr ""
 
-#: src/menu/options.c:1246
+#: src/menu/options.c:1247
 msgid "Mute audio"
 msgstr ""
 
-#: src/menu/options.c:1251
+#: src/menu/options.c:1252
 msgid "Video options…"
 msgstr ""
 
-#: src/menu/options.c:1253
+#: src/menu/options.c:1254
 msgid "Gamepad & Joystick options…"
 msgstr ""
 
-#: src/menu/options.c:1257
+#: src/menu/options.c:1258
 msgid "Reload from last saved"
 msgstr ""
 
-#: src/menu/options.c:1260
+#: src/menu/options.c:1261
 msgid "Reset to defaults"
 msgstr ""
 
-#: src/menu/options.c:1393
+#: src/menu/options.c:1394
 msgid "Press a key to assign, ESC to cancel"
 msgstr ""
 
-#: src/menu/options.c:1433
+#: src/menu/options.c:1434
 msgid "All devices"
 msgstr ""
 
-#: src/menu/options.c:1439
+#: src/menu/options.c:1440
 msgid "No devices available"
 msgstr ""
 
-#: src/menu/options.c:1481
+#: src/menu/options.c:1482
 msgid "Move an axis to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1482
+#: src/menu/options.c:1483
 msgid "Press a button to assign, Back to cancel"
 msgstr ""
 
-#: src/menu/options.c:1498
+#: src/menu/options.c:1499
 msgid "Unbound"
 msgstr ""
 
@@ -5539,16 +5550,50 @@ msgstr ""
 msgid "Unknown stage %X"
 msgstr ""
 
-#: src/menu/replayview.c:466
+#: src/menu/replayview.c:467
 msgid "No replays available. Play the game and record some!"
 msgstr ""
 
-#: src/menu/replayview.c:468
+#: src/menu/replayview.c:469
 msgid "There was a problem getting the replay list :("
 msgstr ""
 
 #: src/menu/savereplay.c:67
 msgid "Save Replay?"
+msgstr ""
+
+#: src/menu/spellpractice.c:62
+#, c-format
+msgid "№ %s"
+msgstr ""
+
+#: src/menu/spellpractice.c:131
+msgid "Spell Information"
+msgstr ""
+
+#: src/menu/spellpractice.c:139
+msgid "Type"
+msgstr ""
+
+#: src/menu/spellpractice.c:140
+msgid "Health"
+msgstr ""
+
+#: src/menu/spellpractice.c:141
+msgid "Duration"
+msgstr ""
+
+#: src/menu/spellpractice.c:142
+msgid "Bonus Rank"
+msgstr ""
+
+#: src/menu/spellpractice.c:151
+#, c-format
+msgid "%g s"
+msgstr ""
+
+#: src/menu/spellpractice.c:179
+msgid "Clears/Attempts"
 msgstr ""
 
 #: src/player.c:113
