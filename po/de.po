@@ -48,6 +48,27 @@ msgstr "Schwierigkeitsfaktor"
 msgid "Total"
 msgstr "Summe"
 
+#: src/boss.c:1000 src/difficulty.c:21
+msgid "Normal"
+msgstr "Normal"
+
+#: src/boss.c:1001
+msgid "Survival"
+msgstr "Überleben"
+
+#: src/boss.c:1002
+msgid "Extra"
+msgstr "Extra"
+
+#: src/boss.c:1003
+msgid "Move"
+msgstr "Bewegung"
+
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
+#: src/menu/options.c:1403
+msgid "Unknown"
+msgstr "Unbekannt"
+
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
 msgstr "Mauseingabe deaktiviert "
@@ -5160,10 +5181,6 @@ msgstr ""
 msgid "Easy"
 msgstr "Einfach"
 
-#: src/difficulty.c:21
-msgid "Normal"
-msgstr "Normal"
-
 #: src/difficulty.c:22
 msgid "Hard"
 msgstr "Schwer"
@@ -5171,11 +5188,6 @@ msgstr "Schwer"
 #: src/difficulty.c:23
 msgid "Lunatic"
 msgstr "Lunatic"
-
-#: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1402
-msgid "Unknown"
-msgstr "Unbekannt"
 
 #: src/gamepad.c:109
 msgid "Unknown device"
@@ -5199,8 +5211,7 @@ msgstr ""
 
 #: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
 #: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
-#: src/menu/options.c:1264 src/menu/replayview.c:471
-#: src/menu/spellpractice.c:67
+#: src/menu/options.c:1265 src/menu/replayview.c:472
 msgid "Back"
 msgstr "Zurück"
 
@@ -5791,7 +5802,7 @@ msgstr "Extra beginnen"
 msgid "Stage Practice"
 msgstr "Stage-Training"
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:21
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:217
 msgid "Spell Practice"
 msgstr "Spell-Training"
 
@@ -5799,7 +5810,7 @@ msgstr "Spell-Training"
 msgid "Select Stage"
 msgstr "Stage auswählen"
 
-#: src/menu/mainmenu.c:128 src/menu/replayview.c:358
+#: src/menu/mainmenu.c:128 src/menu/replayview.c:359
 msgid "Replays"
 msgstr "Replays"
 
@@ -6017,7 +6028,7 @@ msgstr "Gamepad/Joystick-Unterstützung aktivieren"
 msgid "Device"
 msgstr "Gerät"
 
-#: src/menu/options.c:1031 src/menu/options.c:1252
+#: src/menu/options.c:1031 src/menu/options.c:1253
 msgid "Customize controls…"
 msgstr "Steuerung konfigurieren…"
 
@@ -6107,105 +6118,105 @@ msgstr "Spielername"
 
 #: src/menu/options.c:1193
 msgid "Language"
-msgstr ""
+msgstr "Sprache"
 
-#: src/menu/options.c:1201
+#: src/menu/options.c:1202
 msgid "Save replays"
 msgstr "Replays speichern"
 
-#: src/menu/options.c:1203
+#: src/menu/options.c:1204
 msgid "always"
 msgstr "immer"
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1205
 msgid "never"
 msgstr "nie"
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1206
 msgid "ask"
 msgstr "fragen"
 
-#: src/menu/options.c:1207
+#: src/menu/options.c:1208
 msgid "Auto-restart in Spell Practice"
 msgstr "Automatischer Neustart im Spell-Training"
 
-#: src/menu/options.c:1211
+#: src/menu/options.c:1212
 msgid "Power in Spell and Stage Practice"
 msgstr "Stärke in Spell- und Stage-Training"
 
-#: src/menu/options.c:1219
+#: src/menu/options.c:1220
 msgid "Shoot by default"
 msgstr "Immer Schießen"
 
-#: src/menu/options.c:1223
+#: src/menu/options.c:1224
 msgid "Automatic Power Surge activation"
 msgstr "Power Surge automatisch aktivieren"
 
-#: src/menu/options.c:1227
+#: src/menu/options.c:1228
 msgid "Boss healthbar style"
 msgstr "Boss Gesundheitsanzeige"
 
-#: src/menu/options.c:1229
+#: src/menu/options.c:1230
 msgid "classic"
 msgstr "klassisch"
 
-#: src/menu/options.c:1230
+#: src/menu/options.c:1231
 msgid "modern"
 msgstr "modern"
 
-#: src/menu/options.c:1232
+#: src/menu/options.c:1233
 msgid "Floating score text visibility"
 msgstr "Sichtbarkeit des schwebenden Punktetexts"
 
-#: src/menu/options.c:1238
+#: src/menu/options.c:1239
 msgid "SFX Volume"
 msgstr "SFX Lautstärke"
 
-#: src/menu/options.c:1242
+#: src/menu/options.c:1243
 msgid "BGM Volume"
 msgstr "BGM Lautstärke"
 
-#: src/menu/options.c:1246
+#: src/menu/options.c:1247
 msgid "Mute audio"
 msgstr "Stummschalten"
 
-#: src/menu/options.c:1251
+#: src/menu/options.c:1252
 msgid "Video options…"
 msgstr "Videooptionen…"
 
-#: src/menu/options.c:1253
+#: src/menu/options.c:1254
 msgid "Gamepad & Joystick options…"
 msgstr "Gamepad- & Joystick-Optionen…"
 
-#: src/menu/options.c:1257
+#: src/menu/options.c:1258
 msgid "Reload from last saved"
 msgstr "Vom letzten Speicherstand laden"
 
-#: src/menu/options.c:1260
+#: src/menu/options.c:1261
 msgid "Reset to defaults"
 msgstr "Auf Werkseinstellungen setzen"
 
-#: src/menu/options.c:1393
+#: src/menu/options.c:1394
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Drücke Taste zum Zuweisen, ESC zum Abbrechen"
 
-#: src/menu/options.c:1433
+#: src/menu/options.c:1434
 msgid "All devices"
 msgstr "Alle Geräte"
 
-#: src/menu/options.c:1439
+#: src/menu/options.c:1440
 msgid "No devices available"
 msgstr "Keine Geräte verfügbar"
 
-#: src/menu/options.c:1481
+#: src/menu/options.c:1482
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Bewege eine Achse zum Zuweisen, Zurück zum Abbrechen"
 
-#: src/menu/options.c:1482
+#: src/menu/options.c:1483
 msgid "Press a button to assign, Back to cancel"
 msgstr "Drücke eine Taste zum Zuweisen, Zurück zum Abbrechen"
 
-#: src/menu/options.c:1498
+#: src/menu/options.c:1499
 msgid "Unbound"
 msgstr "Nicht zugewiesen"
 
@@ -6228,17 +6239,51 @@ msgstr "Kann Stage nicht wiedergeben: unbekannter Spielercharakter/modus %X/%X"
 msgid "Unknown stage %X"
 msgstr "Unbekannte stage %X"
 
-#: src/menu/replayview.c:466
+#: src/menu/replayview.c:467
 msgid "No replays available. Play the game and record some!"
 msgstr "Keine Replays verfügbar. Spiele das Spiel und nimm welche auf!"
 
-#: src/menu/replayview.c:468
+#: src/menu/replayview.c:469
 msgid "There was a problem getting the replay list :("
 msgstr "Es gab ein Problem beim Laden der Replayliste :("
 
 #: src/menu/savereplay.c:67
 msgid "Save Replay?"
 msgstr "Replay speichern?"
+
+#: src/menu/spellpractice.c:62
+#, c-format
+msgid "№ %s"
+msgstr ""
+
+#: src/menu/spellpractice.c:131
+msgid "Spell Information"
+msgstr "Spell-Informationen"
+
+#: src/menu/spellpractice.c:139
+msgid "Type"
+msgstr "Typ"
+
+#: src/menu/spellpractice.c:140
+msgid "Health"
+msgstr "Leben"
+
+#: src/menu/spellpractice.c:141
+msgid "Duration"
+msgstr "Dauer"
+
+#: src/menu/spellpractice.c:142
+msgid "Bonus Rank"
+msgstr "Bonus-Rang"
+
+#: src/menu/spellpractice.c:151
+#, c-format
+msgid "%g s"
+msgstr ""
+
+#: src/menu/spellpractice.c:179
+msgid "Clears/Attempts"
+msgstr "Clears/Versuche"
 
 #: src/player.c:113
 msgid "Full Power!"
