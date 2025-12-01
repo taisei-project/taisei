@@ -101,8 +101,13 @@ Rumor has it that if you get hit by a bullet and hit the bomb key fast enough, y
 Power Surge
 -----------
 
-You can activate a special aura that gives you increased damage and a way to clear a limited area of bullets. Read more
-about it in `Scoring System`_.
+ Taisei has a unique mechanic called power surge, activated and discharged using the C key by default and requiring 2.00 power for every activation. By default, it will also activate automatically once the player reaches 6.00 power. Though activating a surge costs 2.00 power to use, the player’s number of orbs/options/familiars remains the same until the surge is completed. On activation, the surge HUD appears and all items on-screen are collected.
+
+During a surge, player damage is increased by 20%, point items collected at any location are at full PIV and graze is changed from spawning small power or PIV items to spawning surge items. These and power items serve to build charge, indicated by the blue and yellow arcs in the HUD. Both types, the stable blue negative and more easily fluctuating yellow positive charges are increased in the ways mentioned above and decrease passively over time.
+
+The surge will continue until the positive (orange) and negative (blue) charges displayed around the character are equal. Both types of charges drain at different rates but can be increased by collecting power items or the new lightning items that appear from grazing bullets. The more blue charge accumulates, the harder it becomes to keep the surge going. The accumulated charge also affects the growth of the surge’s area of effect, damage, and point value on discharge.
+
+When a surge is discharged, whether manually, by pressing the activation key or automatically through getting hit or charge neutralization, all bullets inside the area of effect are canceled and turned into voltage items. Enemies in the same radius are damaged, also producing voltage items. If the discharge was caused by anything other than the player’s being hit, the voltage items it creates will be autocollected. Voltage items dramatically increase point item value and will add to the volt meter in the HUD, which can be used to unlock a secret Overdrive Spell in each stage.
 
 Items
 -----
@@ -161,45 +166,37 @@ you get along the way) is helpful for everyone.
 
 .. _Point Item Value:
 
-The amount of score you collect is not a flat value. It depends on different factors you can influence to maximize the
-amount of points you earn. Point items for example give more score if they are collected higher up on the screen. If you
-go up beyond a certain point, the game will also auto collect all items on the screen.
+The amount of score you collect is not a flat value. It depends on different factors you can influence.
 
-Auto collection is also triggered by other events such as bombs, and the items collected in this way will always count
-as collected at the top, so it is beneficial for your score.
+Point items for example give more score if they are collected higher up on the screen.
+The maximum value of a point item (collected at the top of the screen) is referred to as Point Item Value, or PIV. It’s displayed on the HUD next to the
+blue point icon. It can be increased by collecting small Value items that usually spawn when bullets are canceled, grazing above 4.00 power, or, most efficiently, using the Power Surge system.
 
-The base (full) value of a point item is referred to as Point Item Value, or PIV. It’s displayed on the HUD next to the
-blue point icon. It can be increased by collecting small Value items that usually spawn when bullets are canceled, but
-the best way to increase it is through the Voltage system. PIV also affects some other values, such as spell card
-bonuses.
+PIV also affects some other values, such as spell card bonuses.
 
-.. _Voltage:
+.. _Autocollection:
 
-The most visible part of the scoring system is the Power Surge mechanic. While Power 4.00 is the maximum your shots will
-put out, you can overcharge your Power meter up to 6.00. The surplus Power (and also the rest, if you are in a bind) can
-be used to start a Power Surge (see `Controls`_). By default a Power Surge is also activated automatically once your
-Power meter reaches 6.00; this can be disabled in the settings.
+In various situations, the player will automatically collect all items on the screen. Each item collected in this way counts as collected at the top of the screen, which is beneficial for scoring.
 
-While a Surge is active, all point items are collected at their full value regardless of where they are on the screen,
-your damage is boosted by 20%, and your effective Power level is locked to the value it was before activating the Power
-Surge.
+Autocollection happens in the following situations:
+- The player moves above a certain height on the screen
+- Bombs
+- Power Surges
 
-To keep the Surge going, you have to maintain two charge meters, represented by a ring around your character: the
-Positive (orange) charge and the Negative (blue) charge. The positive charge starts at 100%, and the negative at 0%.
-Both gradually deplete at different rates. The Surge will abruptly end when both charges are at equal level. Both
-charges can be replenished by collecting lightning items, which appear instead of mini-power items when you graze
-bullets; regular power items also replenish charge levels.
+.. _Volts:
+A measure of the number of voltage items collected during a stage, minus a number for each death. Having a dividend greater than the divisor at the end of the stage unlocks an overdrive spell.
 
-Your Surge becomes more powerful the longer it’s maintained, represented by a growing sparkling aura around your
-character. The more negative charge you currently have, the faster your Surge grows.
+.. _Overdrive Spells:
 
-Once the Surge ends, all of it is released in a blast that damages enemies and clears bullets. The damage and area of
-effect of the blast depends on how much power your Surge has accumulated. You can manually cancel the Surge to trigger
-the blast at the right time.
+Each boss has one extra spell that can only be seen during a playthrough by having at least a certain number of volts. Deaths to these do not subtract lives, but bombs are deactivated as well.
 
-All enemies and bullets hit by the blast will spawn special Voltage items, which greatly increase your Point Item Value,
-give you 1 Bomb Fragment each, and add to your Volts meter. If your Volts meter reaches the Breakdown level shown in the
-HUD, you unlock a special Voltage Overdrive spellcard at the end of the stage.
+.. _Power Surges:
+
+Power Surges are the most important aspect of the scoring system in Taisei as they increase PIV, give you extra resources, trigger autocollection, cancel tough patterns without failing spells, and unlock the extra overdrive spells.
+
+.. _Bonuses:
+
+These come from clearing stages and capturing spells and make up most of your score, with the most common and significant variable being your PIV.
 
 More info
 ---------
