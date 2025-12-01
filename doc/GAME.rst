@@ -101,7 +101,7 @@ Rumor has it that if you get hit by a bullet and hit the bomb key fast enough, y
 Power Surge
 -----------
 
- Taisei has a unique mechanic called power surge, activated and discharged using the C key by default and requiring 2.00 power for every activation. By default, it will also activate automatically once the player reaches 6.00 power. Though activating a surge costs 2.00 power to use, the player’s number of orbs/options/familiars remains the same until the surge is completed. On activation, the surge HUD appears and all items on-screen are collected.
+Taisei has a unique mechanic called power surge, activated and discharged using the C key by default and requiring 2.00 power for every activation. By default, it will also activate automatically once the player reaches 6.00 power. Though activating a surge costs 2.00 power to use, the player’s number of orbs/options/familiars remains the same until the surge is completed. On activation, the surge HUD appears and all items on-screen are collected.
 
 During a surge, player damage is increased by 20%, point items collected at any location are at full PIV and graze is changed from spawning small power or PIV items to spawning surge items. These and power items serve to build charge, indicated by the blue and yellow arcs in the HUD. Both types, the stable blue negative and more easily fluctuating yellow positive charges are increased in the ways mentioned above and decrease passively over time.
 
@@ -143,7 +143,7 @@ normal enemies and have different attacks with time limits. There are different 
   You can revisit spellcards you have encountered in the *Spell Practice* mode to get better at the ones you frequently
   die on.
 
-- **Voltage Overdrive**: Collect enough `Voltage`_ to unlock these at the end of the boss battles.
+- **Voltage Overdrive**: Collect enough Voltage to unlock these at the end of the boss battles.
 
   These are tricky unique spells that will take some creativity to dodge. Due to the extremely ionized Danmaku
   conditions, your Bomb and Life meters are malfunctioning. You can’t be hurt, but you can’t use your bombs either.
@@ -165,38 +165,29 @@ from the beginning is true to an extent, knowing the basics of getting a good sc
 you get along the way) is helpful for everyone.
 
 .. _Point Item Value:
+**Point Item Value**
+    The amount of score you collect is not a flat value. It depends on different factors you can influence.
 
-The amount of score you collect is not a flat value. It depends on different factors you can influence.
+    Point items for example give more score if they are collected higher up on the screen.
+    The maximum value of a point item (collected at the top of the screen) is referred to as Point Item Value, or     PIV. It’s displayed on the HUD next to the
+    blue point icon. It can be increased by collecting small Value items that usually spawn when bullets are canceled, grazing above 4.00 power, or, most efficiently, using the Power Surge system.
 
-Point items for example give more score if they are collected higher up on the screen.
-The maximum value of a point item (collected at the top of the screen) is referred to as Point Item Value, or PIV. It’s displayed on the HUD next to the
-blue point icon. It can be increased by collecting small Value items that usually spawn when bullets are canceled, grazing above 4.00 power, or, most efficiently, using the Power Surge system.
+    PIV also affects some other values, such as spell card bonuses.
 
-PIV also affects some other values, such as spell card bonuses.
+**Autocollection**
+    In various situations, the player will automatically collect all items on the screen. Each item collected in this way counts as collected at the top of the screen, which is beneficial for scoring.
 
-.. _Autocollection:
+    Autocollection happens in the following situations:
 
-In various situations, the player will automatically collect all items on the screen. Each item collected in this way counts as collected at the top of the screen, which is beneficial for scoring.
+    * The player moves above a certain height on the screen
+    * Bombs
+    * Power Surges
 
-Autocollection happens in the following situations:
-- The player moves above a certain height on the screen
-- Bombs
-- Power Surges
+**Power Surges**
+    Power Surges are the most important aspect of the scoring system in Taisei as they increase PIV, give you extra resources, trigger autocollection, cancel tough patterns without failing spells, and unlock the extra overdrive spells to collect even more score.
 
-.. _Volts:
-A measure of the number of voltage items collected during a stage, minus a number for each death. Having a dividend greater than the divisor at the end of the stage unlocks an overdrive spell.
-
-.. _Overdrive Spells:
-
-Each boss has one extra spell that can only be seen during a playthrough by having at least a certain number of volts. Deaths to these do not subtract lives, but bombs are deactivated as well.
-
-.. _Power Surges:
-
-Power Surges are the most important aspect of the scoring system in Taisei as they increase PIV, give you extra resources, trigger autocollection, cancel tough patterns without failing spells, and unlock the extra overdrive spells.
-
-.. _Bonuses:
-
-These come from clearing stages and capturing spells and make up most of your score, with the most common and significant variable being your PIV.
+**Bonuses**
+    These come from clearing stages and capturing spells and make up most of your score, with the most common and significant variable being your PIV.
 
 More info
 ---------
