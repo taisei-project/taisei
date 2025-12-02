@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "memory/scratch.h"
 #include "zipfile_impl.h"
 #include "syspath.h"
 
@@ -20,22 +21,21 @@ static void vfs_zippath_free(VFSNode *node) {
 	vfs_decref(zpnode->zipnode);
 }
 
-static char *vfs_zippath_repr(VFSNode *node) {
+static void vfs_zippath_repr(VFSNode *node, StringBuffer *buf) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
-	char *ziprepr = vfs_node_repr(zpnode->zipnode, false);
-	char *zpathrepr = strfmt("%s '%s' in %s",
-		zpnode->info.is_dir ? "directory" : "file", vfs_zippath_name(zpnode), ziprepr);
-	mem_free(ziprepr);
-	return zpathrepr;
+	strbuf_printf(buf, "%s '%s' in ",
+		zpnode->info.is_dir ? "directory" : "file", vfs_zippath_name(zpnode));
+	vfs_node_repr(zpnode->zipnode, false, buf);
 }
 
-static char *vfs_zippath_syspath(VFSNode *node) {
+static bool vfs_zippath_syspath(VFSNode *node, StringBuffer *buf) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
-	char *zippath = vfs_node_repr(zpnode->zipnode, true);
-	char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_separators[0], vfs_zippath_name(zpnode));
-	mem_free(zippath);
-	vfs_syspath_normalize_inplace(subpath);
-	return subpath;
+	StringBuffer buf2 = { acquire_scratch_arena() };
+	vfs_node_repr(zpnode->zipnode, true, &buf2);
+	strbuf_printf(&buf2, "%c%s", vfs_syspath_separators[0], vfs_zippath_name(zpnode));
+	vfs_syspath_normalize_buffer(buf2.start, buf);
+	release_scratch_arena(buf2.arena);
+	return true;
 }
 
 static VFSInfo vfs_zippath_query(VFSNode *node) {
@@ -83,9 +83,10 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	}
 
 	if(mode & VFS_MODE_SEEKABLE && zpnode->compression != ZIP_CM_STORE) {
-		char *repr = vfs_node_repr(node, true);
-		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", repr);
-		mem_free(repr);
+		StringBuffer buf = { acquire_scratch_arena() };
+		vfs_node_repr(node, true, &buf);
+		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", buf.start);
+		release_scratch_arena(buf.arena);
 	}
 
 	return vfs_zippath_make_rwops(zpnode);

@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "memory/scratch.h"
 #include "private.h"
 
 #include "dynarray.h"
@@ -181,7 +182,11 @@ char* vfs_repr(const char *path, bool try_syspath) {
 	VFSNode *node = vfs_locate(vfs_root, path);
 
 	if(node) {
-		char *p = vfs_node_repr(node, try_syspath);
+		auto p = WITH_SCRATCH(scratch, ({
+			StringBuffer buf = { scratch };
+			vfs_node_repr(node, try_syspath, &buf);
+			mem_strdup(buf.start);
+		}));
 		vfs_decref(node);
 		return p;
 	}
@@ -213,7 +218,7 @@ bool vfs_print_tree(SDL_IOStream *dest, const char *path) {
 		vfs_path_root_prefix(p);
 	}
 
-	vfs_print_tree_recurse(dest, node, p, "");
+	WITH_SCRATCH(scratch, (vfs_print_tree_recurse(dest, node, p, "", scratch), 0));
 	vfs_decref(node);
 	return true;
 }

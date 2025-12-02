@@ -11,7 +11,6 @@
 
 #include "log.h"
 #include "rwops/rwops_ro.h"
-#include "util/stringops.h"
 
 VFS_NODE_TYPE(VFSReadOnlyNode, {
 	VFSNode *wrapped;
@@ -19,11 +18,9 @@ VFS_NODE_TYPE(VFSReadOnlyNode, {
 
 #define WRAPPED(n) VFS_NODE_CAST(VFSReadOnlyNode, n)->wrapped
 
-static char *vfs_ro_repr(VFSNode *node) {
-	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
-	char *repr = strjoin("read-only view of ", wrapped_repr, NULL);
-	mem_free(wrapped_repr);
-	return repr;
+static void vfs_ro_repr(VFSNode *node, StringBuffer *buf) {
+	strbuf_cat(buf, "read-only view of ");
+	vfs_node_repr(WRAPPED(node), false, buf);
 }
 
 static void vfs_ro_free(VFSNode *node) {
@@ -36,8 +33,8 @@ static VFSInfo vfs_ro_query(VFSNode *node) {
 	return info;
 }
 
-static char* vfs_ro_syspath(VFSNode *node) {
-	return vfs_node_syspath(WRAPPED(node));
+static bool vfs_ro_syspath(VFSNode *node, StringBuffer *buf) {
+	return vfs_node_syspath(WRAPPED(node), buf);
 }
 
 static bool vfs_ro_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) {

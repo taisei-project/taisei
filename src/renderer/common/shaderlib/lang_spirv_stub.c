@@ -18,6 +18,7 @@ bool _spirv_compile(
 	const ShaderSource *in,
 	ShaderSource *out,
 	MemArena *arena,
+	MemArena *scratch,
 	const SPIRVCompileOptions *options
 ) {
 	log_error("Compiled without SPIR-V support");

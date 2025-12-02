@@ -55,33 +55,30 @@ void vfs_node_iter_stop(VFSNode *node, void **opaque) {
 	}
 }
 
-char *vfs_node_syspath(VFSNode *node) {
+bool vfs_node_syspath(VFSNode *node, StringBuffer *buf) {
 	assert(node->funcs != NULL);
 
 	if(node->funcs->syspath == NULL) {
 		vfs_set_error("Node doesn't represent a system path");
-		return NULL;
+		return false;
 	}
 
-	return node->funcs->syspath(node);
+	return node->funcs->syspath(node, buf);
 }
 
-char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
+void (vfs_node_repr)(VFSNode *node, bool try_syspath, StringBuffer *buf) {
 	assert(node->funcs != NULL);
 	assert(node->funcs->repr != NULL);
 
 	if(try_syspath && node->funcs->syspath) {
-		char *r;
-		if((r = node->funcs->syspath(node))) {
-			return r;
+		if(node->funcs->syspath(node, buf)) {
+			return;
 		}
 	}
 
 	VFSInfo i = vfs_node_query(node);
-	char *o = node->funcs->repr(node);
 
-	StringBuffer buf = {};
-	strbuf_cat(&buf, "[");
+	strbuf_cat(buf, "[");
 
 	enum {
 		error = 1 << 0,
@@ -97,13 +94,13 @@ char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
 		(i.is_readonly * ro);
 
 	if(attribs) {
-		strbuf_cat(&buf, "(");
+		strbuf_cat(buf, "(");
 
 		for(;;) {
 			#define HANDLE(attrib) \
 				if(attribs & attrib) { \
 					attribs &= ~attrib; \
-					strbuf_cat(&buf, #attrib); \
+					strbuf_cat(buf, #attrib); \
 					goto next; \
 				}
 
@@ -117,17 +114,16 @@ char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
 				break;
 			}
 
-			strbuf_cat(&buf, ", ");
+			strbuf_cat(buf, ", ");
 		}
 
-		strbuf_cat(&buf, ") ");
+		strbuf_cat(buf, ") ");
 	}
 
-	strbuf_cat(&buf, o);
-	mem_free(o);
+	node->funcs->repr(node, buf);
 
-	strbuf_cat(&buf, "]");
-	return buf.start;
+	strbuf_cat(buf, "]");
+	return;
 }
 
 bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) {

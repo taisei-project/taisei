@@ -140,6 +140,7 @@ bool _spirv_compile(
 	const ShaderSource *in,
 	ShaderSource *out,
 	MemArena *arena,
+	MemArena *scratch,
 	const SPIRVCompileOptions *options
 ) {
 	if(in->lang.lang != SHLANG_GLSL) {
@@ -192,7 +193,7 @@ bool _spirv_compile(
 		}
 	}
 
-	StringBuffer macros_buf = {};
+	StringBuffer macros_buf = { scratch };
 
 	if(options->macros) {
 		for(ShaderMacro *m = options->macros; m->name; ++m) {
@@ -215,7 +216,6 @@ bool _spirv_compile(
 	}
 
 	ok = glslang_shader_parse(shader, &input);
-	strbuf_free(&macros_buf);
 
 	if(!ok) {
 		print_shader_log(shader, LOG_ERROR, options);
@@ -256,10 +256,8 @@ bool _spirv_compile(
 		// .validate = true,
 	});
 
-	auto scratch = acquire_scratch_arena();
 	print_shader_log_message(scratch, options->filename, "glslang SPIR-V generation log", LOG_WARN,
 		glslang_program_SPIRV_get_messages(prog));
-	release_scratch_arena(scratch);
 
 	uint32_t spirv_words = glslang_program_SPIRV_get_size(prog);
 	auto spirv = ARENA_ALLOC_ARRAY(arena, spirv_words, uint32_t);

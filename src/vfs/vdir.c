@@ -113,8 +113,8 @@ static bool vfs_vdir_mkdir(VFSNode *node, const char *subdir) {
 	return vfs_vdir_mount(node, NOT_NULL(subdir), vfs_vdir_create());
 }
 
-static char *vfs_vdir_repr(VFSNode *node) {
-	return mem_strdup("virtual directory");
+static void vfs_vdir_repr(VFSNode *node, StringBuffer *buf) {
+	strbuf_printf(buf, "virtual directory %p", node);
 }
 
 VFS_NODE_FUNCS(VFSVDirNode, {

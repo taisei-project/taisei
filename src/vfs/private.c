@@ -173,32 +173,38 @@ bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree
 	return true;
 }
 
-void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix,
-			    const char *name) {
+void vfs_print_tree_recurse(
+	SDL_IOStream *dest, VFSNode *root, char *prefix, const char *name, MemArena *arena
+) {
 	void *o = NULL;
 	bool is_dir = vfs_node_query(root).is_dir;
-	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");
-	char *r;
 
-	r = vfs_node_repr(root, false);
-	SDL_RWprintf(dest, "%s = %s\n", newprefix, r);
-	mem_free(r);
+	MemArenaSnapshot snap = marena_snapshot(arena);
+
+	StringBuffer newprefix_buf = { arena };
+	strbuf_printf(&newprefix_buf, "%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");
+	char *newprefix = newprefix_buf.start;
+
+	StringBuffer repr_buf = { arena };
+	vfs_node_repr(root, false, &repr_buf);
+	SDL_RWprintf(dest, "%s = %s\n", newprefix, repr_buf.start);
+	strbuf_clear(&repr_buf);
 
 	if(!is_dir) {
-		mem_free(newprefix);
+		marena_rollback(arena, &snap);
 		return;
 	}
 
 	for(const char *n; (n = vfs_node_iter(root, &o));) {
 		VFSNode *node = vfs_locate(root, n);
 		if(node) {
-			vfs_print_tree_recurse(dest, node, newprefix, n);
+			vfs_print_tree_recurse(dest, node, newprefix, n, arena);
 			vfs_decref(node);
 		}
 	}
 
 	vfs_node_iter_stop(root, &o);
-	mem_free(newprefix);
+	marena_rollback(arena, &snap);
 }
 
 const char* vfs_get_error(void) {
