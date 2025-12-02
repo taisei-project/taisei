@@ -16,3 +16,10 @@ MemArena *acquire_scratch_arena(void)
 
 void release_scratch_arena(MemArena *arena)
 	attr_nonnull_all;
+
+#define WITH_SCRATCH(_scratch, ...) ({ \
+	auto _scratch = acquire_scratch_arena(); \
+	auto _result = __VA_ARGS__; \
+	release_scratch_arena(_scratch); \
+	_result; \
+})
