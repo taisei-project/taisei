@@ -97,6 +97,7 @@ static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t ne
 	assert(((uintptr_t)p & (align - 1)) == 0);
 
 	if(_arena_free(arena, p, old_size)) {
+		assert(((uintptr_t)(_arena_active_page(arena)->data + arena->page_offset) & (align - 1)) == 0);
 		void *new_p = _arena_alloc(arena, new_size, align);
 
 		if(p != new_p) {
@@ -115,7 +116,13 @@ static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t ne
 	}
 
 	void *new_p = _arena_alloc(arena, new_size, align);
-	memcpy(new_p, p, old_size);
+
+	if(p) {
+		assert(old_size > 0);
+		memcpy(new_p, p, old_size);
+	} else {
+		assert(old_size == 0);
+	}
 
 	return new_p;
 }
@@ -156,14 +163,6 @@ void *marena_alloc(MemArena *arena, size_t size) {
 	return _arena_alloc(arena, size, alignof(max_align_t));
 }
 
-void *marena_alloc_array(MemArena *arena, size_t num_members, size_t size) {
-	return marena_alloc_array_aligned(arena, num_members, size, alignof(max_align_t));
-}
-
-void *marena_alloc_array_aligned(MemArena *arena, size_t num_members, size_t size, size_t align) {
-	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), align);
-}
-
 void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
 	assume(align > 0);
 	assume(!(align & (align - 1)));
@@ -173,6 +172,21 @@ void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
 	}
 
 	return _arena_alloc(arena, size, align);
+}
+
+void *marena_alloc_array(MemArena *arena, size_t num_members, size_t size) {
+	return marena_alloc_array_aligned(arena, num_members, size, alignof(max_align_t));
+}
+
+void *marena_alloc_array_aligned(MemArena *arena, size_t num_members, size_t size, size_t align) {
+	assume(align > 0);
+	assume(!(align & (align - 1)));
+
+	if(align < alignof(max_align_t)) {
+		align = alignof(max_align_t);
+	}
+
+	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), align);
 }
 
 bool marena_free(MemArena *restrict arena, void *restrict p, size_t old_size) {
