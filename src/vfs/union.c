@@ -10,6 +10,7 @@
 
 #include "dynarray.h"
 #include "hashtable.h"
+#include "memory/scratch.h"
 
 VFS_NODE_TYPE(VFSUnionNode, {
 	DYNAMIC_ARRAY(VFSNode*) members;
@@ -160,9 +161,10 @@ static bool vfs_union_mount(VFSNode *node, const char *mountpoint, VFSNode *moun
 	auto minfo = vfs_node_query(mountee);
 
 	if(!minfo.is_dir || !minfo.exists) {
-		char *r = vfs_node_repr(mountee, true);
-		vfs_set_error("Union mountee is not a directory: %s", r);
-		mem_free(r);
+		StringBuffer buf = { acquire_scratch_arena() };
+		vfs_node_repr(mountee, true, &buf);
+		vfs_set_error("Union mountee is not a directory: %s", buf.start);
+		release_scratch_arena(buf.arena);
 		return false;
 	}
 
@@ -177,28 +179,22 @@ static SDL_IOStream *vfs_union_open(VFSNode *node, VFSOpenMode mode) {
 	return primary ? vfs_node_open(primary, mode) : NULL;
 }
 
-static char *vfs_union_repr(VFSNode *node) {
+static void vfs_union_repr(VFSNode *node, StringBuffer *buf) {
 	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
-	StringBuffer sb = {};
-	strbuf_free(&sb);
-	strbuf_cat(&sb, "union: ");
+	strbuf_cat(buf, "union: ");
 
 	dynarray_foreach(&unode->members, int idx, VFSNode **node, {
-		char *r = vfs_node_repr(*node, false);
-		strbuf_cat(&sb, r);
-		mem_free(r);
+		vfs_node_repr(*node, false, buf);
 
 		if(idx < unode->members.num_elements - 1) {
-			strbuf_cat(&sb, ", ");
+			strbuf_cat(buf, ", ");
 		}
 	});
-
-	return sb.start;
 }
 
-static char *vfs_union_syspath(VFSNode *node) {
+static bool vfs_union_syspath(VFSNode *node, StringBuffer *buf) {
 	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
-	return primary ? vfs_node_syspath(primary) : NULL;
+	return primary ? vfs_node_syspath(primary, buf) : false;
 }
 
 static bool vfs_union_mkdir(VFSNode *node, const char *subdir) {

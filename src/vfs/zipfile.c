@@ -7,6 +7,7 @@
  */
 
 #include "zipfile.h"
+#include "memory/scratch.h"
 #include "zipfile_impl.h"
 
 #define LOG_SDL_ERROR log_debug("SDL error: %s", SDL_GetError())
@@ -162,16 +163,14 @@ static VFSInfo vfs_zipfile_query(VFSNode *node) {
 	};
 }
 
-static char *vfs_zipfile_syspath(VFSNode *node) {
-	return vfs_node_syspath(VFS_NODE_CAST(VFSZipNode, node)->source);
+static bool vfs_zipfile_syspath(VFSNode *node, StringBuffer *buf) {
+	return vfs_node_syspath(VFS_NODE_CAST(VFSZipNode, node)->source, buf);
 }
 
-static char *vfs_zipfile_repr(VFSNode *node) {
+static void vfs_zipfile_repr(VFSNode *node, StringBuffer *buf) {
 	auto znode = VFS_NODE_CAST(VFSZipNode, node);
-	char *srcrepr = vfs_node_repr(znode->source, false);
-	char *ziprepr = strjoin("zip archive ", srcrepr, NULL);
-	mem_free(srcrepr);
-	return ziprepr;
+	strbuf_cat(buf, "zip archive ");
+	vfs_node_repr(znode->source, false, buf);
 }
 
 static VFSNode *vfs_zipfile_locate(VFSNode *node, const char *path) {
@@ -320,9 +319,10 @@ VFSZipFileTLS *vfs_zipfile_get_tls(VFSZipNode *znode, bool create) {
 	// FIXME: Taisei currently doesn't handle zip files without explicit directory entries correctly (file listing will not work)
 
 	if(!zip) {
-		char *r = vfs_node_repr(znode->source, true);
-		vfs_set_error("Failed to open zip archive '%s': %s", r, zip_error_strerror(&tls->error));
-		mem_free(r);
+		StringBuffer buf = { acquire_scratch_arena() };
+		vfs_node_repr(znode->source, true, &buf);
+		vfs_set_error("Failed to open zip archive '%s': %s", buf.start, zip_error_strerror(&tls->error));
+		release_scratch_arena(buf.arena);
 		vfs_zipfile_free_tls(tls);
 		SDL_SetTLS(&znode->tls_id, 0, NULL);
 		zip_source_free(src);

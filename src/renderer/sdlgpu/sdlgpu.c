@@ -225,16 +225,17 @@ void sdlgpu_cmdbuf_debug(SDL_GPUCommandBuffer *cbuf, const char *format, ...) {
 
 	static uint debug_event_id = 0;
 
-	strbuf_printf(&sdlgpu.debug_buf, "(%u) ", debug_event_id);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf, "(%u) ", debug_event_id);
 	++debug_event_id;
 
 	va_list args;
 	va_start(args, format);
-	strbuf_vprintf(&sdlgpu.debug_buf, format, args);
+	strbuf_vprintf(&buf, format, args);
 	va_end(args);
 
-	SDL_InsertGPUDebugLabel(cbuf, sdlgpu.debug_buf.start);
-	strbuf_clear(&sdlgpu.debug_buf);
+	SDL_InsertGPUDebugLabel(cbuf, buf.start);
+	release_scratch_arena(buf.arena);
 }
 
 static SDL_GPUCommandBuffer *sdlgpu_acquire_command_buffer(CommandBufferID id) {
@@ -446,7 +447,6 @@ static void sdlgpu_shutdown(void) {
 	SDL_ReleaseWindowFromGPUDevice(sdlgpu.device, sdlgpu.window);
 	SDL_DestroyGPUDevice(sdlgpu.device);
 	sdlgpu.device = NULL;
-	strbuf_free(&sdlgpu.debug_buf);
 	dxbc_shutdown_compiler();
 }
 

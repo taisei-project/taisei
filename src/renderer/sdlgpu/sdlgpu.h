@@ -89,7 +89,6 @@ typedef struct SDLGPUGlobal {
 	} ids;
 
 	bool debug;
-	StringBuffer debug_buf;
 } SDLGPUGlobal;
 
 extern SDLGPUGlobal sdlgpu;

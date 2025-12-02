@@ -10,6 +10,7 @@
 
 #include "../api.h"
 
+#include "memory/scratch.h"
 #include "util.h"
 #include "util/strbuf.h"
 
@@ -110,14 +111,14 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 	}
 
 	GLint64 supported = query_gl_format(fmt->internal_format, GL_INTERNALFORMAT_SUPPORTED);
-	StringBuffer buf = {};
+	StringBuffer buf = { acquire_scratch_arena() };
 
 	dump_fmt_info(&buf, fmt);
 	log_debug("??? TRY: %s", buf.start);
 
 	if(!supported) {
 		log_debug("Internal format 0x%x not supported", fmt->internal_format);
-		strbuf_free(&buf);
+		release_scratch_arena(buf.arena);
 		return NULL;
 	}
 
@@ -177,7 +178,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 	strbuf_clear(&buf);
 	dump_fmt_info(&buf, entry);
 	log_debug("+++ ADD: %s", buf.start);
-	strbuf_free(&buf);
+	release_scratch_arena(buf.arena);
 	return entry;
 
 #endif // !STATIC_GLES3

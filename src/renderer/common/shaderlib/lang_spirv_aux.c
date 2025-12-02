@@ -201,12 +201,11 @@ bool spirv_compile(
 		},
 	};
 
-	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
-		return _spirv_compile(in, out, arena, options);
-	}
-
-	if(!shader_cache_hash(in, options->macros, sizeof(hash), hash)) {
-		return _spirv_compile(in, out, arena, options);
+	if(
+		!shader_cache_entry_name(&m, sizeof(name), name) ||
+		!shader_cache_hash(in, options->macros, sizeof(hash), hash)
+	) {
+		return WITH_SCRATCH(scratch, _spirv_compile(in, out, arena, scratch, options));
 	}
 
 	auto arena_snap = marena_snapshot(arena);
@@ -223,7 +222,7 @@ bool spirv_compile(
 		marena_rollback(arena, &arena_snap);
 	}
 
-	if(_spirv_compile(in, out, arena, options)) {
+	if(WITH_SCRATCH(scratch, _spirv_compile(in, out, arena, scratch, options))) {
 		if(reflect) {
 			if(!(out->reflection = _spirv_reflect(out, arena))) {
 				marena_rollback(arena, &arena_snap);

@@ -9,9 +9,12 @@
 #pragma once
 #include "taisei.h"
 
+#include "memory/arena.h"
+
 #include <stdarg.h>
 
 typedef struct StringBuffer {
+	MemArena *arena;
 	char *start;
 	char *pos;
 	size_t buf_size;
@@ -26,12 +29,12 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args)
 void strbuf_clear(StringBuffer *strbuf)
 	attr_nonnull(1);
 
-void strbuf_free(StringBuffer *strbuf)
-	attr_nonnull(1);
-
 int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[])
 	attr_nonnull(1, 3);
 
 INLINE int strbuf_cat(StringBuffer *strbuf, const char *str) {
 	return strbuf_ncat(strbuf, strlen(str), str);
 }
+
+char *strbuf_commit(StringBuffer *strbuf)
+	attr_nonnull(1);

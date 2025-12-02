@@ -18,16 +18,17 @@
 #include "error.h"  // IWYU pragma: export
 
 #include "util.h"
+#include "util/strbuf.h"
 
 typedef struct VFSNode VFSNode;
 typedef struct VFSNodeFuncs VFSNodeFuncs;
 typedef void (*VFSShutdownHandler)(void *arg);
 
 struct VFSNodeFuncs {
-	char*       (*repr)(VFSNode *node) attr_nonnull(1);
+	void        (*repr)(VFSNode *node, StringBuffer *buf) attr_nonnull(1);
 	void        (*free)(VFSNode *node) attr_nonnull(1);
 	VFSInfo     (*query)(VFSNode *node) attr_nonnull(1);
-	char*       (*syspath)(VFSNode *node) attr_nonnull(1);
+	bool        (*syspath)(VFSNode *node, StringBuffer *buf) attr_nonnull(1);
 	bool        (*mount)(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
 	bool        (*unmount)(VFSNode *mountroot, const char *subname) attr_nonnull(1);
 	VFSNode*    (*locate)(VFSNode *dirnode, const char* path) attr_nonnull(1, 2);
@@ -105,9 +106,9 @@ VFSNode *vfs_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nod
 // Light wrappers around the virtual functions, safe to call even on nodes that
 // don't implement the corresponding method. "free" is not included, there should
 // be no reason to call it. It wouldn't do what you'd expect anyway; use vfs_decref.
-char *vfs_node_repr(VFSNode *node, bool try_syspath) attr_returns_allocated attr_nonnull(1);
+void vfs_node_repr(VFSNode *node, bool try_syspath, StringBuffer *buf) attr_nonnull(1, 3);
 VFSInfo vfs_node_query(VFSNode *node) attr_nonnull(1) attr_nodiscard attr_nonnull(1);
-char *vfs_node_syspath(VFSNode *node) attr_nonnull(1) attr_returns_max_aligned attr_nodiscard attr_nonnull(1);
+bool vfs_node_syspath(VFSNode *node, StringBuffer *buf) attr_nonnull(1) attr_nodiscard attr_nonnull(1, 2);
 bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
 bool vfs_node_unmount(VFSNode *mountroot, const char *subname) attr_nonnull(1);
 VFSNode *vfs_node_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nodiscard;
@@ -127,9 +128,9 @@ SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1)
 #define vfs_locate(root, path) \
 	vfs_locate(VFS_NODE_AS_BASE(root), path)
 
-#define vfs_node_repr(node, try_syspath) \
-	vfs_node_repr(VFS_NODE_AS_BASE(node), try_syspath)
+#define vfs_node_repr(node, try_syspath, buf) \
+	vfs_node_repr(VFS_NODE_AS_BASE(node), try_syspath, buf)
 
 
 void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
-void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);
+void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix, const char *name, MemArena *arena) attr_nonnull_all;

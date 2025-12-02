@@ -10,6 +10,7 @@
 
 #include "coroutine/cotask.h"
 #include "list.h"
+#include "memory/scratch.h"
 #include "random.h"
 #include "thread.h"
 #include "util.h"
@@ -48,11 +49,6 @@ static struct {
 	size_t num_outputs;
 	SDL_Mutex *mutex;
 	uint enabled_log_levels;
-
-	struct {
-		StringBuffer pre_format;
-		StringBuffer format;
-	} buffers;
 
 	struct {
 		Thread *thread;
@@ -230,9 +226,7 @@ static LogLevel filter_entry(LogEntry *entry) {
 	return log_apply_level_diff(LOG_ALL, d);
 }
 
-static void log_dispatch(LogEntry *entry) {
-	StringBuffer *fmt_buf = &logging.buffers.format;
-
+static void log_dispatch(LogEntry *entry, StringBuffer *fmt_buf) {
 	bool init = false;
 	LogLevel filter_lvlmask = LOG_ALL;
 
@@ -304,23 +298,21 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		return;
 	}
 
-	SDL_LockMutex(logging.mutex);
-
-	StringBuffer *buf = &logging.buffers.pre_format;
-	strbuf_clear(buf);
+	MemArena *scratch = acquire_scratch_arena();
+	StringBuffer buf = { scratch };
 
 	va_list args_copy;
 	va_copy(args_copy, args);
-	attr_unused int slen = strbuf_vprintf(buf, fmt, args_copy);
+	attr_unused int slen = strbuf_vprintf(&buf, fmt, args_copy);
 	va_end(args_copy);
 	assert_nolog(slen >= 0);
 
 	if(lvl & LOG_FATAL) {
-		add_debug_info(buf);
+		add_debug_info(&buf);
 	}
 
 	LogEntry entry = {
-		.message = buf->start,
+		.message = strbuf_commit(&buf),
 		.file = filename,
 		.func = funcname,
 		.line = line,
@@ -344,8 +336,10 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 	if(logging.queue.thread) {
 		log_dispatch_async(&entry);
 	} else {
-		log_dispatch(&entry);
+		log_dispatch(&entry, &buf);
 	}
+
+	release_scratch_arena(scratch);
 
 	if(lvl & LOG_FATAL) {
 		if(noabort) {
@@ -355,8 +349,6 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 			log_abort(entry.message);
 		}
 	}
-
-	SDL_UnlockMutex(logging.mutex);
 }
 
 void _taisei_log(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, ...) {
@@ -395,6 +387,9 @@ static void *log_queue_thread(void *a) {
 	SDL_Mutex *mtx = logging.queue.mutex;
 	SDL_Condition *cond = logging.queue.cond;
 
+	MemArena *scratch = acquire_scratch_arena();
+	StringBuffer buf = { scratch };
+
 	SDL_LockMutex(mtx);
 
 	for(;;) {
@@ -403,7 +398,7 @@ static void *log_queue_thread(void *a) {
 
 		while((qle = alist_pop(&logging.queue.queue)) && logging.queue.shutdown < 2) {
 			SDL_UnlockMutex(mtx);
-			log_dispatch(&qle->e);
+			log_dispatch(&qle->e, &buf);
 			mem_free(qle);
 			SDL_LockMutex(mtx);
 		}
@@ -416,6 +411,8 @@ static void *log_queue_thread(void *a) {
 	}
 
 	SDL_UnlockMutex(mtx);
+
+	release_scratch_arena(scratch);
 	return NULL;
 }
 
@@ -474,8 +471,6 @@ void log_shutdown(void) {
 	log_queue_shutdown_internal(false);
 	list_foreach(&logging.outputs, delete_logger, NULL);
 	SDL_DestroyMutex(logging.mutex);
-	strbuf_free(&logging.buffers.pre_format);
-	strbuf_free(&logging.buffers.format);
 
 	log_remove_filters();
 	dynarray_free_data(&logging.filters);

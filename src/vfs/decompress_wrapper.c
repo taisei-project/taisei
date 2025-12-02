@@ -10,6 +10,7 @@
 #include "decompress_wrapper_public.h"
 
 #include "hashtable.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_ro.h"
 #include "rwops/rwops_zstd.h"
 #include "util/strbuf.h"
@@ -27,11 +28,9 @@ VFS_NODE_TYPE(VFSDecompNode, {
 
 #define WRAPPED(node) VFS_NODE_CAST(VFSDecompNode, node)->wrapped
 
-static char *vfs_decomp_repr(VFSNode *node) {
-	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
-	char *repr = strjoin("decompress view of ", wrapped_repr, NULL);
-	mem_free(wrapped_repr);
-	return repr;
+static void vfs_decomp_repr(VFSNode *node, StringBuffer *buf) {
+	strbuf_cat(buf, "decompress view of ");
+	vfs_node_repr(WRAPPED(node), false, buf);
 }
 
 static void vfs_decomp_free(VFSNode *node) {
@@ -44,8 +43,8 @@ static VFSInfo vfs_decomp_query(VFSNode *node) {
 	return info;
 }
 
-static char *vfs_decomp_syspath(VFSNode *node) {
-	return vfs_node_syspath(WRAPPED(node));
+static bool vfs_decomp_syspath(VFSNode *node, StringBuffer *buf) {
+	return vfs_node_syspath(WRAPPED(node), buf);
 }
 
 static bool vfs_decomp_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) {
@@ -172,7 +171,9 @@ static const char *vfs_decomp_iter(VFSNode *node, void **opaque) {
 	struct decomp_iter_data *i = *opaque;
 
 	if(!i) {
-		i = ALLOC(typeof(*i));
+		i = ALLOC(typeof(*i), {
+			.temp_buf.arena = acquire_scratch_arena()
+		});
 		ht_create(&i->visited);
 		*opaque = i;
 	}
@@ -198,7 +199,7 @@ static void vfs_decomp_iter_stop(VFSNode *node, void **opaque) {
 	if(i) {
 		vfs_node_iter_stop(wrapped, &i->opaque);
 		ht_destroy(&i->visited);
-		strbuf_free(&i->temp_buf);
+		release_scratch_arena(i->temp_buf.arena);
 		mem_free(i);
 		*opaque = NULL;
 	}

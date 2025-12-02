@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "resource/locale.h"
 #include "resource/resource.h"
 #include "util.h"
@@ -50,7 +51,8 @@ void i18n_init(void) {
 	res_group_init(&i18n.resources);
 	i18n.known_locales = i18n_find_locales(&i18n.num_known_locales);
 
-	StringBuffer buf = {};
+	StringBuffer buf = { acquire_scratch_arena() };
+
 	for(size_t i = 0; i < i18n.num_known_locales; ++i) {
 		if(i) {
 			strbuf_cat(&buf, ", ");
@@ -65,7 +67,7 @@ void i18n_init(void) {
 		log_info("No locales found");
 	}
 
-	strbuf_free(&buf);
+	release_scratch_arena(buf.arena);
 
 	i18n.active_locale_idx = -1;
 	i18n_set_locale(config_get_str(CONFIG_LOCALE));

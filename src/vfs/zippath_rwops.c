@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "memory/scratch.h"
 #include "zipfile_impl.h"
 
 #include "util/miscmath.h"
@@ -218,8 +219,10 @@ SDL_IOStream *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
 			}
 
 			default: {
-				char *fname = vfs_node_repr(zpnode, true);
-				SDL_SetError("%s: unsupported compression method: %i", fname, zpnode->compression);
+				StringBuffer buf = { acquire_scratch_arena() };
+				vfs_node_repr(zpnode, true, &buf);
+				SDL_SetError("%s: unsupported compression method: %i", buf.start, zpnode->compression);
+				release_scratch_arena(buf.arena);
 				SDL_CloseIO(io);
 				return NULL;
 			}

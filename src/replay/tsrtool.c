@@ -8,6 +8,7 @@
 
 #include "tsrtool.h"
 
+#include "memory/scratch.h"
 #include "replay.h"
 #include "stage.h"
 #include "struct.h"
@@ -27,6 +28,7 @@ static struct {
 	Replay rpy;
 	uint16_t save_version;
 	ReplayStage *active_stage;
+	MemArena arena;
 } G = {
 	.save_version = REPLAY_STRUCT_VERSION_WRITE,
 };
@@ -212,7 +214,7 @@ static void flushline(StringBuffer *sbuf) {
 }
 
 static int cmd_info(int argc, char **argv) {
-	StringBuffer sbuf = {};
+	StringBuffer sbuf = { &G.arena };
 
 	strbuf_printf(&sbuf,
 		"Struct version: %i %scompressed",
@@ -337,7 +339,6 @@ static int cmd_info(int argc, char **argv) {
 		flushline(&sbuf);
 	});
 
-	strbuf_free(&sbuf);
 	return 0;
 }
 
@@ -357,6 +358,8 @@ static Command commands[] = {
 int tsrtool_main(int argc, char **argv) {
 	char **end = argv + argc;
 	++argv;
+
+	marena_init(&G.arena, 1 << 12);
 
 	while(argv < end) {
 		bool found = false;

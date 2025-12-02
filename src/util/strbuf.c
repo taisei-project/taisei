@@ -35,7 +35,7 @@ static size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 	if(size_required >= size_available) {
 		ptrdiff_t offset = strbuf->pos - strbuf->start;
 		size_t new_size = topow2_u64(strbuf->buf_size + (size_required - size_available + 1));
-		strbuf->start = mem_realloc(strbuf->start, new_size);
+		strbuf->start = marena_realloc(strbuf->arena, strbuf->start, strbuf->buf_size, new_size);
 		strbuf->pos = strbuf->start + offset;
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
@@ -81,14 +81,26 @@ int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[]) {
 }
 
 void strbuf_clear(StringBuffer *strbuf) {
-	strbuf->pos = strbuf->start;
-
-	if(strbuf->start) {
-		*strbuf->pos = 0;
-	}
+	marena_free(strbuf->arena, strbuf->start, strbuf->buf_size);
+	*strbuf = (StringBuffer) { strbuf->arena };
 }
 
-void strbuf_free(StringBuffer *strbuf) {
-	mem_free(strbuf->start);
-	memset(strbuf, 0, sizeof(*strbuf));
+char *strbuf_commit(StringBuffer *strbuf) {
+	char *s = strbuf->start;
+
+	int64_t align = alignof(max_align_t);
+	int64_t reserve = strbuf->pos - s + 1;
+	int64_t ofs = ((align - reserve) & (align - 1));
+	reserve += ofs;
+
+	if(strbuf->buf_size > reserve) {
+		strbuf->buf_size -= reserve;
+		strbuf->start = strbuf->pos = strbuf->pos + ofs + 1;
+		assert(((uintptr_t)strbuf->pos & (align - 1)) == 0);
+	} else {
+		strbuf->buf_size = 0;
+		strbuf->start = strbuf->pos = NULL;
+	}
+
+	return s;
 }

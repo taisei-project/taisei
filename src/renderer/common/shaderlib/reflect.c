@@ -9,6 +9,7 @@
 #include "reflect.h"
 #include "lang_spirv_private.h"
 
+#include "memory/scratch.h"
 #include "util.h"
 
 uint shader_basetype_size(ShaderBaseType base_type) {
@@ -260,7 +261,7 @@ static void shader_sampler_dump_string(ShaderSampler *sampler, StringBuffer *buf
 }
 
 void shader_reflection_logdump(const ShaderReflection *reflect) {
-	StringBuffer buf = {};
+	StringBuffer buf = { acquire_scratch_arena() };
 
 	log_debug("%u uniform buffers", reflect->num_uniform_buffers);
 
@@ -300,7 +301,7 @@ void shader_reflection_logdump(const ShaderReflection *reflect) {
 
 	log_debug("Used input locations map: 0b%llb", (unsigned long long)reflect->used_input_locations_map);
 
-	strbuf_free(&buf);
+	release_scratch_arena(buf.arena);
 }
 
 ShaderReflection *shader_source_reflect(const ShaderSource *src, MemArena *arena) {

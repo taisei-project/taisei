@@ -89,15 +89,15 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 	}
 }
 
-static char *vfs_syspath_repr(VFSNode *node) {
+static void vfs_syspath_repr(VFSNode *node, StringBuffer *buf) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	return strfmt("filesystem path (posix): %s", pnode->path);
+	strbuf_printf(buf, "filesystem path (posix): %s", pnode->path);
 }
 
-static char *vfs_syspath_syspath(VFSNode *node) {
-	char *p = mem_strdup(VFS_NODE_CAST(VFSSysPathNode, node)->path);
-	vfs_syspath_normalize_inplace(p);
-	return p;
+static bool vfs_syspath_syspath(VFSNode *node, StringBuffer *buf) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	vfs_syspath_normalize_buffer(pnode->path, buf);
+	return true;
 }
 
 static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {

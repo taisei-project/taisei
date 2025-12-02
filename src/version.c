@@ -7,6 +7,7 @@
  */
 
 #include "version.h"
+#include "memory/scratch.h"
 
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level) {
 	int result = 0;
@@ -52,9 +53,10 @@ size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version) {
 }
 
 char *taisei_version_tostring(TaiseiVersion *version) {
-	StringBuffer sbuf = {};
+	StringBuffer sbuf = { acquire_scratch_arena() };
 	taisei_version_tostrbuf(&sbuf, version);
-	return sbuf.start;
+	release_scratch_arena(sbuf.arena);
+	return mem_strdup(sbuf.start);
 }
 
 void taisei_version_tostrbuf(StringBuffer *sbuf, TaiseiVersion *version) {

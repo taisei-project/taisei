@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "util/strbuf.h"
+
 enum {
 	VFS_SYSPATH_MOUNT_READONLY = (1 << 0),
 	VFS_SYSPATH_MOUNT_MKDIR = (1 << 1),
@@ -21,5 +23,6 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags)
 char vfs_get_syspath_separator(void);
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path);
 char *vfs_syspath_normalize_inplace(char *path);
+char *vfs_syspath_normalize_buffer(const char *path, StringBuffer *buf);
 void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child);
 char *vfs_syspath_join_alloc(const char *parent, const char *child);
