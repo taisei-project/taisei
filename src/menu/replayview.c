@@ -125,16 +125,22 @@ static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 	m->transition = NULL;
 	m->context = parent->context;
 
+	char tmp[STAGE_MAX_TITLE_SIZE];
+
+	// NOTE: Persisting localized strings in the menu here.
+	// Shouldn't be a problem here, because there is no way to change the language
+	// without closing this submenu.
+
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *rstg, {
 		uint16_t stage_id = rstg->stage;
 		StageInfo *stg = stageinfo_get_by_id(stage_id);
 
 		if(LIKELY(stg != NULL)) {
-			add_menu_entry(m, stg->title, start_replay, ictx);
+			stageinfo_format_localized_title(stg, sizeof(tmp), tmp);
+			add_menu_entry(m, tmp, start_replay, ictx);
 		} else {
-			char label[64];
-			snprintf(label, sizeof(label), _("Unknown stage %X"), stage_id);
-			add_menu_entry(m, label, menu_action_close, NULL);
+			snprintf(tmp, sizeof(tmp), _("Unknown stage %X"), stage_id);
+			add_menu_entry(m, tmp, menu_action_close, NULL);
 		}
 	});
 
@@ -147,6 +153,11 @@ static MenuData *replayview_sub_messagebox(MenuData *parent, const char *message
 	m->flags = MF_Transient | MF_Abortable;
 	m->transition = NULL;
 	m->context = parent->context;
+
+	// NOTE: Persisting localized strings in the menu here.
+	// Shouldn't be a problem here, because there is no way to change the language
+	// without closing this submenu.
+
 	add_menu_entry(m, message, menu_action_close, NULL);
 	return m;
 }
@@ -192,7 +203,9 @@ static void replayview_draw_messagebox(MenuData* m) {
 	float width  = text_width(res_font("standard"), e->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
-	text_draw(_(e->name), &(TextParams) {
+	// NOTE: e->name is already localized!
+
+	text_draw(e->name, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha),
 		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 },
@@ -223,8 +236,10 @@ static void replayview_draw_stagemenu(MenuData *m) {
 			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
+		// NOTE: e->name is already localized!
+
 		log_warn("%s", e->name);
-		text_draw(_(e->name), &(TextParams) {
+		text_draw(e->name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 20*i },
 			.color = &clr,
@@ -297,7 +312,9 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt, void *ctx) {
 					StageInfo *stg = stageinfo_get_by_id(first_stage->stage);
 
 					if(stg) {
-						snprintf(tmp, sizeof(tmp), "%s", stg->title);
+						char title[STAGE_MAX_TITLE_SIZE];
+						stageinfo_format_localized_title(stg, sizeof(title), title);
+						snprintf(tmp, sizeof(tmp), "%s", title);
 					} else {
 						snprintf(tmp, sizeof(tmp), "?????");
 					}

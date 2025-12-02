@@ -29,6 +29,7 @@
 #include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "stageobjects.h"
+
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/gamemode.h"
@@ -338,7 +339,9 @@ int main(int argc, char **argv) {
 		int n = stageinfo_get_num_stages();
 		for(int i = 0; i < n; ++i) {
 			StageInfo *stg = stageinfo_get_by_index(i);
-			tsfprintf(stdout, "%X %s: %s\n", stg->id, stg->title, stg->subtitle);
+			char title[STAGE_MAX_TITLE_SIZE];
+			stageinfo_format_localized_title(stg, sizeof(title), title);
+			tsfprintf(stdout, "%X %s: %s\n", stg->id, title, _(stg->subtitle));
 		}
 
 		main_quit(ctx, 0);
@@ -581,7 +584,9 @@ static void main_singlestg(MainContext *mctx) {
 		global.diff = D_Easy;
 	}
 
-	log_info("Entering %s", stg->title);
+	char title[STAGE_MAX_TITLE_SIZE];
+	stageinfo_format_localized_title(stg, sizeof(title), title);
+	log_info("Entering %s", title);
 
 	mctx->replay_out = alloc_replay();
 	main_singlestg_begin_game(CALLCHAIN_RESULT(ctx, NULL));
