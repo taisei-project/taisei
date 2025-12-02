@@ -21,7 +21,8 @@ static void add_stage(
 	uint16_t id,
 	StageProcs *procs,
 	StageType type,
-	const char *title,
+	const char *title_format,
+	int title_numeral,
 	const char *subtitle,
 	AttackInfo *spell,
 	Difficulty diff
@@ -32,8 +33,9 @@ static void add_stage(
 		.type = type,
 		.spell = spell,
 		.difficulty = diff,
-		.title = title ? mem_strdup(title) : NULL,
-		.subtitle = subtitle ? mem_strdup(subtitle) : NULL,
+		.title_format = title_format,
+		.title_numeral = title_numeral,
+		.subtitle = subtitle,
 	});
 }
 
@@ -45,12 +47,7 @@ static void add_spellpractice_stage(
 	Difficulty diff
 ) {
 	uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
-
-	char *title = strfmt("%s %d", _("Spell"), ++(*spellnum));
-
-	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, a->name, a, diff);
-
-	mem_free(title);
+	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, N_("Spell %d"), ++(*spellnum), a->name, a, diff);
 }
 
 static void add_spellpractice_stages(
@@ -108,11 +105,6 @@ void stageinfo_reload(void) {
 	attr_unused StageInfo *prev_addr = stageinfo.stages.data;
 	attr_unused uint prev_count = stageinfo.stages.num_elements;
 
-	dynarray_foreach_elem(&stageinfo.stages, StageInfo *stg, {
-		mem_free(stg->title);
-		mem_free(stg->subtitle);
-	});
-
 	stageinfo.stages.num_elements = 0;
 	stageinfo_fill(dynstage_get_exports());
 
@@ -125,19 +117,19 @@ void stageinfo_reload(void) {
 static void stageinfo_fill(StagesExports *e) {
 	int spellnum = 0;
 
-//	         id  procs            type           title          subtitle                       spells                       diff
-	add_stage(1, e->stage1.procs, STAGE_STORY,   N_("Stage 1"),     N_("Misty Lake Encounter"),        e->stage1.spells, D_Any);
-	add_stage(2, e->stage2.procs, STAGE_STORY,   N_("Stage 2"),     N_("Riverside Hina-Nagashi"),      e->stage2.spells, D_Any);
-	add_stage(3, e->stage3.procs, STAGE_STORY,   N_("Stage 3"),     N_("Crawly Mountain Ascent"),      e->stage3.spells, D_Any);
-	add_stage(4, e->stage4.procs, STAGE_STORY,   N_("Stage 4"),     N_("Forgotten Mansion"),           e->stage4.spells, D_Any);
-	add_stage(5, e->stage5.procs, STAGE_STORY,   N_("Stage 5"),     N_("Climbing the Tower of Babel"), e->stage5.spells, D_Any);
-	add_stage(6, e->stage6.procs, STAGE_STORY,   N_("Stage 6"),     N_("Roof of the World"),           e->stage6.spells, D_Any);
-	add_stage(7, e->stagex.procs, STAGE_SPECIAL, N_("Extra Stage"), N_("Descent into Madness"),        e->stagex.spells, D_Extra);
+//	         id  procs            type           title format       no.    subtitle                       spells            diff
+	add_stage(1, e->stage1.procs, STAGE_STORY,   N_("Stage %d"),    1, N_("Misty Lake Encounter"),        e->stage1.spells, D_Any);
+	add_stage(2, e->stage2.procs, STAGE_STORY,   N_("Stage %d"),    2, N_("Riverside Hina-Nagashi"),      e->stage2.spells, D_Any);
+	add_stage(3, e->stage3.procs, STAGE_STORY,   N_("Stage %d"),    3, N_("Crawly Mountain Ascent"),      e->stage3.spells, D_Any);
+	add_stage(4, e->stage4.procs, STAGE_STORY,   N_("Stage %d"),    4, N_("Forgotten Mansion"),           e->stage4.spells, D_Any);
+	add_stage(5, e->stage5.procs, STAGE_STORY,   N_("Stage %d"),    5, N_("Climbing the Tower of Babel"), e->stage5.spells, D_Any);
+	add_stage(6, e->stage6.procs, STAGE_STORY,   N_("Stage %d"),    6, N_("Roof of the World"),           e->stage6.spells, D_Any);
+	add_stage(7, e->stagex.procs, STAGE_SPECIAL, N_("Extra Stage"), 0, N_("Descent into Madness"),        e->stagex.spells, D_Extra);
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
-	add_stage(0x40|0, e->testing.dps_single, STAGE_SPECIAL, "DPS Test", "Single target",    NULL, D_Normal);
-	add_stage(0x40|1, e->testing.dps_multi,  STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
-	add_stage(0x40|2, e->testing.dps_boss,   STAGE_SPECIAL, "DPS Test", "Boss",             NULL, D_Normal);
+	add_stage(0x40|0, e->testing.dps_single, STAGE_SPECIAL, "DPS Test", 0, "Single target",    NULL, D_Normal);
+	add_stage(0x40|1, e->testing.dps_multi,  STAGE_SPECIAL, "DPS Test", 0, "Multiple targets", NULL, D_Normal);
+	add_stage(0x40|2, e->testing.dps_boss,   STAGE_SPECIAL, "DPS Test", 0, "Boss",             NULL, D_Normal);
 #endif
 
 	// generate spellpractice stages
@@ -169,9 +161,7 @@ static void stageinfo_fill(StagesExports *e) {
 }
 
 void stageinfo_shutdown(void) {
-	dynarray_foreach(&stageinfo.stages, int i, StageInfo *stg, {
-		mem_free(stg->title);
-		mem_free(stg->subtitle);
+	dynarray_foreach_idx(&stageinfo.stages, int i, {
 		mem_free(stageinfo.stages_progress[i]);
 	});
 
@@ -248,4 +238,15 @@ StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool a
 	}
 
 	return NULL;
+}
+
+int stageinfo_format_localized_title(StageInfo *stage, size_t buf_size, char buf[buf_size]) {
+	if(LIKELY(stage->title_format != NULL)) {
+		int n = snprintf(buf, buf_size, _(stage->title_format), stage->title_numeral);
+		assert(n < STAGE_MAX_TITLE_SIZE);
+		return n;
+	}
+
+	assert(!"Stage has no title");
+	return snprintf(buf, buf_size, "???");
 }

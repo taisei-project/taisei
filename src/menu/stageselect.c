@@ -44,7 +44,13 @@ MenuData* create_stage_menu(void) {
 			add_menu_separator(m);
 		}
 
-		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s ~ %s", _(stg->title), _(stg->subtitle), difficulty_name(stg->difficulty));
+		// TODO FIXME THIS IS WRONG
+		// Persisting concatenated translated strings here for now
+		// However, this is a cheat debug menu so nobody cares
+
+		char stgtitle[STAGE_MAX_TITLE_SIZE];
+		stageinfo_format_localized_title(stg, sizeof(stgtitle), stgtitle);
+		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s ~ %s", stgtitle, _(stg->subtitle), difficulty_name(stg->difficulty));
 		add_menu_entry(m, title, start_game, stg);
 
 		lastdiff = diff;

@@ -847,7 +847,10 @@ static void display_stage_title(StageInfo *info) {
 		return;
 	}
 
-	stagetext_add(_(info->title),    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 50, 85, 35, 35);
+	char title[STAGE_MAX_TITLE_SIZE];
+	stageinfo_format_localized_title(info, sizeof(title), title);
+
+	stagetext_add(_(title),          VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 50, 85, 35, 35);
 	stagetext_add(_(info->subtitle), VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
@@ -1199,7 +1202,9 @@ static void _stage_enter(
 		seed = rstg->rng_seed;
 		global.diff = rstg->diff;
 
-		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", rstg->events.num_elements, stage->title);
+		char title[STAGE_MAX_TITLE_SIZE];
+		stageinfo_format_localized_title(stage, sizeof(title), title);
+		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", rstg->events.num_elements, title);
 	} else {
 		start_time = (uint64_t)time(0);
 		seed = makeseed();
