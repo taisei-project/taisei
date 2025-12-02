@@ -11,6 +11,7 @@
 #include "common.h"
 #include "options.h"
 
+#include "i18n/i18n.h"
 #include "stageinfo.h"
 #include "video.h"
 
@@ -40,11 +41,18 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 
 		StageProgress *p = stageinfo_get_progress(stg, diff, false);
 
+		// TODO FIXME THIS IS WRONG
+		// Persisting concatenated translated strings here for now
+		// This menu needs a custom draw function and a general overhaul
+
+		char please_rewrite_this_whole_thing[STAGE_MAX_TITLE_SIZE];
+		stageinfo_format_localized_title(stg, sizeof(please_rewrite_this_whole_thing), please_rewrite_this_whole_thing);
+
 		if(p && p->unlocked) {
-			snprintf(title, sizeof(title), "%s: %s", stg->title, stg->subtitle);
+			snprintf(title, sizeof(title), "%s: %s", please_rewrite_this_whole_thing, _(stg->subtitle));
 			add_menu_entry(m, title, start_game_no_difficulty_menu, stg);
 		} else {
-			snprintf(title, sizeof(title), "%s: ???????", stg->title);
+			snprintf(title, sizeof(title), "%s: ???????", please_rewrite_this_whole_thing);
 			add_menu_entry(m, title, NULL, NULL);
 		}
 	}

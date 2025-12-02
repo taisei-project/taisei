@@ -58,8 +58,9 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	} else {
 		clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.8);
 	}
+
 	char title[128];
-	snprintf(title, sizeof(title), _("№ %s"), stg->title + strlen("Spell "));
+	snprintf(title, sizeof(title), _("№ %d"), stg->title_numeral);
 
 	Color second_clr = clr;
 	color_mul_scalar(&second_clr, 0.7);
