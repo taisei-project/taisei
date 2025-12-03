@@ -15,6 +15,10 @@ msgstr ""
 msgid "Spell Card failed…"
 msgstr ""
 
+#: src/boss.c:1001
+msgid "Survival"
+msgstr "时符"
+
 #: src/boss.c:972
 msgid "Spell Card captured!"
 msgstr ""
