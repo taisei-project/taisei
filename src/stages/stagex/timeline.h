@@ -6,8 +6,9 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "extra.h"
+#pragma once
+#include "taisei.h"
 
-// NOTE: See the 'yumemi' branch for the work-in-progress extra stage
+#include "coroutine/taskdsl.h"
 
-StageProcs extra_procs = { };
+DECLARE_EXTERN_TASK(stagex_timeline);

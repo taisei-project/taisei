@@ -461,25 +461,29 @@ void ecls_anyenemy_fake3dmovein(
 	assert(duration > 0);
 
 	BaseEnemyVisualParams *vp = e->visual.drawdata;
-	vec3 initpos_projected;
-	camera3d_project(cam, initpos_3d, initpos_projected);
-	vp->fakepos.pos = CMPLXF(initpos_projected[0], initpos_projected[1]);
 
 	EnemyFlag tempflags;
 	spawnanim_set_flags(e, &tempflags);
 
 	DrawLayer layer = e->ent.draw_layer;
-	e->ent.draw_layer = LAYER_ENEMY_BACKGROUND | (layer & LAYER_LOW_MASK);
+	e->ent.draw_layer = LAYER_ENEMY_BACKGROUND;
 
 	for(int i = 1;;) {
+		vec3 initpos_projected;
+		camera3d_project(cam, initpos_3d, initpos_projected);
+		vp->fakepos.pos = CMPLXF(initpos_projected[0], initpos_projected[1]);
+
 		float f = i / (float)duration;
-		vp->fakepos.blendfactor = (1.0 - glm_ease_sine_inout(f));
-		vp->scale = glm_ease_sine_inout(f);
+		vp->fakepos.blendfactor = 1.0f - glm_ease_cubic_in(f);
+		vp->scale = glm_ease_cubic_in(f);
 		vp->opacity = glm_ease_sine_out(f);
 
 		if(i == duration) {
 			break;
 		}
+
+		drawlayer_low_t lowmask = (LAYER_LOW_MASK & (drawlayer_low_t)(f * ((1 << LAYER_LOW_BITS) - 1)));
+		e->ent.draw_layer = LAYER_ENEMY_BACKGROUND | lowmask;
 
 		++i;
 		YIELD;
