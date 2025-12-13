@@ -532,6 +532,19 @@ else
     install_data('COPYING', install_dir : doc_path, install_tag : 'license')
 endif
 
+if host_machine.system() == 'windows'
+    custom_target('COPYING_CN.txt',
+        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
+        input : 'COPYING_CN.txt',
+        output : 'COPYING_CN.txt',
+        install : true,
+        install_dir : doc_path,
+        install_tag : 'license',
+    )
+else
+    install_data('COPYING_CN.txt', install_dir : doc_path, install_tag : 'license')
+endif
+
 if angle_enabled
     angle_dir = 'ANGLE'
 
