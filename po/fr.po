@@ -14,15 +14,15 @@ msgstr ""
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
-msgstr "~ Spell Card Attaque! ~"
+msgstr "~ Carte Magique Attaque! ~"
 
 #: src/boss.c:972
 msgid "Spell Card failed…"
-msgstr "La carte magique a échoué…"
+msgstr "La Carte Magique a échoué…"
 
 #: src/boss.c:972
 msgid "Spell Card captured!"
-msgstr "Carte magique capturée!"
+msgstr "Carte Magique capturée!"
 
 #: src/boss.c:982
 msgid "Clear bonus"
@@ -5800,7 +5800,7 @@ msgstr "Concentration"
 
 #: src/menu/options.c:864 src/menu/options.c:1057
 msgid "Use Spell Card"
-msgstr "Utiliser une Spell Card"
+msgstr "Utiliser une Carte Magique"
 
 #: src/menu/options.c:868 src/menu/options.c:1061
 msgid "Power Surge / Discharge"
