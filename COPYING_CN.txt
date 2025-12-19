@@ -1,0 +1,50 @@
+Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
+Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+
+泰西Project是东方Project的二次创作及免费同人游戏，原作者是上海爱丽丝幻乐团的ZUN。
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+游戏原声带由Tuck V创作，并在知识共享-署名 4.0 国际 （CC BY 4.0）下许可。
+原始音频文件在 resources/00-taisei.pkgdir/bgm/.
+ https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
+ 
+放在 atlas/portraits/ 的角色立绘是我们雇佣afensorm创作的，亦在知识共享-署名 4.0 国际 （CC BY 4.0）下许可。
+ https://afens.surge.sh
+ https://gensokyo.social/@afensorm
+ https://pixiv.me/afens
+
+你可以在 https://creativecommons.org/licenses/by/4.0/ 找到CC BY 4.0的法律文件。
+
+符卡和菜单背景中使用的照片一般为公共领域或CC0，并非由我们创作。
+以下是特别鸣谢。
+
+* 加载屏幕上的图片是由NASA卫星拍摄的恒河三角洲。
+ http://earthobservatory.nasa.gov/IOTD/view.php?id=7028
+ 以及大麦哲伦云的图片。
+ https://images.nasa.gov/details-PIA15254.html
+
+* 主菜单背景中的山脉是Luca Zanon创作的。
+ https://unsplash.com/photos/X0OoHrPvgXE
+
+* Scuttle符卡背景中的昆虫翅膀是GLady设计的。
+ https://pixabay.com/en/morpho-peleides-butterfly-43483/
+
+* 对于以前的那些图片，很遗憾我没有保存记录。你可以通过图片搜索找到它们。
+ 可以去taisei-rawmedia仓库以获取原始文件。
