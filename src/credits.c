@@ -136,6 +136,12 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
+		"o.nihilist\n"
+		"@onhlt.bsky.social\n"
+		"French translation\n"
+	), ENTRY_TIME);
+
+	credits_add((
 		"makise-homura\n"
 		"Igor Molchanov\n"
 		"akemi_homura@kurisa.ch\n\n"
