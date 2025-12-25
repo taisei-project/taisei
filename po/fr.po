@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-02 18:27-0400\n"
+"POT-Creation-Date: 2025-12-20 10:55-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: onihilist <onihilist@proton.me>\n"
 "Language-Team: \n"
@@ -44,9 +44,33 @@ msgstr "Bonus d'endurance"
 msgid "Diff. multiplier"
 msgstr "Diff. multiplicateur"
 
-#: src/boss.c:988 src/stagedraw.c:1915
+#: src/boss.c:988 src/stagedraw.c:1914
 msgid "Total"
 msgstr "Total"
+
+#: src/boss.c:1000 src/difficulty.c:21
+msgid "Normal"
+msgstr "Normal"
+
+#: src/boss.c:1001
+#, fuzzy
+msgid "Survival"
+msgstr "Bonus de survie"
+
+#: src/boss.c:1002
+#, fuzzy
+msgid "Extra"
+msgstr "Commencer Extra"
+
+#: src/boss.c:1003
+#, fuzzy
+msgid "Move"
+msgstr "Monter"
+
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
+#: src/menu/options.c:1403
+msgid "Unknown"
+msgstr "Inconnu"
 
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
@@ -60,11 +84,11 @@ msgstr ""
 "Taisei Project\n"
 "présenté par…"
 
-#: src/credits.c:154
+#: src/credits.c:160
 msgid "Special Thanks"
 msgstr "Remerciements"
 
-#: src/credits.c:199
+#: src/credits.c:205
 #, c-format
 msgid ""
 "Visit Us\n"
@@ -79,7 +103,7 @@ msgstr ""
 "Et rejoignez notre serveur Discord\n"
 "%s"
 
-#: src/credits.c:209
+#: src/credits.c:215
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
@@ -2376,7 +2400,9 @@ msgstr "Aïe…"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr "J-je veux dire, la dernière fois elle a perdu! Et la prochaine fois, ce sera ton tour!"
+msgstr ""
+"J-je veux dire, la dernière fois elle a perdu! Et la prochaine fois, ce sera "
+"ton tour!"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
@@ -2388,7 +2414,8 @@ msgstr "Pff, cet endroit est un peu triste maintenant."
 
 #: src/dialog/marisa.c:83
 msgid "What would be causin’ the yōkai to get all weird, anyways?"
-msgstr "Qu’est-ce qui ferait que les yōkai deviennent bizarres, de toute façon?"
+msgstr ""
+"Qu’est-ce qui ferait que les yōkai deviennent bizarres, de toute façon?"
 
 #: src/dialog/marisa.c:86
 msgid "Why hello, Ms. Kirisame."
@@ -2396,7 +2423,9 @@ msgstr "Eh bien bonjour, Mlle Kirisame."
 
 #: src/dialog/marisa.c:89
 msgid "You seem to be as reckless as always. I recommend turning back."
-msgstr "Tu sembles aussi imprudente que d’habitude. Je recommande de rebrousser chemin."
+msgstr ""
+"Tu sembles aussi imprudente que d’habitude. Je recommande de rebrousser "
+"chemin."
 
 #: src/dialog/marisa.c:92
 msgid "Thanks for the advice! I’ll be ignoring it, though."
@@ -2458,7 +2487,8 @@ msgstr "J’en ai eu assez pour toute une vie."
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
 msgstr ""
-"Pff, tout le monde devient encore plus imprudent plus je monte. Que se passe-t-il?"
+"Pff, tout le monde devient encore plus imprudent plus je monte. Que se passe-"
+"t-il?"
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
@@ -2546,7 +2576,8 @@ msgstr "Peut-être que j’en sais plus que tu ne le crois."
 
 #: src/dialog/marisa.c:191
 msgid "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!"
-msgstr "Mais ce n’est RIEN que je dirais à un usurpateur de la gloire des insectes!"
+msgstr ""
+"Mais ce n’est RIEN que je dirais à un usurpateur de la gloire des insectes!"
 
 #: src/dialog/marisa.c:205
 msgid "Tougher than usual, but not tough enough."
@@ -2573,12 +2604,13 @@ msgid ""
 "Oh, ya must mean the Carboniferous Period. With the giant bug- err, insects, "
 "‘n all that."
 msgstr ""
-"Oh, tu dois vouloir dire la période carbonifère. Avec les insectes géants— euh, "
-"les insectes, et tout ça."
+"Oh, tu dois vouloir dire la période carbonifère. Avec les insectes géants— "
+"euh, les insectes, et tout ça."
 
 #: src/dialog/marisa.c:215
 msgid "I remember that doctor at Eientei goin’ off about it once."
-msgstr "Je me souviens de ce médecin à Eientei qui s’enflammait à ce sujet une fois."
+msgstr ""
+"Je me souviens de ce médecin à Eientei qui s’enflammait à ce sujet une fois."
 
 #: src/dialog/marisa.c:217
 msgid "Only time I’d seen her so excited…"
@@ -2631,8 +2663,9 @@ msgstr "Et ensuite? Une servante?"
 #: src/dialog/marisa.c:260
 msgid ""
 "A little girl with almost no dialogue who becomes a fan-favourite anyways?"
-msgstr "Une petite fille avec presque aucun dialogue qui devient quand même "
-"la préférée des fans?"
+msgstr ""
+"Une petite fille avec presque aucun dialogue qui devient quand même la "
+"préférée des fans?"
 
 #: src/dialog/marisa.c:261
 msgid "One that’ll have her personality massacred by the fans?"
@@ -2641,8 +2674,9 @@ msgstr "Une dont la personnalité sera massacrée par les fans?"
 #: src/dialog/marisa.c:264
 msgid ""
 "Maybe they’ll even make her something edgy like a vampire to drive up sales."
-msgstr "Peut-être qu’ils en feront même quelque chose de tendance comme un "
-"vampire pour augmenter les ventes."
+msgstr ""
+"Peut-être qu’ils en feront même quelque chose de tendance comme un vampire "
+"pour augmenter les ventes."
 
 #: src/dialog/marisa.c:267
 msgid "Ugh! Maybe I’ve been reading too much manga that those tengu churn out."
@@ -2666,11 +2700,14 @@ msgstr "Bien sûr, la plupart est des déchets que seuls les bizarres aiment!"
 
 #: src/dialog/marisa.c:279
 msgid "And don’t EVEN get me started on certain character designs! So generic!"
-msgstr "Et ne me lance même pas sur certains designs de personnages! Tellement banals!"
+msgstr ""
+"Et ne me lance même pas sur certains designs de personnages! Tellement "
+"banals!"
 
 #: src/dialog/marisa.c:282
 msgid "Maybe they oughta hire someone with some fashion sense."
-msgstr "Peut-être qu’ils devraient engager quelqu’un avec un vrai sens de la mode."
+msgstr ""
+"Peut-être qu’ils devraient engager quelqu’un avec un vrai sens de la mode."
 
 #: src/dialog/marisa.c:285
 msgid "That’d be me, then!"
@@ -2678,7 +2715,8 @@ msgstr "Ce serait moi, alors!"
 
 #: src/dialog/marisa.c:286
 msgid "My ideas would surely make a splash, if they’d recognize my talent!"
-msgstr "Mes idées feraient sûrement sensation, s’ils reconnaissaient mon talent!"
+msgstr ""
+"Mes idées feraient sûrement sensation, s’ils reconnaissaient mon talent!"
 
 #: src/dialog/marisa.c:289
 msgid "Eh? Maybe…"
@@ -2698,7 +2736,9 @@ msgstr "H-Hmph ! Je pourrais dire la même chose de toi!"
 
 #: src/dialog/marisa.c:300
 msgid "Seriously, it’s just a plain generic witch outfit!"
-msgstr "Sérieusement, c’est juste une tenue de sorcière toute simple et banale!"
+msgstr ""
+"Sérieusement, c’est juste une tenue de sorcière toute simple et banale!"
+
 #: src/dialog/marisa.c:303
 msgid "That’s just because it’s summer!"
 msgstr "C’est juste parce que c’est l’été!"
@@ -2711,7 +2751,8 @@ msgstr ""
 
 #: src/dialog/marisa.c:307
 msgid "In fact, there’s a few of ‘em, uh, deeper inside this mansion."
-msgstr "En fait, il y en a quelques-uns, euh, plus profondément dans ce manoir."
+msgstr ""
+"En fait, il y en a quelques-uns, euh, plus profondément dans ce manoir."
 
 #: src/dialog/marisa.c:309
 msgid "So I’ll be headin’ in, then."
@@ -2743,7 +2784,8 @@ msgstr "(O-oui, c’est ça, fais comme si j’avais perdu la mémoire…"
 
 #: src/dialog/marisa.c:335
 msgid "(But, hmm… haven’t I seen this nerdy-looking girl before…?)"
-msgstr "(Mais, hmm… je n’ai pas déjà vu cette fille à l’air geek quelque part…?)"
+msgstr ""
+"(Mais, hmm… je n’ai pas déjà vu cette fille à l’air geek quelque part…?)"
 
 #: src/dialog/marisa.c:336
 msgid "Uuu, I don’t remember anything at all!!"
@@ -2813,8 +2855,8 @@ msgstr "Hmm… probablement une illusion majeure d’une certaine sorte…?"
 msgid ""
 "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…"
 msgstr ""
-"Ce serait plus facile que de rendre les briques sans poids, et c’est "
-"un bon déguisement…"
+"Ce serait plus facile que de rendre les briques sans poids, et c’est un bon "
+"déguisement…"
 
 #: src/dialog/marisa.c:389
 msgid "… pardon me, are you conversing with yourself?"
@@ -2837,8 +2879,8 @@ msgid ""
 "It appeared outta nowhere. If it were real brick, the air displacement alone "
 "woulda caused a huge noise…"
 msgstr ""
-"Cela est apparu de nulle part. Si c’étaient de vraies briques, le déplacement "
-"de l’air seul aurait fait un énorme bruit…"
+"Cela est apparu de nulle part. Si c’étaient de vraies briques, le "
+"déplacement de l’air seul aurait fait un énorme bruit…"
 
 #: src/dialog/marisa.c:399
 msgid "And it’d take so much power, too."
@@ -2869,8 +2911,8 @@ msgid ""
 "It’s so cold it’s almost creepy, like it was suckin’ magic right outta my "
 "fingers."
 msgstr ""
-"C’est tellement froid que c’en est presque flippant, comme si ça aspirait "
-"la magie de mes doigts."
+"C’est tellement froid que c’en est presque flippant, comme si ça aspirait la "
+"magie de mes doigts."
 
 #: src/dialog/marisa.c:414
 msgid "But that means the tower… has corporeal form?!"
@@ -2891,7 +2933,9 @@ msgstr "J-je suppose qu’elle n’utilise ni grimoires, ni magie."
 #: src/dialog/marisa.c:421
 msgid ""
 "This is highly complex machinery, likely relying on advanced computational—"
-msgstr "C’est une machinerie très complexe, probablement basée sur des calculs avancés—"
+msgstr ""
+"C’est une machinerie très complexe, probablement basée sur des calculs "
+"avancés—"
 
 #: src/dialog/marisa.c:423
 msgid "But then, what’s the power source?"
@@ -2922,8 +2966,8 @@ msgid ""
 "Perhaps the thin atmosphere at this elevation has gotten to you. I will not "
 "divulge any further information, for your own protection."
 msgstr ""
-"Peut-être que l’atmosphère rare à cette altitude t’a affecté. "
-"Je ne divulguerai aucune autre information, pour ta propre protection."
+"Peut-être que l’atmosphère rare à cette altitude t’a affecté. Je ne "
+"divulguerai aucune autre information, pour ta propre protection."
 
 #: src/dialog/marisa.c:442
 msgid "What’s her name?"
@@ -2935,7 +2979,8 @@ msgstr "Pourquoi ne m’écoutes‑tu pas…?"
 
 #: src/dialog/marisa.c:447
 msgid "Do ya got any tips on talkin’ to her, maybe make her loosen up a bit?"
-msgstr "As‑tu des conseils pour lui parler, peut-être la faire se détendre un peu?"
+msgstr ""
+"As‑tu des conseils pour lui parler, peut-être la faire se détendre un peu?"
 
 #: src/dialog/marisa.c:449
 msgid "I don’t wanna blow my chance."
@@ -2959,7 +3004,8 @@ msgstr ""
 
 #: src/dialog/marisa.c:456
 msgid "Ah, I see, I see. I’ll have to turn on the ol’ Kirisame charm."
-msgstr "Ah, je vois, je vois. Il va falloir que j’active le vieil charme Kirisame."
+msgstr ""
+"Ah, je vois, je vois. Il va falloir que j’active le vieil charme Kirisame."
 
 #: src/dialog/marisa.c:459
 msgid "I get it, I get it."
@@ -2977,7 +3023,8 @@ msgstr "Assez!"
 msgid ""
 "It is said that specifically applied electro-stimulation can ease the mind."
 msgstr ""
-"On dit que l’électrostimulation appliquée de manière spécifique peut apaiser l’esprit."
+"On dit que l’électrostimulation appliquée de manière spécifique peut apaiser "
+"l’esprit."
 
 #: src/dialog/marisa.c:467
 msgid "Allow me to put that into practice for you!"
@@ -3004,13 +3051,15 @@ msgid ""
 "Her powers rely on technology and the scientific method. Of that much, I am "
 "sure."
 msgstr ""
-"Ses pouvoirs reposent sur la technologie et la méthode scientifique. De ça, j’en suis sûre."
+"Ses pouvoirs reposent sur la technologie et la méthode scientifique. De ça, "
+"j’en suis sûre."
 
 #: src/dialog/marisa.c:502
 msgid ""
 "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?"
 msgstr ""
-"La seule fois où Sanae n’est pas là pour s’extasier sur toutes ces choses sciencey, eh?"
+"La seule fois où Sanae n’est pas là pour s’extasier sur toutes ces choses "
+"sciencey, eh?"
 
 #: src/dialog/marisa.c:505
 msgid ""
@@ -3030,11 +3079,14 @@ msgstr "Voix étrange?"
 
 #: src/dialog/marisa.c:512
 msgid "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever."
-msgstr "Ouais, elle me dit sans cesse que je ne réfléchis pas correctement ou je ne sais quoi."
+msgstr ""
+"Ouais, elle me dit sans cesse que je ne réfléchis pas correctement ou je ne "
+"sais quoi."
 
 #: src/dialog/marisa.c:513
 msgid "Probably just those weird madness rays tryin’ to get me."
-msgstr "Probablement juste ces rayons de folie bizarres qui essaient de m’atteindre."
+msgstr ""
+"Probablement juste ces rayons de folie bizarres qui essaient de m’atteindre."
 
 #: src/dialog/marisa.c:516
 msgid "Ugh, you fool."
@@ -3045,7 +3097,8 @@ msgid ""
 "But perhaps you are thinking just well enough to resolve this incident after "
 "all…"
 msgstr ""
-"Mais peut-être que tu réfléchis juste assez pour résoudre cet incident après tout…"
+"Mais peut-être que tu réfléchis juste assez pour résoudre cet incident après "
+"tout…"
 
 #: src/dialog/marisa.c:521
 msgid "Ah! There’s that voice again!"
@@ -3072,7 +3125,8 @@ msgid ""
 "Did you really think I wouldn’t notice all the commotion you caused inside "
 "the tower?"
 msgstr ""
-"Pensais‑tu vraiment que je ne remarquerais pas tout le vacarme que tu as causé inside la tour?"
+"Pensais‑tu vraiment que je ne remarquerais pas tout le vacarme que tu as "
+"causé inside la tour?"
 
 #: src/dialog/marisa.c:550
 msgid "Hmmmmmmm…"
@@ -3116,7 +3170,8 @@ msgstr "Bientôt, vous verrez l'erreur de—"
 
 #: src/dialog/marisa.c:571
 msgid "Do ya know how boring it is to be a magician in Gensōkyō these days?"
-msgstr "Tu sais à quel point c'est ennuyeux d'être magicien à Gensōkyō ces temps-ci?"
+msgstr ""
+"Tu sais à quel point c'est ennuyeux d'être magicien à Gensōkyō ces temps-ci?"
 
 #: src/dialog/marisa.c:574
 msgid "I couldn’t possibly care about—"
@@ -3124,7 +3179,9 @@ msgstr "Je m'en fiche complètement—"
 
 #: src/dialog/marisa.c:576
 msgid "Seriously! Recently it’s just been ‘God this’ and ‘Otherworld that’."
-msgstr "Sérieusement! Ces derniers temps, ce n'est que ‘Dieu ceci’ et ‘Autre monde cela’."
+msgstr ""
+"Sérieusement! Ces derniers temps, ce n'est que ‘Dieu ceci’ et ‘Autre monde "
+"cela’."
 
 #: src/dialog/marisa.c:577
 msgid "Reimu’s been pickin’ up some sweet skills, but me? Nothin’!"
@@ -3132,7 +3189,9 @@ msgstr "Reimu a acquis de super compétences, mais moi? Rien du tout!"
 
 #: src/dialog/marisa.c:578
 msgid "Gods use magic too, but they’re like her! They don’t need books!"
-msgstr "Les dieux utilisent aussi la magie, mais ils sont comme elle! Ils n’ont pas besoin de livres!"
+msgstr ""
+"Les dieux utilisent aussi la magie, mais ils sont comme elle! Ils n’ont pas "
+"besoin de livres!"
 
 #: src/dialog/marisa.c:579
 msgid "But I do! And I end up empty handed every dang time!"
@@ -3146,7 +3205,8 @@ msgstr "J’AI DIT que je me fiche de ta stupide petite sorc—"
 msgid ""
 "I saw this place ‘n I was all, ‘Whoa! Is this all enchantments ‘n stuff?!’"
 msgstr ""
-"J’ai vu cet endroit et je me suis dit: ‘Whoa ! Tout est enchantements et trucs du genre ?!’"
+"J’ai vu cet endroit et je me suis dit: ‘Whoa ! Tout est enchantements et "
+"trucs du genre ?!’"
 
 #: src/dialog/marisa.c:586
 msgid "I got really excited!"
@@ -3154,11 +3214,15 @@ msgstr "J’étais vraiment excitée!"
 
 #: src/dialog/marisa.c:587
 msgid "‘Maybe I could get a new trump-card outta this’ is what I thought."
-msgstr "‘Peut-être que je pourrais tirer une nouvelle carte maîtresse de ça’, ai-je pensé."
+msgstr ""
+"‘Peut-être que je pourrais tirer une nouvelle carte maîtresse de ça’, ai-je "
+"pensé."
 
 #: src/dialog/marisa.c:589
 msgid "But obviously yer a shinigami or somethin’. And I didn’t see a library…"
-msgstr "Mais évidemment tu es un shinigami ou quelque chose du genre. Et je n’ai pas vu de bibliothèque…"
+msgstr ""
+"Mais évidemment tu es un shinigami ou quelque chose du genre. Et je n’ai pas "
+"vu de bibliothèque…"
 
 #: src/dialog/marisa.c:590
 msgid "I guess that oarfish from before was right."
@@ -3166,7 +3230,9 @@ msgstr "Je suppose que ce poisson-rameau d’avant avait raison."
 
 #: src/dialog/marisa.c:591
 msgid "Master Spark’s good ‘n all, but it’ll only get me so far in life…"
-msgstr "Master Spark est bien et tout, mais ça ne me mènera qu’un certain temps dans la vie…"
+msgstr ""
+"Master Spark est bien et tout, mais ça ne me mènera qu’un certain temps dans "
+"la vie…"
 
 #: src/dialog/marisa.c:594 src/dialog/youmu.c:226 src/dialog/youmu.c:542
 msgid "…"
@@ -3193,7 +3259,8 @@ msgid ""
 "What, you mean last time? At least then you were guardin’ some powerful "
 "thingy I coulda used."
 msgstr ""
-"Quoi, tu veux dire la dernière fois ? Au moins à ce moment-là tu gardais quelque chose de puissant que j’aurais pu utiliser."
+"Quoi, tu veux dire la dernière fois ? Au moins à ce moment-là tu gardais "
+"quelque chose de puissant que j’aurais pu utiliser."
 
 #: src/dialog/marisa.c:603
 msgid "I’m tryin’ to remember, was that timeline a bust, too?"
@@ -3204,7 +3271,8 @@ msgid ""
 "At least I met Yūka, right? Did ya know she ended up givin’ me my trademark "
 "spell?"
 msgstr ""
-"Au moins j’ai rencontré Yūka, non? Savais-tu qu’elle m’a finalement donné mon sort signature?"
+"Au moins j’ai rencontré Yūka, non? Savais-tu qu’elle m’a finalement donné "
+"mon sort signature?"
 
 #: src/dialog/marisa.c:606
 msgid "Not right then, ‘n not voluntarily, but—"
@@ -3219,7 +3287,8 @@ msgid ""
 "… ugh, nevermind! It’s not as if you could possibly grasp the Tower’s true "
 "power."
 msgstr ""
-"… euh, laisse tomber! Ce n’est pas comme si tu pouvais saisir le vrai pouvoir de la Tour."
+"… euh, laisse tomber! Ce n’est pas comme si tu pouvais saisir le vrai "
+"pouvoir de la Tour."
 
 #: src/dialog/marisa.c:612
 msgid ""
@@ -3229,30 +3298,35 @@ msgstr ""
 
 #: src/dialog/marisa.c:615
 msgid "Eh? I’m not depressed or anythin’. I’m just disappointed."
-msgstr "Hein? Je ne suis pas déprimée ou quoi que ce soit. Je suis juste déçue."
+msgstr ""
+"Hein? Je ne suis pas déprimée ou quoi que ce soit. Je suis juste déçue."
 
 #: src/dialog/marisa.c:618
 msgid ""
 "I-It’s not about being ‘depressed’! It’s about being overwhelmed with the "
 "vast knowledge of the universe!"
 msgstr ""
-"Ce n’est pas une question de ‘dépression’! C’est être submergée par l’immense savoir de l’univers!"
+"Ce n’est pas une question de ‘dépression’! C’est être submergée par "
+"l’immense savoir de l’univers!"
 
 #: src/dialog/marisa.c:619
 msgid ""
 "Once you realize the true potential of reality, you’ll go mad with knowledge!"
 msgstr ""
-"Une fois que tu réalises le véritable potentiel de la réalité, tu deviens folle de connaissance!"
+"Une fois que tu réalises le véritable potentiel de la réalité, tu deviens "
+"folle de connaissance!"
 
 #: src/dialog/marisa.c:620
 msgid "Don’t you see?! Nothing can stop us now! For we are—!"
-msgstr "Tu ne vois pas?! Rien ne peut nous arrêter maintenant! Car nous sommes—!"
+msgstr ""
+"Tu ne vois pas?! Rien ne peut nous arrêter maintenant! Car nous sommes—!"
 
 #: src/dialog/marisa.c:623
 msgid ""
 "But I’m already mad with knowledge! Why do ya think I drink all the time?!"
 msgstr ""
-"Mais je suis déjà folle de connaissance! Pourquoi crois-tu que je bois tout le temps?!"
+"Mais je suis déjà folle de connaissance! Pourquoi crois-tu que je bois tout "
+"le temps?!"
 
 #: src/dialog/marisa.c:624
 msgid "My mind’s always racin’ with this ‘n that…"
@@ -3261,8 +3335,7 @@ msgstr "Mon esprit court toujours de ci de là…"
 #: src/dialog/marisa.c:625
 msgid ""
 "Ya think this is any different than how I usually live?! Get over y’erself!"
-msgstr ""
-"Tu penses que c’est différent de ma vie habituelle?! Dépasse-toi!"
+msgstr "Tu penses que c’est différent de ma vie habituelle?! Dépasse-toi!"
 
 #: src/dialog/marisa.c:627
 msgid "Now, I gotta ask… ya really, seriously don’t got anything?"
@@ -3277,22 +3350,24 @@ msgid ""
 "Heck, I’ll even take one of those little glowy tablet thingies with all "
 "those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
 msgstr ""
-"Mince, je prendrai même l’une de ces petites tablettes lumineuses avec tous ces ‘PDF’ dessus!"
-" Elles sont si brillantes que ça me fait mal aux yeux, mais—"
+"Mince, je prendrai même l’une de ces petites tablettes lumineuses avec tous "
+"ces ‘PDF’ dessus! Elles sont si brillantes que ça me fait mal aux yeux, mais—"
 
 #: src/dialog/marisa.c:632
 msgid ""
 "Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you "
 "any longer!"
 msgstr ""
-"Puisque tu prends ÉVIDEMMENT cela pour une blague, je REFUSE de te parler plus longtemps!"
+"Puisque tu prends ÉVIDEMMENT cela pour une blague, je REFUSE de te parler "
+"plus longtemps!"
 
 #: src/dialog/marisa.c:635
 msgid ""
 "Oh c’mon, turn the madness-whatever off ‘n we’ll go out for drinks! There’s "
 "this nice new bar in town with a cute—"
 msgstr ""
-"Oh allez, éteins cette folie-truc et nous irons prendre un verre! Il y a un joli nouveau bar en ville avec un mignon—"
+"Oh allez, éteins cette folie-truc et nous irons prendre un verre! Il y a un "
+"joli nouveau bar en ville avec un mignon—"
 
 #: src/dialog/marisa.c:637
 msgid "There’s no force in this world that would make me turn back now!"
@@ -3300,11 +3375,15 @@ msgstr "Aucune force au monde ne pourrait me faire reculer maintenant!"
 
 #: src/dialog/marisa.c:640
 msgid "Someone as ‘ordinary’ as you getting in our way may be impressive…"
-msgstr "Quelqu’un d’aussi ‘ordinaire’ que toi se mettant en travers de notre chemin peut être impressionnant…"
+msgstr ""
+"Quelqu’un d’aussi ‘ordinaire’ que toi se mettant en travers de notre chemin "
+"peut être impressionnant…"
 
 #: src/dialog/marisa.c:642
 msgid "But there’s no place for sorcery in our enlightened vision of Gensōkyō!"
-msgstr "Mais il n’y a pas de place pour la sorcellerie dans notre vision éclairée de Gensōkyō!"
+msgstr ""
+"Mais il n’y a pas de place pour la sorcellerie dans notre vision éclairée de "
+"Gensōkyō!"
 
 #: src/dialog/marisa.c:644
 msgid "Now, succumb to the madness!"
@@ -3323,6 +3402,14 @@ msgid ""
 "Your pitiful magic amounts to nothing against the true nature of reality!"
 msgstr ""
 "Ta magie pitoyable ne vaut rien face à la véritable nature de la réalité!"
+
+#: src/dialog/reimu.c:46
+msgid "Snow during summer? This is certainly familiar…"
+msgstr ""
+
+#: src/dialog/reimu.c:52
+msgid "Nobody can stop me now!"
+msgstr ""
 
 #: src/dialog/reimu.c:56
 msgid "Mwahahaha!"
@@ -3361,7 +3448,8 @@ msgid "Not fair! You broke the rules! I wasn’t ready yet…"
 msgstr "Pas juste! Tu as enfreint les règles! Je n’étais pas encore prêt…"
 
 #: src/dialog/reimu.c:112
-msgid "With those loudmouthed kappa gone, the mountain feels practically deserted."
+msgid ""
+"With those loudmouthed kappa gone, the mountain feels practically deserted."
 msgstr "Sans ces kappa bavards, la montagne semble pratiquement déserte."
 
 #: src/dialog/reimu.c:114
@@ -3393,8 +3481,12 @@ msgid "Do you even know what you’re protecting me from this time?"
 msgstr "Sais-tu même de quoi tu me protèges cette fois?"
 
 #: src/dialog/reimu.c:134
-msgid "A bright girl like you should know that Yōkai Mountain is especially dangerous today."
-msgstr "Une fille intelligente comme toi devrait savoir que la Montagne des Yōkai est particulièrement dangereuse aujourd’hui."
+msgid ""
+"A bright girl like you should know that Yōkai Mountain is especially "
+"dangerous today."
+msgstr ""
+"Une fille intelligente comme toi devrait savoir que la Montagne des Yōkai "
+"est particulièrement dangereuse aujourd’hui."
 
 #: src/dialog/reimu.c:136
 msgid "You ought to turn back now, my dear."
@@ -3414,7 +3506,9 @@ msgstr "Je sais mieux que les Dieux de la montagne cette fois."
 
 #: src/dialog/reimu.c:146
 msgid "If you do not turn back immediately, I’ll have to repel you by force."
-msgstr "Si tu ne fais pas demi-tour immédiatement, je devrai te repousser par la force."
+msgstr ""
+"Si tu ne fais pas demi-tour immédiatement, je devrai te repousser par la "
+"force."
 
 #: src/dialog/reimu.c:149
 msgid "So annoying…"
@@ -3425,20 +3519,32 @@ msgid "So I lost… you can keep going then, I suppose."
 msgstr "Donc j’ai perdu… tu peux continuer alors, je suppose."
 
 #: src/dialog/reimu.c:168
-msgid "You should know by now that I can handle it. Why are you being so overbearing?"
-msgstr "Tu devrais savoir maintenant que je peux gérer. Pourquoi es-tu si autoritaire?"
+msgid ""
+"You should know by now that I can handle it. Why are you being so "
+"overbearing?"
+msgstr ""
+"Tu devrais savoir maintenant que je peux gérer. Pourquoi es-tu si "
+"autoritaire?"
 
 #: src/dialog/reimu.c:169
-msgid "Just don’t say I didn’t warn you, when you inevitably get mauled by whatever’s out there…"
-msgstr "Ne dis pas que je ne t’ai pas prévenu, quand tu seras inévitablement déchiqueté par ce qui traîne dehors…"
+msgid ""
+"Just don’t say I didn’t warn you, when you inevitably get mauled by "
+"whatever’s out there…"
+msgstr ""
+"Ne dis pas que je ne t’ai pas prévenu, quand tu seras inévitablement "
+"déchiqueté par ce qui traîne dehors…"
 
 #: src/dialog/reimu.c:172
 msgid "(Ignored again…)"
 msgstr "(Ignoré encore…)"
 
 #: src/dialog/reimu.c:188
-msgid "Aside from everyone being whipped up into a frenzy, I can’t see anything abnormal yet."
-msgstr "À part que tout le monde est pris dans une frénésie, je ne vois encore rien d’anormal."
+msgid ""
+"Aside from everyone being whipped up into a frenzy, I can’t see anything "
+"abnormal yet."
+msgstr ""
+"À part que tout le monde est pris dans une frénésie, je ne vois encore rien "
+"d’anormal."
 
 #: src/dialog/reimu.c:191
 msgid "Well, to your human eyes, insects may seem ‘normal’…"
@@ -3453,8 +3559,11 @@ msgid "Eh? You? Aren’t you a bit far from home?"
 msgstr "He? Toi? Tu n’es pas un peu loin de chez toi?"
 
 #: src/dialog/reimu.c:199
-msgid "Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
-msgstr "Et puis, ‘régnions en maîtres’? Je n’ai jamais entendu parler d’insectes gouvernant Gensōkyō."
+msgid ""
+"Besides, ‘reigned supreme’? I’ve never heard of insects ruling over Gensōkyō."
+msgstr ""
+"Et puis, ‘régnions en maîtres’? Je n’ai jamais entendu parler d’insectes "
+"gouvernant Gensōkyō."
 
 #: src/dialog/reimu.c:203
 msgid "'Far from home'? But you’ve intruded on my secret lair!"
@@ -3474,13 +3583,17 @@ msgstr "Cette période de l’histoire?"
 
 #: src/dialog/reimu.c:209
 msgid "It was the greatest time, everyone should’ve heard of it by now!"
-msgstr "C’était la meilleure époque, tout le monde devrait en avoir entendu parler maintenant!"
+msgstr ""
+"C’était la meilleure époque, tout le monde devrait en avoir entendu parler "
+"maintenant!"
 
 #: src/dialog/reimu.c:211
-msgid "Seems pretty far-fetched to me, honestly. But you yōkai are always coming up with the craziest theories…"
+msgid ""
+"Seems pretty far-fetched to me, honestly. But you yōkai are always coming up "
+"with the craziest theories…"
 msgstr ""
-"Ça me semble un peu tiré par les cheveux, honnêtement."
-" Mais vous, yōkai, avez toujours les théories les plus folles…"
+"Ça me semble un peu tiré par les cheveux, honnêtement. Mais vous, yōkai, "
+"avez toujours les théories les plus folles…"
 
 #: src/dialog/reimu.c:214
 msgid "Don’t lump us great insects in with common yōkai!"
@@ -3516,7 +3629,8 @@ msgstr "On dirait une des expériences ‘nucléaires’ de Sanae."
 
 #: src/dialog/reimu.c:243
 msgid "B-but I saw it clearly… the glorious past of insectkind…"
-msgstr "M-mais je l’ai vu clairement… le glorieux passé du peuple des insectes…"
+msgstr ""
+"M-mais je l’ai vu clairement… le glorieux passé du peuple des insectes…"
 
 #: src/dialog/reimu.c:246
 msgid "Don’t you have a pretty sweet deal as it is, though?"
@@ -3559,8 +3673,12 @@ msgid "Are you behind all these… strange thoughts everyone’s having?"
 msgstr "Es-tu derrière toutes ces… pensées étranges que tout le monde a?"
 
 #: src/dialog/reimu.c:289
-msgid "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with you…"
-msgstr "Je n’ai aucune idée de ce que tu veux dire par ‘pensées étranges’, mais je vais être honnête avec toi…"
+msgid ""
+"I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with "
+"you…"
+msgstr ""
+"Je n’ai aucune idée de ce que tu veux dire par ‘pensées étranges’, mais je "
+"vais être honnête avec toi…"
 
 #: src/dialog/reimu.c:290
 msgid "Your clothing is giving me some strange thoughts!"
@@ -3584,7 +3702,8 @@ msgstr "Arrête juste… ce que tu es en train de faire, tout de suite."
 
 #: src/dialog/reimu.c:301
 msgid "Once you get some fashion sense, maybe I will!"
-msgstr "Quand tu auras un peu de goût vestimentaire, peut-être que je le ferai!"
+msgstr ""
+"Quand tu auras un peu de goût vestimentaire, peut-être que je le ferai!"
 
 #: src/dialog/reimu.c:304
 msgid "… so you *are* behind this, huh?"
@@ -3611,12 +3730,19 @@ msgid "Uniform? Are you kidding me?!"
 msgstr "Un uniforme ? Tu te moques de moi?!"
 
 #: src/dialog/reimu.c:317
-msgid "I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
-msgstr "J’ai déjà vu une vraie prêtresse du sanctuaire, et elle ne te ressemblait pas du tout!"
+msgid ""
+"I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
+msgstr ""
+"J’ai déjà vu une vraie prêtresse du sanctuaire, et elle ne te ressemblait "
+"pas du tout!"
 
 #: src/dialog/reimu.c:318
-msgid "What’s with those patterns, anyways? It’s completely unorthodox! It’s not even using the right type of fabric!"
-msgstr "C’est quoi ces motifs, d’ailleurs? C’est complètement hétérodoxe! Ce n’est même pas le bon type de tissu!"
+msgid ""
+"What’s with those patterns, anyways? It’s completely unorthodox! It’s not "
+"even using the right type of fabric!"
+msgstr ""
+"C’est quoi ces motifs, d’ailleurs? C’est complètement hétérodoxe! Ce n’est "
+"même pas le bon type de tissu!"
 
 #: src/dialog/reimu.c:320
 msgid "Get out of here, fake-maiden!"
@@ -3628,7 +3754,9 @@ msgstr "… ARGH!"
 
 #: src/dialog/reimu.c:325
 msgid "Listen!! It’s HARD to find clothes I can wear every day on the job!"
-msgstr "Écoute!! C’est DIFFICILE de trouver des vêtements que je peux porter tous les jours pour le travail!"
+msgstr ""
+"Écoute!! C’est DIFFICILE de trouver des vêtements que je peux porter tous "
+"les jours pour le travail!"
 
 #: src/dialog/reimu.c:326
 msgid "It has to fit a certain style!"
@@ -3693,6 +3821,13 @@ msgstr "Je ne me souviens pas du tout de toi."
 #: src/dialog/reimu.c:367
 msgid "But somehow, so familiar…"
 msgstr "Mais pourtant, si familière…"
+
+#: src/dialog/reimu.c:369
+msgid ""
+"This feeling is annoying, whatever it is. Make it stop, or tell me how to "
+"make it stop."
+msgstr ""
+
 #: src/dialog/reimu.c:372
 msgid "Huh? I-I don’t know! I barely remember anything!"
 msgstr "Hein? J-je ne sais pas! Je me souviens à peine de quoi que ce soit!"
@@ -3715,11 +3850,14 @@ msgstr "J’ai un mauvais pressentiment à propos de tout ça…"
 
 #: src/dialog/reimu.c:396
 msgid "Or maybe I’m just feeling nauseous with this tower’s constant spinning."
-msgstr "Ou peut-être que j’ai juste la nausée à cause de la rotation constante de cette tour."
+msgstr ""
+"Ou peut-être que j’ai juste la nausée à cause de la rotation constante de "
+"cette tour."
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
-msgstr "Ou peut-être est-ce un effet secondaire de la simple présence de la tour?"
+msgstr ""
+"Ou peut-être est-ce un effet secondaire de la simple présence de la tour?"
 
 #: src/dialog/reimu.c:404
 msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
@@ -3743,7 +3881,8 @@ msgstr "Euh, oui, c’est vrai, ça faisait un moment. Ravie de te revoir."
 
 #: src/dialog/reimu.c:417
 msgid "This tower is unlike anything I have seen before."
-msgstr "Cette tour n’a rien de semblable à tout ce que j’ai pu voir auparavant."
+msgstr ""
+"Cette tour n’a rien de semblable à tout ce que j’ai pu voir auparavant."
 
 #: src/dialog/reimu.c:418
 msgid ""
@@ -3757,14 +3896,16 @@ msgstr ""
 msgid ""
 "You mean like Otherworlds? That’s not too out of the ordinary these days."
 msgstr ""
-"Tu veux dire comme les Autremondes? Ce n’est plus vraiment inhabituel de nos jours."
+"Tu veux dire comme les Autremondes? Ce n’est plus vraiment inhabituel de nos "
+"jours."
 
 #: src/dialog/reimu.c:423
 msgid ""
 "This feels different though. It’s like the walls are sucking up faith into a "
 "void."
 msgstr ""
-"Mais là, c’est différent. On dirait que les murs aspirent la foi dans un vide."
+"Mais là, c’est différent. On dirait que les murs aspirent la foi dans un "
+"vide."
 
 #: src/dialog/reimu.c:424
 msgid "I’m surprised the fairies are surviving at all…"
@@ -3776,14 +3917,16 @@ msgstr "Mais qu’est-ce que tu fais ici, au juste?"
 
 #: src/dialog/reimu.c:429
 msgid "It is not just the Netherworld and Gensōkyō being affected."
-msgstr "Ce ne sont pas seulement le Monde des Morts et Gensōkyō qui sont touchés."
+msgstr ""
+"Ce ne sont pas seulement le Monde des Morts et Gensōkyō qui sont touchés."
 
 #: src/dialog/reimu.c:431
 msgid ""
 "In Bhava-agra, the Eldest Daughter’s personality has experienced some "
 "changes, too."
 msgstr ""
-"À Bhava-agra, la personnalité de la Fille Aînée a aussi subi quelques changements."
+"À Bhava-agra, la personnalité de la Fille Aînée a aussi subi quelques "
+"changements."
 
 #: src/dialog/reimu.c:434
 msgid "It’s spreading that fast?!"
@@ -3798,8 +3941,9 @@ msgid ""
 "However, the tower’s psychological effects began to intensify, and I began "
 "to fear that nobody would take charge."
 msgstr ""
-"Cependant, les effets psychologiques de la tour ont commencé à s’intensifier, "
-"et j’ai commencé à craindre que personne ne prenne les choses en main."
+"Cependant, les effets psychologiques de la tour ont commencé à "
+"s’intensifier, et j’ai commencé à craindre que personne ne prenne les choses "
+"en main."
 
 #: src/dialog/reimu.c:443
 msgid "(Do people have this little faith in me…?)"
@@ -3807,15 +3951,19 @@ msgstr "(Les gens ont-ils si peu de foi en moi…?)"
 
 #: src/dialog/reimu.c:446
 msgid "As more minds began to fall prey, I considered a theory…"
-msgstr "Alors que de plus en plus d’esprits commençaient à succomber, j’ai envisagé une théorie…"
+msgstr ""
+"Alors que de plus en plus d’esprits commençaient à succomber, j’ai envisagé "
+"une théorie…"
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
-msgstr "Cette machine serait-elle incompatible avec l’existence du fantastique?"
+msgstr ""
+"Cette machine serait-elle incompatible avec l’existence du fantastique?"
 
 #: src/dialog/reimu.c:450
 msgid "That may be why you feel a sense of dread about the place."
-msgstr "C’est peut-être pour cela que tu ressens une crainte face à cet endroit."
+msgstr ""
+"C’est peut-être pour cela que tu ressens une crainte face à cet endroit."
 
 #: src/dialog/reimu.c:453
 msgid "Well, that settles it. Where’s the owner, then?"
@@ -3830,7 +3978,8 @@ msgid ""
 "You are still relatively composed, yes, but your mental state seems to be "
 "deteriorating."
 msgstr ""
-"Tu restes relativement calme, certes, mais ton état mental semble se détériorer."
+"Tu restes relativement calme, certes, mais ton état mental semble se "
+"détériorer."
 
 #: src/dialog/reimu.c:460
 msgid "Deteriorating? But I just got here!"
@@ -3840,7 +3989,8 @@ msgstr "Se détériorer? Mais je viens juste d’arriver!"
 msgid ""
 "You are still so worrisome. You ought to go home before you lose yourself."
 msgstr ""
-"Tu restes si préoccupante. Tu ferais mieux de rentrer avant de te perdre toi-même."
+"Tu restes si préoccupante. Tu ferais mieux de rentrer avant de te perdre toi-"
+"même."
 
 #: src/dialog/reimu.c:466
 msgid "No!"
@@ -3852,7 +4002,9 @@ msgstr "Comment?"
 
 #: src/dialog/reimu.c:471
 msgid "Don’t keep telling me how little you think of me. I’m sick of it!"
-msgstr "Ne continue pas à me répéter à quel point tu penses peu de moi. J’en ai assez!"
+msgstr ""
+"Ne continue pas à me répéter à quel point tu penses peu de moi. J’en ai "
+"assez!"
 
 #: src/dialog/reimu.c:473
 msgid "I’m going to give everyone a reason to have faith in me!"
@@ -3880,11 +4032,13 @@ msgstr "J’ai eu tort de douter de toi, je suppose…"
 
 #: src/dialog/reimu.c:506
 msgid "Somehow I don’t feel too satisfied by that."
-msgstr "Pour une raison ou une autre, je ne me sens pas vraiment satisfaite de ça."
+msgstr ""
+"Pour une raison ou une autre, je ne me sens pas vraiment satisfaite de ça."
 
 #: src/dialog/reimu.c:509
 msgid "To be honest with you, I’m glad you arrived after all."
-msgstr "Pour être honnête avec toi, je suis contente que tu sois finalement venue."
+msgstr ""
+"Pour être honnête avec toi, je suis contente que tu sois finalement venue."
 
 #: src/dialog/reimu.c:510
 msgid "I know now that I would not have been able to defeat her."
@@ -3895,7 +4049,8 @@ msgid ""
 "Since you’re still able to think clearly, perhaps Gensōkyō will be saved "
 "after all."
 msgstr ""
-"Puisque tu es encore capable de penser clairement, peut-être que Gensōkyō sera sauvé après tout."
+"Puisque tu es encore capable de penser clairement, peut-être que Gensōkyō "
+"sera sauvé après tout."
 
 #: src/dialog/reimu.c:515
 msgid "Finally."
@@ -3915,7 +4070,9 @@ msgstr "Ravie de l’entendre."
 
 #: src/dialog/reimu.c:537
 msgid "Well, well, well. It seems a faithful rat trespassed on our domain."
-msgstr "Eh bien, eh bien, eh bien. On dirait qu’un rat fidèle s’est introduit sur notre territoire."
+msgstr ""
+"Eh bien, eh bien, eh bien. On dirait qu’un rat fidèle s’est introduit sur "
+"notre territoire."
 
 #: src/dialog/reimu.c:541
 msgid "How strange. You should’ve lost your mind by now."
@@ -3935,7 +4092,9 @@ msgstr "Il faut du culot pour entrer dans MA tour et ME donner des ordres!"
 
 #: src/dialog/reimu.c:550
 msgid "I still remember what you did to Lady Kazami and I back then!"
-msgstr "Je me souviens encore de ce que tu as fait à Dame Kazami et à moi, à l’époque!"
+msgstr ""
+"Je me souviens encore de ce que tu as fait à Dame Kazami et à moi, à "
+"l’époque!"
 
 #: src/dialog/reimu.c:553
 msgid "And what was that, again?"
@@ -3954,14 +4113,16 @@ msgid ""
 "I think I would’ve remembered a giant tower that makes people go mad with "
 "power!"
 msgstr ""
-"Je pense que je me serais souvenue d’une tour géante qui rend les gens fous de pouvoir!"
+"Je pense que je me serais souvenue d’une tour géante qui rend les gens fous "
+"de pouvoir!"
 
 #: src/dialog/reimu.c:561
 msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
 msgstr ""
-"Le minimum quand on accuse quelqu’un, c’est de lui dire ce qu’il est censé avoir fait!"
+"Le minimum quand on accuse quelqu’un, c’est de lui dire ce qu’il est censé "
+"avoir fait!"
 
 #: src/dialog/reimu.c:564
 msgid "Ah. I see."
@@ -3976,14 +4137,16 @@ msgid ""
 "This tower is a recent invention. Its mere existence is revolutionary in "
 "several scientific fields."
 msgstr ""
-"Cette tour est une invention récente. Sa simple existence est révolutionnaire dans plusieurs domaines scientifiques."
+"Cette tour est une invention récente. Sa simple existence est "
+"révolutionnaire dans plusieurs domaines scientifiques."
 
 #: src/dialog/reimu.c:569
 msgid ""
 "The denizens of this Gensōkyō ought to have been thankful for its vast "
 "scientific knowledge…"
 msgstr ""
-"Les habitants de ce Gensōkyō auraient dû être reconnaissants pour son immense savoir scientifique…"
+"Les habitants de ce Gensōkyō auraient dû être reconnaissants pour son "
+"immense savoir scientifique…"
 
 #: src/dialog/reimu.c:570
 msgid "But alas, we have other plans."
@@ -4006,14 +4169,16 @@ msgid ""
 "There won’t be anyone to rule over, or whatever, if you make them all lose "
 "it."
 msgstr ""
-"Il n’y aura plus personne à dominer, ou peu importe, si tu les rends tous fous."
+"Il n’y aura plus personne à dominer, ou peu importe, si tu les rends tous "
+"fous."
 
 #: src/dialog/reimu.c:580
 msgid ""
 "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around "
 "it."
 msgstr ""
-"La Tour de Babel est capable ‘d’éclairer’ ceux qui ont la chance de se trouver près d’elle."
+"La Tour de Babel est capable ‘d’éclairer’ ceux qui ont la chance de se "
+"trouver près d’elle."
 
 #: src/dialog/reimu.c:582
 msgid "Anyone unable to comprehend its brilliance will be driven to madness."
@@ -4024,7 +4189,8 @@ msgid ""
 "But this is simply retribution for the crimes that have been committed "
 "against us!"
 msgstr ""
-"Mais ce n’est qu’une simple rétribution pour les crimes qui ont été commis contre nous!"
+"Mais ce n’est qu’une simple rétribution pour les crimes qui ont été commis "
+"contre nous!"
 
 #: src/dialog/reimu.c:587
 msgid "‘Parallel universes’, is that it?"
@@ -4040,7 +4206,8 @@ msgstr "C’est toi qui me le dis! C’est toi la mégalomane!"
 
 #: src/dialog/reimu.c:595
 msgid "Do you hate me because some other Reimu did something? Is that it?"
-msgstr "Tu me détestes parce qu’une autre Reimu aurait fait quelque chose? C’est ça?"
+msgstr ""
+"Tu me détestes parce qu’une autre Reimu aurait fait quelque chose? C’est ça?"
 
 #: src/dialog/reimu.c:596
 msgid "But then what does that have to do with any of us?!"
@@ -4052,14 +4219,17 @@ msgstr "Pour une ‘scientifique’, tu n’es pas très cohérente!"
 
 #: src/dialog/reimu.c:601
 msgid "Perhaps you’ve simply forgotten, like you have of the rest of us!"
-msgstr "Peut-être que tu as simplement oublié, comme tu l’as fait pour le reste d’entre nous!"
+msgstr ""
+"Peut-être que tu as simplement oublié, comme tu l’as fait pour le reste "
+"d’entre nous!"
 
 #: src/dialog/reimu.c:603
 msgid ""
 "Only the privileged, such as Lady Kazami, made it out! The rest of us were "
 "lost!"
 msgstr ""
-"Seuls les privilégiés, comme Dame Kazami, s’en sont sortis! Le reste d’entre nous a été perdu!"
+"Seuls les privilégiés, comme Dame Kazami, s’en sont sortis! Le reste d’entre "
+"nous a été perdu!"
 
 #: src/dialog/reimu.c:606
 msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
@@ -4070,7 +4240,8 @@ msgid ""
 "I remember when I first met Alice, and she said some weird things too, just "
 "like you are now."
 msgstr ""
-"Je me souviens de ma première rencontre avec Alice, et elle disait aussi des choses étranges, tout comme toi maintenant."
+"Je me souviens de ma première rencontre avec Alice, et elle disait aussi des "
+"choses étranges, tout comme toi maintenant."
 
 #: src/dialog/reimu.c:609
 msgid "But she didn’t go around threatening everyone!"
@@ -4081,7 +4252,8 @@ msgid ""
 "We weren’t as lucky! And as reparation, we will take control of this "
 "Gensōkyō!"
 msgstr ""
-"Nous n’avons pas eu cette chance! Et en guise de réparation, nous prendrons le contrôle de ce Gensōkyō!"
+"Nous n’avons pas eu cette chance! Et en guise de réparation, nous prendrons "
+"le contrôle de ce Gensōkyō!"
 
 #: src/dialog/reimu.c:613
 msgid "We will make it so we will NEVER be forgotten!"
@@ -4095,7 +4267,8 @@ msgstr "Même à Gensōkyō, on peut être oublié, hein?"
 msgid ""
 "What a miserable thought. No wonder I felt terrible just seeing this place!"
 msgstr ""
-"Quelle pensée misérable. Pas étonnant que je me sois sentie mal rien qu’en voyant cet endroit!"
+"Quelle pensée misérable. Pas étonnant que je me sois sentie mal rien qu’en "
+"voyant cet endroit!"
 
 #: src/dialog/reimu.c:619
 msgid "Turn it off, or being forgotten will be the least of your worries!"
@@ -4110,7 +4283,8 @@ msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
 msgstr ""
-"Tu ne comprends donc pas, pitoyable prêtresse? La science est un pouvoir insondable, surpassé par rien!"
+"Tu ne comprends donc pas, pitoyable prêtresse? La science est un pouvoir "
+"insondable, surpassé par rien!"
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
@@ -4130,7 +4304,9 @@ msgstr "Contemple la vérité ultime de l’univers, et tremble!"
 
 #: src/dialog/youmu.c:24
 msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
-msgstr "Je suppose que la neige qui tombe peut être aussi belle que les fleurs de cerisier…"
+msgstr ""
+"Je suppose que la neige qui tombe peut être aussi belle que les fleurs de "
+"cerisier…"
 
 #: src/dialog/youmu.c:27
 msgid "Hey!"
@@ -4149,7 +4325,8 @@ msgid ""
 "I tend to dislike dueling those weaker than myself, so I’d appreciate it if "
 "you’d step aside."
 msgstr ""
-"J’ai tendance à ne pas aimer me battre contre plus faible que moi, alors j’aimerais que tu t’écartes."
+"J’ai tendance à ne pas aimer me battre contre plus faible que moi, alors "
+"j’aimerais que tu t’écartes."
 
 #: src/dialog/youmu.c:37
 msgid "Hah! Maybe YOU should step aside, then!"
@@ -4160,13 +4337,15 @@ msgid ""
 "I suppose it’s as good a time as any to practice my Snowflake-Destruction "
 "Technique."
 msgstr ""
-"Je suppose que c’est le bon moment pour m’exercer à ma Technique de Destruction des Flocons."
+"Je suppose que c’est le bon moment pour m’exercer à ma Technique de "
+"Destruction des Flocons."
 
 #: src/dialog/youmu.c:44
 msgid ""
 "But if I turn you into a snowflake, you’ll have to chop yourself in half!"
 msgstr ""
-"Mais si je te transforme en flocon de neige, tu devras te trancher toi-même en deux!"
+"Mais si je te transforme en flocon de neige, tu devras te trancher toi-même "
+"en deux!"
 
 #: src/dialog/youmu.c:58
 msgid "The cold is no good for such fine blades…"
@@ -4186,7 +4365,8 @@ msgstr "Alors c’est ça, la Montagne Yōkai…"
 
 #: src/dialog/youmu.c:81
 msgid "A shame, I’ve heard this is usually quite a lovely place."
-msgstr "Quel dommage, j’ai entendu dire que c’est habituellement un endroit charmant."
+msgstr ""
+"Quel dommage, j’ai entendu dire que c’est habituellement un endroit charmant."
 
 #: src/dialog/youmu.c:84
 msgid "Oh my, what’s this? A new face?"
@@ -4205,13 +4385,15 @@ msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
 msgstr ""
-"Je n’ai jamais entendu parler de cette ‘Dame Yuyuko’ dont tu parles, mais je ne peux pas laisser passer ça."
+"Je n’ai jamais entendu parler de cette ‘Dame Yuyuko’ dont tu parles, mais je "
+"ne peux pas laisser passer ça."
 
 #: src/dialog/youmu.c:94
 msgid ""
 "Young girls such as yourself shouldn’t be sent to do such dangerous errands!"
 msgstr ""
-"Les jeunes filles comme toi ne devraient pas être envoyées faire des courses aussi dangereuses!"
+"Les jeunes filles comme toi ne devraient pas être envoyées faire des courses "
+"aussi dangereuses!"
 
 #: src/dialog/youmu.c:97
 msgid "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—"
@@ -4229,14 +4411,16 @@ msgstr "—oserais-je dire même la meilleure de Gensōkyō—"
 msgid ""
 "Aww… but you’re so adorable! No way someone like you could be into that."
 msgstr ""
-"Aww… mais tu es tellement adorable! Impossible qu’une fille comme toi soit dans ce genre de chose."
+"Aww… mais tu es tellement adorable! Impossible qu’une fille comme toi soit "
+"dans ce genre de chose."
 
 #: src/dialog/youmu.c:103
 msgid ""
 "Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage "
 "phase?"
 msgstr ""
-"Tu es sûre que cette histoire ‘d’épéiste experte’ n’est pas juste une sorte de phase d’adolescente?"
+"Tu es sûre que cette histoire ‘d’épéiste experte’ n’est pas juste une sorte "
+"de phase d’adolescente?"
 
 #: src/dialog/youmu.c:106
 msgid "It’s not a PHASE, mo—"
@@ -4284,7 +4468,8 @@ msgstr "Pas rond?"
 
 #: src/dialog/youmu.c:157
 msgid "Perhaps you’re frightened by our growing, overwhelming influence?"
-msgstr "Peut-être es-tu effrayée par notre influence grandissante et écrasante?"
+msgstr ""
+"Peut-être es-tu effrayée par notre influence grandissante et écrasante?"
 
 #: src/dialog/youmu.c:160
 msgid "Bugs do not concern me at the moment."
@@ -4292,11 +4477,15 @@ msgstr "Les insectes ne me préoccupent pas pour le moment."
 
 #: src/dialog/youmu.c:163
 msgid "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!"
-msgstr "Oh, donc tous les insectes sont des ‘bestiole’ maintenant, hmm? Je vois comment c’est!"
+msgstr ""
+"Oh, donc tous les insectes sont des ‘bestiole’ maintenant, hmm? Je vois "
+"comment c’est!"
 
 #: src/dialog/youmu.c:165
 msgid "Ever heard of beetles? Flies? Show us some respect!"
-msgstr "Tu as déjà entendu parler des scarabées? Des mouches? Montre-nous un peu de respect!"
+msgstr ""
+"Tu as déjà entendu parler des scarabées? Des mouches? Montre-nous un peu de "
+"respect!"
 
 #: src/dialog/youmu.c:168
 msgid "Apologies, I meant no offense."
@@ -4307,7 +4496,8 @@ msgid ""
 "I am on a mission from Lady Yuyuko to end whatever is causing the disturbance"
 "—"
 msgstr ""
-"Je suis en mission pour Dame Yuyuko afin de mettre fin à ce qui cause ces perturbations—"
+"Je suis en mission pour Dame Yuyuko afin de mettre fin à ce qui cause ces "
+"perturbations—"
 
 #: src/dialog/youmu.c:173
 msgid "Oh, oh, I understand now."
@@ -4318,18 +4508,22 @@ msgid ""
 "The power wielded by an army of giant insects would surely raise some "
 "concerns."
 msgstr ""
-"Le pouvoir d’une armée d’insectes géants aurait de quoi éveiller quelques inquiétudes."
+"Le pouvoir d’une armée d’insectes géants aurait de quoi éveiller quelques "
+"inquiétudes."
 
 #: src/dialog/youmu.c:177
 msgid "Simply put, we want to restore our rightful place in history!"
-msgstr "Pour faire simple, nous voulons restaurer notre place légitime dans l’histoire!"
+msgstr ""
+"Pour faire simple, nous voulons restaurer notre place légitime dans "
+"l’histoire!"
 
 #: src/dialog/youmu.c:178
 msgid ""
 "It’s only natural that the lower inhabitants of the mountain would get "
 "nervous in the face of our natural dominance."
 msgstr ""
-"Il est tout naturel que les habitants inférieurs de la montagne deviennent nerveux face à notre domination naturelle."
+"Il est tout naturel que les habitants inférieurs de la montagne deviennent "
+"nerveux face à notre domination naturelle."
 
 #: src/dialog/youmu.c:180
 msgid "Your apology is accepted. You shall not fear our wrath—"
@@ -4337,11 +4531,15 @@ msgstr "Tes excuses sont acceptées. Tu n’auras pas à craindre notre courroux
 
 #: src/dialog/youmu.c:183
 msgid "… no, no, bugs alone wouldn’t cause this kind of disturbance…"
-msgstr "… non, non, des insectes seuls ne pourraient pas causer ce genre de perturbation…"
+msgstr ""
+"… non, non, des insectes seuls ne pourraient pas causer ce genre de "
+"perturbation…"
 
 #: src/dialog/youmu.c:185
 msgid "All they’re capable of is ruining my carefully manicured garden."
-msgstr "Tout ce dont ils sont capables, c’est de ruiner mon jardin soigneusement entretenu."
+msgstr ""
+"Tout ce dont ils sont capables, c’est de ruiner mon jardin soigneusement "
+"entretenu."
 
 #: src/dialog/youmu.c:187
 msgid "Did you just say you’re…"
@@ -4360,11 +4558,13 @@ msgid ""
 "My light shines brighter than ever now! I shall teach this lowly usurper due "
 "respect!"
 msgstr ""
-"Ma lumière brille plus fort que jamais maintenant! J’enseignerai à cette vile usurpatrice le respect qui m’est dû!"
+"Ma lumière brille plus fort que jamais maintenant! J’enseignerai à cette "
+"vile usurpatrice le respect qui m’est dû!"
 
 #: src/dialog/youmu.c:196
 msgid "So that we may live above beyond your green thumb once and for all!"
-msgstr "Afin que nous vivions au-delà de ta main verte, une bonne fois pour toutes!"
+msgstr ""
+"Afin que nous vivions au-delà de ta main verte, une bonne fois pour toutes!"
 
 #: src/dialog/youmu.c:210
 msgid "Are you aware of the legend of the Tonbokiri?"
@@ -4374,7 +4574,8 @@ msgstr "Connais-tu la légende du Tonbokiri?"
 msgid ""
 "It was said its blade could cut insects in half simply by them landing on it."
 msgstr ""
-"On disait que sa lame pouvait trancher un insecte en deux simplement en le laissant s’y poser."
+"On disait que sa lame pouvait trancher un insecte en deux simplement en le "
+"laissant s’y poser."
 
 #: src/dialog/youmu.c:213
 msgid "Undoubtedly, that is what has transpired today."
@@ -4393,7 +4594,8 @@ msgid ""
 "Fear not. I will end your delusional madness and restore justice and order "
 "to the—"
 msgstr ""
-"N’aie crainte. Je mettrai fin à ta folie délirante et je rétablirai la justice et l’ordre dans—"
+"N’aie crainte. Je mettrai fin à ta folie délirante et je rétablirai la "
+"justice et l’ordre dans—"
 
 #: src/dialog/youmu.c:221
 msgid "… ugh, that’s a little much, even for me, isn’t it?"
@@ -4425,7 +4627,9 @@ msgstr "Qui es-tu donc?"
 
 #: src/dialog/youmu.c:256
 msgid "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!"
-msgstr "Hmph! Je suis Kurumi, une rose noire solitaire noyée dans une mer de mauvais goût!"
+msgstr ""
+"Hmph! Je suis Kurumi, une rose noire solitaire noyée dans une mer de mauvais "
+"goût!"
 
 #: src/dialog/youmu.c:257
 msgid "You better remember that!"
@@ -4451,7 +4655,8 @@ msgstr ""
 
 #: src/dialog/youmu.c:267
 msgid "They dress like they’ve fallen out of a bad 80s anime!"
-msgstr "Ils s’habillent comme s’ils sortaient d’un mauvais anime des années 80!"
+msgstr ""
+"Ils s’habillent comme s’ils sortaient d’un mauvais anime des années 80!"
 
 #: src/dialog/youmu.c:270
 msgid "I see. I have no immediate reason to distrust you."
@@ -4470,7 +4675,8 @@ msgid ""
 "The lady in the tower talks about it a lot, so it must be something horrible "
 "for sure."
 msgstr ""
-"La dame dans la tour en parle tout le temps, donc ça doit être quelque chose d’horrible, c’est sûr."
+"La dame dans la tour en parle tout le temps, donc ça doit être quelque chose "
+"d’horrible, c’est sûr."
 
 #: src/dialog/youmu.c:279
 msgid "Didn’t you just say you weren’t associated with them?"
@@ -4509,7 +4715,8 @@ msgid ""
 "‘Dancing’ with you has been a pleasant distraction on the path to completing "
 "my mission."
 msgstr ""
-"‘Danser’ avec toi fut une agréable distraction sur le chemin de l’accomplissement de ma mission."
+"‘Danser’ avec toi fut une agréable distraction sur le chemin de "
+"l’accomplissement de ma mission."
 
 #: src/dialog/youmu.c:310
 msgid "Tell your ‘leader’ that I am coming for them."
@@ -4536,7 +4743,8 @@ msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
 msgstr ""
-"… ouais! Je pensais que ça allait être un truc ‘scientifique’ ou je ne sais quoi, mais ils l’ont rendu hanté, avec genre, des fantômes et tout!"
+"… ouais! Je pensais que ça allait être un truc ‘scientifique’ ou je ne sais "
+"quoi, mais ils l’ont rendu hanté, avec genre, des fantômes et tout!"
 
 #: src/dialog/youmu.c:327
 msgid "G-…"
@@ -4573,8 +4781,7 @@ msgstr "Oui, la bataille finale approche. Je peux la sentir."
 #: src/dialog/youmu.c:358
 msgid ""
 "Will it be a legendary duel? One to go down in the history of Gensōkyō?!"
-msgstr ""
-"Sera-ce un duel légendaire? Un qui marquera l’histoire de Gensōkyō?!"
+msgstr "Sera-ce un duel légendaire? Un qui marquera l’histoire de Gensōkyō?!"
 
 #: src/dialog/youmu.c:361
 msgid "Oh, the gardener from the Netherworld?"
@@ -4628,7 +4835,8 @@ msgstr "Cette tour est contrôlée par une machine…"
 msgid ""
 "… and the machine’s effects seem to go well beyond Gensōkyō’s boundaries."
 msgstr ""
-"… et les effets de cette machine semblent s’étendre bien au-delà des frontières de Gensōkyō."
+"… et les effets de cette machine semblent s’étendre bien au-delà des "
+"frontières de Gensōkyō."
 
 #: src/dialog/youmu.c:391
 msgid "Including the heavens, I presume? I see."
@@ -4643,7 +4851,8 @@ msgid ""
 "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this "
 "incident once and—"
 msgstr ""
-"Konpaku Yōmu, la plus grande épéiste à avoir vécu et péri, réglera cet incident une bonne fois pour—"
+"Konpaku Yōmu, la plus grande épéiste à avoir vécu et péri, réglera cet "
+"incident une bonne fois pour—"
 
 #: src/dialog/youmu.c:398
 msgid ""
@@ -4665,14 +4874,16 @@ msgid ""
 "During my recent battles, I have achieved a flow state most blademasters "
 "only dream of!"
 msgstr ""
-"Durant mes récents combats, j’ai atteint un état de grâce dont la plupart des maîtres d’armes ne font que rêver!"
+"Durant mes récents combats, j’ai atteint un état de grâce dont la plupart "
+"des maîtres d’armes ne font que rêver!"
 
 #: src/dialog/youmu.c:406
 msgid ""
 "Through that, I have realized the true form of my previously-incomplete "
 "yōkai-vanquishing technique!"
 msgstr ""
-"Grâce à cela, j’ai réalisé la véritable forme de ma technique d’extermination des yōkai, jadis incomplète!"
+"Grâce à cela, j’ai réalisé la véritable forme de ma technique "
+"d’extermination des yōkai, jadis incomplète!"
 
 #: src/dialog/youmu.c:409
 msgid "Is that so?"
@@ -4699,7 +4910,8 @@ msgid ""
 "But I have become one with my swords, achieving a perfection that no other "
 "before me has been able—"
 msgstr ""
-"Mais je ne fais plus qu’un avec mes lames, atteignant une perfection qu’aucun avant moi n’a pu—"
+"Mais je ne fais plus qu’un avec mes lames, atteignant une perfection "
+"qu’aucun avant moi n’a pu—"
 
 #: src/dialog/youmu.c:424
 msgid "Ah, I haven’t the time for this nonsense!"
@@ -4730,7 +4942,8 @@ msgid ""
 "Alas, it cannot be helped. You have likely been affected since before your "
 "arrival."
 msgstr ""
-"Hélas, il n’y a rien à faire. Tu as probablement été affectée avant même ton arrivée."
+"Hélas, il n’y a rien à faire. Tu as probablement été affectée avant même ton "
+"arrivée."
 
 #: src/dialog/youmu.c:457
 msgid "I have no choice but to let you through, despite my reservations."
@@ -4753,7 +4966,8 @@ msgid ""
 "… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all "
 "connected realms!"
 msgstr ""
-"… accomplir la mission de Dame Yuyuko, et apporter la paix à Gensōkyō et à tous les royaumes qui y sont liés!"
+"… accomplir la mission de Dame Yuyuko, et apporter la paix à Gensōkyō et à "
+"tous les royaumes qui y sont liés!"
 
 #: src/dialog/youmu.c:464
 msgid "I will not fail!"
@@ -4766,28 +4980,30 @@ msgstr "J-je vois."
 #: src/dialog/youmu.c:467
 msgid ""
 "Ascend the staircase. You will find the perpetrator waiting for you there."
-msgstr ""
-"Monte l’escalier. Tu y trouveras la responsable qui t’attend."
+msgstr "Monte l’escalier. Tu y trouveras la responsable qui t’attend."
 
 #: src/dialog/youmu.c:468
 msgid ""
 "Be prepared. The technology she possesses is from a so-called ‘parallel "
 "universe’."
 msgstr ""
-"Prépare-toi. La technologie qu’elle possède vient d’un soi-disant ‘univers parallèle’."
+"Prépare-toi. La technologie qu’elle possède vient d’un soi-disant ‘univers "
+"parallèle’."
 
 #: src/dialog/youmu.c:469
 msgid ""
 "It is unlike anything any of us have encountered before. Even I am not sure "
 "of its specifics."
 msgstr ""
-"C’est quelque chose qu’aucune de nous n’a jamais vu auparavant. Même moi, j’en ignore les détails."
+"C’est quelque chose qu’aucune de nous n’a jamais vu auparavant. Même moi, "
+"j’en ignore les détails."
 
 #: src/dialog/youmu.c:472
 msgid ""
 "Fear not, I will slice her infernal machine in half like an invasive weed."
 msgstr ""
-"N’aie crainte, je trancherai sa machine infernale en deux comme une mauvaise herbe envahissante."
+"N’aie crainte, je trancherai sa machine infernale en deux comme une mauvaise "
+"herbe envahissante."
 
 #: src/dialog/youmu.c:489
 msgid "Ah."
@@ -4816,12 +5032,12 @@ msgstr "Rien ne semble te ralentir, hmm?"
 #: src/dialog/youmu.c:501
 msgid ""
 "Such an annoyance. But that’s to be expected of the folk of this Gensōkyō."
-msgstr ""
-"Quelle nuisance. Mais c’est bien typique des habitants de ce Gensōkyō."
+msgstr "Quelle nuisance. Mais c’est bien typique des habitants de ce Gensōkyō."
 
 #: src/dialog/youmu.c:503
 msgid "And I see that you’re a master of the blade, a shinigami no less!"
-msgstr "Et je vois que tu es une maîtresse de la lame, une shinigami qui plus est!"
+msgstr ""
+"Et je vois que tu es une maîtresse de la lame, une shinigami qui plus est!"
 
 #: src/dialog/youmu.c:505
 msgid "Absolutely splendid!"
@@ -4836,7 +5052,8 @@ msgid ""
 "The scythe is a rather particular weapon, you must understand. Forgive me "
 "presumptiveness."
 msgstr ""
-"La faux est une arme plutôt particulière, tu dois comprendre. Pardonne mon audace."
+"La faux est une arme plutôt particulière, tu dois comprendre. Pardonne mon "
+"audace."
 
 #: src/dialog/youmu.c:513
 msgid ""
@@ -4854,7 +5071,8 @@ msgstr "Une ère que nous, les ‘oubliés’, régnerons!"
 
 #: src/dialog/youmu.c:519
 msgid "Such an unwieldy weapon… for anyone to choose it willingly…"
-msgstr "Une arme si peu maniable… pour que quiconque la choisisse volontairement…"
+msgstr ""
+"Une arme si peu maniable… pour que quiconque la choisisse volontairement…"
 
 #: src/dialog/youmu.c:520
 msgid "Either you’re incredibly skilled, or incredibly foolish."
@@ -4874,7 +5092,9 @@ msgstr "Techniques? Hah!"
 
 #: src/dialog/youmu.c:527
 msgid "I’m sure our existence means nothing to you! And the feeling is mutual!"
-msgstr "Je suis sûre que notre existence ne signifie rien pour toi! Et le sentiment est réciproque!"
+msgstr ""
+"Je suis sûre que notre existence ne signifie rien pour toi! Et le sentiment "
+"est réciproque!"
 
 #: src/dialog/youmu.c:530
 msgid "On the contrary, scythe-bearer!"
@@ -4913,14 +5133,16 @@ msgid ""
 "We will create a new era of Gensōkyō, where the truly forgotten can live "
 "another day!"
 msgstr ""
-"Nous créerons une nouvelle ère pour Gensōkyō, où les vraiment oubliés pourront vivre un autre jour!"
+"Nous créerons une nouvelle ère pour Gensōkyō, où les vraiment oubliés "
+"pourront vivre un autre jour!"
 
 #: src/dialog/youmu.c:546
 msgid ""
 "Soon, the residents of this land will be driven mad beyond comprehension, "
 "and be ripe to conquer!"
 msgstr ""
-"Bientôt, les habitants de cette terre seront rendus fous au-delà de toute compréhension, et prêts à être conquis!"
+"Bientôt, les habitants de cette terre seront rendus fous au-delà de toute "
+"compréhension, et prêts à être conquis!"
 
 #: src/dialog/youmu.c:548
 msgid "So you wish to avenge your fallen compatriots… how noble…"
@@ -4935,13 +5157,15 @@ msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
 msgstr ""
-"Hélas, ma mission, donnée par Dame Yuyuko du Netherworld, est en conflit direct avec la tienne!"
+"Hélas, ma mission, donnée par Dame Yuyuko du Netherworld, est en conflit "
+"direct avec la tienne!"
 
 #: src/dialog/youmu.c:552
 msgid ""
 "I cannot allow you to drive my compatriots mad, or to subjugate my home!"
 msgstr ""
-"Je ne peux te permettre de rendre mes compatriotes fous, ni de subjuguer mon foyer!"
+"Je ne peux te permettre de rendre mes compatriotes fous, ni de subjuguer mon "
+"foyer!"
 
 #: src/dialog/youmu.c:554
 msgid "Perhaps, in another time and place, we could have been friends!"
@@ -4951,7 +5175,8 @@ msgstr "Peut-être, dans un autre temps et lieu, aurions-nous pu être amies!"
 msgid ""
 "B-Being friends with you h-heartless folk would be a sin! I could never!"
 msgstr ""
-"Ê-Être amie avec des gens aussi c-cœur de pierre serait un péché! Jamais je ne pourrais!"
+"Ê-Être amie avec des gens aussi c-cœur de pierre serait un péché! Jamais je "
+"ne pourrais!"
 
 #: src/dialog/youmu.c:560
 msgid "What a tragedy!"
@@ -4965,7 +5190,8 @@ msgstr "Tu vises à être le grand ‘héros’ de ce Gensōkyō, n’est-ce pas
 msgid ""
 "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!"
 msgstr ""
-"Naturellement! Pas différent de la manière dont tu souhaites être le héros de ‘ton’ Gensōkyō!"
+"Naturellement! Pas différent de la manière dont tu souhaites être le héros "
+"de ‘ton’ Gensōkyō!"
 
 #: src/dialog/youmu.c:567
 msgid "We’re not so different, you and I."
@@ -4988,14 +5214,16 @@ msgid ""
 "In a magic-filled world like this, they cut through delusional opponents "
 "with unparalleled precision!"
 msgstr ""
-"Dans un monde rempli de magie comme celui-ci, ils tranchent les adversaires illusoires avec une précision sans pareil!"
+"Dans un monde rempli de magie comme celui-ci, ils tranchent les adversaires "
+"illusoires avec une précision sans pareil!"
 
 #: src/dialog/youmu.c:580
 msgid ""
 "Let’s see what good your swords do you when you fall prey to true "
 "enlightenment!"
 msgstr ""
-"Voyons à quoi te servent tes épées lorsque tu succomberas au véritable ‘éveil’!"
+"Voyons à quoi te servent tes épées lorsque tu succomberas au véritable "
+"‘éveil’!"
 
 #: src/dialog/youmu.c:594
 msgid "Impressive! You’ve pushed me to 10% of my true power!"
@@ -5013,10 +5241,6 @@ msgstr "Voici ton jugement face à la véritable nature de la réalité!"
 msgid "Easy"
 msgstr "Facile"
 
-#: src/difficulty.c:21
-msgid "Normal"
-msgstr "Normal"
-
 #: src/difficulty.c:22
 msgid "Hard"
 msgstr "Difficile"
@@ -5024,11 +5248,6 @@ msgstr "Difficile"
 #: src/difficulty.c:23
 msgid "Lunatic"
 msgstr "Lunatique"
-
-#: src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
-#: src/menu/options.c:1350
-msgid "Unknown"
-msgstr "Inconnu"
 
 #: src/gamepad.c:109
 msgid "Unknown device"
@@ -5050,10 +5269,9 @@ msgstr "X"
 msgid "Y"
 msgstr "Y"
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:815
-#: src/menu/options.c:879 src/menu/options.c:1023 src/menu/options.c:1132
-#: src/menu/options.c:1212 src/menu/replayview.c:471
-#: src/menu/spellpractice.c:67
+#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
+#: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
+#: src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr "Retour"
 
@@ -5064,6 +5282,49 @@ msgstr "Guide"
 #: src/gamepad.c:877
 msgid "Start"
 msgstr "Start"
+
+#: src/gamepad.c:878
+#, fuzzy
+msgid "Left Stick"
+msgstr "Gauche X"
+
+#: src/gamepad.c:879
+#, fuzzy
+msgid "Right Stick"
+msgstr "Droite X"
+
+#: src/gamepad.c:880
+#, fuzzy
+msgid "Left Bumper"
+msgstr "Gâchette Gauche"
+
+#: src/gamepad.c:881
+#, fuzzy
+msgid "Right Bumper"
+msgstr "Gâchette Droite"
+
+#: src/gamepad.c:882
+msgid "Up"
+msgstr ""
+
+#: src/gamepad.c:883
+msgid "Down"
+msgstr ""
+
+#: src/gamepad.c:884
+#, fuzzy
+msgid "Left"
+msgstr "Gauche X"
+
+#: src/gamepad.c:885
+#, fuzzy
+msgid "Right"
+msgstr "Droite X"
+
+#: src/gamepad.c:886
+#, fuzzy
+msgid "Misc"
+msgstr "Divers 2"
 
 #: src/gamepad.c:887
 msgid "P1"
@@ -5144,6 +5405,10 @@ msgstr "Droite X"
 #: src/gamepad.c:916
 msgid "Right Y"
 msgstr "Droite Y"
+
+#: src/i18n/i18n.c:187
+msgid "__NAME__"
+msgstr ""
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -5334,8 +5599,8 @@ msgid ""
 "The majority of insects do not scheme grand revolutions, yet their presence "
 "alone is enough to upset the course of events."
 msgstr ""
-"Tout n’est pas calculable, et cet insecte semble surgir à un carrefour décisif "
-"lors de ton trajet vers le véritable coupable.\n"
+"Tout n’est pas calculable, et cet insecte semble surgir à un carrefour "
+"décisif lors de ton trajet vers le véritable coupable.\n"
 "\n"
 "La majorité des insectes ne fomentent pas de grandes révolutions, mais leur "
 "simple présence suffit à perturber le cours des événements."
@@ -5358,10 +5623,11 @@ msgid ""
 "If she thinks she has a raw evolutionary deal, someone ought to tell her "
 "about the trilobites…"
 msgstr ""
-"Un insecte brillant – ou était-ce un bug ? – loin de ses terrains habituels.\n"
+"Un insecte brillant – ou était-ce un bug ? – loin de ses terrains "
+"habituels.\n"
 "\n"
-"Elle estime que les insectes ont perdu leur “place légitime” dans l’histoire, "
-"quoi que cela veuille dire.\n"
+"Elle estime que les insectes ont perdu leur “place légitime” dans "
+"l’histoire, quoi que cela veuille dire.\n"
 "\n"
 "Si elle pense avoir été lésée dans l’évolution, quelqu’un devrait lui parler "
 "des trilobites…"
@@ -5384,8 +5650,8 @@ msgid ""
 "\n"
 "Everyone’s got multiple side-hustles these days…"
 msgstr ""
-"Explosion vampirique du passé. Ne sait-elle pas que Gensōkyō a déjà de nouveaux "
-"suceurs de sang en ville ?\n"
+"Explosion vampirique du passé. Ne sait-elle pas que Gensōkyō a déjà de "
+"nouveaux suceurs de sang en ville ?\n"
 "\n"
 "Sucer le sang est sa spécialité, mais son emploi actuel est celui de "
 "gardienne, et sa vraie passion est la haute couture.\n"
@@ -5438,12 +5704,12 @@ msgid ""
 msgstr ""
 "Un peu contrariée d’avoir été oubliée.\n"
 "\n"
-"A apparemment pris un tuteur pour les “arts obscurs” de la physique théorique. "
-"Son activité annexe est le mégalomanie.\n"
+"A apparemment pris un tuteur pour les “arts obscurs” de la physique "
+"théorique. Son activité annexe est le mégalomanie.\n"
 "\n"
-"Littéralement au sommet du monde, sans se soucier de ceux qui sont en dessous. "
-"Essaie de ne pas laisser trop de pierres écraser les yōkai innocents en bas "
-"quand sa Tour de Babel commence à s’effondrer."
+"Littéralement au sommet du monde, sans se soucier de ceux qui sont en "
+"dessous. Essaie de ne pas laisser trop de pierres écraser les yōkai "
+"innocents en bas quand sa Tour de Babel commence à s’effondrer."
 
 #: src/menu/charprofile.c:168
 msgid "Locked"
@@ -5562,7 +5828,7 @@ msgid "Game Paused"
 msgstr "Jeu En Pause"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1138
+#: src/menu/options.c:1180
 msgid "Options"
 msgstr "Options"
 
@@ -5606,7 +5872,7 @@ msgstr "Commencer Extra"
 msgid "Stage Practice"
 msgstr "Entraînement de stage"
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:21
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:218
 msgid "Spell Practice"
 msgstr "Entraînement de sorts"
 
@@ -5614,7 +5880,7 @@ msgstr "Entraînement de sorts"
 msgid "Select Stage"
 msgstr "Sélectionner un stage"
 
-#: src/menu/mainmenu.c:128 src/menu/replayview.c:358
+#: src/menu/mainmenu.c:128 src/menu/replayview.c:376
 msgid "Replays"
 msgstr "Replays"
 
@@ -5648,7 +5914,8 @@ msgstr ""
 "\n"
 "Vous n’avez pas encore débloqué ce morceau !\n"
 "\n"
-"Si vous voulez l’écouter malgré tout, sélectionnez-le de nouveau pour confirmer."
+"Si vous voulez l’écouter malgré tout, sélectionnez-le de nouveau pour "
+"confirmer."
 
 #: src/menu/musicroom.c:178
 msgid ""
@@ -5662,361 +5929,366 @@ msgstr ""
 msgid "Unknown track"
 msgstr "Morceau inconnu"
 
-#: src/menu/options.c:494
+#: src/menu/options.c:536
 msgid "Reset all settings to defaults?"
 msgstr "Réinitialiser tous les paramètres par défaut ?"
 
-#: src/menu/options.c:500
+#: src/menu/options.c:542
 msgid "Reset all settings to the last saved values?"
 msgstr "Réinitialiser tous les paramètres aux dernières valeurs sauvegardées ?"
 
-#: src/menu/options.c:577 src/menu/options.c:768
+#: src/menu/options.c:619 src/menu/options.c:810
 msgid "on"
 msgstr "Activé"
 
-#: src/menu/options.c:578 src/menu/options.c:769
+#: src/menu/options.c:620 src/menu/options.c:811
 msgid "off"
 msgstr "Désactivé"
 
-#: src/menu/options.c:704
+#: src/menu/options.c:746 src/menu/savereplay.c:134
 msgid "Yes"
 msgstr "Oui"
 
-#: src/menu/options.c:705
+#: src/menu/options.c:747 src/menu/savereplay.c:135
 msgid "No"
 msgstr "Non"
 
-#: src/menu/options.c:733
+#: src/menu/options.c:775
 msgid "Video Options"
 msgstr "Options vidéo"
 
-#: src/menu/options.c:736
+#: src/menu/options.c:778
 msgid "Fullscreen"
 msgstr "Plein écran"
 
-#: src/menu/options.c:741
+#: src/menu/options.c:783
 msgid "Display"
 msgstr "Affichage"
 
-#: src/menu/options.c:745
+#: src/menu/options.c:787
 msgid "Window size"
 msgstr "Taille de la fenêtre"
 
-#: src/menu/options.c:750
+#: src/menu/options.c:792
 msgid "Renderer resolution"
 msgstr "Résolution du rendu"
 
-#: src/menu/options.c:755
+#: src/menu/options.c:797
 msgid "Resizable window"
 msgstr "Fenêtre redimensionnable"
 
-#: src/menu/options.c:762
+#: src/menu/options.c:804
 msgid "Pause the game when not focused"
 msgstr "Mettre le jeu en pause lorsqu’il n’est pas actif"
 
-#: src/menu/options.c:766
+#: src/menu/options.c:808
 msgid "Vertical synchronization"
 msgstr "Synchronisation verticale"
 
-#: src/menu/options.c:772
+#: src/menu/options.c:814
 msgid "adaptive"
 msgstr "Adaptive"
 
-#: src/menu/options.c:775
+#: src/menu/options.c:817
 msgid "Skip frames"
 msgstr "Ignorer des images"
 
-#: src/menu/options.c:783
+#: src/menu/options.c:825
 msgid "Overall rendering quality"
 msgstr "Qualité globale du rendu"
 
-#: src/menu/options.c:787
+#: src/menu/options.c:829
 msgid "Draw background"
 msgstr "Afficher le fond"
 
-#: src/menu/options.c:791
+#: src/menu/options.c:833
 msgid "Background rendering quality"
 msgstr "Qualité du rendu du fond"
 
-#: src/menu/options.c:798
+#: src/menu/options.c:840
 msgid "Anti-aliasing"
 msgstr "Anti-crénelage"
 
-#: src/menu/options.c:800
+#: src/menu/options.c:842
 msgid "none"
 msgstr "Aucun"
 
-#: src/menu/options.c:801
+#: src/menu/options.c:843
 msgid "fxaa"
 msgstr "FXAA"
 
-#: src/menu/options.c:803
+#: src/menu/options.c:845
 msgid "Particle effects"
 msgstr "Effets de particules"
 
-#: src/menu/options.c:805 src/menu/options.c:810
+#: src/menu/options.c:847 src/menu/options.c:852
 msgid "minimal"
 msgstr "Minimal"
 
-#: src/menu/options.c:806 src/menu/options.c:812
+#: src/menu/options.c:848 src/menu/options.c:854
 msgid "full"
 msgstr "Complet"
 
-#: src/menu/options.c:808
+#: src/menu/options.c:850
 msgid "Postprocessing effects"
 msgstr "Effets de post-traitement"
 
-#: src/menu/options.c:811
+#: src/menu/options.c:853
 msgid "fast"
 msgstr "Rapide"
 
-#: src/menu/options.c:836
+#: src/menu/options.c:878
 msgid "Gamepad Controls"
 msgstr "Contrôles du gamepad"
 
-#: src/menu/options.c:838 src/menu/options.c:1031
+#: src/menu/options.c:880 src/menu/options.c:1073
 msgid "Move up"
 msgstr "Monter"
 
-#: src/menu/options.c:842 src/menu/options.c:1035
+#: src/menu/options.c:884 src/menu/options.c:1077
 msgid "Move down"
 msgstr "Descendre"
 
-#: src/menu/options.c:846 src/menu/options.c:1039
+#: src/menu/options.c:888 src/menu/options.c:1081
 msgid "Move left"
 msgstr "Gauche"
 
-#: src/menu/options.c:850 src/menu/options.c:1043
+#: src/menu/options.c:892 src/menu/options.c:1085
 msgid "Move right"
 msgstr "Droite"
 
-#: src/menu/options.c:856 src/menu/options.c:1049
+#: src/menu/options.c:898 src/menu/options.c:1091
 msgid "Shoot"
 msgstr "Tirer"
 
-#: src/menu/options.c:860 src/menu/options.c:1053
+#: src/menu/options.c:902 src/menu/options.c:1095
 msgid "Focus"
 msgstr "Concentration"
 
-#: src/menu/options.c:864 src/menu/options.c:1057
+#: src/menu/options.c:906 src/menu/options.c:1099
 msgid "Use Spell Card"
 msgstr "Utiliser une Carte Magique"
 
-#: src/menu/options.c:868 src/menu/options.c:1061
+#: src/menu/options.c:910 src/menu/options.c:1103
 msgid "Power Surge / Discharge"
 msgstr "Surge / Décharge de puissance"
 
-#: src/menu/options.c:874 src/menu/options.c:1075
+#: src/menu/options.c:916 src/menu/options.c:1117
 msgid "Skip dialog"
 msgstr "Passer le dialogue"
 
-#: src/menu/options.c:952
+#: src/menu/options.c:994
 #, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
-msgstr "Appuyez sur un bouton de votre manette pour quitter le mode test du joystick"
+msgstr ""
+"Appuyez sur un bouton de votre manette pour quitter le mode test du joystick"
 
-#: src/menu/options.c:955
+#: src/menu/options.c:997
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "Appuyez sur %s de votre manette pour entrer en mode test du joystick"
 
-#: src/menu/options.c:968
+#: src/menu/options.c:1010
 msgid "Gamepad Options"
 msgstr "Options du gamepad"
 
-#: src/menu/options.c:979
+#: src/menu/options.c:1021
 msgid "Enable Gamepad/Joystick support"
 msgstr "Activer la prise en charge du gamepad/joystick"
 
-#: src/menu/options.c:983
+#: src/menu/options.c:1025
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/menu/options.c:989 src/menu/options.c:1200
+#: src/menu/options.c:1031 src/menu/options.c:1253
 msgid "Customize controls…"
 msgstr "Personnaliser les contrôles…"
 
-#: src/menu/options.c:993
+#: src/menu/options.c:1035
 msgid "Remap square input into circular"
 msgstr "Convertir l’entrée carrée en circulaire"
 
-#: src/menu/options.c:999
+#: src/menu/options.c:1041
 msgid "Direction snap factor"
 msgstr "Facteur de verrouillage directionnel"
 
-#: src/menu/options.c:1003
+#: src/menu/options.c:1045
 msgid "Diagonal bias"
 msgstr "Biais diagonal"
 
-#: src/menu/options.c:1010
+#: src/menu/options.c:1052
 msgid "Dead zone"
 msgstr "Zone morte"
 
-#: src/menu/options.c:1014
+#: src/menu/options.c:1056
 msgid "Maximum zone"
 msgstr "Zone maximale"
 
-#: src/menu/options.c:1018
+#: src/menu/options.c:1060
 msgid "Sensitivity"
 msgstr "Sensibilité"
 
-#: src/menu/options.c:1029
+#: src/menu/options.c:1071
 msgid "Controls"
 msgstr "Contrôles"
 
-#: src/menu/options.c:1067
+#: src/menu/options.c:1109
 msgid "Toggle fullscreen"
 msgstr "Basculer en plein écran"
 
-#: src/menu/options.c:1071
+#: src/menu/options.c:1113
 msgid "Take a screenshot"
 msgstr "Prendre une capture d’écran"
 
-#: src/menu/options.c:1081
+#: src/menu/options.c:1123
 msgid "Toggle audio"
 msgstr "Basculer audio"
 
-#: src/menu/options.c:1087
+#: src/menu/options.c:1129
 msgid "Stop the game immediately"
 msgstr "Arrêter le jeu immédiatement"
 
-#: src/menu/options.c:1091
+#: src/menu/options.c:1133
 msgid "Restart the game immediately"
 msgstr "Redémarrer le jeu immédiatement"
 
-#: src/menu/options.c:1095
+#: src/menu/options.c:1137
 msgid "Quick save"
 msgstr "Sauvegarde rapide"
 
-#: src/menu/options.c:1099
+#: src/menu/options.c:1141
 msgid "Quick load"
 msgstr "Chargement rapide"
 
-#: src/menu/options.c:1106
+#: src/menu/options.c:1148
 msgid "Toggle God mode"
 msgstr "Basculer le mode Dieu"
 
-#: src/menu/options.c:1110
+#: src/menu/options.c:1152
 msgid "Skip stage"
 msgstr "Passer le stage"
 
-#: src/menu/options.c:1114
+#: src/menu/options.c:1156
 msgid "Power up"
 msgstr "Augmenter la puissance"
 
-#: src/menu/options.c:1118
+#: src/menu/options.c:1160
 msgid "Power down"
 msgstr "Réduire la puissance"
 
-#: src/menu/options.c:1122
+#: src/menu/options.c:1164
 msgid "Disable background rendering (HoM effect)"
 msgstr "Désactiver le rendu du fond (effet HoM)"
 
-#: src/menu/options.c:1126
+#: src/menu/options.c:1168
 msgid "Toggle collision areas overlay"
 msgstr "Basculer l’affichage des zones de collision"
 
-#: src/menu/options.c:1142
+#: src/menu/options.c:1184
 msgid "Player name"
 msgstr "Nom du joueur"
 
-#: src/menu/options.c:1149
+#: src/menu/options.c:1193
+msgid "Language"
+msgstr ""
+
+#: src/menu/options.c:1202
 msgid "Save replays"
 msgstr "Sauvegarder les replays"
 
-#: src/menu/options.c:1151
+#: src/menu/options.c:1204
 msgid "always"
 msgstr "toujours"
 
-#: src/menu/options.c:1152
+#: src/menu/options.c:1205
 msgid "never"
 msgstr "jamais"
 
-#: src/menu/options.c:1153
+#: src/menu/options.c:1206
 msgid "ask"
 msgstr "demander"
 
-#: src/menu/options.c:1155
+#: src/menu/options.c:1208
 msgid "Auto-restart in Spell Practice"
 msgstr "Redémarrage automatique en Spell-Training"
 
-#: src/menu/options.c:1159
+#: src/menu/options.c:1212
 msgid "Power in Spell and Stage Practice"
 msgstr "Puissance en Spell- et Stage-Training"
 
-#: src/menu/options.c:1167
+#: src/menu/options.c:1220
 msgid "Shoot by default"
 msgstr "Tirer par défaut"
 
-#: src/menu/options.c:1171
+#: src/menu/options.c:1224
 msgid "Automatic Power Surge activation"
 msgstr "Activation automatique de Power Surge"
 
-#: src/menu/options.c:1175
+#: src/menu/options.c:1228
 msgid "Boss healthbar style"
 msgstr "Style de barre de vie du boss"
 
-#: src/menu/options.c:1177
+#: src/menu/options.c:1230
 msgid "classic"
 msgstr "Classique"
 
-#: src/menu/options.c:1178
+#: src/menu/options.c:1231
 msgid "modern"
 msgstr "Moderne"
 
-#: src/menu/options.c:1180
+#: src/menu/options.c:1233
 msgid "Floating score text visibility"
 msgstr "Visibilité du texte de score flottant"
 
-#: src/menu/options.c:1186
+#: src/menu/options.c:1239
 msgid "SFX Volume"
 msgstr "Volume des effets sonores"
 
-#: src/menu/options.c:1190
+#: src/menu/options.c:1243
 msgid "BGM Volume"
 msgstr "Volume de la musique"
 
-#: src/menu/options.c:1194
+#: src/menu/options.c:1247
 msgid "Mute audio"
 msgstr "Couper le son"
 
-#: src/menu/options.c:1199
+#: src/menu/options.c:1252
 msgid "Video options…"
 msgstr "Options vidéo…"
 
-#: src/menu/options.c:1201
+#: src/menu/options.c:1254
 msgid "Gamepad & Joystick options…"
 msgstr "Options du gamepad et du joystick…"
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1258
 msgid "Reload from last saved"
 msgstr "Recharger depuis la dernière sauvegarde"
 
-#: src/menu/options.c:1208
+#: src/menu/options.c:1261
 msgid "Reset to defaults"
 msgstr "Réinitialiser par défaut"
 
-#: src/menu/options.c:1341
+#: src/menu/options.c:1394
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Appuyez sur une touche pour assigner, ESC pour annuler"
 
-#: src/menu/options.c:1381
+#: src/menu/options.c:1434
 msgid "All devices"
 msgstr "Tous les périphériques"
 
-#: src/menu/options.c:1387
+#: src/menu/options.c:1440
 msgid "No devices available"
 msgstr "Aucun périphérique disponible"
 
-#: src/menu/options.c:1429
+#: src/menu/options.c:1482
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Bougez un axe pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1430
+#: src/menu/options.c:1483
 msgid "Press a button to assign, Back to cancel"
 msgstr "Appuyez sur un bouton pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1446
+#: src/menu/options.c:1499
 msgid "Unbound"
 msgstr "Non assigné"
 
@@ -6034,28 +6306,68 @@ msgstr "Impossible de rejouer ce stage: ID de stage inconnue %X"
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
 msgstr "Impossible de rejouer ce stage: personnage/joueur inconnu %X/%X"
 
-#: src/menu/replayview.c:136
+#: src/menu/replayview.c:142
 #, c-format
 msgid "Unknown stage %X"
 msgstr "Stage inconnu %X"
 
-#: src/menu/replayview.c:466
+#: src/menu/replayview.c:484
 msgid "No replays available. Play the game and record some!"
 msgstr "Aucun replay disponible. Jouez au jeu et enregistrez-en !"
 
-#: src/menu/replayview.c:468
+#: src/menu/replayview.c:486
 msgid "There was a problem getting the replay list :("
 msgstr "Problème lors de la récupération de la liste des replays :("
 
-#: src/player.c:113
+#: src/menu/savereplay.c:67
+#, fuzzy
+msgid "Save Replay?"
+msgstr "Sauvegarder les replays"
+
+#: src/menu/spellpractice.c:63
+#, c-format
+msgid "№ %d"
+msgstr ""
+
+#: src/menu/spellpractice.c:132
+#, fuzzy
+msgid "Spell Information"
+msgstr "Entraînement de sorts"
+
+#: src/menu/spellpractice.c:140
+msgid "Type"
+msgstr ""
+
+#: src/menu/spellpractice.c:141
+msgid "Health"
+msgstr ""
+
+#: src/menu/spellpractice.c:142
+msgid "Duration"
+msgstr ""
+
+#: src/menu/spellpractice.c:143
+msgid "Bonus Rank"
+msgstr ""
+
+#: src/menu/spellpractice.c:152
+#, c-format
+msgid "%g s"
+msgstr ""
+
+#: src/menu/spellpractice.c:180
+msgid "Clears/Attempts"
+msgstr ""
+
+#: src/player.c:114
 msgid "Full Power!"
 msgstr "Puissance maximale!"
 
-#: src/player.c:731
+#: src/player.c:732
 msgid "Power Surge!"
 msgstr "Surge de puissance!"
 
-#: src/player.c:1581
+#: src/player.c:1582
 msgid " PIV"
 msgstr " PIV"
 
@@ -6068,7 +6380,8 @@ msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
 msgstr ""
-"Missiles magiques et lasers — simples et efficaces. Ils ne vous ont jamais déçu, pourquoi arrêter maintenant ?"
+"Missiles magiques et lasers — simples et efficaces. Ils ne vous ont jamais "
+"déçu, pourquoi arrêter maintenant ?"
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
@@ -6083,7 +6396,8 @@ msgid ""
 "As many bullets as there are stars in the sky. Some of them are bound to "
 "hit. That's called “homing”, right?"
 msgstr ""
-"Autant de projectiles qu’il y a d’étoiles dans le ciel. Certains toucheront forcément leur cible. On appelle ça du “guidage”, non?"
+"Autant de projectiles qu’il y a d’étoiles dans le ciel. Certains toucheront "
+"forcément leur cible. On appelle ça du “guidage”, non?"
 
 #: src/plrmodes/marisa_b.c:556
 msgid "Magic Sign “Stellar Vortex”"
@@ -6098,7 +6412,8 @@ msgid ""
 "The tried-and-true: homing amulets and sharp needles. You don’t have the "
 "luxury of time to think about aiming."
 msgstr ""
-"Les valeurs sûres : amulettes à guidage et aiguilles acérées. Vous n’avez pas le temps de viser."
+"Les valeurs sûres : amulettes à guidage et aiguilles acérées. Vous n’avez "
+"pas le temps de viser."
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
@@ -6113,7 +6428,8 @@ msgid ""
 "Turn your understanding of reality upside-down, and tie the boundaries of "
 "spacetime into knots as easily as the ribbons in your hair."
 msgstr ""
-"Renversez votre compréhension de la réalité et nouez les limites de l’espace-temps aussi facilement que les rubans dans vos cheveux."
+"Renversez votre compréhension de la réalité et nouez les limites de l’espace-"
+"temps aussi facilement que les rubans dans vos cheveux."
 
 #: src/plrmodes/reimu_b.c:715
 msgid "Dream Sign “Ethereal Boundary Rupture”"
@@ -6128,7 +6444,8 @@ msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
 msgstr ""
-"Humain et fantôme agissent ensemble vers un but unique. Votre dualité intérieure vous prêtera main… ou queue."
+"Humain et fantôme agissent ensemble vers un but unique. Votre dualité "
+"intérieure vous prêtera main… ou queue."
 
 #: src/plrmodes/youmu_a.c:710
 msgid "Soul Sign “Reality-Piercing Apparition”"
@@ -6143,7 +6460,8 @@ msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
 msgstr ""
-"Les fantômes sont réels, mais ils n’ont rien à craindre. Sauf si, bien sûr, vous vous trouvez sur le chemin d’une femme déterminée maniant l’épée…"
+"Les fantômes sont réels, mais ils n’ont rien à craindre. Sauf si, bien sûr, "
+"vous vous trouvez sur le chemin d’une femme déterminée maniant l’épée…"
 
 #: src/plrmodes/youmu_b.c:622
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
@@ -6154,55 +6472,55 @@ msgstr "Épée Égide “Tranche Omnidirectionnelle Saigyō”"
 msgid "BGM: %s"
 msgstr "BGM: %s"
 
-#: src/stagedraw.c:1294
+#: src/stagedraw.c:1293
 msgid "Hi-Score:"
 msgstr "Meilleur score:"
 
-#: src/stagedraw.c:1295
+#: src/stagedraw.c:1294
 msgid "Score:"
 msgstr "Score:"
 
-#: src/stagedraw.c:1296
+#: src/stagedraw.c:1295
 msgid "Lives:"
 msgstr "Vies:"
 
-#: src/stagedraw.c:1297
+#: src/stagedraw.c:1296
 msgid "Spell Cards:"
 msgstr "Cartes de sort:"
 
-#: src/stagedraw.c:1301
+#: src/stagedraw.c:1300
 msgid "Power:"
 msgstr "Puissance:"
 
-#: src/stagedraw.c:1302
+#: src/stagedraw.c:1301
 msgid "Value:"
 msgstr "Valeur:"
 
-#: src/stagedraw.c:1303
+#: src/stagedraw.c:1302
 msgid "Volts:"
 msgstr "Volts:"
 
-#: src/stagedraw.c:1304
+#: src/stagedraw.c:1303
 msgid "Graze:"
 msgstr "Frôlements:"
 
-#: src/stagedraw.c:1313 src/stagedraw.c:1314
+#: src/stagedraw.c:1312 src/stagedraw.c:1313
 msgid "N/A"
 msgstr "N/A"
 
-#: src/stagedraw.c:1326
+#: src/stagedraw.c:1325
 msgid "Next:"
 msgstr "Suivant:"
 
-#: src/stagedraw.c:1352
+#: src/stagedraw.c:1351
 msgid "Fragments:"
 msgstr "Fragments:"
 
-#: src/stagedraw.c:1465
+#: src/stagedraw.c:1464
 msgid "God Mode is enabled!"
 msgstr "Mode Dieu activé!"
 
-#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+#: src/stagedraw.c:1813 src/stagedraw.c:1814 src/stagedraw.c:1816
 msgid ""
 "Voltage        \n"
 "    Overdrive!"
@@ -6210,104 +6528,87 @@ msgstr ""
 "Tension        \n"
 "    Suralimentation!"
 
-#: src/stagedraw.c:1879
+#: src/stagedraw.c:1878
 msgid "Demo"
 msgstr "Démo"
 
-#: src/stagedraw.c:1893
+#: src/stagedraw.c:1892
 msgid "All Clear!"
 msgstr "All Clear!"
 
-#: src/stagedraw.c:1893
+#: src/stagedraw.c:1892
 msgid "Stage Clear!"
 msgstr "Stage réussi!"
 
-#: src/stagedraw.c:1897
+#: src/stagedraw.c:1896
 msgid "Stage Clear bonus"
 msgstr "Stage Clear bonus"
 
-#: src/stagedraw.c:1898
+#: src/stagedraw.c:1897
 msgid "Life bonus"
 msgstr "Bonus de vie"
 
-#: src/stagedraw.c:1899
+#: src/stagedraw.c:1898
 msgid "Voltage bonus"
 msgstr "Bonus de tension"
 
-#: src/stagedraw.c:1900
+#: src/stagedraw.c:1899
 msgid "Graze bonus"
 msgstr "Bonus de frôlement"
 
-#: src/stagedraw.c:1904
+#: src/stagedraw.c:1903
 msgid "All Clear bonus"
 msgstr "All Clear bonus"
 
-#: src/stagedraw.c:1909
+#: src/stagedraw.c:1908
 #, c-format
 msgid "Difficulty bonus (+%i%%)"
 msgstr "Bonus de difficulté (+%i%%)"
 
-#: src/stagedraw.c:1919
+#: src/stagedraw.c:1918
 msgid "Press Fire to continue"
 msgstr "Appuyez sur Feu pour continuer"
 
-#: src/stageinfo.c:49
-msgid "Spell"
+#: src/stageinfo.c:50
+#, fuzzy, c-format
+msgid "Spell %d"
 msgstr "Sort"
 
-#: src/stageinfo.c:129
-msgid "Stage 1"
+#: src/stageinfo.c:121 src/stageinfo.c:122 src/stageinfo.c:123
+#: src/stageinfo.c:124 src/stageinfo.c:125 src/stageinfo.c:126
+#, fuzzy, c-format
+msgid "Stage %d"
 msgstr "Stage 1"
 
-#: src/stageinfo.c:129
+#: src/stageinfo.c:121
 msgid "Misty Lake Encounter"
 msgstr "Rencontre au lac Misty"
 
-#: src/stageinfo.c:130
-msgid "Stage 2"
-msgstr "Stage 2"
-
-#: src/stageinfo.c:130
+#: src/stageinfo.c:122
 msgid "Riverside Hina-Nagashi"
 msgstr "Hina-Nagashi au bord de la rivière"
 
-#: src/stageinfo.c:131
-msgid "Stage 3"
-msgstr "Stage 3"
-
-#: src/stageinfo.c:131
+#: src/stageinfo.c:123
 msgid "Crawly Mountain Ascent"
 msgstr "Ascension de Crawly Mountain"
 
-#: src/stageinfo.c:132
-msgid "Stage 4"
-msgstr "Stage 4"
-
-#: src/stageinfo.c:132
+#: src/stageinfo.c:124
 msgid "Forgotten Mansion"
 msgstr "Manoir oublié"
 
-#: src/stageinfo.c:133
-msgid "Stage 5"
-msgstr "Stage 5"
-
-#: src/stageinfo.c:133
+#: src/stageinfo.c:125
 msgid "Climbing the Tower of Babel"
 msgstr "Escalade de la tour Babel"
 
-#: src/stageinfo.c:134
-msgid "Stage 6"
-msgstr "Stage 6"
-
-#: src/stageinfo.c:134
+#: src/stageinfo.c:126
 msgid "Roof of the World"
 msgstr "Toit du Monde"
 
-#: src/stageinfo.c:135
+#: src/stageinfo.c:127
 msgid "Extra Stage"
 msgstr "Stage Extra"
 
-#: src/stageinfo.c:135
+#: src/stageinfo.c:127
 msgid "Descent into Madness"
 msgstr "Descente dans la folie"
 
@@ -6467,6 +6768,26 @@ msgstr "Signe de circuit “Surcharge”"
 msgid "Bombs?"
 msgstr "Des bombes?"
 
+#: src/stages/stage6/nonspells/boss_nonspell_3.c:64
+msgid "Paradigm Shift!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:662
+msgid "Symmetry broken!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:775
+msgid "Coupling the Higgs!"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:781
+msgid "Perturbation theory"
+msgstr ""
+
+#: src/stages/stage6/spells/toe.c:782
+msgid "breaking down!"
+msgstr ""
+
 #: src/stages/stage6/stage6.c:29
 msgid "Newton Sign “Occam’s Razor”"
 msgstr "Signe Newton “Rasoir d’Occam”"
@@ -6548,8 +6869,8 @@ msgstr ""
 "la composition orageuse entendue au sommet de la tour, mais Iku a un thème "
 "original si intéressant que j’ai dû relever le défi.\n"
 "\n"
-"Au final, je ne peux pas dire si j’ai rendu justice à l’original avec celui-ci, "
-"mais je sais qu’il occupe une place spéciale dans mon cœur."
+"Au final, je ne peux pas dire si j’ai rendu justice à l’original avec celui-"
+"ci, mais je sais qu’il occupe une place spéciale dans mon cœur."
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
@@ -6566,9 +6887,11 @@ msgid ""
 msgstr ""
 "Thème du générique.\n"
 "\n"
-"Un sentiment d’inspiration et de futur est conservé depuis Excitation Field.\n"
+"Un sentiment d’inspiration et de futur est conservé depuis Excitation "
+"Field.\n"
 "\n"
-"Un thème bien plus doux qu’un orage… peut-être un peu plus comme un arc-en-ciel."
+"Un thème bien plus doux qu’un orage… peut-être un peu plus comme un arc-en-"
+"ciel."
 
 #: po/extra_strings.c:10
 msgid "Dream Cycle"
@@ -6587,8 +6910,9 @@ msgstr ""
 "\n"
 "En résumé, classe, qu’avons-nous appris aujourd’hui?\n"
 "\n"
-"La connaissance est le fruit défendu; d’elle naissent les pouvoirs de la lumière "
-"et des ténèbres. Mais il est temps que les protagonistes prennent une bouchée."
+"La connaissance est le fruit défendu; d’elle naissent les pouvoirs de la "
+"lumière et des ténèbres. Mais il est temps que les protagonistes prennent "
+"une bouchée."
 
 #: po/extra_strings.c:14
 msgid "Delta Conclusion"
@@ -6635,8 +6959,8 @@ msgid ""
 msgstr ""
 "Thème de la cinématique d’intro.\n"
 "\n"
-"Crépitements et éclats de savoir surnaturel. Un peu sinistre, difficile à savoir "
-"s’il est digne de confiance."
+"Crépitements et éclats de savoir surnaturel. Un peu sinistre, difficile à "
+"savoir s’il est digne de confiance."
 
 #: po/extra_strings.c:22
 msgid "Delta Concision"
@@ -6650,8 +6974,8 @@ msgid ""
 msgstr ""
 "Introduction à l’Occident.\n"
 "\n"
-"De nombreux chemins partent d’un seul. Les échos venus d’outre-mer offrent une "
-"nouvelle aventure."
+"De nombreux chemins partent d’un seul. Les échos venus d’outre-mer offrent "
+"une nouvelle aventure."
 
 #: po/extra_strings.c:26
 msgid "Logic Bombardier"
@@ -6672,13 +6996,14 @@ msgid ""
 msgstr ""
 "Un thème secret pour un personnage très apprécié…\n"
 "\n"
-"Je voulais jouer avec le motif de Scuttle tel qu’entendu dans le tunnel de lumière "
-"et l’appliquer à une chanson complète.\n"
+"Je voulais jouer avec le motif de Scuttle tel qu’entendu dans le tunnel de "
+"lumière et l’appliquer à une chanson complète.\n"
 "\n"
-"Le résultat est intéressant! Son thème est autant une expérience que son existence.\n"
+"Le résultat est intéressant! Son thème est autant une expérience que son "
+"existence.\n"
 "\n"
-"Si elle apparaissait comme boss, je pense que cela sonnerait différemment selon "
-"son rôle dans l’incident."
+"Si elle apparaissait comme boss, je pense que cela sonnerait différemment "
+"selon son rôle dans l’incident."
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
@@ -6693,8 +7018,9 @@ msgid ""
 msgstr ""
 "Thème de la première scène.\n"
 "\n"
-"Un brouillard relaxant illustré par des instruments discrets. Des ombres familières "
-"provoquent des ennuis hors de vue. Les ondulations du passé dansent sur le lac brumeux."
+"Un brouillard relaxant illustré par des instruments discrets. Des ombres "
+"familières provoquent des ennuis hors de vue. Les ondulations du passé "
+"dansent sur le lac brumeux."
 
 #: po/extra_strings.c:34
 msgid "An Impish Reflection on the Water"
@@ -6714,8 +7040,8 @@ msgstr ""
 "\n"
 "Elle se sent tout aussi courageuse cette fois et agit un peu plus fort.\n"
 "\n"
-"Cependant, elle n’est qu’une petite nuisance, froide et fragile. Les protagonistes "
-"ignorent ses farces et continuent."
+"Cependant, elle n’est qu’une petite nuisance, froide et fragile. Les "
+"protagonistes ignorent ses farces et continuent."
 
 #: po/extra_strings.c:38
 msgid "Treasure the Wager, Treasure the Odds"
@@ -6731,9 +7057,9 @@ msgid ""
 msgstr ""
 "Thème de la deuxième scène.\n"
 "\n"
-"Pour un chemin si calme et serein, il y a beaucoup de fauteurs de troubles — un "
-"thème trompeusement rapide. Un exemple excité fait une brève apparition. Le rythme "
-"de ce thème est fait pour vous donner le sentiment d’être chanceux."
+"Pour un chemin si calme et serein, il y a beaucoup de fauteurs de troubles — "
+"un thème trompeusement rapide. Un exemple excité fait une brève apparition. "
+"Le rythme de ce thème est fait pour vous donner le sentiment d’être chanceux."
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
@@ -6752,8 +7078,8 @@ msgstr ""
 "\n"
 "Cette fois, tout dépend du hasard.\n"
 "\n"
-"Parfois un peu clément, mais vous devez toujours faire de votre mieux, quoi qu’il arrive. "
-"Le jeu peut être un mauvais défouloir…"
+"Parfois un peu clément, mais vous devez toujours faire de votre mieux, quoi "
+"qu’il arrive. Le jeu peut être un mauvais défouloir…"
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
@@ -6770,9 +7096,10 @@ msgid ""
 msgstr ""
 "Thème de la troisième scène.\n"
 "\n"
-"Il est généralement difficile de voir dans le noir. Il vous attire, vous engloutit, "
-"comme une flamme étouffant les sens. Cette fois, il vaut mieux protéger vos yeux. "
-"Un petit insecte qui bat des ailes se sent chez lui la nuit et le plus vivant dans une mer de lumière."
+"Il est généralement difficile de voir dans le noir. Il vous attire, vous "
+"engloutit, comme une flamme étouffant les sens. Cette fois, il vaut mieux "
+"protéger vos yeux. Un petit insecte qui bat des ailes se sent chez lui la "
+"nuit et le plus vivant dans une mer de lumière."
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
@@ -6790,9 +7117,9 @@ msgid ""
 msgstr ""
 "Thème de Wriggle Nightbug.\n"
 "\n"
-"Un insecte très motivé. Elle est au sommet du monde ! — Non, quelqu’un d’autre l’est, "
-"elle est au milieu d’un tunnel. Quoi qu’il en soit, elle sait qu’elle peut tout faire "
-"si elle s’en donne les moyens, n’est-ce pas ?\n"
+"Un insecte très motivé. Elle est au sommet du monde ! — Non, quelqu’un "
+"d’autre l’est, elle est au milieu d’un tunnel. Quoi qu’il en soit, elle sait "
+"qu’elle peut tout faire si elle s’en donne les moyens, n’est-ce pas ?\n"
 "\n"
 "Ressemble un peu à la plage dans l’introduction…"
 
@@ -6815,8 +7142,9 @@ msgstr ""
 "\n"
 "Un autre voyage en Orient… comme un pendule qui oscille.\n"
 "\n"
-"Ce thème s’inspire d’un musicien particulièrement insaisissable vivant de l’autre côté de la mer, "
-"connu pour les influences chinoises dans sa musique.\n"
+"Ce thème s’inspire d’un musicien particulièrement insaisissable vivant de "
+"l’autre côté de la mer, connu pour les influences chinoises dans sa "
+"musique.\n"
 "\n"
 "Ça sent la rouille."
 
@@ -6834,8 +7162,9 @@ msgid ""
 msgstr ""
 "Thème de Kurumi.\n"
 "\n"
-"Visages anciens et rêves nouveaux. Elle a pris une nouvelle résidence, un peu plus confortable qu’un Lac de sang, "
-"mais cette confrontation ne l’est pas du tout. Un mélange de peurs fait sentir que les murs se referment."
+"Visages anciens et rêves nouveaux. Elle a pris une nouvelle résidence, un "
+"peu plus confortable qu’un Lac de sang, mais cette confrontation ne l’est "
+"pas du tout. Un mélange de peurs fait sentir que les murs se referment."
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
@@ -6858,10 +7187,12 @@ msgstr ""
 "\n"
 "Et de retour… comment allait cette chanson ? “Pas de raison de s’exciter…”\n"
 "\n"
-"Mais honnêtement, il s’agit maintenant d’une combinaison d’influences orientales et occidentales. "
-"Si c’était comme un pendule jusqu’ici, ce thème est comme un courant électrique oscillant.\n"
+"Mais honnêtement, il s’agit maintenant d’une combinaison d’influences "
+"orientales et occidentales. Si c’était comme un pendule jusqu’ici, ce thème "
+"est comme un courant électrique oscillant.\n"
 "\n"
-"Ceux qui grimpent risquent une longue chute, alors regardez le sommet et ne faites aucun pas malhonnête."
+"Ceux qui grimpent risquent une longue chute, alors regardez le sommet et ne "
+"faites aucun pas malhonnête."
 
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
@@ -6879,8 +7210,9 @@ msgid ""
 msgstr ""
 "Thème d’Iku Nagae.\n"
 "\n"
-"Cette chanson a été éprouvante. Peut-être que c’est approprié pour ce que les protagonistes "
-"doivent faire. Imaginez grimper une tour au milieu d’un orage violent et essayez de ne pas vous épuiser.\n"
+"Cette chanson a été éprouvante. Peut-être que c’est approprié pour ce que "
+"les protagonistes doivent faire. Imaginez grimper une tour au milieu d’un "
+"orage violent et essayez de ne pas vous épuiser.\n"
 "\n"
 "Iku fournit la première épreuve."
 
@@ -6901,8 +7233,9 @@ msgstr ""
 "\n"
 "Au sommet de la tour, vous pouvez voir le monde, mais à quel risque?\n"
 "\n"
-"Une merveille architecturale peut prendre des milliers d’années à achever… cette chanson n’a pas fait exception! "
-"Mais le résultat final ressemble à une grande découverte."
+"Une merveille architecturale peut prendre des milliers d’années à achever… "
+"cette chanson n’a pas fait exception! Mais le résultat final ressemble à une "
+"grande découverte."
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
@@ -6921,11 +7254,13 @@ msgid ""
 msgstr ""
 "Premier thème d’Elly.\n"
 "\n"
-"Une vieille amie. J’ai toujours été inspiré par l’idée qu’un personnage totalement "
-"insignifiant de temps oubliés puisse atteindre de grands sommets après avoir sombré dans l’oubli.\n"
+"Une vieille amie. J’ai toujours été inspiré par l’idée qu’un personnage "
+"totalement insignifiant de temps oubliés puisse atteindre de grands sommets "
+"après avoir sombré dans l’oubli.\n"
 "\n"
-"Elle était peut-être une simple gardienne de porte la dernière fois que vous l’avez vue, "
-"mais la pomme lui est tombée sur la tête. Elle est maintenant la gardienne d’un autre type de porte."
+"Elle était peut-être une simple gardienne de porte la dernière fois que vous "
+"l’avez vue, mais la pomme lui est tombée sur la tête. Elle est maintenant la "
+"gardienne d’un autre type de porte."
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
@@ -6943,10 +7278,12 @@ msgid ""
 msgstr ""
 "Deuxième thème d’Elly.\n"
 "\n"
-"Les pouvoirs les plus effrayants et merveilleux du monde restent hors de portée de nos esprits mortels. "
-"Mais quelques personnes véritablement brillantes ont peut-être trouvé le pont entre notre monde et le leur…\n"
+"Les pouvoirs les plus effrayants et merveilleux du monde restent hors de "
+"portée de nos esprits mortels. Mais quelques personnes véritablement "
+"brillantes ont peut-être trouvé le pont entre notre monde et le leur…\n"
 "\n"
-"Elly est désormais une nouvelle personne, donc un arrangement ne dirait pas la vérité."
+"Elly est désormais une nouvelle personne, donc un arrangement ne dirait pas "
+"la vérité."
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
@@ -6966,11 +7303,26 @@ msgstr ""
 "Dernier sort d’Elly.\n"
 "\n"
 "Les tâches les plus ambitieuses et impossibles à éviter doivent englober "
-"absolument tout. Beaucoup considèrent la science comme un corps de connaissances, "
-"une bulle scellée, dans laquelle toutes les “grandes découvertes” ont déjà été accomplies, "
-"mais il n’en est rien. La science est une série sans fin de rideaux noirs à tirer, "
-"chaque nouvelle découverte étant plus magnifique et imperceptible que la précédente."
+"absolument tout. Beaucoup considèrent la science comme un corps de "
+"connaissances, une bulle scellée, dans laquelle toutes les “grandes "
+"découvertes” ont déjà été accomplies, mais il n’en est rien. La science est "
+"une série sans fin de rideaux noirs à tirer, chaque nouvelle découverte "
+"étant plus magnifique et imperceptible que la précédente."
 
+#~ msgid "Stage 2"
+#~ msgstr "Stage 2"
+
+#~ msgid "Stage 3"
+#~ msgstr "Stage 3"
+
+#~ msgid "Stage 4"
+#~ msgstr "Stage 4"
+
+#~ msgid "Stage 5"
+#~ msgstr "Stage 5"
+
+#~ msgid "Stage 6"
+#~ msgstr "Stage 6"
 
 #~ msgid "A workaholic shrine at the top of of Yōkai Mountain."
 #~ msgstr ""

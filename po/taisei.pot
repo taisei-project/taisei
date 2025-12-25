@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-28 09:41-0500\n"
+"POT-Creation-Date: 2025-12-20 10:55-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgstr ""
 msgid "Diff. multiplier"
 msgstr ""
 
-#: src/boss.c:988 src/stagedraw.c:1915
+#: src/boss.c:988 src/stagedraw.c:1914
 msgid "Total"
 msgstr ""
 
@@ -84,11 +84,11 @@ msgid ""
 "brought to you by…"
 msgstr ""
 
-#: src/credits.c:154
+#: src/credits.c:160
 msgid "Special Thanks"
 msgstr ""
 
-#: src/credits.c:199
+#: src/credits.c:205
 #, c-format
 msgid ""
 "Visit Us\n"
@@ -98,7 +98,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/credits.c:209
+#: src/credits.c:215
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
@@ -4613,7 +4613,7 @@ msgstr ""
 
 #: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
 #: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
-#: src/menu/options.c:1265 src/menu/replayview.c:472
+#: src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr ""
 
@@ -5119,7 +5119,7 @@ msgstr ""
 msgid "Stage Practice"
 msgstr ""
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:217
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:218
 msgid "Spell Practice"
 msgstr ""
 
@@ -5127,7 +5127,7 @@ msgstr ""
 msgid "Select Stage"
 msgstr ""
 
-#: src/menu/mainmenu.c:128 src/menu/replayview.c:359
+#: src/menu/mainmenu.c:128 src/menu/replayview.c:376
 msgid "Replays"
 msgstr ""
 
@@ -5545,16 +5545,16 @@ msgstr ""
 msgid "Can't replay this stage: unknown player character/mode %X/%X"
 msgstr ""
 
-#: src/menu/replayview.c:136
+#: src/menu/replayview.c:142
 #, c-format
 msgid "Unknown stage %X"
 msgstr ""
 
-#: src/menu/replayview.c:467
+#: src/menu/replayview.c:484
 msgid "No replays available. Play the game and record some!"
 msgstr ""
 
-#: src/menu/replayview.c:469
+#: src/menu/replayview.c:486
 msgid "There was a problem getting the replay list :("
 msgstr ""
 
@@ -5562,49 +5562,49 @@ msgstr ""
 msgid "Save Replay?"
 msgstr ""
 
-#: src/menu/spellpractice.c:62
+#: src/menu/spellpractice.c:63
 #, c-format
-msgid "№ %s"
+msgid "№ %d"
 msgstr ""
 
-#: src/menu/spellpractice.c:131
+#: src/menu/spellpractice.c:132
 msgid "Spell Information"
 msgstr ""
 
-#: src/menu/spellpractice.c:139
+#: src/menu/spellpractice.c:140
 msgid "Type"
 msgstr ""
 
-#: src/menu/spellpractice.c:140
+#: src/menu/spellpractice.c:141
 msgid "Health"
 msgstr ""
 
-#: src/menu/spellpractice.c:141
+#: src/menu/spellpractice.c:142
 msgid "Duration"
 msgstr ""
 
-#: src/menu/spellpractice.c:142
+#: src/menu/spellpractice.c:143
 msgid "Bonus Rank"
 msgstr ""
 
-#: src/menu/spellpractice.c:151
+#: src/menu/spellpractice.c:152
 #, c-format
 msgid "%g s"
 msgstr ""
 
-#: src/menu/spellpractice.c:179
+#: src/menu/spellpractice.c:180
 msgid "Clears/Attempts"
 msgstr ""
 
-#: src/player.c:113
+#: src/player.c:114
 msgid "Full Power!"
 msgstr ""
 
-#: src/player.c:731
+#: src/player.c:732
 msgid "Power Surge!"
 msgstr ""
 
-#: src/player.c:1581
+#: src/player.c:1582
 msgid " PIV"
 msgstr ""
 
@@ -5697,158 +5697,141 @@ msgstr ""
 msgid "BGM: %s"
 msgstr ""
 
-#: src/stagedraw.c:1294
+#: src/stagedraw.c:1293
 msgid "Hi-Score:"
 msgstr ""
 
-#: src/stagedraw.c:1295
+#: src/stagedraw.c:1294
 msgid "Score:"
 msgstr ""
 
-#: src/stagedraw.c:1296
+#: src/stagedraw.c:1295
 msgid "Lives:"
 msgstr ""
 
-#: src/stagedraw.c:1297
+#: src/stagedraw.c:1296
 msgid "Spell Cards:"
 msgstr ""
 
-#: src/stagedraw.c:1301
+#: src/stagedraw.c:1300
 msgid "Power:"
 msgstr ""
 
-#: src/stagedraw.c:1302
+#: src/stagedraw.c:1301
 msgid "Value:"
 msgstr ""
 
-#: src/stagedraw.c:1303
+#: src/stagedraw.c:1302
 msgid "Volts:"
 msgstr ""
 
-#: src/stagedraw.c:1304
+#: src/stagedraw.c:1303
 msgid "Graze:"
 msgstr ""
 
-#: src/stagedraw.c:1313 src/stagedraw.c:1314
+#: src/stagedraw.c:1312 src/stagedraw.c:1313
 msgid "N/A"
 msgstr ""
 
-#: src/stagedraw.c:1326
+#: src/stagedraw.c:1325
 msgid "Next:"
 msgstr ""
 
-#: src/stagedraw.c:1352
+#: src/stagedraw.c:1351
 msgid "Fragments:"
 msgstr ""
 
-#: src/stagedraw.c:1465
+#: src/stagedraw.c:1464
 msgid "God Mode is enabled!"
 msgstr ""
 
-#: src/stagedraw.c:1814 src/stagedraw.c:1815 src/stagedraw.c:1817
+#: src/stagedraw.c:1813 src/stagedraw.c:1814 src/stagedraw.c:1816
 msgid ""
 "Voltage        \n"
 "    Overdrive!"
 msgstr ""
 
-#: src/stagedraw.c:1879
+#: src/stagedraw.c:1878
 msgid "Demo"
 msgstr ""
 
-#: src/stagedraw.c:1893
+#: src/stagedraw.c:1892
 msgid "All Clear!"
 msgstr ""
 
-#: src/stagedraw.c:1893
+#: src/stagedraw.c:1892
 msgid "Stage Clear!"
 msgstr ""
 
-#: src/stagedraw.c:1897
+#: src/stagedraw.c:1896
 msgid "Stage Clear bonus"
 msgstr ""
 
-#: src/stagedraw.c:1898
+#: src/stagedraw.c:1897
 msgid "Life bonus"
 msgstr ""
 
-#: src/stagedraw.c:1899
+#: src/stagedraw.c:1898
 msgid "Voltage bonus"
 msgstr ""
 
-#: src/stagedraw.c:1900
+#: src/stagedraw.c:1899
 msgid "Graze bonus"
 msgstr ""
 
-#: src/stagedraw.c:1904
+#: src/stagedraw.c:1903
 msgid "All Clear bonus"
 msgstr ""
 
-#: src/stagedraw.c:1909
+#: src/stagedraw.c:1908
 #, c-format
 msgid "Difficulty bonus (+%i%%)"
 msgstr ""
 
-#: src/stagedraw.c:1919
+#: src/stagedraw.c:1918
 msgid "Press Fire to continue"
 msgstr ""
 
-#: src/stageinfo.c:49
-msgid "Spell"
+#: src/stageinfo.c:50
+#, c-format
+msgid "Spell %d"
 msgstr ""
 
-#: src/stageinfo.c:129
-msgid "Stage 1"
+#: src/stageinfo.c:121 src/stageinfo.c:122 src/stageinfo.c:123
+#: src/stageinfo.c:124 src/stageinfo.c:125 src/stageinfo.c:126
+#, c-format
+msgid "Stage %d"
 msgstr ""
 
-#: src/stageinfo.c:129
+#: src/stageinfo.c:121
 msgid "Misty Lake Encounter"
 msgstr ""
 
-#: src/stageinfo.c:130
-msgid "Stage 2"
-msgstr ""
-
-#: src/stageinfo.c:130
+#: src/stageinfo.c:122
 msgid "Riverside Hina-Nagashi"
 msgstr ""
 
-#: src/stageinfo.c:131
-msgid "Stage 3"
-msgstr ""
-
-#: src/stageinfo.c:131
+#: src/stageinfo.c:123
 msgid "Crawly Mountain Ascent"
 msgstr ""
 
-#: src/stageinfo.c:132
-msgid "Stage 4"
-msgstr ""
-
-#: src/stageinfo.c:132
+#: src/stageinfo.c:124
 msgid "Forgotten Mansion"
 msgstr ""
 
-#: src/stageinfo.c:133
-msgid "Stage 5"
-msgstr ""
-
-#: src/stageinfo.c:133
+#: src/stageinfo.c:125
 msgid "Climbing the Tower of Babel"
 msgstr ""
 
-#: src/stageinfo.c:134
-msgid "Stage 6"
-msgstr ""
-
-#: src/stageinfo.c:134
+#: src/stageinfo.c:126
 msgid "Roof of the World"
 msgstr ""
 
-#: src/stageinfo.c:135
+#: src/stageinfo.c:127
 msgid "Extra Stage"
 msgstr ""
 
-#: src/stageinfo.c:135
+#: src/stageinfo.c:127
 msgid "Descent into Madness"
 msgstr ""
 
