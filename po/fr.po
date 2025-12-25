@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.8\n"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -74,7 +74,7 @@ msgstr "Inconnu"
 
 #: src/camcontrol.c:211
 msgid "Mouse input disabled "
-msgstr "Intéractions souris désactivée"
+msgstr "Intéractions souris désactivée "
 
 #: src/credits.c:71
 msgid ""
@@ -293,8 +293,8 @@ msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
 msgstr ""
-"Trop de connaissances d'un seul coup...mm, mm, cela peut potentiellement "
-"être fatal, au moins pour ceux qui ont l'esprit faible."
+"Trop de connaissances d'un seul coup…mm, mm, cela peut potentiellement être "
+"fatal, au moins pour ceux qui ont l'esprit faible."
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
@@ -641,7 +641,7 @@ msgstr "Mm, en effet~."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:47
 msgid "Ugh, and after I said y’all were cool…"
-msgstr "Et dire que je venais juste de dire que vous étiez cool..."
+msgstr "Et dire que je venais juste de dire que vous étiez cool…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:51
 msgid ""
@@ -713,8 +713,8 @@ msgid ""
 "Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another "
 "opens'?"
 msgstr ""
-"O-oui ! Mais... mais c'est peut-être comme dans cette expression? « Une "
-"porte se ferme, une autre s'ouvre »?"
+"O-oui ! Mais… mais c'est peut-être comme dans cette expression? « Une porte "
+"se ferme, une autre s'ouvre »?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:72
 msgid "What do ya mean?"
@@ -734,7 +734,7 @@ msgid ""
 "up. We’ll just go back, get the kappa, and—"
 msgstr ""
 "Allez, crache le morceau. On ne t'en voudra pas si tu as fait une erreur. On "
-"va juste retourner chercher le kappa, et..."
+"va juste retourner chercher le kappa, et…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
@@ -770,7 +770,7 @@ msgid ""
 "Mountain…"
 msgstr ""
 "Son regard était fixé sur la tour qui se dressait et grondait au sommet de "
-"la montagne Yōkai..."
+"la montagne Yōkai…"
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
@@ -5408,7 +5408,7 @@ msgstr "Droite Y"
 
 #: src/i18n/i18n.c:187
 msgid "__NAME__"
-msgstr ""
+msgstr "Français"
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -5939,11 +5939,11 @@ msgstr "Réinitialiser tous les paramètres aux dernières valeurs sauvegardées
 
 #: src/menu/options.c:619 src/menu/options.c:810
 msgid "on"
-msgstr "Activé"
+msgstr "activé"
 
 #: src/menu/options.c:620 src/menu/options.c:811
 msgid "off"
-msgstr "Désactivé"
+msgstr "désactivé"
 
 #: src/menu/options.c:746 src/menu/savereplay.c:134
 msgid "Yes"
@@ -5987,7 +5987,7 @@ msgstr "Synchronisation verticale"
 
 #: src/menu/options.c:814
 msgid "adaptive"
-msgstr "Adaptive"
+msgstr "adaptive"
 
 #: src/menu/options.c:817
 msgid "Skip frames"
@@ -6011,11 +6011,11 @@ msgstr "Anti-crénelage"
 
 #: src/menu/options.c:842
 msgid "none"
-msgstr "Aucun"
+msgstr "aucun"
 
 #: src/menu/options.c:843
 msgid "fxaa"
-msgstr "FXAA"
+msgstr "fxaa"
 
 #: src/menu/options.c:845
 msgid "Particle effects"
@@ -6023,11 +6023,11 @@ msgstr "Effets de particules"
 
 #: src/menu/options.c:847 src/menu/options.c:852
 msgid "minimal"
-msgstr "Minimal"
+msgstr "minimal"
 
 #: src/menu/options.c:848 src/menu/options.c:854
 msgid "full"
-msgstr "Complet"
+msgstr "complet"
 
 #: src/menu/options.c:850
 msgid "Postprocessing effects"
@@ -6035,7 +6035,7 @@ msgstr "Effets de post-traitement"
 
 #: src/menu/options.c:853
 msgid "fast"
-msgstr "Rapide"
+msgstr "rapide"
 
 #: src/menu/options.c:878
 msgid "Gamepad Controls"
@@ -6190,7 +6190,7 @@ msgstr "Nom du joueur"
 
 #: src/menu/options.c:1193
 msgid "Language"
-msgstr ""
+msgstr "Langue"
 
 #: src/menu/options.c:1202
 msgid "Save replays"
@@ -6230,11 +6230,11 @@ msgstr "Style de barre de vie du boss"
 
 #: src/menu/options.c:1230
 msgid "classic"
-msgstr "Classique"
+msgstr "classique"
 
 #: src/menu/options.c:1231
 msgid "modern"
-msgstr "Moderne"
+msgstr "moderne"
 
 #: src/menu/options.c:1233
 msgid "Floating score text visibility"
@@ -6320,9 +6320,8 @@ msgid "There was a problem getting the replay list :("
 msgstr "Problème lors de la récupération de la liste des replays :("
 
 #: src/menu/savereplay.c:67
-#, fuzzy
 msgid "Save Replay?"
-msgstr "Sauvegarder les replays"
+msgstr "Sauvegarder les replays?"
 
 #: src/menu/spellpractice.c:63
 #, c-format
@@ -6570,15 +6569,15 @@ msgid "Press Fire to continue"
 msgstr "Appuyez sur Feu pour continuer"
 
 #: src/stageinfo.c:50
-#, fuzzy, c-format
+#, c-format
 msgid "Spell %d"
-msgstr "Sort"
+msgstr "Spell %d"
 
 #: src/stageinfo.c:121 src/stageinfo.c:122 src/stageinfo.c:123
 #: src/stageinfo.c:124 src/stageinfo.c:125 src/stageinfo.c:126
-#, fuzzy, c-format
+#, c-format
 msgid "Stage %d"
-msgstr "Stage 1"
+msgstr "Stage %d"
 
 #: src/stageinfo.c:121
 msgid "Misty Lake Encounter"
