@@ -1,11 +1,16 @@
 msgid ""
 msgstr ""
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-20 10:55-0500\n"
+"PO-Revision-Date: \n"
 "Last-Translator: Swordsdeer\n"
+"Language-Team: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -4905,7 +4910,7 @@ msgstr ""
 
 #: src/i18n/i18n.c:187
 msgid "__NAME__"
-msgstr ""
+msgstr "中文"
 
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
@@ -5665,7 +5670,7 @@ msgstr "玩家名称"
 
 #: src/menu/options.c:1193
 msgid "Language"
-msgstr ""
+msgstr "语言"
 
 #: src/menu/options.c:1202
 msgid "Save replays"
