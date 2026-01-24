@@ -46,7 +46,7 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 		// This menu needs a custom draw function and a general overhaul
 
 		char please_rewrite_this_whole_thing[STAGE_MAX_TITLE_SIZE];
-		stageinfo_format_localized_title(stg, sizeof(please_rewrite_this_whole_thing), please_rewrite_this_whole_thing);
+		stagetitle_format_localized(&stg->title, sizeof(please_rewrite_this_whole_thing), please_rewrite_this_whole_thing);
 
 		if(p && p->unlocked) {
 			snprintf(title, sizeof(title), "%s: %s", please_rewrite_this_whole_thing, _(stg->subtitle));

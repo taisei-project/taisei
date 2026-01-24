@@ -248,7 +248,7 @@ static int cmd_info(int argc, char **argv) {
 
 		if(si) {
 			char title[STAGE_MAX_TITLE_SIZE];
-			stageinfo_format_localized_title(si, sizeof(title), title);
+			stagetitle_format_localized(&si->title, sizeof(title), title);
 			strbuf_printf(&sbuf, "Title: %s - %s", title, si->subtitle);
 		} else {
 			strbuf_cat(&sbuf, "Title: <unknown>");

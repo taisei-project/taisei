@@ -1403,7 +1403,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	if(p) {
 		if(!p->unlocked) {
 			char title[STAGE_MAX_TITLE_SIZE];
-			stageinfo_format_localized_title(i, sizeof(title), title);
+			stagetitle_format_localized(&i->title, sizeof(title), title);
 			log_info("Spellcard unlocked! %s: %s", title, _(i->subtitle));
 			p->unlocked = true;
 		}
