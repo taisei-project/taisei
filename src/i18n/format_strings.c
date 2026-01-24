@@ -43,15 +43,9 @@ int is_format_specifier(const char *s) {
 		p++;
 	}
 
-	bool precision_set = false;
 	// precision
 	while((*p >= '0' && *p <= '9') || *p == '*' || *p == '.' || *p == '$') {
-		precision_set = true;
 		p++;
-	}
-
-	if((flags & flag_bits[' '] || flags & flag_bits['0']) && !precision_set) {
-		return 0; // ignore
 	}
 
 	// length modifier
