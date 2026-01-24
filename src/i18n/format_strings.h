@@ -1,0 +1,19 @@
+/*
+ * This software is licensed under the terms of the MIT License.
+ * See COPYING for further information.
+ * ---
+ * Copyright (c) 2011-2025, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
+ */
+
+#pragma once
+#include "taisei.h"
+
+// Returns length of specifier starting at `s` or 0 if not a specifier.
+// If the result is zero, but *s == '%', it is an escaped "%%" sequence
+int is_format_specifier(const char *s);
+
+// Returns true if both strings contain identical format specifiers
+// (as detected by `is_format_specifier`) in the same order
+bool match_format_strings(const char *a, const char *b);
+

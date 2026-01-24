@@ -10,3 +10,4 @@ endif
 test_incdir = include_directories('.')
 
 subdir('renderer')
+subdir('i18n')
