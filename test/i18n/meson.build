@@ -1,8 +1,5 @@
-
 tests = [
-    'cube',
-    'texture',
-    'triangle',
+    'format_strings',
 ]
 
 foreach testname : tests
@@ -12,4 +9,5 @@ foreach testname : tests
         include_directories : test_incdir,
         install : false,
     )
+    test(testname, e)
 endforeach
