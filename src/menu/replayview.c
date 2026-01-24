@@ -136,7 +136,7 @@ static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 		StageInfo *stg = stageinfo_get_by_id(stage_id);
 
 		if(LIKELY(stg != NULL)) {
-			stageinfo_format_localized_title(stg, sizeof(tmp), tmp);
+			stagetitle_format_localized(&stg->title, sizeof(tmp), tmp);
 			add_menu_entry(m, tmp, start_replay, ictx);
 		} else {
 			snprintf(tmp, sizeof(tmp), _("Unknown stage %X"), stage_id);
@@ -313,7 +313,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt, void *ctx) {
 
 					if(stg) {
 						char title[STAGE_MAX_TITLE_SIZE];
-						stageinfo_format_localized_title(stg, sizeof(title), title);
+						stagetitle_format_localized(&stg->title, sizeof(title), title);
 						snprintf(tmp, sizeof(tmp), "%s", title);
 					} else {
 						snprintf(tmp, sizeof(tmp), "?????");
