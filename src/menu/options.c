@@ -991,10 +991,10 @@ static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
 
 	if(ctx->gamepad_testmode.active) {
 		snprintf(buf, sizeof(buf),
-			_("Press any button on your gamepad to exit joystick testing mode"));
+			F_("Press any button on your gamepad to exit joystick testing mode"));
 	} else {
 		snprintf(buf, sizeof(buf),
-			_("Press %s on your gamepad to enter joystick testing mode"),
+			F_("Press %s on your gamepad to enter joystick testing mode"),
 			_(gamepad_button_name(test_btn)));
 	}
 

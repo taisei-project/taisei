@@ -73,9 +73,9 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 		bool have_continues = c > 0;
 
 		if(have_continues) {
-			snprintf(s, sizeof(s), _("Continue (%i)"), c);
+			snprintf(s, sizeof(s), F_("Continue (%i)"), c);
 		} else {
-			snprintf(s, sizeof(s), _("Continue"));
+			snprintf(s, sizeof(s), F_("Continue"));
 		}
 
 		add_action_entry(m, s, GAMEOVERMENU_ACTION_CONTINUE, have_continues);

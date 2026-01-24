@@ -310,7 +310,7 @@ static void draw_center_text(
 }
 
 static char *text_add_quotes(const char* text) {
-	return strfmt(_("“%s”"), text);
+	return strfmt(F_("“%s”"), text);
 }
 
 static void draw_text(CutsceneState *st) {
