@@ -93,14 +93,14 @@ static void start_replay(MenuData *menu, void *arg) {
 
 	if(!stageinfo_get_by_id(stg->stage)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), _("Can't replay this stage: unknown stage ID %X"), stg->stage);
+		snprintf(buf, sizeof(buf), F_("Can't replay this stage: unknown stage ID %X"), stg->stage);
 		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
 		return;
 	}
 
 	if(!plrmode_find(stg->plr_char, stg->plr_shot)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), _("Can't replay this stage: unknown player character/mode %X/%X"), stg->plr_char, stg->plr_shot);
+		snprintf(buf, sizeof(buf), F_("Can't replay this stage: unknown player character/mode %X/%X"), stg->plr_char, stg->plr_shot);
 		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
 		return;
 	}
@@ -139,7 +139,7 @@ static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 			stagetitle_format_localized(&stg->title, sizeof(tmp), tmp);
 			add_menu_entry(m, tmp, start_replay, ictx);
 		} else {
-			snprintf(tmp, sizeof(tmp), _("Unknown stage %X"), stage_id);
+			snprintf(tmp, sizeof(tmp), F_("Unknown stage %X"), stage_id);
 			add_menu_entry(m, tmp, menu_action_close, NULL);
 		}
 	});

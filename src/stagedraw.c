@@ -1905,7 +1905,7 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 		if(bonus->all_clear.diff_bonus) {
 			char tmp[128];
 			int percent = (bonus->all_clear.diff_multiplier - 1.0) * 100;
-			snprintf(tmp, sizeof(tmp), _("Difficulty bonus (+%i%%)"), percent);
+			snprintf(tmp, sizeof(tmp), F_("Difficulty bonus (+%i%%)"), percent);
 			stagetext_table_add_numeric_nonzero(&tbl, tmp, bonus->all_clear.diff_bonus);
 		}
 	}
