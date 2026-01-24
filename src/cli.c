@@ -56,11 +56,7 @@ static void print_help(struct TsOption* opts) {
 
 		fputs("  ", stdout);
 
-		if(opt->argname && strchr(opt->help, '%')) {
-			tsfprintf(stdout, opt->help, opt->argname);
-		} else {
-			tsfprintf(stdout, "%s", opt->help);
-		}
+		tsfprintf(stdout, "%s", opt->help);
 
 		tsfprintf(stdout, "\n");
 	}
@@ -77,23 +73,23 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	snprintf(renderer_list, sizeof(renderer_list), "{%s}", _renderer_list+1);
 
 	struct TsOption taisei_opts[] = {
-		{{"replay",             required_argument,  0, 'r'},            "Play a replay from %s", "FILE"},
-		{{"verify-replay",      required_argument,  0, 'R'},            "Play a replay from %s in headless mode, crash as soon as it desyncs unless --rereplay is used", "FILE"},
-		{{"rereplay",           required_argument,  0, OPT_REREPLAY},   "Re-record replay into %s; specify input with -r or -R", "OUTFILE"},
+		{{"replay",             required_argument,  0, 'r'},            "Play a replay from FILE", "FILE"},
+		{{"verify-replay",      required_argument,  0, 'R'},            "Play a replay from FILE in headless mode, crash as soon as it desyncs unless --rereplay is used", "FILE"},
+		{{"rereplay",           required_argument,  0, OPT_REREPLAY},   "Re-record replay into OUTFILE; specify input with -r or -R", "OUTFILE"},
 #ifdef DEBUG
 		{{"play",               no_argument,        0, 'p'},            "Play a specific stage"},
-		{{"sid",                required_argument,  0, 'i'},            "Select stage by %s", "ID"},
+		{{"sid",                required_argument,  0, 'i'},            "Select stage by ID", "ID"},
 		{{"diff",               required_argument,  0, 'd'},            "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
 		{{"shotmode",           required_argument,  0, 's'},            "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"dumpstages",         no_argument,        0, 'u'},            "Print a list of all stages in the game"},
-		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from %s", "PATH"},
-		{{"cutscene",           required_argument,  0, OPT_CUTSCENE},   "Play cutscene by numeric %s and exit", "ID"},
+		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from PATH", "PATH"},
+		{{"cutscene",           required_argument,  0, OPT_CUTSCENE},   "Play cutscene by numeric ID and exit", "ID"},
 		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
 		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
 		{{"skip-to-bookmark",   required_argument,  0, 'b'},            "Fast-forward stage to a specific STAGE_BOOKMARK call"},
 		{{"unlock-all",         no_argument,        0, OPT_UNLOCKALL},  "Unlock all content"},
 #endif
-		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
+		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every FRAME frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
 		{{"renderer",           required_argument,  0, OPT_RENDERER},   "Choose the rendering backend", renderer_list},
 		{{"populate-cache",     no_argument,        0, OPT_POPCACHE},   "Attempt to load all available resources, populating the cache, then exit"},
