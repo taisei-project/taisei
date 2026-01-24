@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 10:55-0500\n"
+"POT-Creation-Date: 2026-01-24 17:46-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -5741,7 +5741,6 @@ msgid "Continue (%i)"
 msgstr "Weiterspielen (%i)"
 
 #: src/menu/gameovermenu.c:78
-#, c-format
 msgid "Continue"
 msgstr "Weiterspielen"
 
@@ -5802,7 +5801,7 @@ msgstr "Extra beginnen"
 msgid "Stage Practice"
 msgstr "Stage-Training"
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:218
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:219
 msgid "Spell Practice"
 msgstr "Spell-Training"
 
@@ -6007,7 +6006,6 @@ msgid "Skip dialog"
 msgstr "Dialog überspringen"
 
 #: src/menu/options.c:994
-#, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr "Drücke einen Gamepad-Button, um den Joystick Testmodus zu verlassen"
 
@@ -6251,37 +6249,37 @@ msgstr "Es gab ein Problem beim Laden der Replayliste :("
 msgid "Save Replay?"
 msgstr "Replay speichern?"
 
-#: src/menu/spellpractice.c:63
+#: src/menu/spellpractice.c:64
 #, c-format
 msgid "№ %d"
 msgstr ""
 
-#: src/menu/spellpractice.c:132
+#: src/menu/spellpractice.c:133
 msgid "Spell Information"
 msgstr "Spell-Informationen"
 
-#: src/menu/spellpractice.c:140
+#: src/menu/spellpractice.c:141
 msgid "Type"
 msgstr "Typ"
 
-#: src/menu/spellpractice.c:141
+#: src/menu/spellpractice.c:142
 msgid "Health"
 msgstr "Leben"
 
-#: src/menu/spellpractice.c:142
+#: src/menu/spellpractice.c:143
 msgid "Duration"
 msgstr "Dauer"
 
-#: src/menu/spellpractice.c:143
+#: src/menu/spellpractice.c:144
 msgid "Bonus Rank"
 msgstr "Bonus-Rang"
 
-#: src/menu/spellpractice.c:152
+#: src/menu/spellpractice.c:153
 #, c-format
 msgid "%g s"
 msgstr ""
 
-#: src/menu/spellpractice.c:180
+#: src/menu/spellpractice.c:181
 msgid "Clears/Attempts"
 msgstr "Clears/Versuche"
 
@@ -6493,48 +6491,47 @@ msgstr "Schwierigkeitsbonus (%i%%)"
 msgid "Press Fire to continue"
 msgstr "Schießen drücken um fortzufahren"
 
-#: src/stageinfo.c:50
+#: src/stageinfo.c:119
+msgid "Misty Lake Encounter"
+msgstr "Begegnung am Nebelsee"
+
+#: src/stageinfo.c:120
+msgid "Riverside Hina-Nagashi"
+msgstr "Flussufer-Hina-Nagashi"
+
+#: src/stageinfo.c:121
+msgid "Crawly Mountain Ascent"
+msgstr "Krabbeliger Bergpfad"
+
+#: src/stageinfo.c:122
+msgid "Forgotten Mansion"
+msgstr "Vergessenes Anwesen"
+
+#: src/stageinfo.c:123
+msgid "Climbing the Tower of Babel"
+msgstr "Aufstieg des Babelturms"
+
+#: src/stageinfo.c:124
+msgid "Roof of the World"
+msgstr "Dach der Welt"
+
+#: src/stageinfo.c:125
+msgid "Extra Stage"
+msgstr ""
+
+#: src/stageinfo.c:125
+msgid "Descent into Madness"
+msgstr "Abstieg in den Wahnsinn"
+
+#: src/stageinfo.c:248
 #, fuzzy, c-format
 msgid "Spell %d"
 msgstr "Spell fehlgeschlagen"
 
-#: src/stageinfo.c:121 src/stageinfo.c:122 src/stageinfo.c:123
-#: src/stageinfo.c:124 src/stageinfo.c:125 src/stageinfo.c:126
+#: src/stageinfo.c:251
 #, fuzzy, c-format
 msgid "Stage %d"
 msgstr "Stage geschafft!"
-
-#: src/stageinfo.c:121
-msgid "Misty Lake Encounter"
-msgstr "Begegnung am Nebelsee"
-
-#: src/stageinfo.c:122
-msgid "Riverside Hina-Nagashi"
-msgstr "Flussufer-Hina-Nagashi"
-
-#: src/stageinfo.c:123
-msgid "Crawly Mountain Ascent"
-msgstr "Krabbeliger Bergpfad"
-
-#: src/stageinfo.c:124
-msgid "Forgotten Mansion"
-msgstr "Vergessenes Anwesen"
-
-#: src/stageinfo.c:125
-msgid "Climbing the Tower of Babel"
-msgstr "Aufstieg des Babelturms"
-
-#: src/stageinfo.c:126
-msgid "Roof of the World"
-msgstr "Dach der Welt"
-
-#: src/stageinfo.c:127
-msgid "Extra Stage"
-msgstr ""
-
-#: src/stageinfo.c:127
-msgid "Descent into Madness"
-msgstr "Abstieg in den Wahnsinn"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "What are you doing??"
