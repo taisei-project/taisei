@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 10:55-0500\n"
+"POT-Creation-Date: 2026-01-24 17:46-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Swordsdeer\n"
 "Language-Team: \n"
@@ -5293,7 +5293,6 @@ msgstr "我不甘心! (%i)"
 
 # （浅唱大帝音）
 #: src/menu/gameovermenu.c:78
-#, c-format
 msgid "Continue"
 msgstr "我不甘心!"
 
@@ -5354,7 +5353,7 @@ msgstr ""
 msgid "Stage Practice"
 msgstr ""
 
-#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:218
+#: src/menu/mainmenu.c:123 src/menu/spellpractice.c:219
 msgid "Spell Practice"
 msgstr ""
 
@@ -5559,7 +5558,6 @@ msgid "Skip dialog"
 msgstr "跳过对话"
 
 #: src/menu/options.c:994
-#, c-format
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr "按下手柄上任意键退出手柄测试模式"
 
@@ -5803,37 +5801,37 @@ msgstr "获取Replay列表时出现问题 :("
 msgid "Save Replay?"
 msgstr "保存Replay吗？"
 
-#: src/menu/spellpractice.c:63
+#: src/menu/spellpractice.c:64
 #, c-format
 msgid "№ %d"
 msgstr ""
 
-#: src/menu/spellpractice.c:132
+#: src/menu/spellpractice.c:133
 msgid "Spell Information"
 msgstr ""
 
-#: src/menu/spellpractice.c:140
+#: src/menu/spellpractice.c:141
 msgid "Type"
 msgstr ""
 
-#: src/menu/spellpractice.c:141
+#: src/menu/spellpractice.c:142
 msgid "Health"
 msgstr ""
 
-#: src/menu/spellpractice.c:142
+#: src/menu/spellpractice.c:143
 msgid "Duration"
 msgstr ""
 
-#: src/menu/spellpractice.c:143
+#: src/menu/spellpractice.c:144
 msgid "Bonus Rank"
 msgstr ""
 
-#: src/menu/spellpractice.c:152
+#: src/menu/spellpractice.c:153
 #, c-format
 msgid "%g s"
 msgstr ""
 
-#: src/menu/spellpractice.c:180
+#: src/menu/spellpractice.c:181
 msgid "Clears/Attempts"
 msgstr ""
 
@@ -6042,48 +6040,47 @@ msgstr "难度奖励 (+%i%%)"
 msgid "Press Fire to continue"
 msgstr "按射击键继续……"
 
-#: src/stageinfo.c:50
+#: src/stageinfo.c:119
+msgid "Misty Lake Encounter"
+msgstr "雾之湖遭遇战"
+
+#: src/stageinfo.c:120
+msgid "Riverside Hina-Nagashi"
+msgstr "河畔流雏"
+
+#: src/stageinfo.c:121
+msgid "Crawly Mountain Ascent"
+msgstr "令人痒痒的登山之旅"
+
+#: src/stageinfo.c:122
+msgid "Forgotten Mansion"
+msgstr "被遗忘的宅邸"
+
+#: src/stageinfo.c:123
+msgid "Climbing the Tower of Babel"
+msgstr "巴别塔之攀"
+
+#: src/stageinfo.c:124
+msgid "Roof of the World"
+msgstr "世界之脊"
+
+#: src/stageinfo.c:125
+msgid "Extra Stage"
+msgstr ""
+
+#: src/stageinfo.c:125
+msgid "Descent into Madness"
+msgstr "堕入疯狂"
+
+#: src/stageinfo.c:248
 #, fuzzy, c-format
 msgid "Spell %d"
 msgstr "符卡"
 
-#: src/stageinfo.c:121 src/stageinfo.c:122 src/stageinfo.c:123
-#: src/stageinfo.c:124 src/stageinfo.c:125 src/stageinfo.c:126
+#: src/stageinfo.c:251
 #, c-format
 msgid "Stage %d"
 msgstr ""
-
-#: src/stageinfo.c:121
-msgid "Misty Lake Encounter"
-msgstr "雾之湖遭遇战"
-
-#: src/stageinfo.c:122
-msgid "Riverside Hina-Nagashi"
-msgstr "河畔流雏"
-
-#: src/stageinfo.c:123
-msgid "Crawly Mountain Ascent"
-msgstr "令人痒痒的登山之旅"
-
-#: src/stageinfo.c:124
-msgid "Forgotten Mansion"
-msgstr "被遗忘的宅邸"
-
-#: src/stageinfo.c:125
-msgid "Climbing the Tower of Babel"
-msgstr "巴别塔之攀"
-
-#: src/stageinfo.c:126
-msgid "Roof of the World"
-msgstr "世界之脊"
-
-#: src/stageinfo.c:127
-msgid "Extra Stage"
-msgstr ""
-
-#: src/stageinfo.c:127
-msgid "Descent into Madness"
-msgstr "堕入疯狂"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "What are you doing??"
