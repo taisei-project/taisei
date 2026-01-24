@@ -88,6 +88,7 @@ taisei_c_args = [
     '-Werror=implicit-function-declaration',
     '-Werror=incompatible-pointer-types',
     '-Werror=return-type',
+    '-Werror=format-nonliteral',
 
     #
     # Keep the rest sorted
