@@ -340,7 +340,7 @@ int main(int argc, char **argv) {
 		for(int i = 0; i < n; ++i) {
 			StageInfo *stg = stageinfo_get_by_index(i);
 			char title[STAGE_MAX_TITLE_SIZE];
-			stageinfo_format_localized_title(stg, sizeof(title), title);
+			stagetitle_format_localized(&stg->title, sizeof(title), title);
 			tsfprintf(stdout, "%X %s: %s\n", stg->id, title, _(stg->subtitle));
 		}
 
@@ -585,7 +585,7 @@ static void main_singlestg(MainContext *mctx) {
 	}
 
 	char title[STAGE_MAX_TITLE_SIZE];
-	stageinfo_format_localized_title(stg, sizeof(title), title);
+	stagetitle_format_localized(&stg->title, sizeof(title), title);
 	log_info("Entering %s", title);
 
 	mctx->replay_out = alloc_replay();

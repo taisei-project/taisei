@@ -60,7 +60,8 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	}
 
 	char title[128];
-	snprintf(title, sizeof(title), _("№ %d"), stg->title_numeral);
+	assert(stg->title.type == STAGE_TITLE_SPELL);
+	snprintf(title, sizeof(title), F_("№ %d"), stg->title.numeral);
 
 	Color second_clr = clr;
 	color_mul_scalar(&second_clr, 0.7);
