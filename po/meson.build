@@ -3,6 +3,7 @@ i18n = import('i18n')
 xgettext_args = [
 '--from-code=utf-8',
 '-kN_',
+'-kF_',
 '-kMSG:2',
 '-kMSG_UNSKIPPABLE:3',
 '-kT_NARRATOR',

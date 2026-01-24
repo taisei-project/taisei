@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "hashtable.h"
+#include "i18n/format_strings.h"
 
 #define I18N_LOCALEID_SYSTEM  "system"
 #define I18N_LOCALEID_BUILTIN "en"
@@ -24,13 +25,29 @@ const char *i18n_get_locale_name(const char *locale_id);
 
 const char *_i18n_translate_prehashed(const char *msgid, hash_t hash);
 
-attr_format_arg(1) INLINE const char *i18n_translate(const char *msgid) {
+INLINE const char *i18n_translate(const char *msgid) {
 	return _i18n_translate_prehashed(msgid, htutil_hashfunc_string(msgid));
 }
 
-#define gettext(msgid) i18n_translate(msgid)
-#define pgettext(msgctxt, msgid) gettext(msgctxt "\004" msgid)
+attr_format_arg(1) INLINE const char *i18n_translate_format(const char *msgid) {
+	const char *translation = i18n_translate(msgid);
+	if(UNLIKELY(!match_format_strings(msgid, translation))) {
+		log_fatal("Translated format string \"%s\" mismatches original "
+			"arguments \"%s\". For security reasons, we refuse to use "
+			"this translation. If this is a false positive, please "
+			"report it as a bug.",
+			translation, msgid);
+	}
+	return translation;
+}
 
-#define _(str) gettext(str)
+#define _(str) i18n_translate(str)
 // N_(str) marks strings for xgettext without translating them
 #define N_(str) str
+
+// F_(str) is like _(str) but with format string checking
+//
+// Format strings in Taisei must either be a literal or F_(literal).
+// When compiling with clang, this is enforced by -Werror=format-nonliteral.
+// Unfortunately, GCC only catches cases without formatting arguments and canot be relied upon.
+#define F_(str) i18n_translate_format(str)

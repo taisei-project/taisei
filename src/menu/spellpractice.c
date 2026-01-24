@@ -150,7 +150,7 @@ static void draw_spell_menu_summary(MenuData *m) {
 		} else {
 			snprintf(bufs[1], sizeof(bufs[1]), "%g", stg->spell->hp);
 		}
-		snprintf(bufs[2], sizeof(bufs[2]), _("%g s"), stg->spell->timeout);
+		snprintf(bufs[2], sizeof(bufs[2]), F_("%g s"), stg->spell->timeout);
 		snprintf(bufs[3], sizeof(bufs[3]), "%d", stg->spell->bonus_rank);
 
 		for(int i = 0; i < ARRAY_SIZE(labels); i++) {

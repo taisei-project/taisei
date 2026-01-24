@@ -202,7 +202,7 @@ static void credits_fill(void) {
 		"for playing"
 	), ENTRY_TIME);
 
-	char *visit_us = strfmt(_("Visit Us\n"
+	char *visit_us = strfmt(F_("Visit Us\n"
 	                          "%s\n\n"
 	                          "And join our Discord server\n"
 	                          "%s"),

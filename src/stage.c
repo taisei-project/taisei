@@ -619,7 +619,7 @@ static void display_bgm_title(void) {
 
 	if(title) {
 		char txt[strlen(title) + 6];
-		snprintf(txt, sizeof(txt), _("BGM: %s"), title);
+		snprintf(txt, sizeof(txt), F_("BGM: %s"), title);
 		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
 	}
 }
