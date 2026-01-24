@@ -293,6 +293,7 @@ static void *sync_logger(List **loggers, List *logger, void *arg) {
 	return NULL;
 }
 
+attr_printf(5, 0)
 static void log_internal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, va_list args) {
 	assert(fmt[strlen(fmt)-1] != '\n');
 

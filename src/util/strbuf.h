@@ -21,7 +21,7 @@ int strbuf_printf(StringBuffer *strbuf, const char *format, ...)
 	attr_printf(2, 3) attr_nonnull(1, 2);
 
 int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args)
-	attr_nonnull(1, 2);
+	attr_printf(2, 0) attr_nonnull(1, 2);
 
 void strbuf_clear(StringBuffer *strbuf)
 	attr_nonnull(1);
