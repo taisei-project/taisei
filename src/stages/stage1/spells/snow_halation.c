@@ -194,7 +194,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 			};
 
 			if(cheater < ARRAY_SIZE(text)) {
-				stagetext_add(text[cheater], global.boss->pos+100*I, ALIGN_CENTER, res_font("standard"), RGB(1,1,1), 0, 100, 10, 20);
+				stagetext_add(_(text[cheater]), global.boss->pos+100*I, ALIGN_CENTER, res_font("standard"), RGB(1,1,1), 0, 100, 10, 20);
 
 				if(++cheater == ARRAY_SIZE(text)) {
 					INVOKE_SUBTASK(halation_chase, ENT_BOX(boss));
