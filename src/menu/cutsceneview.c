@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "common.h"
 #include "cutscenes/cutscene.h"
+#include "i18n/i18n.h"
 #include "menu/menu.h"
 #include "options.h"
 #include "progress.h"
@@ -19,7 +20,7 @@
 
 static void draw_cutsceneview_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Cutscene Viewer");
+	draw_menu_title(m, _("Cutscene Viewer"));
 	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
@@ -45,12 +46,12 @@ MenuData *create_cutsceneview_menu(void) {
 			const char *name = cutscene_get_name(id);
 			add_menu_entry(m, name, cutscene_player, (void*)id);
 		} else {
-			add_menu_entry(m, "(Locked)", NULL, NULL);
+			add_menu_entry(m, N_("(Locked)"), NULL, NULL);
 		}
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;
