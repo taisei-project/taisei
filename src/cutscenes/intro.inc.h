@@ -1,5 +1,5 @@
 
-.name = "Introduction",
+.name = N_("Introduction"),
 .bgm = "intro",
 
 .phases = (CutscenePhase[]) {
