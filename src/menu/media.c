@@ -53,11 +53,11 @@ MenuData *create_media_menu(void) {
 	m->end = end_media_menu;
 	m->context = rg;
 
-	add_menu_entry(m, _("Character Profiles"), menu_action_enter_charprofileview, NULL);
-	add_menu_entry(m, _("Music Room"), menu_action_enter_musicroom, NULL);
-	add_menu_entry(m, _("Replay Cutscenes"), menu_action_enter_cutsceneview, NULL);
+	add_menu_entry(m, N_("Character Profiles"), menu_action_enter_charprofileview, NULL);
+	add_menu_entry(m, N_("Music Room"), menu_action_enter_musicroom, NULL);
+	add_menu_entry(m, N_("Replay Cutscenes"), menu_action_enter_cutsceneview, NULL);
 	add_menu_separator(m);
-	add_menu_entry(m, _("Back"), menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;

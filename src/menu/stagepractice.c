@@ -17,7 +17,7 @@
 
 static void draw_stgpract_menu(MenuData *m) {
 	draw_options_menu_bg(m);
-	draw_menu_title(m, "Stage Practice");
+	draw_menu_title(m, _("Stage Practice"));
 	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
@@ -58,7 +58,7 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_action_close, NULL);
+	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;

@@ -772,7 +772,7 @@ static MenuData* create_options_menu_video(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
 
 static MenuData* create_options_menu_video(MenuData *parent) {
-	MenuData *m = create_options_menu_base(_("Video Options"));
+	MenuData *m = create_options_menu_base(N_("Video Options"));
 	OptionBinding *b;
 
 	add_menu_entry(m, N_("Fullscreen"), do_nothing,
@@ -875,7 +875,7 @@ static bool gamepad_enabled_depencence(void) {
 #endif
 
 static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
-	MenuData *m = create_options_menu_base(_("Gamepad Controls"));
+	MenuData *m = create_options_menu_base(N_("Gamepad Controls"));
 
 	add_menu_entry(m, N_("Move up"), do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
@@ -1007,7 +1007,7 @@ static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
 }
 
 static MenuData* create_options_menu_gamepad(MenuData *parent) {
-	MenuData *m = create_options_menu_base(_("Gamepad Options"));
+	MenuData *m = create_options_menu_base(N_("Gamepad Options"));
 	m->end = destroy_options_menu_gamepad;
 
 	OptionsMenuContext *ctx = m->context;
@@ -1068,7 +1068,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 }
 
 static MenuData* create_options_menu_controls(MenuData *parent) {
-	MenuData *m = create_options_menu_base(_("Controls"));
+	MenuData *m = create_options_menu_base(N_("Controls"));
 
 	add_menu_entry(m, N_("Move up"), do_nothing,
 		bind_keybinding(CONFIG_KEY_UP)
@@ -1177,7 +1177,7 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 }
 
 MenuData* create_options_menu(void) {
-	MenuData *m = create_options_menu_base(_("Options"));
+	MenuData *m = create_options_menu_base(N_("Options"));
 	OptionBinding *b;
 
 #ifndef __SWITCH__
