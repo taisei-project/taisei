@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taisei\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-24 17:46-0500\n"
+"POT-Creation-Date: 2026-01-25 10:43-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,6 +107,10 @@ msgstr ""
 #: src/cutscenes/cutscene.c:313
 #, c-format
 msgid "“%s”"
+msgstr ""
+
+#: src/cutscenes/intro.inc.h:2
+msgid "Introduction"
 msgstr ""
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
@@ -4611,9 +4615,9 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
-#: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
-#: src/menu/options.c:1265 src/menu/replayview.c:489
+#: src/gamepad.c:875 src/menu/cutsceneview.c:54 src/menu/media.c:60
+#: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
+#: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr ""
 
@@ -5001,6 +5005,14 @@ msgstr ""
 
 #: src/menu/charselect.c:174
 msgid "Select Character"
+msgstr ""
+
+#: src/menu/cutsceneview.c:23
+msgid "Cutscene Viewer"
+msgstr ""
+
+#: src/menu/cutsceneview.c:49
+msgid "(Locked)"
 msgstr ""
 
 #: src/menu/difficultyselect.c:44
@@ -5676,17 +5688,17 @@ msgstr ""
 msgid "Soul Sign “Reality-Piercing Apparition”"
 msgstr ""
 
-#: src/plrmodes/youmu_b.c:620
+#: src/plrmodes/youmu_b.c:625
 msgid "Haunting Revelation"
 msgstr ""
 
-#: src/plrmodes/youmu_b.c:621
+#: src/plrmodes/youmu_b.c:626
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
 msgstr ""
 
-#: src/plrmodes/youmu_b.c:622
+#: src/plrmodes/youmu_b.c:627
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr ""
 
