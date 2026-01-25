@@ -8,6 +8,7 @@
 
 #include "locale.h"
 
+#include "i18n/format_strings.h"
 #include "memory/scratch.h"
 #include "util.h"
 #include "util/io.h"
@@ -221,6 +222,20 @@ static void locale_load(ResourceLoadState *st) {
 		ht_str2str_extern_set(&locale->table, orig, tran);
 	}
 
+	for(uint32_t i = 0; i < format_string_list_size; i++) {
+		const char *orig = format_string_list[i];
+		const char *tran = ht_str2str_extern_get(&locale->table, orig, NULL);
+
+		if(tran != NULL && !match_format_strings(orig, tran)) {
+			log_error(
+				"Translated format string \"%s\" mismatches original "
+				"arguments \"%s\". For security reasons, we skip "
+				"this translation. If this is a false positive or an "
+				"outdated official translation, please report it as a bug.",
+				tran, orig);
+			ht_str2str_extern_set(&locale->table, orig, orig);
+		}
+	}
 	release_scratch_arena(scratch);
 	SDL_CloseIO(stream);
 	res_load_finished(st, locale);
