@@ -30,15 +30,7 @@ INLINE const char *i18n_translate(const char *msgid) {
 }
 
 attr_format_arg(1) INLINE const char *i18n_translate_format(const char *msgid) {
-	const char *translation = i18n_translate(msgid);
-	if(UNLIKELY(!match_format_strings(msgid, translation))) {
-		log_fatal("Translated format string \"%s\" mismatches original "
-			"arguments \"%s\". For security reasons, we refuse to use "
-			"this translation. If this is a false positive, please "
-			"report it as a bug.",
-			translation, msgid);
-	}
-	return translation;
+	return i18n_translate(msgid);
 }
 
 #define _(str) i18n_translate(str)

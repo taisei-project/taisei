@@ -139,3 +139,5 @@ macos_install_dylibs_command = [macos_install_dylibs_script]
 
 post_install_remove_script = find_program(files('post-install-remove.py'))
 post_install_remove_command = [post_install_remove_script, common_taiseilib_args]
+
+extract_format_strings_script = find_program(files('extract_format_strings.py'))

@@ -76,7 +76,7 @@ int is_format_specifier(const char *s) {
 bool match_format_strings(const char *a, const char *b) {
 	int count = count_format_specifiers(a);
 	int match_count = 0;
-	do {
+	while(*a || *b) {
 		int lengtha = 0;
 		while(*a && !(lengtha = is_format_specifier(a))) {
 			if(*a == '%' && *(a+1) == '%') {
@@ -100,14 +100,13 @@ bool match_format_strings(const char *a, const char *b) {
 			return false;
 		}
 
-		match_count++;
+		match_count += lengtha != 0;
 
 		a += lengtha;
 		b += lengthb;
-	} while(*a || *b);
-	// do-while to keep match_count consistent
+	}
 
-	if(match_count-1 != count) {
+	if(match_count != count) {
 		assert(!"Format specifier parser failed to find specifier. This is either a bug or we are using an unexpected format string feature.");
 		return false;
 	}
