@@ -75,6 +75,10 @@ int is_format_specifier(const char *s) {
 
 bool match_format_strings(const char *a, const char *b) {
 	int count = count_format_specifiers(a);
+	if(count != count_format_specifiers(b)) {
+		return false;
+	}
+
 	int match_count = 0;
 	while(*a || *b) {
 		int lengtha = 0;
