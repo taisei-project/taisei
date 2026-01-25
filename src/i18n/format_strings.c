@@ -18,6 +18,20 @@ static uint8_t flag_bits[] = {
 	['I'] = 0x40,
 };
 
+static int count_format_specifiers(const char *s) {
+	int count = 0;
+
+	for(const char *p = s; *p; p++) {
+		if(*p == '%') {
+			if(*(p+1) == '%') {
+				p++;
+			} else {
+				count++;
+			}
+		}
+	}
+	return count;
+}
 
 int is_format_specifier(const char *s) {
 	const char *p = s;
@@ -60,7 +74,9 @@ int is_format_specifier(const char *s) {
 }
 
 bool match_format_strings(const char *a, const char *b) {
-	while(*a || *b) {
+	int count = count_format_specifiers(a);
+	int match_count = 0;
+	do {
 		int lengtha = 0;
 		while(*a && !(lengtha = is_format_specifier(a))) {
 			if(*a == '%' && *(a+1) == '%') {
@@ -84,9 +100,16 @@ bool match_format_strings(const char *a, const char *b) {
 			return false;
 		}
 
+		match_count++;
+
 		a += lengtha;
 		b += lengthb;
-	}
+	} while(*a || *b);
+	// do-while to keep match_count consistent
 
+	if(match_count-1 != count) {
+		assert(!"Format specifier parser failed to find specifier. This is either a bug or we are using an unexpected format string feature.");
+		return false;
+	}
 	return true;
 }

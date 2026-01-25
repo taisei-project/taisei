@@ -51,10 +51,10 @@ static bool test_match_format_strings(void) {
 		// match
 		{"", ""},
 		{"", "abc"},
-		{" %d %", "% %d %%%"},
-		{" % % %2$*3$.3f%s%%", "%2$*3$.3f % % %s"},
+		{" %d ", "%%aouuu %d %%"},
+		{" %2$*3$.3f%s%%", "%2$*3$.3f %s"},
 		{"%%", ""},
-		{"咕%咕%g", "%咕%g咕" },
+		{"咕咕%g", "咕%g咕" },
 	};
 
 	for(int i = 0; i < ARRAY_SIZE(format_strings); i++) {
