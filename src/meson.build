@@ -121,7 +121,6 @@ subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
-subdir('i18n')
 subdir('lasers')
 subdir('memory')
 subdir('menu')
@@ -142,7 +141,6 @@ taisei_src += [
     dialog_src,
     eventloop_src,
     filewatch_src,
-    i18n_src,
     lasers_src,
     memory_src,
     menu_src,
@@ -155,6 +153,11 @@ taisei_src += [
     util_src,
     vfs_src,
 ]
+
+# i18n needs to know about other sources
+# to build format string list
+subdir('i18n')
+taisei_src += i18n_src
 
 taisei_deps += [
     audio_deps,

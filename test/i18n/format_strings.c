@@ -54,6 +54,7 @@ static bool test_match_format_strings(void) {
 		{" %d ", "%%aouuu %d %%"},
 		{" %2$*3$.3f%s%%", "%2$*3$.3f %s"},
 		{"%%", ""},
+		{"Can't replay this stage: unknown stage ID %X", "Kann Stage nicht wiedergeben: unbekannte Stage ID %X"},
 		{"咕咕%g", "咕%g咕" },
 	};
 
