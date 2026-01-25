@@ -8,22 +8,103 @@
 
 #include "stagepractice.h"
 
+#include "bitarray.h"
+#include "color.h"
 #include "common.h"
-#include "options.h"
 
+#include "menu/mainmenu.h"
 #include "i18n/i18n.h"
+#include "portrait.h"
+#include "renderer/api.h"
+#include "resource/font.h"
 #include "stageinfo.h"
 #include "video.h"
 
 static void draw_stgpract_menu(MenuData *m) {
-	draw_options_menu_bg(m);
+	const char *bosses[][2] = {
+		{"cirno",  PORTRAIT_STATIC_FACE_SPRITE_NAME(cirno, angry)},
+		{"hina", PORTRAIT_STATIC_FACE_SPRITE_NAME(hina, serious)},
+		{"wriggle", PORTRAIT_STATIC_FACE_SPRITE_NAME(wriggle, proud)},
+		{"kurumi", PORTRAIT_STATIC_FACE_SPRITE_NAME(kurumi, tsun)},
+		{"iku", PORTRAIT_STATIC_FACE_SPRITE_NAME(iku, smile)},
+		{"elly", PORTRAIT_STATIC_FACE_SPRITE_NAME(elly, smug)},
+	};
+
+	draw_main_menu_bg(m, -100, 0, 0.06, "menu/mainmenubg", "menu/mainmenubg");
 	draw_menu_title(m, _("Stage Practice"));
-	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
+	ShaderProgram *text_shader = res_shader("text_default");
+	Font *font_big = res_font("big");
+
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+	    assert(i < ARRAY_SIZE(bosses));
+	    StageInfo *stg = e->arg;
+		float ioff = i - m->drawdata[2]/20;
+	    float x = SCREEN_W/2.0 - 100 - 5*ioff*ioff;
+		float y = SCREEN_H/2.0 - 10 + 70*ioff + tanh(2*ioff) * (10 - e->drawdata) * 11;
+		char title[STAGE_MAX_TITLE_SIZE];
+		stagetitle_format_localized(&stg->title, sizeof(title), title);
+
+
+		if(e->drawdata/10 > 1e-3) {
+			Sprite *spr = portrait_get_base_sprite(bosses[i][0], NULL);
+			float p = e->drawdata/10;
+			SpriteParams portrait_params = {
+				.pos = { SCREEN_W/2.0 + 180, SCREEN_H - spr->h * 0.5 },
+				.sprite_ptr = spr,
+				.shader_ptr = res_shader("sprite_silhouette"),
+				.color = RGBA_MUL_ALPHA(0, 0, 0, p),
+			};
+
+			r_mat_mv_push();
+			r_mat_mv_translate(x, y*0.6, 0);
+			r_mat_mv_scale(1+0.2*p,1+0.2*p,1);
+			r_mat_mv_translate(-x, -y*0.6, 0);
+			r_draw_sprite(&portrait_params);
+			r_mat_mv_pop();
+			portrait_params.shader_ptr = res_shader("sprite_default");
+			portrait_params.color = RGBA_MUL_ALPHA(1, 1, 1, p);
+			if(e->action != NULL) {
+				r_draw_sprite(&portrait_params);
+				portrait_params.sprite_ptr = res_sprite(bosses[i][1]);
+				r_draw_sprite(&portrait_params);
+			}
+		}
+
+		float ia = 1 - 0.3 * fabsf(ioff);
+		Color clr = *RGBA_MUL_ALPHA(1, 1, 1, ia);
+		if(e->action == NULL) {
+			clr = *RGBA_MUL_ALPHA(0.1, 0.1, 0.1, ia);
+			for(char *p = title; *p; p++) {
+				*p = '?';
+			}
+		}
+
+		r_color(&clr);
+		text_draw(title, &(TextParams) {
+			.pos = { x, y },
+			.shader_ptr = text_shader,
+			.font_ptr = font_big,
+			.align = ALIGN_CENTER,
+		});
+		if(e->action != NULL) {
+			text_draw(_(stg->subtitle), &(TextParams) {
+				.pos = { x, y + 35 },
+				.shader_ptr = text_shader,
+				.align = ALIGN_CENTER,
+			});
+		} else {
+			text_draw(_("??????"), &(TextParams) {
+				.pos = { x, y + 35 },
+				.shader_ptr = text_shader,
+				.align = ALIGN_CENTER,
+			});
+		}
+	});
+
+	r_color3(1,1,1);
 }
 
 MenuData* create_stgpract_menu(Difficulty diff) {
-	char title[128];
-
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_stgpract_menu;
@@ -41,24 +122,12 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 
 		StageProgress *p = stageinfo_get_progress(stg, diff, false);
 
-		// TODO FIXME THIS IS WRONG
-		// Persisting concatenated translated strings here for now
-		// This menu needs a custom draw function and a general overhaul
-
-		char please_rewrite_this_whole_thing[STAGE_MAX_TITLE_SIZE];
-		stagetitle_format_localized(&stg->title, sizeof(please_rewrite_this_whole_thing), please_rewrite_this_whole_thing);
-
 		if(p && p->unlocked) {
-			snprintf(title, sizeof(title), "%s: %s", please_rewrite_this_whole_thing, _(stg->subtitle));
-			add_menu_entry(m, title, start_game_no_difficulty_menu, stg);
+			add_menu_entry(m, "", start_game_no_difficulty_menu, stg);
 		} else {
-			snprintf(title, sizeof(title), "%s: ???????", please_rewrite_this_whole_thing);
-			add_menu_entry(m, title, NULL, NULL);
+			add_menu_entry(m, "", NULL, stg);
 		}
 	}
-
-	add_menu_separator(m);
-	add_menu_entry(m, N_("Back"), menu_action_close, NULL);
 
 	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;
