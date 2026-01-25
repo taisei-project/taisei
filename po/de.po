@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-24 17:46-0500\n"
+"POT-Creation-Date: 2026-01-25 10:43-0500\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Laochailan <laochailan@web.de>\n"
 "Language-Team: \n"
@@ -112,6 +112,10 @@ msgstr ""
 #, c-format
 msgid "“%s”"
 msgstr "„%s“"
+
+#: src/cutscenes/intro.inc.h:2
+msgid "Introduction"
+msgstr "Prolog"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -5209,9 +5213,9 @@ msgstr ""
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/media.c:60 src/menu/options.c:857
-#: src/menu/options.c:921 src/menu/options.c:1065 src/menu/options.c:1174
-#: src/menu/options.c:1265 src/menu/replayview.c:489
+#: src/gamepad.c:875 src/menu/cutsceneview.c:54 src/menu/media.c:60
+#: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
+#: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr "Zurück"
 
@@ -5677,6 +5681,14 @@ msgstr "Wissenschaft"
 msgid "Select Character"
 msgstr "Charakter auswählen"
 
+#: src/menu/cutsceneview.c:23
+msgid "Cutscene Viewer"
+msgstr "Cutscene-Player"
+
+#: src/menu/cutsceneview.c:49
+msgid "(Locked)"
+msgstr "(Gesperrt)"
+
 #: src/menu/difficultyselect.c:44
 msgid ""
 "For those just beginning\n"
@@ -5827,7 +5839,7 @@ msgstr "Musik-Raum"
 
 #: src/menu/media.c:58
 msgid "Replay Cutscenes"
-msgstr "Cutscenes ansehen"
+msgstr "Cutscene-Player"
 
 #: src/menu/musicroom.c:124
 msgid "Now playing"
@@ -6056,7 +6068,7 @@ msgstr "Empfindlichkeit"
 
 #: src/menu/options.c:1071
 msgid "Controls"
-msgstr "Kontrollen"
+msgstr "Steuerung"
 
 #: src/menu/options.c:1109
 msgid "Toggle fullscreen"
@@ -6375,11 +6387,11 @@ msgstr ""
 msgid "Soul Sign “Reality-Piercing Apparition”"
 msgstr "Seelenzeichen “Realitätsspaltende Erscheinung”"
 
-#: src/plrmodes/youmu_b.c:620
+#: src/plrmodes/youmu_b.c:625
 msgid "Haunting Revelation"
 msgstr "Gespenstische Enthüllung"
 
-#: src/plrmodes/youmu_b.c:621
+#: src/plrmodes/youmu_b.c:626
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
@@ -6387,7 +6399,7 @@ msgstr ""
 "Geister sind echt, aber man muss keine Angst vor ihnen haben.\n"
 "Es sei denn, du stehst im Weg entschlossenen Schwertkämpferin…"
 
-#: src/plrmodes/youmu_b.c:622
+#: src/plrmodes/youmu_b.c:627
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr "Aegis-Schwert “Saigy­ō rundstrahlender Schnitt”"
 
@@ -6524,14 +6536,13 @@ msgid "Descent into Madness"
 msgstr "Abstieg in den Wahnsinn"
 
 #: src/stageinfo.c:248
-#, fuzzy, c-format
 msgid "Spell %d"
-msgstr "Spell fehlgeschlagen"
+msgstr ""
 
 #: src/stageinfo.c:251
-#, fuzzy, c-format
+#, c-format
 msgid "Stage %d"
-msgstr "Stage geschafft!"
+msgstr ""
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "What are you doing??"
