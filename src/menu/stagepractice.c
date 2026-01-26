@@ -15,6 +15,7 @@
 #include "menu/mainmenu.h"
 #include "i18n/i18n.h"
 #include "portrait.h"
+#include "progress.h"
 #include "renderer/api.h"
 #include "resource/font.h"
 #include "stageinfo.h"
@@ -36,10 +37,11 @@ static void draw_stgpract_menu(MenuData *m) {
 	Font *font_big = res_font("big");
 
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
-	    assert(i < ARRAY_SIZE(bosses));
-	    StageInfo *stg = e->arg;
+		assert(i < ARRAY_SIZE(bosses));
+		StageInfo *stg = e->arg;
+
 		float ioff = i - m->drawdata[2]/20;
-	    float x = SCREEN_W/2.0 - 100 - 5*ioff*ioff;
+		float x = SCREEN_W/2.0 - 100 - 5*ioff*ioff;
 		float y = SCREEN_H/2.0 - 10 + 70*ioff + tanh(2*ioff) * (10 - e->drawdata) * 11;
 		char title[STAGE_MAX_TITLE_SIZE];
 		stagetitle_format_localized(&stg->title, sizeof(title), title);
@@ -63,13 +65,16 @@ static void draw_stgpract_menu(MenuData *m) {
 			r_mat_mv_pop();
 			portrait_params.shader_ptr = res_shader("sprite_default");
 			portrait_params.color = RGBA_MUL_ALPHA(1, 1, 1, p);
-			if(e->action != NULL) {
+
+			StageProgress *prog = stageinfo_get_progress(stg, progress.game_settings.difficulty, false);
+			if(e->action != NULL && prog && prog->global.num_cleared > 0) {
 				r_draw_sprite(&portrait_params);
 				portrait_params.sprite_ptr = res_sprite(bosses[i][1]);
 				r_draw_sprite(&portrait_params);
 			}
 		}
 
+		const char *subtitle = _(stg->subtitle);
 		float ia = 1 - 0.3 * fabsf(ioff);
 		Color clr = *RGBA_MUL_ALPHA(1, 1, 1, ia);
 		if(e->action == NULL) {
@@ -77,6 +82,7 @@ static void draw_stgpract_menu(MenuData *m) {
 			for(char *p = title; *p; p++) {
 				*p = '?';
 			}
+			subtitle = _("??????");
 		}
 
 		r_color(&clr);
@@ -86,19 +92,12 @@ static void draw_stgpract_menu(MenuData *m) {
 			.font_ptr = font_big,
 			.align = ALIGN_CENTER,
 		});
-		if(e->action != NULL) {
-			text_draw(_(stg->subtitle), &(TextParams) {
-				.pos = { x, y + 35 },
-				.shader_ptr = text_shader,
-				.align = ALIGN_CENTER,
-			});
-		} else {
-			text_draw(_("??????"), &(TextParams) {
-				.pos = { x, y + 35 },
-				.shader_ptr = text_shader,
-				.align = ALIGN_CENTER,
-			});
-		}
+
+		text_draw(subtitle, &(TextParams) {
+			.pos = { x, y + 35 },
+			.shader_ptr = text_shader,
+			.align = ALIGN_CENTER,
+		});
 	});
 
 	r_color3(1,1,1);
