@@ -61,9 +61,8 @@ msgid "Extra"
 msgstr ""
 
 #: src/boss.c:1003
-#, fuzzy
 msgid "Move"
-msgstr "向上移动"
+msgstr ""
 
 #: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
 #: src/menu/options.c:1403
@@ -115,9 +114,8 @@ msgid "“%s”"
 msgstr "“%s”"
 
 #: src/cutscenes/intro.inc.h:2
-#, fuzzy
 msgid "Introduction"
-msgstr "直觉"
+msgstr "开篇"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -3392,6 +3390,7 @@ msgstr "你干嘛不说自己是赤色杀人魔呢？！"
 # （brine是什么玩意啊，深海少女? ）
 # （额，brine maiden居然是一副画，不过中文里的brine和shrine听起来就不是一个东西）
 # 还是让胡桃文明点吧
+
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
 msgstr "没错啊, 这就是巫女穿的啊，巫女的制服。"
@@ -3979,7 +3978,7 @@ msgstr "在下魂魄妖梦, 受幽幽子大人之命前来调查——"
 msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
-msgstr "我从没听说过你所说的这个“幽幽子大人”, 但我不能对此置之不理。"
+msgstr "我从没听说过你所说的这个「幽幽子大人」, 但我不能对此置之不理。"
 
 #: src/dialog/youmu.c:94
 msgid ""
@@ -4411,7 +4410,7 @@ msgstr "魂魄妖梦, 无上的生与死之少女剑客, 将彻底了结这起�
 msgid ""
 "It seems that the machine has also overinflated your ego, Swordswoman of "
 "Hakugyokurō."
-msgstr "看来那台机器不仅扭曲了现实, 还膨胀了你的自尊心啊, 白玉楼的剑客。"
+msgstr "看来那台机器不仅扭曲了现实, 还让你嚣张了不少啊, 白玉楼的剑客。"
 
 #: src/dialog/youmu.c:400
 msgid "Would caution not be prudent in this situation?"
@@ -4419,19 +4418,19 @@ msgstr "在这种情况下, 谨慎行事难道不是更明智的选择吗? "
 
 #: src/dialog/youmu.c:403
 msgid "Overinflated ego? Nonsense."
-msgstr "自负? 胡说八道。"
+msgstr "「嚣张」? 胡说八道。"
 
 #: src/dialog/youmu.c:404
 msgid ""
 "During my recent battles, I have achieved a flow state most blademasters "
 "only dream of!"
-msgstr "在最近的战斗中, 我已进入了一种连顶尖剑豪都只能梦寐以求的「心流之境」! "
+msgstr "在最近的战斗中, 我已进入了一种连顶尖剑豪都只能梦寐以求的 「心流之境」! "
 
 #: src/dialog/youmu.c:406
 msgid ""
 "Through that, I have realized the true form of my previously-incomplete "
 "yōkai-vanquishing technique!"
-msgstr "正因如此, 我终于领悟了自己那曾不完整的退魔剑技的真正形态! "
+msgstr "正因如此, 我终于领悟了自己那曾不完整的 「妖怪退治剑技」的真正形态! "
 
 #: src/dialog/youmu.c:409
 msgid "Is that so?"
@@ -4917,6 +4916,8 @@ msgstr ""
 msgid "__NAME__"
 msgstr "中文"
 
+#谢谢Renko的宽容,可以去 space.bilibili.com/430093998 关注TA(ᗜᴗᗜ)
+
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
 msgstr "博丽 灵梦"
@@ -4949,7 +4950,7 @@ msgstr ""
 "\n"
 "她正从她繁忙的小说阅读日程中抽身去解决异变。\n"
 "\n"
-"大体上, 她对过去的时代有一种模糊的感伤。\n"
+"她似乎对以前的时代有一种奇怪的「感伤」？\n"
 "\n"
 "不管怎样, 当妖怪之山的住民们啜泣着登门求助时, 她也只能暂且搁下书卷, 整装出发"
 "了。"
@@ -4980,12 +4981,12 @@ msgid ""
 msgstr ""
 "自信而活跃的魔女。\n"
 "\n"
-"对魔法的极限与现实的本质的好奇一如既往, 而当她听闻“诡异疯狂”的传闻时, 她的好"
+"对魔法的极限与现实的本质的好奇一如既往, 而当她听闻「诡异疯狂」的传闻时, 她的好"
 "奇便占据了上风。\n"
 "\n"
-"但可能这本“魔法书”还是永远没人去读才更好?\n"
+"但可能这本「魔法书」还是永远没人去读才更好?\n"
 "\n"
-"区区这样的警告才不会阻拦她的脚步, 就这样踏上征程。"
+"区区这样的警告才不会阻拦她的脚步, 就这么踏上征程。"
 
 #: src/menu/charprofile.c:81
 msgid "Konpaku Yōmu"
@@ -5016,9 +5017,9 @@ msgid ""
 "Still, she’s been given an important mission by Lady Yuyuko. Hopefully she "
 "doesn’t let it get to her head."
 msgstr ""
-"某种意义上生死之间的少女剑客。\n"
+"某种意义上「半死不活」的剑客。\n"
 "\n"
-"“当你们在玩游戏时, 我在研习剑术。”——这大概会是她的台词。\n"
+"「哪里有什么天才，我只是把别人玩游戏的工夫都用在了剑术上」——这大概会是她的台词。\n"
 "\n"
 "性格对什么事都认真过头, 但还很害怕自己的另外一半(半灵)。\n"
 "\n"
@@ -5045,7 +5046,7 @@ msgstr ""
 "\n"
 "可能她最近在和秘神与地狱妖精的对决后感到不太开心? \n"
 "\n"
-"还是对她手下留情吧。"
+"还是对她下手轻点吧。"
 
 #: src/menu/charprofile.c:104
 msgid "Pestilence God"
@@ -5068,7 +5069,7 @@ msgstr ""
 "\n"
 "她可能有些过分担忧你的健康和安全, 甚至到了令人窒息的程度。\n"
 "\n"
-"然而, 你已经到了该选择自己人生道路的年龄了。"
+"然而, 你已经到了该决定自己人生道路的年纪了。"
 
 #: src/menu/charprofile.c:113 src/stages/stage3/scuttle.c:37
 msgid "Scuttle"
@@ -5117,7 +5118,7 @@ msgid ""
 "If she thinks she has a raw evolutionary deal, someone ought to tell her "
 "about the trilobites…"
 msgstr ""
-"一只发光的小虫子——或者说昆虫? ——远离了她惯常出没的领地。\n"
+"一只发光的小虫子——或者说昆虫? ——远离了她惯常出没的地盘。\n"
 "\n"
 "她坚信昆虫在演化长河中失去了「应有的地位」。\n"
 "\n"
@@ -5143,9 +5144,9 @@ msgid ""
 msgstr ""
 "来自过去的吸血鬼异变。难道她不知道幻想乡已经有了新的吸血鬼了吗? \n"
 "\n"
-"她擅长吸血, 但她现在的工作倒是当门卫, 而且实际更热衷于买衣服。\n"
+"她擅长吸血, 但她现在的工作倒是当门卫, 而且实际更热衷于搞时尚。\n"
 "\n"
-"不过现在谁还没有几个业余爱好呢……"
+"不过现在谁还没有几个副业呢……"
 
 #: src/menu/charprofile.c:148
 msgid "Oarfish"
@@ -5165,7 +5166,7 @@ msgid ""
 "Despite being so formal and stuffy, she seems to be the only one who knows "
 "what’s going on."
 msgstr ""
-"云端的信使, 同时是一个业余气象学家。\n"
+"从云端（龙宫）而来的信使, 同时还是一个业余气象学家。\n"
 "\n"
 "她最近似乎读了太多过时的精神病学教材。\n"
 "\n"
@@ -5190,12 +5191,12 @@ msgid ""
 "her. Try not to let too many stones crush the innocent yōkai below when her "
 "Tower of Babel starts to crumble."
 msgstr ""
-"对自己被遗忘稍感沮丧。\n"
+"对自己被遗忘有点沮丧。\n"
 "\n"
-"她显然给自己找了一位在理论物理的“暗之艺术”领域的导师。她的副业是个自大狂。\n"
+"这货大概给自己找了一位搞理论物理这门「黑魔法」的导师。至于她的副业是个自大狂。\n"
 "\n"
-"她真正地立于世界之巅, 没有闲心去理会她脚下的一切。 当她的通天之塔开始倾颓时, "
-"还望莫让坠落的砖石伤及下方无辜的妖怪。"
+"她已然登上世界之巅, 对足下众生漠不关心。但愿当她的巴别塔开始倾颓时, "
+"那些坠落的砖石不会伤及下方无辜的妖怪。"
 
 #: src/menu/charprofile.c:168
 msgid "Locked"
@@ -5238,9 +5239,8 @@ msgid "Cutscene Viewer"
 msgstr ""
 
 #: src/menu/cutsceneview.c:49
-#, fuzzy
 msgid "(Locked)"
-msgstr "锁定"
+msgstr "(锁定)"
 
 #: src/menu/difficultyselect.c:44
 msgid ""
@@ -5441,11 +5441,11 @@ msgstr "关"
 
 #: src/menu/options.c:746 src/menu/savereplay.c:134
 msgid "Yes"
-msgstr "是哒"
+msgstr ""
 
 #: src/menu/options.c:747 src/menu/savereplay.c:135
 msgid "No"
-msgstr "不要"
+msgstr ""
 
 #: src/menu/options.c:775
 msgid "Video Options"
@@ -5822,23 +5822,23 @@ msgstr ""
 
 #: src/menu/spellpractice.c:133
 msgid "Spell Information"
-msgstr ""
+msgstr "符卡信息"
 
 #: src/menu/spellpractice.c:141
 msgid "Type"
-msgstr ""
+msgstr "类型"
 
 #: src/menu/spellpractice.c:142
 msgid "Health"
-msgstr ""
+msgstr "血量"
 
 #: src/menu/spellpractice.c:143
 msgid "Duration"
-msgstr ""
+msgstr "时长"
 
 #: src/menu/spellpractice.c:144
 msgid "Bonus Rank"
-msgstr ""
+msgstr "分数奖励"
 
 #: src/menu/spellpractice.c:153
 #, c-format
@@ -5847,7 +5847,7 @@ msgstr ""
 
 #: src/menu/spellpractice.c:181
 msgid "Clears/Attempts"
-msgstr ""
+msgstr "收取/总尝试次数"
 
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
@@ -6087,9 +6087,9 @@ msgid "Descent into Madness"
 msgstr "堕入疯狂"
 
 #: src/stageinfo.c:248
-#, fuzzy, c-format
+#, c-format
 msgid "Spell %d"
-msgstr "符卡"
+msgstr "符卡 %d"
 
 #: src/stageinfo.c:251
 #, c-format
@@ -6318,7 +6318,7 @@ msgstr "真理之塔「Theory of Everything」(万物之理论)"
 #: po/extra_strings.c:72 po/extra_strings.c:76 po/extra_strings.c:80
 #: po/extra_strings.c:84
 msgid "Taisei Project"
-msgstr ""
+msgstr "泰西Project"
 
 #: po/extra_strings.c:2
 msgid "Divine Correction for Outliers"
