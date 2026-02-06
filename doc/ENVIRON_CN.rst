@@ -159,7 +159,7 @@ OpenGL和GLES渲染器
 ``TAISEI_GL_EXT_OVERRIDES``
    | 默认：未设置
 
-   假定受支持的OpenGL扩展的空格分隔列表（即使驱动程序报告不支持）。在扩展名前添加 ``-`` 可取反其行为。
+   假装设置的OpenGL扩展受支持 (即使驱动程序报告不支持）(用空格分隔列表)。在扩展名前添加 ``-`` 可反向操作。
    可用于规避某些怪异/古老/有问题的驱动程序中的错误（但成功几率渺茫）。请注意，这仅影响实际检测给定扩展的代码路径，而非实际的OpenGL功能。
    某些OpenGL实现（如Mesa）提供了自有扩展控制机制，建议优先使用那些机制。
 
@@ -183,12 +183,12 @@ OpenGL和GLES渲染器
 ``TAISEI_GL33_VERSION_MAJOR``
    | 默认： ``3``
 
-   请求此主版本的OpenGL上下文。
+   请求此主版本（OpenGL 4.6前面那个4）的OpenGL上下文。
 
 ``TAISEI_GL33_VERSION_MINOR``
    | 默认： ``3``
 
-   请求此小版本的 OpenGL 上下文。
+   请求此小版本（OpenGL 4.6后面那个6）的 OpenGL 上下文。
 
 ``TAISEI_ANGLE_WEBGL``
    | 默认： ``0``; ``1`` on Windows
