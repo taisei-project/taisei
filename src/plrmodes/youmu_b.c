@@ -610,6 +610,10 @@ static void youmu_haunting_preload(ResourceGroup *rg) {
 		"youmu_bombbg1",
 	NULL);
 
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
+		"youmu_bomb_bg",
+	NULL);
+
 	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
