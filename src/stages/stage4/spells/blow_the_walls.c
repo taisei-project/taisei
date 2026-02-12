@@ -72,7 +72,7 @@ DEFINE_EXTERN_TASK(kurumi_blowwall) {
 
 	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
-	INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, b->pos, *RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
 	for(;;) {
 		aniplayer_queue(&b->ani,"muda",0);
 		WAIT(50);
@@ -90,7 +90,7 @@ DEFINE_EXTERN_TASK(kurumi_blowwall) {
 			kurumi_blowwall_laser(b, cdir(M_PI / 10 * i), false);
 			WAIT(10);
 		}
-		INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 100, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, b->pos, *RGBA(1, 0.3, 0.2, 0), 100, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(50);
 	}
 }

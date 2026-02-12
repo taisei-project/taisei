@@ -27,7 +27,7 @@ TASK(wheel, { BoxedBoss boss; real spin_dir; int duration; }) {
 	int slowdown_threshold = 300;
 	int t_ofs = 60;
 
-	INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.3, 0.2, 1.0, 0), t_ofs, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, boss->pos, *RGBA(0.3, 0.2, 1.0, 0), t_ofs, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(t_ofs);
 
 	for(int t = t_ofs; t < t_ofs + duration; t += WAIT(period)) {

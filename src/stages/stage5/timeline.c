@@ -104,7 +104,7 @@ TASK(greeter_fairy, {
 	Color clr_charge = *(ARGS.red ? RGBA(0.25, 0.05, 0, 0) : RGBA(0, 0.05, 0.25, 0));
 	Color clr_bullet = *(ARGS.red ? RGB(1.0, 0.0, 0.0) : RGB(0.0, 0.0, 1.0));
 
-	common_charge(80, &e->pos, 0, &clr_charge);
+	common_charge(80, &e->pos, 0, clr_charge);
 
 	for(int x = 0; x < reps; x++) {
 		cmplx dir = cnormalize(global.plr.pos - e->pos);
@@ -318,7 +318,7 @@ TASK(laser_fairy, {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 
 	e->move = ARGS.move_enter;
-	common_charge(60, &e->pos, 0, RGBA(0.7, 0.3, 1, 0));
+	common_charge(60, &e->pos, 0, *RGBA(0.7, 0.3, 1, 0));
 
 	int delay = difficulty_value(9, 8, 7, 6);
 	int amount = ARGS.time / delay;
@@ -598,7 +598,7 @@ TASK(superbullet_fairy, {
 	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.points = 4, .power = 1)));
 
 	e->move = move_from_towards(e->pos, e->pos + ARGS.acceleration * 70 + ARGS.offset, 0.05);
-	common_charge(60, &e->pos, 0, RGBA(1.0, 0.5, 0, 0));
+	common_charge(60, &e->pos, 0, *RGBA(1.0, 0.5, 0, 0));
 
 	real difficulty = difficulty_value(5.0, 8.0, 11.0, 12.0);
 	cmplx r = cnormalize(global.plr.pos - e->pos);
@@ -743,7 +743,7 @@ TASK(lasertrap, { cmplx pos; }) {
 	}
 
 	INVOKE_SUBTASK(lasertrap_warning, ARGS.pos, boomtime, radius);
-	common_charge(boomtime, &ARGS.pos, 0, RGBA(0.5, 0.1, 1.0, 0));
+	common_charge(boomtime, &ARGS.pos, 0, *RGBA(0.5, 0.1, 1.0, 0));
 	play_sfx("boom");
 
 	int cnt = difficulty_value(15, 28, 32, 40);

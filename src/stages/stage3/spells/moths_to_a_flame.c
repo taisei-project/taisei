@@ -296,7 +296,7 @@ DEFINE_EXTERN_TASK(stage3_spell_moths_to_a_flame) {
 		boss->move.attraction_point = common_wander(boss->pos, 200, bounds);
 		aniplayer_soft_switch(&boss->ani, "specialshot_charge", 1);
 		aniplayer_queue(&boss->ani, "specialshot_hold", 0);
-		common_charge(charge_time, &boss->pos, 0, RGBA(0, 1, 0.2, 0));
+		common_charge(charge_time, &boss->pos, 0, *RGBA(0, 1, 0.2, 0));
 		aniplayer_queue(&boss->ani, "specialshot_release", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
 		boss->move.attraction_point = common_wander(boss->pos, 92, bounds);

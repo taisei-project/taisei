@@ -78,7 +78,7 @@ static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
 	);
 }
 
-static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *clr, real power) {
+static Projectile *spawn_charge_particle(cmplx target, real dist, Color clr, real power) {
 	cmplx pos = target + rng_dir() * dist;
 	MoveParams move = move_towards(0, target, rng_range(0.1, 0.2) + 0.05 * power);
 	move.retention = 0.25 * cdir(1.5 * rng_sign());
@@ -87,7 +87,7 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *c
 
 	return PARTICLE(
 		.sprite = "graze",
-		.color = clr,
+		.color = &clr,
 		.pos = pos,
 		.draw_rule = pdraw_timeout_scalefade(2, 0.05, 0, 1),
 		.move = move,
@@ -120,7 +120,7 @@ static int common_charge_impl(
 	int time,
 	const cmplx *anchor,
 	cmplx offset,
-	const Color *color,
+	Color color,
 	const char *snd_charge,
 	const char *snd_discharge
 ) {
@@ -157,15 +157,15 @@ static int common_charge_impl(
 		real sdist = dist * glm_ease_quad_out(power);
 
 		for(int j = 0; j < nparts; ++j) {
-			Color c = *color;
+			Color c = color;
 			randomize_hue(&c, hue_rand);
 			color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &c, power);
+			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), c, power);
 			ENT_ARRAY_ADD(&particles, p);
 			color_mul_scalar(&c, 0.2);
 		}
 
-		Color c = *color;
+		Color c = color;
 		randomize_hue(&c, hue_rand);
 		color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
 		color_mul_scalar(&c, 0.5);
@@ -192,7 +192,7 @@ static int common_charge_impl(
 		stop_sfx(charge_snd_id);
 	}
 
-	Color c = *color;
+	Color c = color;
 	randomize_hue(&c, hue_rand);
 	color_mul_scalar(&c, 2.0);
 
@@ -221,11 +221,11 @@ static int common_charge_impl(
 	return wait_time;
 }
 
-int common_charge(int time, const cmplx *anchor, cmplx offset, const Color *color) {
+int common_charge(int time, const cmplx *anchor, cmplx offset, Color color) {
 	return common_charge_impl(time, anchor, offset, color, COMMON_CHARGE_SOUND_CHARGE, COMMON_CHARGE_SOUND_DISCHARGE);
 }
 
-int common_charge_static(int time, cmplx pos, const Color *color) {
+int common_charge_static(int time, cmplx pos, Color color) {
 	cmplx anchor = 0;
 	return common_charge_impl(time, &anchor, pos, color, COMMON_CHARGE_SOUND_CHARGE, COMMON_CHARGE_SOUND_DISCHARGE);
 }
@@ -234,7 +234,7 @@ int common_charge_custom(
 	int time,
 	const cmplx *anchor,
 	cmplx offset,
-	const Color *color,
+	Color color,
 	const char *snd_charge,
 	const char *snd_discharge
 ) {
@@ -251,13 +251,6 @@ int common_charge_custom(
 }
 
 DEFINE_EXTERN_TASK(common_charge) {
-	Color local_color;
-	const Color *p_color = ARGS.color_ref;
-	if(!p_color) {
-		local_color = *NOT_NULL(ARGS.color);
-		p_color = &local_color;
-	}
-
 	if(ARGS.bind_to_entity.ent) {
 		TASK_BIND(ARGS.bind_to_entity);
 	}
@@ -266,7 +259,7 @@ DEFINE_EXTERN_TASK(common_charge) {
 		ARGS.time,
 		ARGS.anchor,
 		ARGS.pos,
-		p_color,
+		ARGS.color,
 		ARGS.sound.charge,
 		ARGS.sound.discharge
 	);

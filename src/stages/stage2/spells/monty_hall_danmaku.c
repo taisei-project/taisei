@@ -52,7 +52,7 @@ TASK(goat, { int slot; CoEvent *activation_event; }) {
 
 	INVOKE_SUBTASK(common_charge,
 		.pos = SLOT_WIDTH * (slot + 0.5) + VIEWPORT_H*I,
-		.color = RGBA(1.0, 0.2, 0.2, 0),
+		.color = *RGBA(1.0, 0.2, 0.2, 0),
 		.time = charge_time,
 		.sound = COMMON_CHARGE_SOUNDS
 	);
@@ -60,7 +60,7 @@ TASK(goat, { int slot; CoEvent *activation_event; }) {
 	if(top_enabled) {
 		INVOKE_SUBTASK(common_charge,
 			.pos = SLOT_WIDTH * (slot + 0.5),
-			.color = RGBA(0.2, 0.2, 1.0, 0),
+			.color = *RGBA(0.2, 0.2, 1.0, 0),
 			.time = charge_time,
 			.sound = COMMON_CHARGE_SOUNDS
 		);

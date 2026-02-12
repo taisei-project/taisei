@@ -120,7 +120,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 			.discharge = "boom",
 		},
 		.pos = orig,
-		.color = RGBA(1.5, 1, 2, 0),
+		.color = *RGBA(1.5, 1, 2, 0),
 	});
 
 	for(real d = 0; d < maxdist; d += next_len) {

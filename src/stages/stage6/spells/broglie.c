@@ -56,7 +56,7 @@ TASK(broglie_spin_baryon, { BoxedEllyBaryons baryons; int peaktime; }) {
 
 	INVOKE_SUBTASK(common_charge,
 		.anchor = &baryons->poss[0],
-		.color = RGBA(0.05, 1, 0.5, 0),
+		.color = *RGBA(0.05, 1, 0.5, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 		.time = peaktime,
 	);

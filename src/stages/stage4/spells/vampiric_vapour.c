@@ -120,7 +120,7 @@ DEFINE_EXTERN_TASK(kurumi_vampvape) {
 	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
 	for(int t = 0;; t++) {
-		INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, b->pos, *RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(50);
 		play_sfx("laser1");
 		INVOKE_SUBTASK(kurumi_vampvape_slave,

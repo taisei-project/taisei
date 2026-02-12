@@ -39,7 +39,7 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 
 	for(int i = 0; i < nshots; ++i) {
 		WAIT(60);
-		common_charge(charge_time, &core->pos, 0, RGBA(0.6, 0.2, 0.5, 0));
+		common_charge(charge_time, &core->pos, 0, *RGBA(0.6, 0.2, 0.5, 0));
 
 		ENT_ARRAY_FOREACH(ARGS.spinners, Projectile *p, {
 			int cnt = difficulty_value(12, 16, 22, 24);

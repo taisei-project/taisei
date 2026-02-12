@@ -108,7 +108,7 @@ DEFINE_EXTERN_TASK(stage2_midboss_nonspell_1) {
 		wriggle_anim_begin_charge(boss);
 		INVOKE_SUBTASK(common_charge,
 			.anchor = &boss->pos,
-			.color = RGBA(0.2, 1.0, 0.2, 0),
+			.color = *RGBA(0.2, 1.0, 0.2, 0),
 			.time = charge_time,
 			.sound = COMMON_CHARGE_SOUNDS
 		);

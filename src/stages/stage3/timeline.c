@@ -275,7 +275,7 @@ TASK(horde_fairy_spawn, { int count; int interval; cmplx velocity; }) {
 TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
-	common_charge(120, &e->pos, 0, RGBA(0.6, 0.8, 2, 0));
+	common_charge(120, &e->pos, 0, *RGBA(0.6, 0.8, 2, 0));
 	cmplx offset = rng_dir();
 
 	int lance_count = difficulty_value(50, 100, 200, 300);
@@ -425,7 +425,7 @@ TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
 
 	ecls_anyfairy_summon(e, 120);
 	WAIT(30);
-	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
+	common_charge(90, &e->pos, 0, *RGBA(0.5, 1, 0.25, 0));
 
 	int balls = 6;
 	int cycles = difficulty_value(1, 1, 2, 2);

@@ -62,7 +62,7 @@ TASK(slave_bullet_shot, { BoxedIkuSlave slave; }) {
 TASK(slave_explode, { BoxedIkuSlave slave; }) {
 	IkuSlave *slave = TASK_BIND(ARGS.slave);
 
-	common_charge(120, &slave->pos, 0, &slave->color);
+	common_charge(120, &slave->pos, 0, slave->color);
 
 	RNG_ARRAY(ray_rand, 5);
 	PARTICLE(
