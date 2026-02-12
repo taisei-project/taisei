@@ -44,7 +44,7 @@ typedef struct MarisaBController {
 
 	COEVENTS_ARRAY(
 		slaves_expired
-	) events;
+	) *events;
 } MarisaBController;
 
 DEFINE_ENTITY_TYPE(MarisaBSlave, {
@@ -229,7 +229,7 @@ TASK(marisa_star_slave, {
 	slave->ent.draw_func = marisa_star_draw_slave;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 
-	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+	INVOKE_SUBTASK_WHEN(&ctrl->events->slaves_expired, common_set_bitflags,
 		.pflags = &slave->alive,
 		.mask = 0,
 		.set = 0
@@ -257,7 +257,7 @@ TASK(marisa_star_slave, {
 
 static void marisa_star_respawn_slaves(MarisaBController *ctrl, int numslaves) {
 	Player *plr = ctrl->plr;
-	coevent_signal(&ctrl->events.slaves_expired);
+	coevent_signal(&ctrl->events->slaves_expired);
 	ctrl->slave_ref_pos = plr->pos;
 
 	for(int i = 0; i < numslaves; i++) {

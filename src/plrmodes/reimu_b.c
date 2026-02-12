@@ -74,7 +74,7 @@ DEFINE_ENTITY_TYPE(ReimuBController, {
 
 	COEVENTS_ARRAY(
 		slaves_expired
-	) events;
+	) *events;
 
 	real bomb_alpha;
 });
@@ -474,7 +474,7 @@ TASK(reimu_dream_slave, {
 	slave->pos = plr->pos;
 	slave->alive = 1;
 
-	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+	INVOKE_SUBTASK_WHEN(&ctrl->events->slaves_expired, common_set_bitflags,
 		.pflags = &slave->alive,
 		.mask = 0, .set = 0
 	);
@@ -498,7 +498,7 @@ TASK(reimu_dream_slave, {
 }
 
 static void reimu_dream_respawn_slaves(ReimuBController *ctrl, int num_slaves) {
-	coevent_signal(&ctrl->events.slaves_expired);
+	coevent_signal(&ctrl->events->slaves_expired);
 	cmplx shot_dir = -I;
 
 	for(int i = 0; i < num_slaves; ++i, shot_dir *= -1) {

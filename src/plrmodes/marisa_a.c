@@ -57,7 +57,7 @@ DEFINE_ENTITY_TYPE(MarisaAController, {
 
 	COEVENTS_ARRAY(
 		slaves_expired
-	) events;
+	) *events;
 });
 
 static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
@@ -413,7 +413,7 @@ TASK(marisa_laser_slave, {
 	slave->shader = res_shader("sprite_hakkero");
 	slave->sprite = res_sprite("hakkero");
 
-	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+	INVOKE_SUBTASK_WHEN(&ctrl->events->slaves_expired, common_set_bitflags,
 		.pflags = &slave->alive,
 		.mask = 0,
 		.set = 0
@@ -646,7 +646,7 @@ TASK(marisa_laser_bomb_handler, { MarisaAController *ctrl; }) {
 }
 
 static void marisa_laser_respawn_slaves(MarisaAController *ctrl, int power_rank) {
-	coevent_signal(&ctrl->events.slaves_expired);
+	coevent_signal(&ctrl->events->slaves_expired);
 
 	if(power_rank == 1) {
 		INVOKE_TASK(marisa_laser_slave, ctrl, -40.0*I, -40.0*I, 0);

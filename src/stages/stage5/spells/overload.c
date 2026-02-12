@@ -376,11 +376,11 @@ DEFINE_EXTERN_TASK(stage5_spell_overload) {
 	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 120i, 0.2);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	COEVENTS_ARRAY(trigger) events;
+	COEVENTS_ARRAY(trigger) *events;
 	TASK_HOST_EVENTS(events);
 
 	NodesGrid *grid;
-	INVOKE_SUBTASK(grid_logic, &events.trigger, &grid);
+	INVOKE_SUBTASK(grid_logic, &events->trigger, &grid);
 
 	int charge_time = 120;
 	WAIT(120);
@@ -398,7 +398,7 @@ DEFINE_EXTERN_TASK(stage5_spell_overload) {
 		aniplayer_queue(&boss->ani, "main", 0);
 		boss->in_background = true;
 		auto regen_task = cotask_box(INVOKE_SUBTASK(boss_regen, ENT_BOX(boss)));
-		WAIT_EVENT_OR_DIE(&events.trigger);
+		WAIT_EVENT_OR_DIE(&events->trigger);
 		CANCEL_TASK(regen_task);
 		boss->in_background = false;
 		WAIT(180);

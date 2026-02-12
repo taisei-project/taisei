@@ -33,7 +33,7 @@ typedef struct ReimuAController {
 	int last_needle_fire_time;
 	COEVENTS_ARRAY(
 		slaves_expired
-	) events;
+	) *events;
 } ReimuAController;
 
 DEFINE_ENTITY_TYPE(ReimuASlave, {
@@ -498,7 +498,7 @@ static ReimuASlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Colo
 	slave->ent.draw_func = reimu_spirit_draw_slave;
 	slave->alive = 1;
 
-	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+	INVOKE_SUBTASK_WHEN(&ctrl->events->slaves_expired, common_set_bitflags,
 		.pflags = &slave->alive,
 		.mask = 0, .set = 0
 	);
@@ -737,7 +737,7 @@ static void reimu_spirit_spawn_slaves_focused(ReimuAController *ctrl, int power_
 }
 
 static void reimu_spirit_kill_slaves(ReimuAController *ctrl) {
-	coevent_signal(&ctrl->events.slaves_expired);
+	coevent_signal(&ctrl->events->slaves_expired);
 }
 
 static void reimu_spirit_respawn_slaves(ReimuAController *ctrl) {

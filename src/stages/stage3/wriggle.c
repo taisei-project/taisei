@@ -94,7 +94,7 @@ WriggleSlave *stage3_host_wriggle_slave(cmplx pos) {
 }
 
 void stage3_despawn_wriggle_slave(WriggleSlave *slave) {
-	coevent_signal_once(&slave->events.despawned);
+	coevent_signal_once(&slave->events->despawned);
 }
 
 DEFINE_EXTERN_TASK(wriggle_slave_damage_trail) {
