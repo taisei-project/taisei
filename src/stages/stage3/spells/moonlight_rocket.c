@@ -91,7 +91,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	COEVENTS_ARRAY(phase2, explosion) *events;
 	TASK_HOST_EVENTS(events);
 
-	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events->phase2, dt);
+	INVOKE_SUBTASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events->phase2, dt);
 	WAIT_EVENT_OR_DIE(&events->phase2);
 
 	p = PROJECTILE(
@@ -110,7 +110,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 
 	l = create_laser(p->pos, dt, dt, RGBA(0.4, 0.9, 1.0, 0.0), laser_rule_accelerated(0, accel));
 	l->width = 15;
-	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events->explosion, dt);
+	INVOKE_SUBTASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events->explosion, dt);
 	WAIT_EVENT_OR_DIE(&events->explosion);
 	// if we get here, p must be still alive and valid
 
