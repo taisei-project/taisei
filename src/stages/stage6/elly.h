@@ -35,7 +35,7 @@ DEFINE_ENTITY_TYPE(EllyScythe, {
 
 	COEVENTS_ARRAY(
 		despawned
-	) events;
+	) *events;
 });
 
 EllyScythe *stage6_host_elly_scythe(cmplx pos);
@@ -64,7 +64,7 @@ DEFINE_ENTITY_TYPE(EllyBaryons, {
 
 	COEVENTS_ARRAY(
 		despawned
-	) events;
+	) *events;
 });
 
 EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss);

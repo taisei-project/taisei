@@ -25,7 +25,7 @@ DEFINE_ENTITY_TYPE(WriggleSlave, {
 
 	COEVENTS_ARRAY(
 		despawned
-	) events;
+	) *events;
 });
 
 Boss *stage3_spawn_wriggle(cmplx pos);

@@ -327,13 +327,13 @@ TASK_WITH_INTERFACE(elly_goto_center, BossAttack) {
 TASK(host_scythe, { cmplx pos; BoxedEllyScythe *out_scythe; }) {
 	EllyScythe *scythe = stage6_host_elly_scythe(ARGS.pos);
 	*ARGS.out_scythe = ENT_BOX(scythe);
-	WAIT_EVENT(&scythe->events.despawned);
+	WAIT_EVENT(&scythe->events->despawned);
 }
 
 TASK(host_baryons, { BoxedBoss boss; BoxedEllyBaryons *out_baryons; }) {
 	EllyBaryons *baryons = stage6_host_elly_baryons(ARGS.boss);
 	*ARGS.out_baryons = ENT_BOX(baryons);
-	WAIT_EVENT(&baryons->events.despawned);
+	WAIT_EVENT(&baryons->events->despawned);
 }
 
 TASK(stop_boss_rotation) {
