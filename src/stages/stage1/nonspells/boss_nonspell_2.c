@@ -73,7 +73,7 @@ TASK(spiralshot, {
 
 	INVOKE_SUBTASK_DELAYED(charge_delay, common_charge,
 		.pos = pos,
-		.color = RGBA(0.3, 0.3, 0.8, 0),
+		.color = *RGBA(0.3, 0.3, 0.8, 0),
 		.time = charge_time,
 		.sound = COMMON_CHARGE_SOUNDS
 	);

@@ -96,7 +96,7 @@ DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
 	for(;;) {
 		origin = boss->pos;
 		boss->move.attraction_point = common_wander(boss->pos, 200, bounds);
-		time += common_charge_static(delay, origin, &charge_color);
+		time += common_charge_static(delay, origin, charge_color);
 
 		for(int i = 0; i < cnt; ++i) {
 			play_sfx("shot_special1");

@@ -58,7 +58,7 @@ DEFINE_EXTERN_TASK(kurumi_walachia) {
 
 
 	for(int run = 0;; run++) {
-		INVOKE_SUBTASK(common_charge, .pos = b->pos, .time = 40, .color = RGBA(1.0, 0, 0, 0));
+		INVOKE_SUBTASK(common_charge, .pos = b->pos, .time = 40, .color = *RGBA(1.0, 0, 0, 0));
 		for(int i = 0; i < slave_count; i++) {
 			INVOKE_SUBTASK(kurumi_walachia_slave,
 				.pos = b->pos,

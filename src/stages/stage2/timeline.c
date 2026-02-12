@@ -157,14 +157,14 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 	INVOKE_SUBTASK(common_charge,
 		.time = charge_time + waves * wave_period,
 		.anchor = &e->pos,
-		.color = RGBA(1.0, 0.1, 0.1, 0.0),
+		.color = *RGBA(1.0, 0.1, 0.1, 0.0),
 		.sound = COMMON_CHARGE_SOUNDS
 	);
 
 	INVOKE_SUBTASK_DELAYED(5, common_charge,
 		.time = charge_time + waves * wave_period,
 		.anchor = &e->pos,
-		.color = RGBA(0.1, 0.1, 1.0, 0.0)
+		.color = *RGBA(0.1, 0.1, 1.0, 0.0)
 	);
 
 	cmplx dir = rng_dir();
@@ -216,7 +216,7 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_exit; }) {
 	INVOKE_TASK_DELAYED(summon_time - precharge_time, common_charge, {
 		.time = charge_time + precharge_time,
 		.pos = e->pos,
-		.color = RGBA(0.5, 0.2, 1.0, 0.0),
+		.color = *RGBA(0.5, 0.2, 1.0, 0.0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 

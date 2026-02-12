@@ -51,11 +51,10 @@ DECLARE_EXTERN_TASK(
 	common_charge,
 	{
 		cmplx pos;
-		const Color *color;
+		Color color;
 		int time;
 		BoxedEntity bind_to_entity;
 		const cmplx *anchor;
-		const Color *color_ref;
 
 		struct {
 			const char *charge;
@@ -67,20 +66,19 @@ DECLARE_EXTERN_TASK(
 void common_drop_items(cmplx pos, const ItemCounts *items)
 	attr_nonnull(2);
 
-int common_charge(int time, const cmplx *anchor, cmplx offset, const Color *color)
-	attr_nonnull(2, 4);
+int common_charge(int time, const cmplx *anchor, cmplx offset, Color color)
+	attr_nonnull(2);
 
-int common_charge_static(int time, cmplx pos, const Color *color)
-	attr_nonnull(3);
+int common_charge_static(int time, cmplx pos, Color color);
 
 int common_charge_custom(
 	int time,
 	const cmplx *anchor,
 	cmplx offset,
-	const Color *color,
+	Color color,
 	const char *snd_charge,
 	const char *snd_discharge
-) attr_nonnull(4);
+);
 
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 

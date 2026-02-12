@@ -319,7 +319,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
 	cmplx dir = cnormalize(global.plr.pos - e->pos);
 	cmplx ofs = -24 * dir;
 
-	common_charge(60, &e->pos, ofs, RGBA(0.0, 0.25, 0.5, 0));
+	common_charge(60, &e->pos, ofs, *RGBA(0.0, 0.25, 0.5, 0));
 
 	real spread = difficulty_value(M_PI/20, M_PI/18, M_PI/16, M_PI/14);
 	real interval = difficulty_value(3, 2, 1, 1);
@@ -341,7 +341,7 @@ TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
 	INVOKE_SUBTASK_DELAYED(80, common_charge, {
 		.time = 120,
 		.pos = e->pos,
-		.color = RGBA(1.0, 0, 0.2, 0),
+		.color = *RGBA(1.0, 0, 0.2, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 	ecls_anyfairy_summon(e, 120);
@@ -605,7 +605,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx end_velocity; }) {
 	INVOKE_SUBTASK_DELAYED(120, common_charge, {
 		.pos = e->pos,
 		.time = 60,
-		.color = RGBA(0.1, 0.2, 1.0, 0),
+		.color = *RGBA(0.1, 0.2, 1.0, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 	ecls_anyfairy_summon(e, 180);

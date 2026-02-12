@@ -70,7 +70,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 
 		WAIT(330 - charge_time);
 		aniplayer_queue(&boss->ani, "(9)" ,0);
-		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, boss->pos, *RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
 
 		boss->move = move_towards_exp(boss->move.velocity, global.plr.pos, 1, 0.1);

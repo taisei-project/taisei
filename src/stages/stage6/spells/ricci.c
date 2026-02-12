@@ -177,7 +177,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
 							.bind_to_entity = ARGS.baryons.as_generic,
 							.time = 250 - d,
-							.color = RGBA(0.02, 0.01, 0.1, 0.0),
+							.color = *RGBA(0.02, 0.01, 0.1, 0.0),
 							.sound = COMMON_CHARGE_SOUNDS,
 						);
 					} else {
@@ -186,7 +186,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
 							.bind_to_entity = ARGS.baryons.as_generic,
 							.time = 250 - d,
-							.color = RGBA(0.02, 0.01, 0.1, 0.0),
+							.color = *RGBA(0.02, 0.01, 0.1, 0.0),
 						);
 					}
 				}

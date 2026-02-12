@@ -24,15 +24,15 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_platform.h>
 
+#define VIEWPORT_X 40.0
+#define VIEWPORT_Y 20.0
+#define VIEWPORT_W 480.0
+#define VIEWPORT_H 560.0
+
 enum {
 	// defaults
 	RESX = 800,
 	RESY = 600,
-
-	VIEWPORT_X = 40,
-	VIEWPORT_Y = 20,
-	VIEWPORT_W = 480,
-	VIEWPORT_H = 560,
 
 	MAX_CONTINUES = 5,
 

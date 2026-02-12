@@ -187,7 +187,7 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 	int count = difficulty_value(35, 55, 75, 90);
 	real speed = difficulty_value(1.0, 1.2, 1.4, 1.6);
 
-	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0, 0.7, 1.0, 0), 40, .anchor = &ARGS.e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0, 0.7, 1.0, 0), 40, .anchor = &ARGS.e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(40);
 
 	for(int i = 0; i < count; i++) {
@@ -326,7 +326,7 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1)));
 	INVOKE_TASK(bigcircle_fairy_move, ENT_BOX(e), ARGS.vel);
 	WAIT(20);
-	INVOKE_SUBTASK(common_charge, 0, RGBA(0, 0.8, 0, 0), 60, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, *RGBA(0, 0.8, 0, 0), 60, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
 	WAIT(40);
 	int shots = difficulty_value(3, 4, 6, 7);
@@ -585,7 +585,7 @@ TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
 	INVOKE_SUBTASK_DELAYED(60, common_charge,
 		.time = 90,
 		.pos = e->pos,
-		.color = color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
+		.color = *color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
 	ecls_anyfairy_summon(e, 120);

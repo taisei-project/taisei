@@ -27,7 +27,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 
 	INVOKE_SUBTASK_DELAYED(summon_time - precharge_time, common_charge,
 		.anchor = &e->pos,
-		.color = RGBA(1, 0, 0, 0),
+		.color = *RGBA(1, 0, 0, 0),
 		.time = charge_time + precharge_time,
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
@@ -196,7 +196,7 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 	INVOKE_SUBTASK(common_charge,
 		.anchor = &e->pos,
 		.time = aimtime,
-		.color = RGBA(1, 0.1, 0.1, 0),
+		.color = *RGBA(1, 0.1, 0.1, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
 

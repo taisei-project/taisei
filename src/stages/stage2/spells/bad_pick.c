@@ -100,7 +100,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 
 			INVOKE_SUBTASK(common_charge,
 				.pos = VIEWPORT_W / (real)SLOTS * (i + 0.5),
-				.color = RGBA(1.0, 0.1, 0.1, 0),
+				.color = *RGBA(1.0, 0.1, 0.1, 0),
 				.time = 65,
 				.sound = COMMON_CHARGE_SOUNDS
 			);
@@ -108,7 +108,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 			if(i == plr_slot && global.diff > D_Normal) {
 				INVOKE_SUBTASK(common_charge,
 					.pos = VIEWPORT_W / (real)SLOTS * (i + 0.5) + VIEWPORT_H*I,
-					.color = RGBA(0.2, 0.2, 1.0, 0),
+					.color = *RGBA(0.2, 0.2, 1.0, 0),
 					.time = 65,
 					.sound = COMMON_CHARGE_SOUNDS
 				);

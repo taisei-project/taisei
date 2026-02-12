@@ -39,7 +39,7 @@ TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 	aniplayer_queue(&boss->ani, "(9)", 0);
 	WAIT(10);
 
-	INVOKE_SUBTASK(common_charge, shot_ofs, RGBA(0.3, 0.5, 1, 0), ARGS.charge_time,
+	INVOKE_SUBTASK(common_charge, shot_ofs, *RGBA(0.3, 0.5, 1, 0), ARGS.charge_time,
 		.anchor = &boss->pos,
 		.sound = COMMON_CHARGE_SOUNDS
 	);

@@ -321,7 +321,7 @@ TASK(trigger_ball, { cmplx pos; NodesGrid *grid; int charge_time; }) {
 
 	INVOKE_SUBTASK(common_charge,
 		.time = charge_time,
-		.color = &charge_color,
+		.color = charge_color,
 		.anchor = &p->pos,
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
@@ -333,7 +333,7 @@ TASK(trigger_ball, { cmplx pos; NodesGrid *grid; int charge_time; }) {
 	}
 
 	p->flags &= ~PFLAG_NOMOVE;
-	common_charge(discharge_time, &p->pos, 0, &charge_color);
+	common_charge(discharge_time, &p->pos, 0, charge_color);
 	set_active(ARGS.grid, target);
 
 	int cnt = difficulty_value(8, 10, 12, 14);
