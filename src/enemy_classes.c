@@ -268,7 +268,7 @@ static Enemy *_spawn(
 	// NOTE: almost all enemies drop items, so we can abuse the itemdrop task's stack to hold onto
 	// the draw data buffer for us.
 
-	auto t = INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, {
+	auto t = INVOKE_TASK_AFTER(&e->events.killed, enemy_drop_items, {
 		.e = ENT_BOX(e),
 		.items = LIKELY(item_drops) ? *item_drops : (ItemCounts) { }
 	});
