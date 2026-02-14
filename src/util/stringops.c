@@ -79,6 +79,7 @@ char* strjoin(const char *first, ...) {
 }
 
 char* vstrfmt(const char *fmt, va_list args) {
+	assert(fmt);
 	size_t written = 0;
 	size_t fmtlen = strlen(fmt);
 	size_t asize = 1;
@@ -118,6 +119,7 @@ char* strfmt(const char *fmt, ...) {
 }
 
 char* vstrfmt_arena(MemArena *arena, const char *fmt, va_list args) {
+	assert(fmt);
 	size_t buf_size = strlen(fmt) * 2;
 	char *buf = marena_alloc(arena, buf_size);
 

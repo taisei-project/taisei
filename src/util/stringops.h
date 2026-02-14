@@ -48,6 +48,10 @@ void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
 
+// If str is null, return "(null)", otherwise return str.
+// Useful for string arguments to format functions, which technically must not be null.
+#define STRORNULL(str) ((str) ? (str) : "(null)")
+
 bool strendswith(const char *s, const char *e) attr_pure;
 bool strstartswith(const char *s, const char *p) attr_pure;
 bool strendswith_any(const char *s, const char **earray) attr_pure;

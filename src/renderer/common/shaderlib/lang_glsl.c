@@ -73,7 +73,7 @@ static void glsl_write_header(GLSLFileParseState *fstate) {
 
 	if(fstate->global->options->macros) {
 		for(ShaderMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
-			SDL_RWprintf(fstate->global->dest, "#define %s %s\n", macro->name, macro->value);
+			SDL_RWprintf(fstate->global->dest, "#define %s %s\n", macro->name, STRORNULL(macro->value));
 		}
 	}
 

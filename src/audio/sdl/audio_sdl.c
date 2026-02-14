@@ -52,7 +52,8 @@ static bool init_sdl_audio(void) {
 	SDL_RWprintf(out, "Available audio drivers:");
 
 	for(uint i = 0; i < num_drivers; ++i) {
-		SDL_RWprintf(out, " %s", SDL_GetAudioDriver(i));
+		const char *driver = SDL_GetAudioDriver(i);
+		SDL_RWprintf(out, " %s", STRORNULL(driver));
 	}
 
 	SDL_WriteU8(out, 0);
