@@ -14,7 +14,7 @@ char *vfs_path_normalize(const char *path, char *out) {
 	const char *p = path;
 	char *o = out;
 	char *last_sep = out - 1;
-	char *path_end = strchr(path, 0);
+	const char *path_end = strchr(path, 0);
 
 	#define IS_SEP_OR_NUL(chr) (VFS_IS_PATH_SEPARATOR(chr) || (chr == '\0'))
 

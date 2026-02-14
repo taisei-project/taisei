@@ -220,7 +220,7 @@ const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tl
 			continue;
 		}
 
-		char *sep = strchr(p, '/');
+		const char *sep = strchr(p, '/');
 
 		if(sep) {
 			if(*(sep + 1)) {
