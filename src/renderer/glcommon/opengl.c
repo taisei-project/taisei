@@ -891,7 +891,8 @@ void glcommon_check_capabilities(void) {
 		glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
 
 		for(int i = 0; i < num_extensions; ++i) {
-			SDL_RWprintf(writer, " %s", (const char*)glGetStringi(GL_EXTENSIONS, i));
+			const char *ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
+			SDL_RWprintf(writer, " %s", STRORNULL(ext));
 		}
 
 		SDL_WriteU8(writer, 0);

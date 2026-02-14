@@ -308,7 +308,7 @@ static void action_show_character(MenuData *m, void *arg) {
 
 static void add_character(MenuData *m, int i) {
 	if(strcmp(profiles[i].name, "locked")) {
-		log_debug("character profiles - adding character: %s", profiles[i].name);
+		log_debug("character profiles - adding character: %s", STRORNULL(profiles[i].name));
 		Sprite *spr = portrait_get_base_sprite(profiles[i].name, NULL);
 		MenuEntry *e = add_menu_entry(m, NULL, action_show_character, spr);
 		e->transition = NULL;
