@@ -146,38 +146,29 @@ void vfs_mkdir_required(const char *path) {
 	}
 }
 
-static bool vfs_mkparents_recurse(const char *path) {
-	// FIXME this has stupid space complexity and is probably silly in general; optimize if you care
-
-	char *psep = strrchr(path, VFS_PATH_SEPARATOR);
-
-	if(!psep) {
-		// parent is root
-		return true;
-	}
-
-	char p[strlen(path) + 1];
-	strcpy(p, path);
-	psep += p - path;
-	*psep = 0;
-
-	VFSInfo i = vfs_query(p);
-
-	if(i.error) {
-		return false;
-	}
-
-	if(i.exists) {
-		return i.is_dir;
-	}
-
-	return vfs_mkparents_recurse(p) && vfs_mkdir(p);
-}
-
 bool vfs_mkparents(const char *path) {
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
-	return vfs_mkparents_recurse(p);
+
+	// loop over all parent directories
+	char *psep = p;
+	while((psep = strchr(psep, VFS_PATH_SEPARATOR))) {
+		*psep = 0;
+
+		VFSInfo i = vfs_query(p);
+		if(i.error) {
+			return false;
+		}
+
+		if(!i.exists || !i.is_dir) {
+			vfs_mkdir(p);
+		}
+
+		*psep = VFS_PATH_SEPARATOR;
+		psep++;
+	}
+
+	return true;
 }
 
 char* vfs_repr(const char *path, bool try_syspath) {
