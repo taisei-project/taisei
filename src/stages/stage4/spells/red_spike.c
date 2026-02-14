@@ -57,6 +57,7 @@ DEFINE_EXTERN_TASK(kurumi_dryfountain) {
 	int count = difficulty_value(8, 16, 16, 16);
 	real speed = 3 * difficulty_value(1.1, 1.2, 1.2, 1.2);
 
+	WAIT(step * 2);
 	for(;;) {
 		for(int i = 0; i < count; i++) {
 			cmplx vel = speed * cdir(M_TAU / count * i) * cnormalize(global.plr.pos-b->pos);
