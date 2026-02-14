@@ -49,7 +49,7 @@ void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format,
 }
 
 static PixmapFileFormatHandler *pixmap_handler_for_filename(const char *file) {
-	char *ext = strrchr(file, '.');
+	const char *ext = strrchr(file, '.');
 
 	if(!ext || !*(++ext)) {
 		return NULL;

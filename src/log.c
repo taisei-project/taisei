@@ -161,7 +161,7 @@ static void add_debug_info(StringBuffer *buf) {
 static size_t modname(const char *filename, size_t filename_len, char *mod) {
 	size_t mlen = filename_len;
 
-	char *dot = memchr(filename, '.', mlen);
+	const char *dot = memchr(filename, '.', mlen);
 	if(dot) {
 		mlen = dot - filename;
 	}
