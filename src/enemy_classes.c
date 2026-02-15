@@ -156,9 +156,9 @@ TASK(fairy_flame_emitter, {
 	DECLARE_ENT_ARRAY(Projectile, parts, 16);
 
 	cmplx old_pos = visual_pos_e(e);
-	FairyVisualParams *fvp = e->visual.drawdata;
 
 	for(int t = 0;; ++t, YIELD) {
+		FairyVisualParams *fvp = e->visual.drawdata;
 		cmplx epos = visual_pos_e(e);
 
 		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
@@ -206,9 +206,9 @@ TASK(fairy_stardust_emitter, {
 	DECLARE_ENT_ARRAY(Projectile, parts, 32);
 
 	cmplx old_pos = visual_pos_e(e);
-	FairyVisualParams *fvp = e->visual.drawdata;
 
 	for(int t = 0;; ++t, YIELD) {
+		FairyVisualParams *fvp = e->visual.drawdata;
 		cmplx epos = visual_pos_e(e);
 
 		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
@@ -246,15 +246,11 @@ TASK(fairy_stardust_emitter, {
 }
 
 TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
-	// NOTE: Don't bind here! We need this task to outlive the enemy.
-	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
+	Enemy *e = TASK_BIND(ARGS.e);
 
 	if(e->damage_info && DAMAGETYPE_IS_PLAYER(e->damage_info->type)) {
 		common_drop_items(e->pos, &ARGS.items);
 	}
-
-	// NOTE: Needed to keep drawdata alive for this frame (see _spawn below)
-	YIELD;
 }
 
 static Enemy *_spawn(
@@ -265,14 +261,11 @@ static Enemy *_spawn(
 	Enemy *e = create_enemy(pos, hp, (EnemyVisual) { draw });
 	e->ent.draw_layer = LAYER_ENEMY | ((drawlayer_low_t)draw_order << 8);
 
-	// NOTE: almost all enemies drop items, so we can abuse the itemdrop task's stack to hold onto
-	// the draw data buffer for us.
-
-	auto t = INVOKE_TASK_AFTER(&e->events.killed, enemy_drop_items, {
+	INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, {
 		.e = ENT_BOX(e),
 		.items = LIKELY(item_drops) ? *item_drops : (ItemCounts) { }
 	});
-	e->visual.drawdata = cotask_malloc(t, drawdata_alloc);
+	e->visual.drawdata = mem_alloc(drawdata_alloc);
 
 	return e;
 }
@@ -452,6 +445,7 @@ static inline void spawnanim_restore_flags(Enemy *e, EnemyFlag *tempflags) {
 	e->flags &= ~*tempflags;
 }
 
+// XXX: must be called from a task bound to e!
 void ecls_anyenemy_fake3dmovein(
 	Enemy *e,
 	Camera3D *cam,
@@ -489,6 +483,7 @@ void ecls_anyenemy_fake3dmovein(
 	e->ent.draw_layer = layer;
 }
 
+// XXX: must be called from a task bound to e!
 void ecls_anyfairy_summon(Enemy *e, int duration) {
 	assert(duration > 0);
 
