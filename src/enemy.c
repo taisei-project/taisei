@@ -166,6 +166,7 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	COEVENT_CANCEL_ARRAY(e->events);
 	ent_unregister(&e->ent);
 	STAGE_RELEASE_OBJ(alist_unlink(enemies, e));
+	mem_free(e->visual.drawdata);
 
 	return NULL;
 }
