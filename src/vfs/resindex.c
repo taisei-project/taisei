@@ -194,18 +194,18 @@ static const char *vfs_resindex_iter(VFSNode *node, void **opaque) {
 	return NULL;
 }
 
-static char *vfs_resindex_repr(VFSNode *node) {
+static void vfs_resindex_repr(VFSNode *node, StringBuffer *buf) {
 	auto rinode = VFS_NODE_CAST(VFSResIndexNode, node);
 
 	if(RIDX_IS_DIR(rinode->index_entry)) {
 		const RIdxDirEntry *d = RIDX_AS_DIR(rinode->index_entry);
-		return strfmt(
+		strbuf_printf(buf,
 			"resource index directory #%i (%s)",
 			(int)(d - ridx_dirs), ridx_dir_name(d, "<root>")
 		);
 	} else {
 		const RIdxFileEntry *f = RIDX_AS_FILE(rinode->index_entry);
-		return strfmt(
+		strbuf_printf(buf,
 			"resource index file #%i: %s (%s)",
 			(int)(f - ridx_files), NOT_NULL(f->content_id), NOT_NULL(f->name)
 		);
