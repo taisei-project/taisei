@@ -1,3 +1,8 @@
+
+# i18n module doesn't check for these properly
+find_program('msgfmt', required: true)
+find_program('xgettext', required: true)
+
 i18n = import('i18n')
 
 xgettext_args = [
