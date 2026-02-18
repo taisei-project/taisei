@@ -190,6 +190,7 @@ jobs:
         brew install
         create-dmg
         docutils
+        gettext
         pygments
 
         pip3 install
