@@ -33,7 +33,7 @@ on:
         description: "Publish emscripten test build"
 
 env:
-  MESON_VERSION: '1.7.0'
+  MESON_VERSION: '1.8.0'
   EM_VERSION: '3.1.68'
   PYTHON_VERSION: '3.13'
   EM_CACHE_FOLDER: 'emsdk'
