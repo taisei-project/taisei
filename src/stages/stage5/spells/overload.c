@@ -54,12 +54,12 @@ static void setup_nodes_grid(NodesGrid *grid, Rect area) {
 		for(int c = 0; c < columns; ++c) {
 			real x = lerp(area.left, area.right, c / (columns - 1.0));
 
-			Node *n = get_node(grid, r, c);
+			Node *n = NOT_NULL(get_node(grid, r, c));
 			n->pos = CMPLX(x, y);
-			n->links.top    = get_node(grid, r - 1, c);
-			n->links.bottom = get_node(grid, r + 1, c);
-			n->links.left   = get_node(grid, r,     c - 1);
-			n->links.right  = get_node(grid, r,     c + 1);
+			n->links.top    = NOT_NULL(get_node(grid, r - 1, c));
+			n->links.bottom = NOT_NULL(get_node(grid, r + 1, c));
+			n->links.left   = NOT_NULL(get_node(grid, r,     c - 1));
+			n->links.right  = NOT_NULL(get_node(grid, r,     c + 1));
 		}
 	}
 }
