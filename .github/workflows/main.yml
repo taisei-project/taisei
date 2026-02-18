@@ -106,13 +106,14 @@ jobs:
       run: >
         brew install
         docutils
-        pygments
-        libzip
-        opusfile
+        gettext
         libvorbis
-        webp
-        sdl3
+        libzip
         ninja
+        opusfile
+        pygments
+        sdl3
+        webp
 
         pip install
         meson==${{ env.MESON_VERSION }}
