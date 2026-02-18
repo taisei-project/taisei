@@ -8,6 +8,7 @@
 
 #include "fbcopy_fallback.h"
 
+#include "memory/scratch.h"
 #include "util.h"
 
 static ShaderProgram *blit_shader;
@@ -19,7 +20,7 @@ static struct {
 } blit_uniforms;
 
 void gles30_fbcopyfallback_init(void) {
-	StringBuffer sbuf = {};
+	StringBuffer sbuf = { acquire_scratch_arena() };
 
 	strbuf_printf(&sbuf,
 		"#version 300 es\n"
@@ -65,7 +66,7 @@ void gles30_fbcopyfallback_init(void) {
 	log_info("\n%s\n ", frag_src.content);
 
 	ShaderObject *frag_shobj = r_shader_object_compile(&frag_src);
-	strbuf_free(&sbuf);
+	strbuf_clear(&sbuf);
 
 	if(!frag_shobj) {
 		log_fatal("Failed to compile internal blit fragment shader");
@@ -94,7 +95,7 @@ void gles30_fbcopyfallback_init(void) {
 
 	ShaderObject *vert_shobj = r_shader_object_compile(&vert_src);
 
-	strbuf_free(&sbuf);
+	release_scratch_arena(sbuf.arena);
 
 	if(!vert_shobj) {
 		log_fatal("Failed to compile internal blit vertex shader");
