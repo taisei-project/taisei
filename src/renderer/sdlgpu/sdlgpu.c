@@ -231,7 +231,11 @@ void sdlgpu_cmdbuf_debug(SDL_GPUCommandBuffer *cbuf, const char *format, ...) {
 
 	va_list args;
 	va_start(args, format);
+
+	DIAGNOSTIC(push)
+	DIAGNOSTIC(ignored "-Wformat-nonliteral")
 	strbuf_vprintf(&buf, format, args);
+	DIAGNOSTIC(pop)
 	va_end(args);
 
 	SDL_InsertGPUDebugLabel(cbuf, buf.start);
