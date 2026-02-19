@@ -17,6 +17,7 @@
 #include "gamepad.h"
 #include "global.h"
 #include "log.h"
+#include "log_sdl.h"
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
 #include "progress.h"
@@ -149,37 +150,6 @@ static void init_log_filter(void) {
 	SDL_CloseIO(rw);
 }
 
-static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-	const char *cat_str, *prio_str;
-	LogLevel lvl = LOG_DEBUG;
-
-	switch(category) {
-		case SDL_LOG_CATEGORY_APPLICATION: cat_str = "Application"; break;
-		case SDL_LOG_CATEGORY_ERROR:       cat_str = "Error"; break;
-		case SDL_LOG_CATEGORY_ASSERT:      cat_str = "Assert"; break;
-		case SDL_LOG_CATEGORY_SYSTEM:      cat_str = "System"; break;
-		case SDL_LOG_CATEGORY_AUDIO:       cat_str = "Audio"; break;
-		case SDL_LOG_CATEGORY_VIDEO:       cat_str = "Video"; break;
-		case SDL_LOG_CATEGORY_RENDER:      cat_str = "Render"; break;
-		case SDL_LOG_CATEGORY_INPUT:       cat_str = "Input"; break;
-		case SDL_LOG_CATEGORY_TEST:        cat_str = "Test"; break;
-		case SDL_LOG_CATEGORY_GPU:         cat_str = "GPU"; break;
-		default:                           cat_str = "Unknown"; break;
-	}
-
-	switch(priority) {
-		case SDL_LOG_PRIORITY_VERBOSE:  prio_str = "Verbose"; break;
-		case SDL_LOG_PRIORITY_DEBUG:    prio_str = "Debug"; break;
-		case SDL_LOG_PRIORITY_INFO:     prio_str = "Info"; lvl = LOG_INFO; break;
-		case SDL_LOG_PRIORITY_WARN:     prio_str = "Warn"; lvl = LOG_WARN; break;
-		case SDL_LOG_PRIORITY_ERROR:    prio_str = "Error"; lvl = LOG_ERROR; break;
-		case SDL_LOG_PRIORITY_CRITICAL: prio_str = "Critical"; lvl = LOG_ERROR; break;
-		default:                        prio_str = "Unknown"; break;
-	}
-
-	log_custom(lvl, "[%s, %s] %s", cat_str, prio_str, message);
-}
-
 static void init_sdl(void) {
 	if(!SDL_Init(SDL_INIT_EVENTS)) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
@@ -189,13 +159,7 @@ static void init_sdl(void) {
 	SDL_SetHintWithPriority(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0", SDL_HINT_OVERRIDE);
 #endif
 
-	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", SDL_LOG_PRIORITY_INFO);
-
-	if(sdl_logprio >= SDL_LOG_PRIORITY_VERBOSE) {
-		SDL_SetLogPriorities(sdl_logprio);
-		SDL_SetLogOutputFunction(sdl_log, NULL);
-	}
-
+	log_sdl_init(SDL_LOG_PRIORITY_INFO);
 	log_info("SDL initialized");
 
 	int v = SDL_VERSION;
