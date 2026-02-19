@@ -110,6 +110,8 @@ src/hashtable_incproxy.inc.h
 src/hashtable_predefs.inc.h
 src/hirestime.c
 src/hirestime.h
+src/i18n/format_strings.c
+src/i18n/format_strings.h
 src/i18n/i18n.c
 src/item.c
 src/item.h
@@ -126,6 +128,8 @@ src/list.c
 src/list.h
 src/log.c
 src/log.h
+src/log_sdl.c
+src/log_sdl.h
 src/main.c
 src/memory/allocator.c
 src/memory/allocator.h
