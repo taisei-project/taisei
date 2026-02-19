@@ -77,6 +77,7 @@ taisei_src = files(
     'hirestime.c',
     'item.c',
     'list.c',
+    'log_sdl.c',
     'log.c',
     'move.c',
     'player.c',
