@@ -26,6 +26,8 @@ UNIFORM(16) int draw_background;
 
 VARYING(0) vec2 texCoord;
 VARYING(1) vec2 gap_views[NUM_GAPS];
-VARYING(5) mat2 gap_rotations[NUM_GAPS];
+
+// NOTE: mat2 packed into vec4, because SPIRV-Cross can't translate matrix input/output vars into MSL
+VARYING(5) vec4 gap_rotations[NUM_GAPS];
 
 #endif

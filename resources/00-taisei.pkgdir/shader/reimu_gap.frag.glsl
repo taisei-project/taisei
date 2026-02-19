@@ -23,7 +23,7 @@ void drawGap(inout vec4 frag_color, vec2 frag_loc, int i) {
 	const vec4 gap_color = vec4(0.75, 0, 0.4, 1);
 
 	vec2 gap = gaps[i];
-	mat2 gap_rot = gap_rotations[i];
+	mat2 gap_rot = mat2(gap_rotations[i]);
 	float edge = length(gap_rot * (frag_loc - gap) / gap_size);
 	float gap_mask = smoothstep(h0, h1, edge);
 	vec2 tc = gap_views[i];
