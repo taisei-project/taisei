@@ -21,6 +21,6 @@ void main(void) {
 		tc /= viewport;
 		tc.y = 1 - tc.y;
 		gap_views[i] = tc;
-		gap_rotations[i] = rot(gap_angle);
+		gap_rotations[i] = vec4(rot(gap_angle));
 	}
 }
