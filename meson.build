@@ -5,7 +5,7 @@ project('taisei', 'c',
         files('scripts/version.py'),
         '--rootdir', meson.project_source_root(),
     ], check : true).stdout().strip(),
-    meson_version : '>=0.63.0',
+    meson_version : '>=1.8.0',
     default_options : [
         'c_std=gnu11',
 
