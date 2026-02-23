@@ -28,21 +28,31 @@ char *vfs_path_normalize(const char *path, char *out) {
 			do {
 				++p;
 			} while(p < path_end && VFS_IS_PATH_SEPARATOR(*p));
-		} else if(*p == '.' && IS_SEP_OR_NUL(p[1])) {
-			p += 2;
-		} else if(p + 1 < path_end && !strncmp(p, "..", 2) && IS_SEP_OR_NUL(p[2])) {
-			if(last_sep >= out) {
-				do {
-					--last_sep;
-				} while(last_sep >= out && !VFS_IS_PATH_SEPARATOR(*last_sep));
+		} else if(o == out || VFS_IS_PATH_SEPARATOR(o[-1])) {
+			// beginning of a file/directory name
 
-				o = last_sep-- + 1;
+			if(*p == '.' && IS_SEP_OR_NUL(p[1])) {
+				// detect /./ -> fold into /
+				p += 2;
+			} else if(p + 1 < path_end && !strncmp(p, "..", 2) && IS_SEP_OR_NUL(p[2])) {
+				// detect /../ -> erase previous component
+
+				if(last_sep >= out) {
+					do {
+						--last_sep;
+					} while(last_sep >= out && !VFS_IS_PATH_SEPARATOR(*last_sep));
+
+					o = last_sep-- + 1;
+				}
+
+				p += 3;
+			} else {
+				*o++ = *p++;
 			}
-
-			p += 3;
 		} else {
 			*o++ = *p++;
 		}
+
 	}
 
 	#undef IS_SEP_OR_NUL
