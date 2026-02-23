@@ -13,7 +13,7 @@
 char *vfs_path_normalize(const char *path, char *out) {
 	const char *p = path;
 	char *o = out;
-	char *last_sep = out - 1;
+	char *last_sep = o;
 	const char *path_end = strchr(path, 0);
 
 	#define IS_SEP_OR_NUL(chr) (VFS_IS_PATH_SEPARATOR(chr) || (chr == '\0'))
@@ -37,12 +37,16 @@ char *vfs_path_normalize(const char *path, char *out) {
 			} else if(p + 1 < path_end && !strncmp(p, "..", 2) && IS_SEP_OR_NUL(p[2])) {
 				// detect /../ -> erase previous component
 
-				if(last_sep >= out) {
+				if(last_sep > out) {
 					do {
 						--last_sep;
-					} while(last_sep >= out && !VFS_IS_PATH_SEPARATOR(*last_sep));
+					} while(last_sep > out && !VFS_IS_PATH_SEPARATOR(*last_sep));
 
-					o = last_sep-- + 1;
+					if(last_sep == out) {
+						o = out;
+					} else {
+						o = last_sep + 1;
+					}
 				}
 
 				p += 3;
