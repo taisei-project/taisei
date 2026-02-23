@@ -146,8 +146,6 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 	const char *pathptr = path;
 	bool skip = false;
 
-	memset(buf, 0, bufsize);
-
 	while(*pathptr && bufptr < (buf + bufsize - 1)) {
 		if(!skip) {
 			*bufptr++ = *pathptr;
@@ -156,6 +154,8 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 		skip = (pathptr[0] == '/' && pathptr[1] == '/');
 		++pathptr;
 	}
+
+	*bufptr = 0;
 }
 
 void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child) {

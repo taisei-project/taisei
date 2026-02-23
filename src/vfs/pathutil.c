@@ -79,11 +79,7 @@ char *vfs_path_normalize_alloc(const char *path) {
 }
 
 char *vfs_path_normalize_inplace(char *path) {
-	char buf[strlen(path)+1];
-	strcpy(buf, path);
-	vfs_path_normalize(path, buf);
-	strcpy(path, buf);
-	return path;
+	return vfs_path_normalize(path, path);
 }
 
 void vfs_path_split_left(char *path, char **lpath, char **rpath) {
@@ -149,9 +145,7 @@ void vfs_path_root_prefix(char *path) {
 }
 
 char *vfs_syspath_normalize_inplace(char *path) {
-	char buf[strlen(path)+1];
-	vfs_syspath_normalize(buf, sizeof(buf), path);
-	strcpy(path, buf);
+	vfs_syspath_normalize(path, strlen(path) + 1, path);
 	return path;
 }
 
