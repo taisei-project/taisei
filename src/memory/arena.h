@@ -102,6 +102,14 @@ INLINE char *marena_strdup(MemArena *arena, const char *src) {
 	return marena_memdup(arena, src, strlen(src) + 1);
 }
 
+INLINE char *marena_strndup(MemArena *arena, const char *src, size_t len) {
+	char *p = marena_alloc(arena, len + 1);
+	memcpy(p, src, len);
+	p[len] = 0;
+	return p;
+}
+
+
 /*
  * These are similar to the macros in memory.h, except they also take an Arena pointer as the
  * first argument.
