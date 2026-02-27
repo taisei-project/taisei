@@ -46,14 +46,34 @@ static void _arena_delete_page(MemArena *arena, MemArenaPage *page) {
 }
 
 INLINE MemArenaPage *_arena_active_page(MemArena *arena) {
-	auto page = NOT_NULL(arena->pages.last);
-	assume(page->arena == arena);
-	assume(page->next == NULL);
+	auto page = arena->pages.last;
+
+	if(page) {
+		assume(page->arena == arena);
+		assume(page->next == NULL);
+	}
+
 	return page;
 }
 
-static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
+INLINE bool _arena_try_free_unused_page(MemArena *arena, MemArenaPage *page, size_t page_offset) {
+	if(page_offset == 0 && page != arena->pages.last) {
+		alist_unlink(&arena->pages, page);
+		arena->total_allocated -= page->size;
+		_arena_delete_page(arena, page);
+		return true;
+	}
+
+	return false;
+}
+
+static void *_arena_alloc(MemArena *arena, size_t size, size_t align, bool free_unused_page) {
 	auto page = _arena_active_page(arena);
+
+	if(UNLIKELY(!page)) {
+		page = _arena_new_page(arena, size);
+	}
+
 	auto page_ofs = arena->page_offset;
 	size_t required, alignofs;
 
@@ -63,8 +83,16 @@ static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
 		required = alignofs + size;
 
 		if(available < required) {
-			page = _arena_new_page(arena, required);
+			auto prev_page = page;
+
+			size_t new_page_size = (arena->total_used >> 1) + required;
+			page = _arena_new_page(arena, new_page_size);
 			assert(arena->page_offset == 0);
+
+			if(free_unused_page) {
+				_arena_try_free_unused_page(arena, prev_page, page_ofs);
+			}
+
 			page_ofs = 0;
 			continue;
 		}
@@ -83,6 +111,12 @@ static void *_arena_alloc(MemArena *arena, size_t size, size_t align) {
 static bool _arena_free(MemArena *arena, void *p, size_t old_size) {
 	auto page = _arena_active_page(arena);
 
+	if(UNLIKELY(!page)) {
+		assert(p == NULL);
+		assert(old_size == 0);
+		return false;
+	}
+
 	if(page->data + arena->page_offset - old_size == p) {
 		assert(arena->page_offset >= old_size);
 		arena->page_offset -= old_size;
@@ -97,13 +131,21 @@ static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t ne
 	assert(((uintptr_t)p & (align - 1)) == 0);
 
 	if(_arena_free(arena, p, old_size)) {
-		assert(((uintptr_t)(_arena_active_page(arena)->data + arena->page_offset) & (align - 1)) == 0);
-		void *new_p = _arena_alloc(arena, new_size, align);
+		auto page = _arena_active_page(arena);
+		auto page_ofs = arena->page_offset;
+
+		assert(((uintptr_t)(page->data + arena->page_offset) & (align - 1)) == 0);
+
+		void *new_p = _arena_alloc(arena, new_size, align, false);
 
 		if(p != new_p) {
 			// If free succeeded and old_size >= new_size, alloc will never make a new page
+			assert(page != _arena_active_page(arena));
 			assert(old_size < new_size);
 			memcpy(new_p, p, old_size);
+			_arena_try_free_unused_page(arena, page, page_ofs);
+		} else {
+			assert(page == _arena_active_page(arena));
 		}
 
 		return new_p;
@@ -115,7 +157,9 @@ static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t ne
 		return p;
 	}
 
-	void *new_p = _arena_alloc(arena, new_size, align);
+	auto page = _arena_active_page(arena);
+	auto page_ofs = arena->page_offset;
+	void *new_p = _arena_alloc(arena, new_size, align, false);
 
 	if(p) {
 		assert(old_size > 0);
@@ -124,12 +168,16 @@ static void *_arena_realloc(MemArena *arena, void *p, size_t old_size, size_t ne
 		assert(old_size == 0);
 	}
 
+	_arena_try_free_unused_page(arena, page, page_ofs);
+
 	return new_p;
 }
 
 void marena_init(MemArena *arena, size_t min_size) {
 	*arena = (MemArena) { };
-	_arena_new_page(arena, min_size);
+	if(min_size > 0) {
+		_arena_new_page(arena, min_size);
+	}
 }
 
 void marena_deinit(MemArena *arena) {
@@ -160,7 +208,7 @@ void marena_reset(MemArena *arena) {
 }
 
 void *marena_alloc(MemArena *arena, size_t size) {
-	return _arena_alloc(arena, size, alignof(max_align_t));
+	return _arena_alloc(arena, size, alignof(max_align_t), true);
 }
 
 void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
@@ -171,7 +219,7 @@ void *marena_alloc_aligned(MemArena *arena, size_t size, size_t align) {
 		align = alignof(max_align_t);
 	}
 
-	return _arena_alloc(arena, size, align);
+	return _arena_alloc(arena, size, align, true);
 }
 
 void *marena_alloc_array(MemArena *arena, size_t num_members, size_t size) {
@@ -186,7 +234,7 @@ void *marena_alloc_array_aligned(MemArena *arena, size_t num_members, size_t siz
 		align = alignof(max_align_t);
 	}
 
-	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), align);
+	return _arena_alloc(arena, mem_util_calc_array_size(num_members, size), align, true);
 }
 
 bool marena_free(MemArena *restrict arena, void *restrict p, size_t old_size) {
