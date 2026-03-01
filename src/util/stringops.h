@@ -63,7 +63,7 @@ char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
 char* vstrfmt_arena(MemArena *arena, const char *fmt, va_list args) attr_returns_allocated attr_printf(2, 0);
 char* strfmt_arena(MemArena *arena, const char *fmt, ...) attr_printf(2, 3) attr_returns_allocated;
 char* strappend(char **dst, const char *src);
-char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
+char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated __attribute__((format(strftime, 1, 0)));
 void expand_escape_sequences(char *str);
 
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) attr_dealloc(SDL_free, 1);
