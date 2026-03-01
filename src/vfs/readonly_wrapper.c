@@ -82,6 +82,14 @@ static SDL_IOStream * vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
 	return SDL_RWWrapReadOnly(vfs_node_open(WRAPPED(filenode), mode), true);
 }
 
+static const void *vfs_ro_mmap(VFSNode *node, size_t *size) {
+	return vfs_node_mmap_direct(WRAPPED(node), size);
+}
+
+static bool vfs_ro_munmap(VFSNode *node, const void *addr, size_t size) {
+	return vfs_node_munmap_direct(WRAPPED(node), addr, size);
+}
+
 VFS_NODE_FUNCS(VFSReadOnlyNode, {
 	.repr = vfs_ro_repr,
 	.query = vfs_ro_query,
@@ -94,6 +102,8 @@ VFS_NODE_FUNCS(VFSReadOnlyNode, {
 	.open = vfs_ro_open,
 	.mount = vfs_ro_mount,
 	.unmount = vfs_ro_unmount,
+	.mmap = vfs_ro_mmap,
+	.munmap = vfs_ro_munmap,
 });
 
 VFSNode *vfs_ro_wrap(VFSNode *base) {

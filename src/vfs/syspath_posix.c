@@ -12,6 +12,8 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -129,6 +131,44 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
+static const void *vfs_syspath_mmap(VFSNode *node, size_t *size) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	struct stat statbuf;
+	int fd = open(pnode->path, O_RDONLY);
+
+	if(fd < 0) {
+		vfs_set_error("%s: open() failed: %s", pnode->path, strerror(errno));
+		return NULL;
+	}
+
+	if(fstat(fd, &statbuf) < 0) {
+		vfs_set_error("%s: fstat() failed: %s", pnode->path, strerror(errno));
+		close(fd);
+		return NULL;
+	}
+
+	*size = statbuf.st_size;
+	void *addr = mmap(NULL, *size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+	if(!addr || addr == MAP_FAILED) {
+		vfs_set_error("%s: mmap() failed: %s", pnode->path, strerror(errno));
+		close(fd);
+		return NULL;
+	}
+
+	close(fd);
+	return addr;
+}
+
+static bool vfs_syspath_munmap(VFSNode *node, const void *addr, size_t size) {
+	if(munmap((void*)addr, size) < 0) {
+		vfs_set_error("munmap() failed: %s", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+
 VFS_NODE_FUNCS(VFSSysPathNode, {
 	.repr = vfs_syspath_repr,
 	.query = vfs_syspath_query,
@@ -139,6 +179,8 @@ VFS_NODE_FUNCS(VFSSysPathNode, {
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
 	.open = vfs_syspath_open,
+	.mmap = vfs_syspath_mmap,
+	.munmap = vfs_syspath_munmap,
 });
 
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {

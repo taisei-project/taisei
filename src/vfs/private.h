@@ -36,6 +36,8 @@ struct VFSNodeFuncs {
 	void        (*iter_stop)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
 	bool        (*mkdir)(VFSNode *parent, const char *subdir) attr_nonnull(1);
 	SDL_IOStream*  (*open)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
+	const void* (*mmap)(VFSNode *filenode, size_t *out_size) attr_nonnull(1, 2);
+	bool        (*munmap)(VFSNode *filenode, const void *data, size_t size) attr_nonnull(1, 2);
 };
 
 struct VFSNode {
@@ -94,6 +96,19 @@ struct VFSNode {
 	_node; \
 })
 
+typedef struct VFSMMapTicket {
+	struct {
+		union {
+			void *as_ptr;
+			uintptr_t as_uint;
+		} addr;
+		size_t size;
+	} _internal;
+} VFSMMapTicket;
+
+INLINE bool vfs_mmap_ticket_valid(VFSMMapTicket ticket) {
+	return ticket._internal.addr.as_ptr != NULL;
+}
 
 extern VFSNode *vfs_root;
 
@@ -116,6 +131,10 @@ const char *vfs_node_iter(VFSNode *node, void **opaque) attr_nonnull(1);
 void vfs_node_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
 bool vfs_node_mkdir(VFSNode *parent, const char *subdir) attr_nonnull(1);
 SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) attr_nodiscard;
+VFSMMapTicket vfs_node_mmap(VFSNode *filenode, const void **addr, size_t *size, bool allow_fallback) attr_nonnull(1, 2, 3) attr_nodiscard;
+bool vfs_node_munmap(VFSNode *filenode, VFSMMapTicket ticket) attr_nonnull(1);
+const void *vfs_node_mmap_direct(VFSNode *filenode, size_t *out_size) attr_nonnull_all attr_nodiscard;
+bool vfs_node_munmap_direct(VFSNode *filenode, const void *data, size_t size) attr_nonnull_all;
 
 // NOTE: convenience wrappers added on demand
 

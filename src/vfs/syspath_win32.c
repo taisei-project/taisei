@@ -224,6 +224,78 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
+static const void *vfs_syspath_mmap(VFSNode *node, size_t *size) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+
+	HANDLE hfile = CreateFile(
+		pnode->wpath,
+		GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL
+	);
+
+	if(hfile == INVALID_HANDLE_VALUE) {
+		vfs_set_error_win32();
+		return NULL;
+	}
+
+	LARGE_INTEGER fsize;
+	if(!GetFileSizeEx(hfile, &fsize)) {
+		vfs_set_error_win32();
+		CloseHandle(hfile);
+		return NULL;
+	}
+
+	if(fsize.QuadPart < 0 || (uint64_t)fsize.QuadPart > SIZE_MAX) {
+		vfs_set_error("%s: File is too large", pnode->path);
+		CloseHandle(hfile);
+		return NULL;
+	}
+
+	*size = (size_t)fsize.QuadPart;
+
+	HANDLE hmap = CreateFileMappingW(
+		hfile,
+		NULL,
+		PAGE_READONLY,
+		0,
+		0,   // use current file size
+		NULL
+	);
+
+	if(!hmap) {
+		vfs_set_error_win32();
+		CloseHandle(hfile);
+		return NULL;
+	}
+
+	void *addr = MapViewOfFile(
+		hmap,
+		FILE_MAP_READ,
+		0,
+		0,
+		0   // map from offset 0 to end
+	);
+
+	CloseHandle(hmap);
+	CloseHandle(hfile);
+
+	if(!addr) {
+		vfs_set_error_win32();
+		return NULL;
+	}
+
+	return addr;
+}
+
+static bool vfs_syspath_munmap(VFSNode *node, const void *addr, size_t size) {
+	UnmapViewOfFile(addr);
+	return true;
+}
+
 VFS_NODE_FUNCS(VFSSysPathNode, {
 	.repr = vfs_syspath_repr,
 	.query = vfs_syspath_query,
@@ -234,6 +306,8 @@ VFS_NODE_FUNCS(VFSSysPathNode, {
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
 	.open = vfs_syspath_open,
+	.mmap = vfs_syspath_mmap,
+	.munmap = vfs_syspath_munmap,
 });
 
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
