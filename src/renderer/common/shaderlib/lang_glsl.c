@@ -294,7 +294,7 @@ bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, cons
 		.scratch = acquire_scratch_arena(),
 	};
 
-	pstate.dest = NOT_NULL(SDL_RWArena(arena, 1024, &pstate.stream_state));
+	pstate.dest = NOT_NULL(SDL_RWArena(arena, 16 * (1 << 10), &pstate.stream_state));
 
 	GLSLFileParseState fstate = {
 		.global = &pstate,
