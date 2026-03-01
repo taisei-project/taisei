@@ -7,153 +7,11 @@
  */
 
 #include "zipfile.h"
-#include "memory/scratch.h"
 #include "zipfile_impl.h"
 
-#define LOG_SDL_ERROR log_debug("SDL error: %s", SDL_GetError())
-
-static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
-	VFSZipNode *zipnode = userdata;
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(zipnode, false);
-	VFSNode *source = zipnode->source;
-	zip_int64_t ret = -1;
-
-	if(!tls) {
-		return -1;
-	}
-
-	switch(cmd) {
-		case ZIP_SOURCE_OPEN: {
-			tls->stream = vfs_node_open(source, VFS_MODE_READ);
-
-			if(!tls->stream) {
-				zip_error_set(&tls->error, ZIP_ER_OPEN, 0);
-				return -1;
-			}
-
-			return 0;
-		}
-
-		case ZIP_SOURCE_CLOSE: {
-			if(tls->stream) {
-				SDL_CloseIO(tls->stream);
-				tls->stream = NULL;
-			}
-			return 0;
-		}
-
-		case ZIP_SOURCE_STAT: {
-			zip_stat_t *stat = data;
-			zip_stat_init(stat);
-
-			stat->valid = ZIP_STAT_COMP_METHOD | ZIP_STAT_ENCRYPTION_METHOD;
-			stat->comp_method = ZIP_CM_STORE;
-			stat->encryption_method = ZIP_EM_NONE;
-
-			if(tls->stream) {
-				stat->valid |= ZIP_STAT_SIZE | ZIP_STAT_COMP_SIZE;
-				stat->size = SDL_GetIOSize(tls->stream);
-				stat->comp_size = stat->size;
-			}
-
-			return sizeof(struct zip_stat);
-		}
-
-		case ZIP_SOURCE_READ: {
-			assume(tls->stream != NULL);
-			ret = SDL_ReadIO(tls->stream, data, len);
-			ret = (ret <= 0) ? 0 : ret;
-
-			if(!ret) {
-				LOG_SDL_ERROR;
-				zip_error_set(&tls->error, ZIP_ER_READ, 0);
-				ret = -1;
-			}
-
-			return ret;
-		}
-
-		case ZIP_SOURCE_SEEK: {
-			struct zip_source_args_seek *s;
-			s = ZIP_SOURCE_GET_ARGS(struct zip_source_args_seek, data, len, &tls->error);
-
-			if(UNLIKELY(!s)) {
-				return -1;
-			}
-
-			assume(tls->stream != NULL);
-			ret = SDL_SeekIO(tls->stream, s->offset, s->whence);
-
-			if(ret < 0) {
-				LOG_SDL_ERROR;
-				zip_error_set(&tls->error, ZIP_ER_SEEK, 0);
-			}
-
-			return ret;
-		}
-
-		case ZIP_SOURCE_TELL: {
-			assume(tls->stream != NULL);
-			ret = SDL_TellIO(tls->stream);
-
-			if(ret < 0) {
-				LOG_SDL_ERROR;
-				zip_error_set(&tls->error, ZIP_ER_TELL, 0);
-			}
-
-			return ret;
-		}
-
-		case ZIP_SOURCE_ERROR: {
-			return zip_error_to_data(&tls->error, data, len);
-		}
-
-		case ZIP_SOURCE_SUPPORTS: {
-			return ZIP_SOURCE_SUPPORTS_SEEKABLE;
-		}
-
-		case ZIP_SOURCE_FREE: {
-			return 0;
-		}
-
-		default: {
-			zip_error_set(&tls->error, ZIP_ER_INTERNAL, 0);
-			return -1;
-		}
-	}
-}
-
-static void vfs_zipfile_free_tls(void *vtls) {
-	VFSZipFileTLS *tls = vtls;
-
-	if(tls->zip) {
-		zip_discard(tls->zip);
-	}
-
-	if(tls->stream) {
-		SDL_CloseIO(tls->stream);
-	}
-
-	mem_free(tls);
-}
-
-static void vfs_zipfile_free(VFSNode *node) {
-	if(node) {
-		auto znode = VFS_NODE_CAST(VFSZipNode, node);
-		VFSZipFileTLS *tls = SDL_GetTLS(&znode->tls_id);
-
-		if(tls) {
-			vfs_zipfile_free_tls(tls);
-			SDL_SetTLS(&znode->tls_id, NULL, NULL);
-		}
-
-		if(znode->source) {
-			vfs_decref(znode->source);
-		}
-
-		ht_destroy(&znode->pathmap);
-	}
-}
+#include "log.h"
+#include "memory/scratch.h"
+#include "util/miscmath.h"
 
 static VFSInfo vfs_zipfile_query(VFSNode *node) {
 	return (VFSInfo) {
@@ -173,97 +31,164 @@ static void vfs_zipfile_repr(VFSNode *node, StringBuffer *buf) {
 	vfs_node_repr(znode->source, false, buf);
 }
 
-static VFSNode *vfs_zipfile_locate(VFSNode *node, const char *path) {
-	auto znode = VFS_NODE_CAST(VFSZipNode, node);
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
-	int64_t idx;
+static int zip_entry_name_cmp(const void *a, const void *b) {
+	const ZipEntry *e0 = a;
+	const ZipEntry *e1 = b;
 
-	if(!ht_lookup(&znode->pathmap, path, &idx)) {
-		idx = zip_name_locate(tls->zip, path, 0);
+	if(e0->name_len == e1->name_len) {
+		return strncmp(e0->name, e1->name, e0->name_len);
 	}
 
-	if(idx < 0) {
-		return NULL;
-	}
+	auto common_len = min(e0->name_len, e1->name_len);
+	int r = strncmp(e0->name, e1->name, common_len);
 
-	return vfs_zippath_create(znode, idx);
-}
-
-const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tls) {
-	const char *r = NULL;
-
-	for(; !r && idata->idx < idata->num; ++idata->idx) {
-		const char *p = zip_get_name(tls->zip, idata->idx, 0);
-		const char *p_original = p;
-
-		if(idata->prefix) {
-			if(strstartswith(p, idata->prefix)) {
-				p += idata->prefix_len;
-			} else {
-				continue;
-			}
-		}
-
-		while(!strncmp(p, "./", 2)) {
-			// skip the redundant "current directory" prefix
-			p += 2;
-		}
-
-		if(!strncmp(p, "../", 3)) {
-			// sorry, nope. can't work with this
-			log_warn("Bad path in zip file: %s", p_original);
-			continue;
-		}
-
-		if(!*p) {
-			continue;
-		}
-
-		const char *sep = strchr(p, '/');
-
-		if(sep) {
-			if(*(sep + 1)) {
-				// path is inside a subdirectory, we want only top-level entries
-				continue;
-			}
-
-			// separator is the last character in the string
-			// this is a top-level subdirectory
-			// strip the trailing slash
-
-			mem_free(idata->allocated);
-			idata->allocated = mem_strdup(p);
-			*strchr(idata->allocated, '/') = 0;
-			r = idata->allocated;
-		} else {
-			r = p;
-		}
+	if(r == 0) {
+		return (int)e0->name_len - (int)e1->name_len;
 	}
 
 	return r;
 }
 
+typedef struct ZipSearchKey {
+	const char *name;
+	size_t len;
+} ZipSearchKey;
+
+static int zip_entry_name_search_cmp(const void *a, const void *b) {
+	const ZipSearchKey *key = a;
+	const ZipEntry *e = b;
+
+	if(key->len == e->name_len) {
+		return strncmp(key->name, e->name, key->len);
+	}
+
+	auto common_len = min(key->len, e->name_len);
+	int r = strncmp(key->name, e->name, common_len);
+
+	if(r == 0) {
+		return (int)key->len - (int)e->name_len;
+	}
+
+	return r;
+}
+
+static const ZipEntry *vfs_zipfile_find_entry(VFSZipNode *znode, const char *name, size_t name_len) {
+	return bsearch(&(ZipSearchKey) {
+			.name = name,
+			.len = name_len,
+		}, znode->entries, znode->num_entries, sizeof(*znode->entries), zip_entry_name_search_cmp);
+}
+
+static VFSNode *vfs_zipfile_locate(VFSNode *node, const char *path) {
+	auto znode = VFS_NODE_CAST(VFSZipNode, node);
+	auto entry = vfs_zipfile_find_entry(znode, path, strlen(path));
+
+	if(!entry) {
+		return NULL;
+	}
+
+	return vfs_zippath_create(znode, entry);
+}
+
+const char *vfs_zipfile_iter_shared(const VFSZipNode *znode, VFSZipFileIterData *idata) {
+	while(idata->entry < NOT_NULL(znode->entries) + znode->num_entries) {
+		auto e = idata->entry;
+
+		const char *name;
+		uint32_t name_len;
+
+		if(idata->prefix_len) {
+			// Since the entries are sorted, we can stop scanning as soon as
+			// we find an entry that does not start with prefix/
+
+			if(e->name_len <= idata->prefix_len) {
+				// Too short to be a sub-path of prefix
+				return NULL;
+			}
+
+			if(e->name[idata->prefix_len] != '/') {
+				// Doesn't matter if prefix part matches or not; not a sub-path
+				return NULL;
+			}
+
+			if(strncmp(e->name, idata->prefix, idata->prefix_len)) {
+				// Wrong prefix
+				return NULL;
+			}
+
+			uint32_t skip_len = 1 + idata->prefix_len;
+			name = e->name + skip_len;
+			name_len = e->name_len - skip_len;
+		} else {
+			name = e->name;
+			name_len = e->name_len;
+		}
+
+		if(
+			idata->last_name_len <= name_len &&
+			(name[idata->last_name_len] == '/' || name[idata->last_name_len] == '\0') &&
+			!strncmp(idata->name_buf, name, idata->last_name_len)
+		) {
+			// This is a sub-path of a directory we've just reported, skip it
+			idata->entry++;
+			continue;
+		}
+
+		const char *sep = strchr(name, '/');
+		if(sep) {
+			name_len = sep - name;
+		}
+
+		memcpy(idata->name_buf, name, name_len);
+		idata->last_name_len = name_len;
+		idata->name_buf[name_len] = 0;
+		idata->entry++;
+		return idata->name_buf;
+	}
+
+	return NULL;
+}
+
 static const char *vfs_zipfile_iter(VFSNode *node, void **opaque) {
 	auto znode = VFS_NODE_CAST(VFSZipNode, node);
 	VFSZipFileIterData *idata = *opaque;
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
 
 	if(!idata) {
-		*opaque = idata = ALLOC(VFSZipFileIterData);
-		idata->num = zip_get_num_entries(tls->zip, 0);
+		if(UNLIKELY(!znode->entries)) {
+			return NULL;
+		}
+
+		uint32_t buf_size = znode->max_name_len;
+		*opaque = idata = ALLOC_FLEX(VFSZipFileIterData, buf_size);
+		idata->entry = znode->entries;
+		idata->prefix = "";
+		idata->prefix_len = 0;
 	}
 
-	return vfs_zipfile_iter_shared(idata, tls);
+	return vfs_zipfile_iter_shared(znode, idata);
 }
 
 void vfs_zipfile_iter_stop(VFSNode *node, void **opaque) {
 	VFSZipFileIterData *idata = *opaque;
 
 	if(idata) {
-		mem_free(idata->allocated);
 		mem_free(idata);
 		*opaque = NULL;
 	}
+}
+
+static void vfs_zipfile_free(VFSNode *node) {
+	auto znode = VFS_NODE_CAST(VFSZipNode, node);
+
+	if(znode->source) {
+		if(vfs_mmap_ticket_valid(znode->mmap_ticket)) {
+			vfs_node_munmap(znode->source, znode->mmap_ticket);
+		}
+
+		vfs_decref(znode->source);
+	}
+
+	marena_deinit(&znode->arena);
 }
 
 VFS_NODE_FUNCS(VFSZipNode, {
@@ -271,75 +196,90 @@ VFS_NODE_FUNCS(VFSZipNode, {
 	.query = vfs_zipfile_query,
 	.free = vfs_zipfile_free,
 	.syspath = vfs_zipfile_syspath,
-	//.mount = vfs_zipfile_mount,
 	.locate = vfs_zipfile_locate,
 	.iter = vfs_zipfile_iter,
 	.iter_stop = vfs_zipfile_iter_stop,
-	//.mkdir = vfs_zipfile_mkdir,
-	//.open = vfs_zipfile_open,
 });
 
-static bool vfs_zipfile_init_pathmap(VFSZipNode *znode) {
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
+typedef struct ZipParseContext {
+	VFSZipNode *znode;
+	uint i;
+	StringBuffer name_buf;
+} ZipParseContext;
 
-	if(!tls) {
-		return false;
+static bool vfs_zipfile_parse_callback(void *userdata, const ZipEntry *e, uint32_t entry_idx, uint32_t num_entries) {
+	ZipParseContext *pctx = userdata;
+	VFSZipNode *znode = pctx->znode;
+
+	if(!znode->entries) {
+		assert(num_entries > 0);
+		uint avg_name_len = 32;
+		marena_init(&znode->arena, num_entries * (sizeof(*znode->entries) + avg_name_len));
+		znode->entries = marena_alloc_array(&znode->arena, num_entries, sizeof(*znode->entries));
+		znode->num_entries = num_entries;
+		pctx->name_buf = (StringBuffer) { &znode->arena };
 	}
 
-	zip_int64_t num = zip_get_num_entries(tls->zip, 0);
+	assert(num_entries == znode->num_entries);
 
-	ht_create(&znode->pathmap);
-
-	for(zip_int64_t i = 0; i < num; ++i) {
-		const char *original = zip_get_name(tls->zip, i, 0);
-		char normalized[strlen(original) + 1];
-		vfs_path_normalize(original, normalized);
-
-		if(strcmp(original, normalized)) {
-			ht_set(&znode->pathmap, normalized, i);
-		}
+	if(UNLIKELY(e->name_len > ZIP_NAME_MAXLEN)) {
+		log_warn("%s: Discarded record %d: Name is too long (%d > %d)",
+			znode->ctx.log_prefix, entry_idx, e->name_len, ZIP_NAME_MAXLEN);
+		return true;
 	}
+
+	if(e->name_len > znode->max_name_len) {
+		znode->max_name_len = e->name_len;
+	}
+
+	char *normalized = vfs_path_normalize_inplace(marena_strndup(&znode->arena, e->name, e->name_len));
+
+	auto new_entry = &znode->entries[pctx->i++];
+	*new_entry = *e;
+	new_entry->name = normalized;
+	new_entry->name_len = strlen(normalized);
 
 	return true;
 }
 
-VFSZipFileTLS *vfs_zipfile_get_tls(VFSZipNode *znode, bool create) {
-	VFSZipFileTLS *tls = SDL_GetTLS(&znode->tls_id);
+VFSNode *vfs_zipfile_create(VFSNode *source) {
+	const void *mem;
+	size_t mem_size;
+	auto mmap_ticket = vfs_node_mmap(source, &mem, &mem_size, true);
 
-	if(tls || !create) {
-		return tls;
-	}
-
-	tls = ALLOC(typeof(*tls));
-	SDL_SetTLS(&znode->tls_id, tls, (void(*)(void*))vfs_zipfile_free_tls);
-
-	zip_source_t *src = zip_source_function_create(vfs_zipfile_srcfunc, znode, &tls->error);
-	zip_t *zip = tls->zip = zip_open_from_source(src, ZIP_RDONLY, &tls->error);
-
-	// FIXME: Taisei currently doesn't handle zip files without explicit directory entries correctly (file listing will not work)
-
-	if(!zip) {
-		StringBuffer buf = { acquire_scratch_arena() };
-		vfs_node_repr(znode->source, true, &buf);
-		vfs_set_error("Failed to open zip archive '%s': %s", buf.start, zip_error_strerror(&tls->error));
-		release_scratch_arena(buf.arena);
-		vfs_zipfile_free_tls(tls);
-		SDL_SetTLS(&znode->tls_id, 0, NULL);
-		zip_source_free(src);
+	if(!vfs_mmap_ticket_valid(mmap_ticket)) {
 		return NULL;
 	}
 
-	return tls;
-}
-
-VFSNode *vfs_zipfile_create(VFSNode *source) {
 	auto znode = VFS_ALLOC(VFSZipNode, {
+		.mmap_ticket = mmap_ticket,
 		.source = source,
+		.ctx = {
+			.mem = mem,
+			.mem_size = mem_size,
+		}
 	});
 
-	if(!vfs_zipfile_init_pathmap(znode)) {
+	StringBuffer buf = { acquire_scratch_arena() };
+	vfs_node_repr(source, true, &buf);
+	znode->ctx.log_prefix = strbuf_commit(&buf);
+
+	ZipParseContext ctx = {
+		.znode = znode,
+	};
+
+	if(!zipfile_parse(&znode->ctx, vfs_zipfile_parse_callback, &ctx)) {
+		strbuf_printf(&buf, "%s: Failed to parse ZIP file", znode->ctx.log_prefix);
 		vfs_decref(znode);
+		vfs_set_error("%s", buf.start);
+		release_scratch_arena(buf.arena);
+		return NULL;
 	}
+
+	znode->ctx.log_prefix = marena_strdup(&znode->arena, znode->ctx.log_prefix);
+	release_scratch_arena(buf.arena);
+
+	qsort(znode->entries, znode->num_entries, sizeof(*znode->entries), zip_entry_name_cmp);
 
 	return &znode->as_generic;
 }

@@ -9,54 +9,40 @@
 #pragma once
 #include "taisei.h"
 
-// libzip on clang creates useless noise
-DIAGNOSTIC_CLANG(push)
-DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
-DIAGNOSTIC_CLANG(ignored "-Wnullability-completeness")
-#include <zip.h>
-DIAGNOSTIC_CLANG(pop)
-
-#include "util/libzip_compat.h"   // IWYU pragma: export
-
 #include "private.h"
-#include "hashtable.h"
+
+#include "../zipfile.h"
+
+#define ZIP_NAME_MAXLEN 256
 
 /* zipfile */
 
 VFS_NODE_TYPE(VFSZipNode, {
+	MemArena arena;
+	ZipContext ctx;
 	VFSNode *source;
-	ht_str2int_t pathmap;
-	SDL_TLSID tls_id;
+	VFSMMapTicket mmap_ticket;
+	ZipEntry *entries;
+	uint32_t num_entries;
+	uint32_t max_name_len;
 });
 
-typedef struct VFSZipFileTLS {
-	zip_t *zip;
-	SDL_IOStream *stream;
-	zip_error_t error;
-} VFSZipFileTLS;
-
 typedef struct VFSZipFileIterData {
-	zip_int64_t idx;
-	zip_int64_t num;
+	const ZipEntry *entry;
 	const char *prefix;
-	size_t prefix_len;
-	char *allocated;
+	uint32_t prefix_len;
+	uint32_t last_name_len;
+	char name_buf[];
 } VFSZipFileIterData;
 
-const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tls);
+const char *vfs_zipfile_iter_shared(const VFSZipNode *znode, VFSZipFileIterData *idata);
 void vfs_zipfile_iter_stop(VFSNode *node, void **opaque);
-VFSZipFileTLS *vfs_zipfile_get_tls(VFSZipNode *znode, bool create);
 
 /* zippath */
 
 VFS_NODE_TYPE(VFSZipPathNode, {
-	VFSZipNode *zipnode;
-	uint64_t index;
-	ssize_t size;
-	ssize_t compressed_size;
-	VFSInfo info;
-	uint16_t compression;
+	VFSZipNode *znode;
+	const ZipEntry *entry;
 });
 
-VFSNode *vfs_zippath_create(VFSZipNode *zipnode, zip_int64_t idx);
-SDL_IOStream *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) attr_nonnull_all;
+VFSNode *vfs_zippath_create(VFSZipNode *zipnode, const ZipEntry *entry);

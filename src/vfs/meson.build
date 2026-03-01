@@ -11,19 +11,9 @@ vfs_src = files(
     'union.c',
     'vdir.c',
     'zipfile_public.c',
+    'zipfile.c',
+    'zippath.c',
 )
-
-if dep_zip.found()
-    vfs_src += files(
-        'zipfile.c',
-        'zippath.c',
-        'zippath_rwops.c',
-    )
-else
-    vfs_src += files(
-        'zipfile_null.c',
-    )
-endif
 
 if have_posix
     vfs_src += files('syspath_posix.c')

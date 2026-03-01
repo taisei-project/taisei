@@ -187,7 +187,6 @@ static void credits_fill(void) {
 
 	credits_add((
 		"\n"
-		"libzip\n"                    "https://libzip.org/\n\n"
 		"Meson build system\n"        "https://mesonbuild.com/\n\n"
 		"Ogg Opus\n"                  "https://www.opus-codec.org/\n\n"
 		"SPIRV-Cross\n"               "https://github.com/KhronosGroup/SPIRV-Cross\n\n"

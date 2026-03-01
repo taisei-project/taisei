@@ -15,7 +15,6 @@ project('taisei', 'c',
         'glslang:default_library=static',
         'libpng:default_library=static',
         'libwebp:default_library=static',
-        'libzip:default_library=static',
         'libzstd:default_library=static',
         'ogg:default_library=static',
         'opus:default_library=static',
@@ -32,11 +31,6 @@ project('taisei', 'c',
         'cglm:build_tests=false',
 
         'basis_universal:enable_ktx2=false',
-
-        'libzip:bzip2=disabled',
-        'libzip:lzma=disabled',
-        'libzip:zstd=enabled',
-        'libzip:enable_crypto=false',
 
         'libzstd:install_headers=false',
         'libzstd:install_libraries=false',
@@ -190,9 +184,6 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-opt_vfs_zip = get_option('vfs_zip').require(host_machine.system() != 'emscripten',
-    error_message : 'ZIP packages are not supported on Emscripten')
-
 opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
     error_message : 'GameMode is Linux-specific')
 
@@ -202,7 +193,6 @@ dep_sdl3        = dependency('sdl3',           version : '>=3.2.0', fallback : [
 dep_webp        = dependency('libwebpdecoder', 'libwebp', version : '>=0.5',   required : true)
 dep_zlib        = dependency('zlib',                                required : true)
 dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : ['libzstd', 'libzstd_dep'])
-dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip, allow_fallback : true)
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
 dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
@@ -227,7 +217,6 @@ taisei_deps = [
     dep_png,
     dep_sdl3,
     dep_webp,
-    dep_zip,
     dep_zlib,
     dep_zstd,
     # don't add glad here
@@ -237,14 +226,7 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-package_data = (
-    get_option('package_data')
-        .require(dep_zip.found(),
-            error_message : 'libzip not found or VFS ZIP support is disabled')
-        .allowed()
-)
-
-config.set('TAISEI_BUILDCONF_USE_ZIP', dep_zip.found())
+package_data = get_option('package_data').allowed()
 
 have_posix = cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
 
@@ -312,18 +294,6 @@ config.set('TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN',
     host_machine.system() != 'nx' and cc.has_function('posix_memalign'))
 config.set('TAISEI_BUILDCONF_HAVE_ALIGNED_MALLOC_FREE',
     cc.has_function('_aligned_malloc') and cc.has_function('_aligned_free'))
-
-if dep_zip.found()
-    if dep_zip.type_name() == 'internal'
-        have_zip_compression_method_supported = dep_zip.version().version_compare('>=1.7.0')
-    else
-        have_zip_compression_method_supported = cc.has_function('zip_compression_method_supported', dependencies : dep_zip)
-    endif
-else
-    have_zip_compression_method_supported = false
-endif
-
-config.set('TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED', have_zip_compression_method_supported)
 
 config.set('TAISEI_BUILDCONF_HAVE_ATTR_DESIGNATED_INIT', cc.compiles(
     'struct { int dummy; } __attribute__((designated_init)) x;',
@@ -742,7 +712,6 @@ summary({
     'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), default_audio_backend),
     'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
     'Shader translation' : shader_transpiler_enabled,
-    'ZIP packages' : dep_zip.found(),
     'Stages live reload' : stages_live_reload,
 }, section : 'Features', bool_yn : true)
 
