@@ -7,6 +7,9 @@
  */
 
 #include "private.h"
+
+#include "log.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_ro.h"
 #include "util/strbuf.h"
 
@@ -178,4 +181,92 @@ SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	}
 
 	return stream;
+}
+
+const void *vfs_node_mmap_direct(VFSNode *filenode, size_t *out_size) {
+	if(NOT_NULL(filenode->funcs)->mmap == NULL) {
+		vfs_set_error("Node can't be mmapped");
+		return NULL;
+	}
+
+	return filenode->funcs->mmap(filenode, out_size);
+}
+
+bool vfs_node_munmap_direct(VFSNode *filenode, const void *data, size_t size) {
+	if(NOT_NULL(filenode->funcs)->munmap == NULL) {
+		vfs_set_error("Node can't be munmapped");
+		return false;
+	}
+
+	return filenode->funcs->munmap(filenode, data, size);
+}
+
+static VFSMMapTicket _vfs_node_mmap(VFSNode *filenode, const void **addr, size_t *size) {
+	VFSMMapTicket ticket = {};
+	ticket._internal.addr.as_ptr = (void*)vfs_node_mmap_direct(filenode, &ticket._internal.size);
+
+	*addr = ticket._internal.addr.as_ptr;
+	*size = ticket._internal.size;
+
+	return ticket;
+}
+
+VFSMMapTicket vfs_node_mmap(VFSNode *filenode, const void **addr, size_t *size, bool allow_fallback) {
+	VFSMMapTicket ticket = _vfs_node_mmap(filenode, addr, size);
+
+	if(!allow_fallback || vfs_mmap_ticket_valid(ticket)) {
+		return ticket;
+	}
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	vfs_node_repr(filenode, true, &buf);
+	log_warn("%s: Can't memory-map, reading whole file into memory", buf.start);
+	release_scratch_arena(buf.arena);
+
+	SDL_IOStream *io = vfs_node_open(filenode, VFS_MODE_READ);
+
+	if(UNLIKELY(!io)) {
+		goto fail;
+	}
+
+	ticket._internal.addr.as_ptr = SDL_LoadFile_IO(io, &ticket._internal.size, true);
+
+	if(UNLIKELY(!ticket._internal.addr.as_ptr)) {
+		goto fail;
+	}
+
+	*addr = ticket._internal.addr.as_ptr;
+	*size = ticket._internal.size;
+
+	assert((ticket._internal.addr.as_uint & 1) == 0);
+	ticket._internal.addr.as_uint |= 1;
+
+	return ticket;
+
+fail:
+	*addr = NULL;
+	*size = 0;
+	return (VFSMMapTicket) {};
+}
+
+bool vfs_node_munmap(VFSNode *filenode, VFSMMapTicket ticket) {
+	if(UNLIKELY(!vfs_mmap_ticket_valid(ticket))) {
+		vfs_set_error("Invalid mmap ticket");
+		return false;
+	}
+
+	// Is fallback?
+	if(ticket._internal.addr.as_uint & 1) {
+		ticket._internal.addr.as_uint &= ~1;
+		SDL_free(ticket._internal.addr.as_ptr);
+		return true;
+	}
+
+	if(NOT_NULL(filenode->funcs)->munmap == NULL) {
+		vfs_set_error("Node can't be munmapped");
+		return false;
+	}
+
+	return filenode->funcs->munmap(filenode,
+		ticket._internal.addr.as_ptr, ticket._internal.size);
 }

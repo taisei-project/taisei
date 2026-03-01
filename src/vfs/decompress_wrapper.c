@@ -205,6 +205,21 @@ static void vfs_decomp_iter_stop(VFSNode *node, void **opaque) {
 	}
 }
 
+static const void *vfs_decomp_mmap(VFSNode *node, size_t *size) {
+	auto dnode = VFS_NODE_CAST(VFSDecompNode, node);
+
+	if(dnode->compr_zstd) {
+		vfs_set_error("Can't mmap compressed file");
+		return NULL;
+	}
+
+	return vfs_node_mmap_direct(dnode->wrapped, size);
+}
+
+static bool vfs_decomp_munmap(VFSNode *node, const void *addr, size_t size) {
+	return vfs_node_munmap_direct(WRAPPED(node), addr, size);
+}
+
 VFS_NODE_FUNCS(VFSDecompNode, {
 	.repr = vfs_decomp_repr,
 	.query = vfs_decomp_query,
@@ -217,6 +232,8 @@ VFS_NODE_FUNCS(VFSDecompNode, {
 	.open = vfs_decomp_open,
 	.mount = vfs_decomp_mount,
 	.unmount = vfs_decomp_unmount,
+	.mmap = vfs_decomp_mmap,
+	.munmap = vfs_decomp_munmap,
 });
 
 VFSNode *vfs_decomp_wrap(VFSNode *base) {

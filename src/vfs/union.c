@@ -202,6 +202,16 @@ static bool vfs_union_mkdir(VFSNode *node, const char *subdir) {
 	return primary ? vfs_node_mkdir(primary, subdir) : false;
 }
 
+static const void *vfs_union_mmap(VFSNode *node, size_t *size) {
+	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
+	return primary ? vfs_node_mmap_direct(primary, size) : NULL;
+}
+
+static bool vfs_union_munmap(VFSNode *node, const void *addr, size_t size) {
+	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
+	return primary ? vfs_node_munmap_direct(primary, addr, size) : false;
+}
+
 VFS_NODE_FUNCS(VFSUnionNode, {
 	.repr = vfs_union_repr,
 	.query = vfs_union_query,
@@ -213,6 +223,8 @@ VFS_NODE_FUNCS(VFSUnionNode, {
 	.iter_stop = vfs_union_iter_stop,
 	.mkdir = vfs_union_mkdir,
 	.open = vfs_union_open,
+	.mmap = vfs_union_mmap,
+	.munmap = vfs_union_munmap,
 });
 
 VFSNode *vfs_union_create(void) {
