@@ -601,7 +601,6 @@ src/util/io.c
 src/util/io.h
 src/util/kvparser.c
 src/util/kvparser.h
-src/util/libzip_compat.h
 src/util/macrohax.h
 src/util/miscmath.c
 src/util/miscmath.h
@@ -677,11 +676,12 @@ src/vfs/zipfile_null.c
 src/vfs/zipfile_public.c
 src/vfs/zipfile_public.h
 src/vfs/zippath.c
-src/vfs/zippath_rwops.c
 src/video.c
 src/video.h
 src/video_postprocess.c
 src/video_postprocess.h
 src/watchdog.c
 src/watchdog.h
+src/zipfile.c
+src/zipfile.h
 po/extra_strings.c

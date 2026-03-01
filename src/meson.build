@@ -102,6 +102,7 @@ taisei_src = files(
     'video.c',
     'video_postprocess.c',
     'watchdog.c',
+    'zipfile.c',
 )
 
 if is_developer_build

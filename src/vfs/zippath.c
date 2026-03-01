@@ -6,32 +6,34 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "log.h"
 #include "memory/scratch.h"
+#include "rwops/rwops_zlib.h"
+#include "rwops/rwops_zstd.h"
+#include "util/miscmath.h"
 #include "zipfile_impl.h"
 #include "syspath.h"
 
-#define ZTLS(zpnode) vfs_zipfile_get_tls((zpnode)->zipnode, true)
-
 static const char *vfs_zippath_name(VFSZipPathNode *zpnode) {
-	return zip_get_name(ZTLS(zpnode)->zip, zpnode->index, 0);
+	return zpnode->entry->name;
 }
 
 static void vfs_zippath_free(VFSNode *node) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
-	vfs_decref(zpnode->zipnode);
+	vfs_decref(zpnode->znode);
 }
 
 static void vfs_zippath_repr(VFSNode *node, StringBuffer *buf) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
 	strbuf_printf(buf, "%s '%s' in ",
-		zpnode->info.is_dir ? "directory" : "file", vfs_zippath_name(zpnode));
-	vfs_node_repr(zpnode->zipnode, false, buf);
+		zpnode->entry->is_dir ? "directory" : "file", vfs_zippath_name(zpnode));
+	vfs_node_repr(zpnode->znode, false, buf);
 }
 
 static bool vfs_zippath_syspath(VFSNode *node, StringBuffer *buf) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
 	StringBuffer buf2 = { acquire_scratch_arena() };
-	vfs_node_repr(zpnode->zipnode, true, &buf2);
+	vfs_node_repr(zpnode->znode, true, &buf2);
 	strbuf_printf(&buf2, "%c%s", vfs_syspath_separators[0], vfs_zippath_name(zpnode));
 	vfs_syspath_normalize_buffer(buf2.start, buf);
 	release_scratch_arena(buf2.arena);
@@ -39,57 +41,98 @@ static bool vfs_zippath_syspath(VFSNode *node, StringBuffer *buf) {
 }
 
 static VFSInfo vfs_zippath_query(VFSNode *node) {
-	return VFS_NODE_CAST(VFSZipPathNode, node)->info;
+	return (VFSInfo) {
+		.exists = true,
+		.is_readonly = true,
+		.is_dir = VFS_NODE_CAST(VFSZipPathNode, node)->entry->is_dir
+	};
 }
 
 static VFSNode *vfs_zippath_locate(VFSNode *node, const char *path) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
-	const char *mypath = vfs_zippath_name(zpnode);
-	char fullpath[strlen(mypath) + strlen(path) + 2];
-	snprintf(fullpath, sizeof(fullpath), "%s%c%s", mypath, VFS_PATH_SEPARATOR, path);
-	vfs_path_normalize_inplace(fullpath);
-
-	return vfs_locate(zpnode->zipnode, fullpath);
+	auto e = zpnode->entry;
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf, "%.*s/%s", e->name_len, e->name, path);
+	vfs_path_normalize_inplace(buf.start);
+	auto n = vfs_locate(zpnode->znode, buf.start);
+	release_scratch_arena(buf.arena);
+	return n;
 }
 
 static const char *vfs_zippath_iter(VFSNode *node, void **opaque) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
 	VFSZipFileIterData *idata = *opaque;
+	auto znode = zpnode->znode;
 
-	if(!zpnode->info.is_dir) {
+	if(!zpnode->entry->is_dir) {
 		return NULL;
 	}
 
 	if(!idata) {
-		idata = ALLOC(typeof(*idata));
-		idata->num = zip_get_num_entries(ZTLS(zpnode)->zip, 0);
-		idata->idx = zpnode->index;
-		idata->prefix = vfs_zippath_name(zpnode);
-		idata->prefix_len = strlen(idata->prefix);
-		*opaque = idata;
+		auto e = zpnode->entry;
+		uint32_t buf_size = znode->max_name_len - e->name_len;
+		*opaque = idata = ALLOC_FLEX(VFSZipFileIterData, buf_size);
+		idata->entry = zpnode->entry + 1;
+		idata->prefix = e->name;
+		idata->prefix_len = e->name_len;
 	}
 
-	return vfs_zipfile_iter_shared(idata, ZTLS(zpnode));
+	return vfs_zipfile_iter_shared(znode, idata);
 }
 
 #define vfs_zippath_iter_stop vfs_zipfile_iter_stop
 
 static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
+	auto znode = zpnode->znode;
+	auto entry = zpnode->entry;
 
 	if(mode & VFS_MODE_WRITE) {
 		vfs_set_error("ZIP archives are read-only");
 		return NULL;
 	}
 
-	if(mode & VFS_MODE_SEEKABLE && zpnode->compression != ZIP_CM_STORE) {
+	if(mode & VFS_MODE_SEEKABLE && entry->compression != ZIP_COMPRESSION_NONE) {
 		StringBuffer buf = { acquire_scratch_arena() };
 		vfs_node_repr(node, true, &buf);
 		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", buf.start);
 		release_scratch_arena(buf.arena);
 	}
 
-	return vfs_zippath_make_rwops(zpnode);
+	uint32_t ofs = zipfile_get_entry_data_offset(&znode->ctx, entry);
+
+	if(ofs == ZIP_INVALID_OFFSET) {
+		vfs_set_error("%s: Can't read %.*s",
+			znode->ctx.log_prefix, entry->name_len, entry->name);
+		return NULL;
+	}
+
+	// NOTE ideally should incref znode and decref when closed,
+	// but in practice the znode will live until VFS is shutdown anwyay,
+	// and we should't have any open streams by that point.
+	auto io = NOT_NULL(SDL_IOFromConstMem(znode->ctx.mem + ofs, entry->comp_size));
+
+	switch(entry->compression) {
+		case ZIP_COMPRESSION_NONE:
+			break;
+
+		case ZIP_COMPRESSION_DEFLATE:
+			io = SDL_RWWrapInflateReaderSeekable(io, entry->uncomp_size, min(4096, entry->comp_size), true);
+			break;
+
+		case ZIP_COMPRESSION_ZSTD:
+		case ZIP_COMPRESSION_ZSTD_DEPRECATED:
+			io = SDL_RWWrapZstdReaderSeekable(io, entry->uncomp_size, true);
+			break;
+
+		default:
+			vfs_set_error("%s: Can't read %.*s: Unhandled compression mode %d",
+				znode->ctx.log_prefix, entry->name_len, entry->name, entry->compression);
+			SDL_CloseIO(io);
+			return NULL;
+	}
+
+	return NOT_NULL(io);
 }
 
 VFS_NODE_FUNCS(VFSZipPathNode, {
@@ -105,38 +148,11 @@ VFS_NODE_FUNCS(VFSZipPathNode, {
 	.open = vfs_zippath_open,
 });
 
-VFSNode *vfs_zippath_create(VFSZipNode *zipnode, zip_int64_t idx) {
+VFSNode *vfs_zippath_create(VFSZipNode *zipnode, const ZipEntry *entry) {
 	auto zpnode = VFS_ALLOC(VFSZipPathNode, {
-		.zipnode = zipnode,
-		.index = idx,
-		.size = -1,
-		.compressed_size = -1,
-		.compression = ZIP_CM_STORE,
-		.info = {
-			.exists = true,
-			.is_readonly = true,
-		},
+		.znode = zipnode,
+		.entry = entry,
 	});
-
-	zpnode->info.is_dir = ('/' == *(strchr(vfs_zippath_name(zpnode), 0) - 1));
-
-	zip_stat_t zstat;
-
-	if(zip_stat_index(ZTLS(zpnode)->zip, zpnode->index, 0, &zstat) < 0) {
-		log_warn("zip_stat_index(%"PRIi64") failed: %s", idx, zip_error_strerror(&ZTLS(zpnode)->error));
-	} else {
-		if(zstat.valid & ZIP_STAT_SIZE) {
-			zpnode->size = zstat.size;
-		}
-
-		if(zstat.valid & ZIP_STAT_COMP_SIZE) {
-			zpnode->compressed_size = zstat.comp_size;
-		}
-
-		if(zstat.valid & ZIP_STAT_COMP_METHOD) {
-			zpnode->compression = zstat.comp_method;
-		}
-	}
 
 	vfs_incref(zipnode);
 	return &zpnode->as_generic;

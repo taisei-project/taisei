@@ -46,7 +46,6 @@ Required
 - cglm >= 0.7.8
 - libpng >= 1.5.0
 - libwebpdecoder >= 0.5 or libwebp >= 0.5
-- libzip >= 1.5.0 (>= 1.7.0 recommended)
 - libzstd >= 1.4.0
 - freetype2
 - opusfile
@@ -256,23 +255,9 @@ directly.
 
 This option is not available for Emscripten.
 
-Requires ``vfs_zip`` to be enabled as well.
-
 .. code:: sh
 
    meson configure build/ -Dpackage_data=disabled
-
-ZIP Package Loading (``-Dvfs_zip``)
-"""""""""""""""""""""""""""""""""""
-
-- Default: ``auto``
-- Options: ``auto``, ``enabled``, ``disabled``
-
-Controls whether Taisei can load game data (textures, shaders, etc.) from ``.zip`` files. Requires ``libzip``.
-
-.. code:: sh
-
-   meson configure build/ -Dvfs_zip=disabled
 
 In-Game Developer Options (``-Ddeveloper``)
 """""""""""""""""""""""""""""""""""""""""""
