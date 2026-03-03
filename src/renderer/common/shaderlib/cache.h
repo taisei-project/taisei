@@ -19,11 +19,11 @@
 // null terminator   : 1 byte
 #define SHADER_CACHE_HASH_BUFSIZE 74
 
-bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size])
-	attr_nonnull(1, 4) attr_nodiscard;
+bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size], MemArena *arena)
+	attr_nonnull(1, 4, 5) attr_nodiscard;
 
 bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, MemArena *arena)
 	attr_nonnull(1, 2, 3) attr_nodiscard;
 
-bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src)
-	attr_nonnull(1, 2, 3);
+bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src, MemArena *arena)
+	attr_nonnull_all;
