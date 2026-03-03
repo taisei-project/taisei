@@ -34,19 +34,9 @@ static void vfs_zipfile_repr(VFSNode *node, StringBuffer *buf) {
 static int zip_entry_name_cmp(const void *a, const void *b) {
 	const ZipEntry *e0 = a;
 	const ZipEntry *e1 = b;
-
-	if(e0->name_len == e1->name_len) {
-		return strncmp(e0->name, e1->name, e0->name_len);
-	}
-
 	auto common_len = min(e0->name_len, e1->name_len);
 	int r = strncmp(e0->name, e1->name, common_len);
-
-	if(r == 0) {
-		return (int)e0->name_len - (int)e1->name_len;
-	}
-
-	return r;
+	return r ?: (int)e0->name_len - (int)e1->name_len;
 }
 
 typedef struct ZipSearchKey {
@@ -57,19 +47,9 @@ typedef struct ZipSearchKey {
 static int zip_entry_name_search_cmp(const void *a, const void *b) {
 	const ZipSearchKey *key = a;
 	const ZipEntry *e = b;
-
-	if(key->len == e->name_len) {
-		return strncmp(key->name, e->name, key->len);
-	}
-
 	auto common_len = min(key->len, e->name_len);
 	int r = strncmp(key->name, e->name, common_len);
-
-	if(r == 0) {
-		return (int)key->len - (int)e->name_len;
-	}
-
-	return r;
+	return r ?: (int)key->len - (int)e->name_len;
 }
 
 static const ZipEntry *vfs_zipfile_find_entry(VFSZipNode *znode, const char *name, size_t name_len) {
