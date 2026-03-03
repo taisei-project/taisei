@@ -24,6 +24,11 @@
 #include "memory/scratch.h"
 #include "util/env.h"
 
+#ifndef SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN
+	// Added in SDL 3.4.2
+	#define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
+#endif
+
 SDLGPUGlobal sdlgpu;
 
 static bool renderpass_outputs_compatible(const RenderPassOutputs *current, const RenderPassOutputs *new) {
@@ -395,6 +400,12 @@ static void sdlgpu_init(void) {
 		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_MSL));
 	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN,
 		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_METALLIB));
+
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, true);
+	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN, true);
 
 	sdlgpu = (SDLGPUGlobal) {
 		.device = SDL_CreateGPUDeviceWithProperties(props),
