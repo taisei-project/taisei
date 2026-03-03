@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "rwops_autobuf.h"
 #include "rwops_crc32.h"
 #include "rwops_ro.h"
 #include "rwops_segment.h"

@@ -11,7 +11,6 @@
 #include "assert.h"
 #include "log.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_autobuf.h"
 #include "stringops.h"
 #include "vfs/public.h"
 
