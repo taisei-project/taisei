@@ -10,8 +10,6 @@
 #include "replay.h"
 #include "rw_common.h"
 
-#include "rwops/rwops_autobuf.h"
-
 attr_nonnull_all
 static void replay_write_string(SDL_IOStream *file, char *str, uint16_t version) {
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
@@ -124,8 +122,7 @@ bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 	uint16_t base_version = (version & ~REPLAY_VERSION_COMPRESSION_BIT);
 	bool compression = (version & REPLAY_VERSION_COMPRESSION_BIT);
 
-	SDL_WriteIO(file, replay_magic_header,
-		    sizeof(replay_magic_header));
+	SDL_WriteIO(file, replay_magic_header, sizeof(replay_magic_header));
 	SDL_WriteU16LE(file, version);
 
 	TaiseiVersion v;
@@ -136,13 +133,21 @@ bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 		return false;
 	}
 
-	void *buf;
-	SDL_IOStream *abuf = NULL;
 	SDL_IOStream *vfile = file;
+	int64_t meta_size_ofs = 0;
 
 	if(compression) {
-		abuf = SDL_RWAutoBuffer(&buf, 64);
-		vfile = replay_wrap_stream_compress(version, abuf, false);
+		meta_size_ofs = SDL_TellIO(file);
+
+		if(meta_size_ofs < 0) {
+			log_sdl_error(LOG_ERROR, "SDL_TellIO");
+			return false;
+		}
+
+		// Write placeholder value for offset of events
+		// Will patch this later
+		SDL_WriteU32LE(file, 0xFFFFFFFF);
+		vfile = replay_wrap_stream_compress(version, file, false);
 	}
 
 	replay_write_string(vfile, rpy->playername, base_version);
@@ -155,7 +160,6 @@ bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 		if(!replay_write_stage(stg, vfile, base_version)) {
 			if(compression) {
 				SDL_CloseIO(vfile);
-				SDL_CloseIO(abuf);
 			}
 
 			return false;
@@ -164,9 +168,28 @@ bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 
 	if(compression) {
 		SDL_CloseIO(vfile);
-		SDL_WriteU32LE(file, SDL_TellIO(file) + SDL_TellIO(abuf) + 4);
-		SDL_WriteIO(file, buf, SDL_TellIO(abuf));
-		SDL_CloseIO(abuf);
+
+		// Now that we know the size of compressed metadata,
+		// patch the placeholder value previously written.
+
+		int64_t end_of_meta = SDL_TellIO(file);
+		if(end_of_meta < 0) {
+			log_sdl_error(LOG_ERROR, "SDL_TellIO");
+			return false;
+		}
+
+		if(SDL_SeekIO(file, meta_size_ofs, SDL_IO_SEEK_SET) < 0) {
+			log_sdl_error(LOG_ERROR, "SDL_SeekIO");
+			return false;
+		}
+
+		SDL_WriteU32LE(file, end_of_meta + 4);
+
+		if(SDL_SeekIO(file, end_of_meta + 4, SDL_IO_SEEK_SET) < 0) {
+			log_sdl_error(LOG_ERROR, "SDL_SeekIO");
+			return false;
+		}
+
 		vfile = replay_wrap_stream_compress(version, file, false);
 	}
 
