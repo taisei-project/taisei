@@ -9,9 +9,8 @@
 #include "../backend.h"
 #include "../stream/mixer.h"
 
-#include "rwops/rwops_autobuf.h"
+#include "memory/scratch.h"
 #include "config.h"
-#include "util/io.h"
 
 #define AUDIO_FREQ 48000
 #define AUDIO_FORMAT SDL_AUDIO_F32
@@ -46,19 +45,17 @@ static void SDLCALL mixer_callback(
 
 static bool init_sdl_audio(void) {
 	uint num_drivers = SDL_GetNumAudioDrivers();
-	void *buf;
-	SDL_IOStream *out = SDL_RWAutoBuffer(&buf, 256);
 
-	SDL_RWprintf(out, "Available audio drivers:");
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf, "Available audio drivers:");
 
 	for(uint i = 0; i < num_drivers; ++i) {
 		const char *driver = SDL_GetAudioDriver(i);
-		SDL_RWprintf(out, " %s", STRORNULL(driver));
+		strbuf_printf(&buf, " %s", STRORNULL(driver));
 	}
 
-	SDL_WriteU8(out, 0);
-	log_info("%s", (char*)buf);
-	SDL_CloseIO(out);
+	log_info("%s", buf.start);
+	release_scratch_arena(buf.arena);
 
 	if(!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
