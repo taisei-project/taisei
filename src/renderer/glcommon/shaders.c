@@ -9,8 +9,8 @@
 #include "shaders.h"
 
 #include "log.h"
+#include "memory/scratch.h"
 #include "opengl.h"
-#include "rwops/rwops_autobuf.h"
 #include "util/io.h"
 #include "util/stringops.h"
 
@@ -175,27 +175,24 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 
 static void glcommon_build_shader_lang_table_finish(void) {
 	if(glcommon_shader_lang_table.num_elements > 0) {
-		char *str;
-		SDL_IOStream *abuf = SDL_RWAutoBuffer((void**)&str, 256);
-		SDL_RWprintf(abuf, "Supported GLSL versions: ");
-		char vbuf[32];
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_printf(&buf, "Supported GLSL versions: ");
 
 		dynarray_foreach(&glcommon_shader_lang_table, int i, ShaderLangInfo *lang, {
 			assert(lang->lang == SHLANG_GLSL);
 
+			char vbuf[32];
 			glsl_format_version(vbuf, sizeof(vbuf), lang->glsl.version);
 
 			if(i == 0) {
-				SDL_RWprintf(abuf, "%s", vbuf);
+				strbuf_printf(&buf, "%s", vbuf);
 			} else {
-				SDL_RWprintf(abuf, ", %s", vbuf);
+				strbuf_printf(&buf, ", %s", vbuf);
 			}
 		});
 
-		SDL_WriteU8(abuf, 0);
-		log_info("%s", str);
-		SDL_CloseIO(abuf);
-
+		log_info("%s", buf.start);
+		release_scratch_arena(buf.arena);
 		dynarray_compact(&glcommon_shader_lang_table);
 	} else {
 		log_error("Can not determine supported GLSL versions. Looks like the OpenGL implementation is non-conformant. Expect nothing to work.");

@@ -9,11 +9,10 @@
 #include "opengl.h"
 
 #include "debug.h"
-#include "rwops/rwops_autobuf.h"
+#include "memory/scratch.h"
 #include "shaders.h"
 #include "texture.h"
 #include "util/env.h"
-#include "util/io.h"
 
 struct glext_s glext = {};
 
@@ -883,21 +882,19 @@ void glcommon_check_capabilities(void) {
 	if(exts) {
 		log_info("Supported extensions: %s", exts);
 	} else {
-		void *buf;
-		SDL_IOStream *writer = SDL_RWAutoBuffer(&buf, 1024);
 		GLint num_extensions;
-
-		SDL_RWprintf(writer, "Supported extensions:");
 		glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_printf(&buf, "Supported extensions:");
 
 		for(int i = 0; i < num_extensions; ++i) {
 			const char *ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
-			SDL_RWprintf(writer, " %s", STRORNULL(ext));
+			strbuf_printf(&buf, " %s", STRORNULL(ext));
 		}
 
-		SDL_WriteU8(writer, 0);
-		log_info("%s", (char*)buf);
-		SDL_CloseIO(writer);
+		log_info("%s", buf.start);
+		release_scratch_arena(buf.arena);
 	}
 
 	glcommon_check_issues();
