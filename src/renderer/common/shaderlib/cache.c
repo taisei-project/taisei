@@ -12,8 +12,8 @@
 
 #include "log.h"
 #include "util/sha256.h"
+#include "rwops/rwops_arena.h"
 #include "rwops/rwops_crc32.h"
-#include "rwops/rwops_autobuf.h"
 #include "rwops/rwops_zstd.h"
 #include "vfs/public.h"
 
@@ -26,11 +26,13 @@
 #define MAX_GLSL_MACRO_VALUE_LEN  255
 #define MAX_ENTRYPOINT_NAME_LEN   255
 
-static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const ShaderMacro *macros, size_t *out_size) {
-	uint8_t *buf, *result = NULL;
+static uint8_t *shader_cache_construct_entry(
+	const ShaderSource *src, const ShaderMacro *macros, size_t *out_size, MemArena *arena
+) {
+	uint8_t *result = NULL;
 	uint32_t crc = CRC_INIT;
-
-	SDL_IOStream *abuf = SDL_RWAutoBuffer((void**)&buf, BUFSIZ);
+	RWArenaState arena_state;
+	SDL_IOStream *abuf = SDL_RWArena(arena, BUFSIZ, &arena_state);
 	SDL_IOStream *crcbuf = SDL_RWWrapCRC32(abuf, &crc, false);
 	SDL_IOStream *dest = crcbuf;
 
@@ -144,7 +146,7 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 	SDL_WriteU32LE(dest, crc);
 
 	*out_size = SDL_TellIO(dest);
-	result = memdup(buf, *out_size);
+	result = marena_realloc(arena, arena_state.buffer, arena_state.buffer_size, *out_size);
 
 fail:
 	if(crcbuf != NULL) {
@@ -306,27 +308,32 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 	return true;
 }
 
-bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src) {
+bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src, MemArena *arena) {
 	size_t entry_size;
-	uint8_t *entry = shader_cache_construct_entry(src, NULL, &entry_size);
+	auto snapshot = marena_snapshot(arena);
+	uint8_t *entry = shader_cache_construct_entry(src, NULL, &entry_size, arena);
 
 	if(entry != NULL) {
 		shader_cache_set_raw(hash, key, entry, entry_size);
-		mem_free(entry);
 		log_debug("Stored %s/%s in cache", hash, key);
 		return true;
 	}
 
+	marena_rollback(arena, &snapshot);
 	return false;
 }
 
-bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size]) {
+bool shader_cache_hash(
+	const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size], MemArena *arena
+) {
 	assert(buf_size >= SHADER_CACHE_HASH_BUFSIZE);
 
+	auto snapshot = marena_snapshot(arena);
 	size_t entry_size;
-	uint8_t *entry = shader_cache_construct_entry(src, macros, &entry_size);
+	uint8_t *entry = shader_cache_construct_entry(src, macros, &entry_size, arena);
 
 	if(entry == NULL) {
+		marena_rollback(arena, &snapshot);
 		return false;
 	}
 
@@ -336,7 +343,6 @@ bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_
 	snprintf(out_buf + sha_size, buf_size - sha_size, "-%zx", entry_size);
 
 	// shader_cache_set_raw(out_buf, "orig", entry, entry_size);
-
-	mem_free(entry);
+	marena_rollback(arena, &snapshot);
 	return true;
 }

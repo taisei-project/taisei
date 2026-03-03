@@ -201,11 +201,15 @@ bool spirv_compile(
 		},
 	};
 
+	auto scratch = acquire_scratch_arena();
+
 	if(
 		!shader_cache_entry_name(&m, sizeof(name), name) ||
-		!shader_cache_hash(in, options->macros, sizeof(hash), hash)
+		!shader_cache_hash(in, options->macros, sizeof(hash), hash, scratch)
 	) {
-		return WITH_SCRATCH(scratch, _spirv_compile(in, out, arena, scratch, options));
+		bool ok = _spirv_compile(in, out, arena, scratch, options);
+		release_scratch_arena(scratch);
+		return ok;
 	}
 
 	auto arena_snap = marena_snapshot(arena);
@@ -215,6 +219,7 @@ bool spirv_compile(
 			!memcmp(&target_lang, &out->lang, sizeof(ShaderLangInfo)) &&
 			out->stage == in->stage
 		) {
+			release_scratch_arena(scratch);
 			return true;
 		}
 
@@ -222,19 +227,21 @@ bool spirv_compile(
 		marena_rollback(arena, &arena_snap);
 	}
 
-	if(WITH_SCRATCH(scratch, _spirv_compile(in, out, arena, scratch, options))) {
+	if(_spirv_compile(in, out, arena, scratch, options)) {
 		if(reflect) {
 			if(!(out->reflection = _spirv_reflect(out, arena))) {
-				marena_rollback(arena, &arena_snap);
-				return false;
+				goto fail;
 			}
 		}
 
-		shader_cache_set(hash, name, out);
+		shader_cache_set(hash, name, out, scratch);
+		release_scratch_arena(scratch);
 		return true;
 	}
 
+fail:
 	marena_rollback(arena, &arena_snap);
+	release_scratch_arena(scratch);
 	return false;
 }
 
@@ -252,7 +259,10 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		return _spirv_decompile(in, out, arena, options);
 	}
 
-	if(!shader_cache_hash(in, NULL, sizeof(hash), hash)) {
+	auto scratch = acquire_scratch_arena();
+
+	if(!shader_cache_hash(in, NULL, sizeof(hash), hash, scratch)) {
+		release_scratch_arena(scratch);
 		return _spirv_decompile(in, out, arena, options);
 	}
 
@@ -264,6 +274,7 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 			!memcmp(options->lang, &out->lang, sizeof(ShaderLangInfo)) &&
 			out->stage == in->stage
 		) {
+			release_scratch_arena(scratch);
 			return true;
 		}
 
@@ -272,9 +283,10 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 	}
 
 	if((result = _spirv_decompile(in, out, arena, options))) {
-		shader_cache_set(hash, name, out);
+		shader_cache_set(hash, name, out, scratch);
 	}
 
+	release_scratch_arena(scratch);
 	return result;
 }
 
