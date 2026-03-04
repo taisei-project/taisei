@@ -68,6 +68,10 @@ char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) 
 				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
 			}
 
+			if(pos == 0) {
+				return NULL;
+			}
+
 			break;
 		}
 

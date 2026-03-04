@@ -181,7 +181,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 
 	char *line;
 
-	while(*(line = SDL_RWgets_arena(stream, scratch, NULL))) {
+	while((line = SDL_RWgets_arena(stream, scratch, NULL))) {
 		char *p = line;
 		skip_space(&p);
 
