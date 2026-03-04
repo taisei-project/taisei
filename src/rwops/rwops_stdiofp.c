@@ -9,6 +9,7 @@
 #include "rwops_stdiofp.h"
 #include <SDL3/SDL_error.h>
 
+#include <errno.h>
 #include <stdio.h>
 
 // NOTE: Copypasted from https://github.com/libsdl-org/SDL/blob/0aa1022358e09e6bb22a1087c51a10c954a8ab18/docs/README-migration.md
@@ -82,6 +83,21 @@ static bool SDLCALL stdio_close(void *userdata)
 	return status;
 }
 
+static bool stdio_flush(void *userdata, SDL_IOStatus *status) {
+	IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
+
+	if (fflush(rwopsdata->fp) != 0) {
+		if (errno == EAGAIN) {
+			*status = SDL_IO_STATUS_NOT_READY;
+			return false;
+		} else {
+			return SDL_SetError("Error flushing datastream: %s", strerror(errno));
+		}
+	}
+
+	return true;
+}
+
 SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose)
 {
 	SDL_IOStreamInterface iface;
@@ -99,6 +115,7 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose)
 	iface.read = stdio_read;
 	iface.write = stdio_write;
 	iface.close = stdio_close;
+	iface.flush = stdio_flush;
 
 	rwopsdata->fp = fp;
 	rwopsdata->autoclose = autoclose;
