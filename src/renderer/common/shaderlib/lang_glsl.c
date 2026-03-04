@@ -52,28 +52,34 @@ static void glsl_write_lineno(GLSLFileParseState *fstate) {
 		return;
 	}
 
-	SDL_RWprintf(fstate->global->dest, "// file: %s\n", fstate->path);
-	SDL_RWprintf(fstate->global->dest, "#line %i %i\n", fstate->lineno, fstate->include_level);
+	SDL_RWprintf_arena(
+		fstate->global->dest, fstate->global->scratch,
+		"// file: %s\n#line %i %i\n",
+		fstate->path, fstate->lineno, fstate->include_level);
+
 	fstate->need_lineno_marker = false;
 }
 
 static void glsl_write_version(GLSLFileParseState *fstate, GLSLVersion version) {
 	char buf[32];
 	glsl_format_version(buf, sizeof(buf), fstate->global->src->lang.glsl.version);
-	SDL_RWprintf(fstate->global->dest, "#version %s\n", buf);
+	SDL_RWprintf_arena(fstate->global->dest, fstate->global->scratch, "#version %s\n", buf);
 	fstate->need_lineno_marker = true;
 }
 
 static void glsl_write_header(GLSLFileParseState *fstate) {
-	SDL_RWprintf(
+	SDL_RWprintf_arena(
 		fstate->global->dest,
+		fstate->global->scratch,
 		"#define %s_STAGE\n",
 		fstate->global->options->stage == SHADER_STAGE_FRAGMENT ? "FRAG" : "VERT"
 	);
 
 	if(fstate->global->options->macros) {
 		for(ShaderMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
-			SDL_RWprintf(fstate->global->dest, "#define %s %s\n", macro->name, STRORNULL(macro->value));
+			SDL_RWprintf_arena(
+				fstate->global->dest, fstate->global->scratch,
+				"#define %s %s\n", macro->name, STRORNULL(macro->value));
 		}
 	}
 
@@ -201,7 +207,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			char include_abs_path[strlen(fstate->path) + strlen(filename) + 1];
 			vfs_path_resolve_relative(include_abs_path, sizeof(include_abs_path), fstate->path, filename);
 
-			SDL_RWprintf(dest, "// begin include (level %i)\n", fstate->include_level);
+			SDL_RWprintf_arena(dest, scratch, "// begin include (level %i)\n", fstate->include_level);
 
 			bool include_ok = glsl_process_file(&(GLSLFileParseState) {
 				.global = fstate->global,
@@ -210,7 +216,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				.need_lineno_marker = true,
 			});
 
-			SDL_RWprintf(dest, "// end include (level %i)\n", fstate->include_level);
+			SDL_RWprintf_arena(dest, scratch, "// end include (level %i)\n", fstate->include_level);
 
 			if(!include_ok) {
 				SDL_CloseIO(stream);
