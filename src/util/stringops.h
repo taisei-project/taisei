@@ -65,7 +65,7 @@ char* strfmt_arena(MemArena *arena, const char *fmt, ...) attr_printf(2, 3) attr
 char* strappend(char **dst, const char *src);
 void expand_escape_sequences(char *str);
 
-uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) attr_dealloc(SDL_free, 1);
+uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);
 
 void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
