@@ -14,8 +14,6 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
-char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) attr_nonnull_all;
-char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) attr_nonnull_all;
 char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) attr_nonnull(1, 2);
 size_t SDL_RWprintf(SDL_IOStream *rwops, const char *fmt, ...) attr_printf(2, 3) attr_nonnull_all;
 size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, ...) attr_printf(3, 4) attr_nonnull_all;

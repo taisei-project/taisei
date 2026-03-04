@@ -10,6 +10,7 @@
 
 #include "io.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "stringops.h"
 #include "vfs/public.h"
 
@@ -17,26 +18,26 @@ bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 			      void *data) {
 	static const char separator[] = "= ";
 
-	size_t bufsize = 256;
-	char *buffer = mem_alloc(bufsize);
+	auto scratch = acquire_scratch_arena();
+	auto snap = marena_snapshot(scratch);
+
 	int lineno = 0;
 	int errors = 0;
 
-	loopstart: while(SDL_RWgets_realloc(strm, &buffer, &bufsize)) {
-		char *ptr = buffer;
+	for(char *ptr; (ptr = SDL_RWgets_arena(strm, scratch, NULL)); marena_rollback(scratch, &snap)) {
 		char *sep, *key, *val;
 
 		++lineno;
+		bool blank = false;
 
 		while(isspace(*ptr)) {
 			if(!*(++ptr)) {
-				// blank line
-				goto loopstart;
+				blank = true;
+				break;
 			}
 		}
 
-		if(*ptr == '#') {
-			// comment
+		if(blank || *ptr == '#') {
 			continue;
 		}
 
@@ -69,7 +70,7 @@ bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 		}
 	}
 
-	mem_free(buffer);
+	release_scratch_arena(scratch);
 	return !errors;
 }
 
