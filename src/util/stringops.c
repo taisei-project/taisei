@@ -147,20 +147,6 @@ char* strfmt_arena(MemArena *arena, const char *fmt, ...) {
 	return str;
 }
 
-char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
-	size_t sz_allocated = 64;
-
-	while(true) {
-		char str[sz_allocated];
-
-		if(strftime(str, sz_allocated, fmt, timeinfo)) {
-			return mem_strdup(str);
-		}
-
-		sz_allocated *= 2;
-	};
-}
-
 char* strappend(char **dst, const char *src) {
 	if(!*dst) {
 		return *dst = mem_strdup(src);
