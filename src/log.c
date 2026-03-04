@@ -107,6 +107,8 @@ attr_unused static const char* level_ansi_style_code(LogLevel lvl) { INDEX_MAP(l
 static void log_queue_shutdown_internal(bool force_sync);
 
 noreturn static void log_abort(const char *msg) {
+	log_sync(true);
+
 #ifdef LOG_FATAL_MSGBOX
 	static const char *const title = "Taisei: fatal error";
 
@@ -122,9 +124,6 @@ noreturn static void log_abort(const char *msg) {
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, logging.err_appendix, NULL);
 	}
 #endif
-
-	log_queue_shutdown_internal(true);
-	log_shutdown();
 
 	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
 	abort();
@@ -344,7 +343,7 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 	if(lvl & LOG_FATAL) {
 		if(noabort) {
 			// Will likely abort externally (e.g. assertion failure), so sync everything now.
-			list_foreach(&logging.outputs, sync_logger, NULL);
+			log_sync(true);
 		} else {
 			log_abort(entry.message);
 		}
