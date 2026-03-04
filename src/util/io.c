@@ -9,7 +9,6 @@
 #include "io.h"
 
 #include "log.h"
-#include "memory/scratch.h"
 #include "stringops.h"
 #include "vfs/public.h"
 
@@ -67,18 +66,6 @@ char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) 
 	}
 
 	return buf;
-}
-
-size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) {
-	auto scratch = acquire_scratch_arena();
-
-	va_list args;
-	va_start(args, fmt);
-	size_t ret = SDL_RWvprintf_arena(rwops, scratch, fmt, args);
-	va_end(args);
-
-	release_scratch_arena(scratch);
-	return ret;
 }
 
 size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char* fmt, ...) {

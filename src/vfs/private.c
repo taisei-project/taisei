@@ -185,10 +185,12 @@ void vfs_print_tree_recurse(
 	strbuf_printf(&newprefix_buf, "%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");
 	char *newprefix = newprefix_buf.start;
 
-	StringBuffer repr_buf = { arena };
-	vfs_node_repr(root, false, &repr_buf);
-	SDL_RWprintf(dest, "%s = %s\n", newprefix, repr_buf.start);
-	strbuf_clear(&repr_buf);
+	StringBuffer buf = { arena };
+	strbuf_printf(&buf, "%s = ", newprefix);
+	vfs_node_repr(root, false, &buf);
+	strbuf_cat(&buf, "\n");
+	SDL_WriteIO(dest, buf.start, strlen(buf.start));
+	strbuf_clear(&buf);
 
 	if(!is_dir) {
 		marena_rollback(arena, &snap);
