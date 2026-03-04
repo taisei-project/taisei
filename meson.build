@@ -226,7 +226,9 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-package_data = get_option('package_data').allowed()
+package_data = (get_option('package_data')
+    .disable_if(host_machine.system() == 'emscripten')
+    .allowed())
 
 have_posix = cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
 
@@ -650,12 +652,12 @@ endif
 subdir('misc')
 subdir('emscripten')
 subdir('switch')
-subdir('resources')
 subdir('external')
 subdir('doc')
 subdir('xdg')
-subdir('atlas')
 subdir('po')
+subdir('resources')  # Depends on: external, po
+subdir('atlas')      # Depends on: resources
 subdir('src')
 subdir('test')
 
