@@ -84,8 +84,9 @@ INLINE const char *ridx_node_name(VFSResIndexNode *rinode) {
 }
 
 INLINE bool ridx_node_is_root(VFSResIndexNode *rinode) {
-	assert(rinode->root_node == rinode);
-	return rinode->index_entry == &ridx_dirs[0];
+	bool is_root = rinode->root_node == rinode;
+	assert(!is_root || rinode->index_entry == &ridx_dirs[0]);
+	return is_root;
 }
 
 static const RIdxDirEntry *ridx_subdir_lookup(const RIdxDirEntry *parent, const char *name) {
@@ -216,7 +217,7 @@ static void vfs_resindex_free(VFSNode *node) {
 	auto rinode = VFS_NODE_CAST(VFSResIndexNode, node);
 
 	if(ridx_node_is_root(rinode)) {
-		VFSResIndexFSContext *ctx = NOT_NULL(rinode->index_entry);
+		VFSResIndexFSContext *ctx = NOT_NULL(rinode->context);
 		NOT_NULL(ctx->procs.free)(ctx);
 	} else {
 		vfs_decref(rinode->root_node);
