@@ -8,7 +8,6 @@
 
 #include "io.h"
 
-#include "assert.h"
 #include "log.h"
 #include "memory/scratch.h"
 #include "stringops.h"
@@ -17,41 +16,6 @@
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #include <unistd.h>
 #endif
-
-char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) {
-	char c, *ptr = buf, *end = buf + bufsize - 1;
-	assert(end > ptr);
-
-	while(ptr <= end) {
-		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
-			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
-				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
-			}
-
-			break;
-		}
-
-		if(!c) {
-			break;
-		}
-
-		if((*ptr++ = c) == '\n') {
-			break;
-		}
-	}
-
-	if(ptr == buf)
-		return NULL;
-
-	if(ptr > end) {
-		*end = 0;
-		log_warn("Line too long (%zu bytes max): %s", bufsize, buf);
-	} else {
-		*ptr = 0;
-	}
-
-	return buf;
-}
 
 char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) {
 	size_t chunk_size = 64;
@@ -103,48 +67,6 @@ char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) 
 	}
 
 	return buf;
-}
-
-char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
-	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
-	assert(end >= ptr);
-
-	while(true) {
-		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
-			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
-				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
-			}
-
-			break;
-		}
-
-		if(!c) {
-			break;
-		}
-
-		*ptr++ = c;
-
-		if(ptr > end) {
-			ptrdiff_t ofs = ptr - *buf;
-			*bufsize *= 2;
-			*buf = mem_realloc(*buf, *bufsize);
-			end = *buf + *bufsize - 1;
-			ptr = *buf + ofs;
-			*end = 0;
-		}
-
-		if(c == '\n') {
-			break;
-		}
-	}
-
-	if(ptr == *buf)
-		return NULL;
-
-	assert(ptr <= end);
-	*ptr = 0;
-
-	return *buf;
 }
 
 size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) {

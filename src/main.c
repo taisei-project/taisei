@@ -18,6 +18,7 @@
 #include "global.h"
 #include "log.h"
 #include "log_sdl.h"
+#include "memory/scratch.h"
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
 #include "progress.h"
@@ -132,21 +133,23 @@ static void init_log_filter(void) {
 		return;
 	}
 
-	char buf[256];
-
 	char *p;
-	while((p = SDL_RWgets(rw, buf, sizeof(buf)))) {
+	auto scratch = acquire_scratch_arena();
+	size_t size;
+
+	while((p = SDL_RWgets_arena(rw, scratch, &size))) {
 		while(isspace(*p)) {
 			++p;
 		}
 
-		if(*p == '#' || !*p) {
-			continue;
+		if(*p && *p != '#') {
+			log_add_filter_string(p);
 		}
 
-		log_add_filter_string(p);
+		marena_free(scratch, p, size);
 	}
 
+	release_scratch_arena(scratch);
 	SDL_CloseIO(rw);
 }
 
