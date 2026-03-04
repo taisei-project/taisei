@@ -47,15 +47,22 @@ def index(args):
     def excluded(path):
         return path.name[0] == '.' or any(path.match(x) for x in args.exclude)
 
-    def make_union_map(dirs):
+    def make_union_map(dirs, subdirs):
         u = {}
 
         for d in dirs:
             u.update(dict((p.relative_to(d), p) for p in d.glob('**/*') if not excluded(p)))
 
+        for subdir, realdir in subdirs:
+            s = Path(subdir)
+            d = Path(realdir)
+            assert d.is_dir()
+            u.update(dict((s / p.relative_to(d), p) for p in d.glob('**/*') if not excluded(p)))
+
         return u
 
-    pathmap = make_union_map(args.directories)
+    pathmap = make_union_map(args.directories, args.subdir)
+
     import collections
     nestedmap_factory = lambda: collections.defaultdict(nestedmap_factory)
     nestedmap = nestedmap_factory()
@@ -141,11 +148,19 @@ def main(args):
         help='the output index file path'
     )
 
+    parser.add_argument('--subdir',
+        metavar=('subdir', 'realdir'),
+        nargs=2,
+        type=str,
+        help='a directory to index (will be put in subdir)',
+        action='append',
+    )
+
     parser.add_argument('directories',
         metavar='directory',
         nargs='+',
         type=DirPathType,
-        help='the directory to index'
+        help='a directory to index'
     )
 
     parser.add_argument('--exclude',
