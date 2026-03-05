@@ -7,6 +7,7 @@
  */
 
 #include "rwops_crc32.h"
+#include "rwops/rwops_util.h"
 
 #include <zlib.h>
 
@@ -91,6 +92,9 @@ SDL_IOStream *SDL_RWWrapCRC32(SDL_IOStream *src, uint32_t *crc32_ptr, bool autoc
 		mem_free(cdata);
 		return NULL;
 	}
+
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, src);
 
 	return io;
 }

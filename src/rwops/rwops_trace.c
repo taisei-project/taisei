@@ -8,6 +8,7 @@
 
 #include "rwops_trace.h"
 #include "log.h"
+#include "rwops/rwops_util.h"
 
 #define TRACE(tdata, fmt, ...) \
 	log_debug("[%llx :: %p :: %s] " fmt, (unsigned long long)SDL_GetCurrentThreadID(), (tdata), (tdata)->tag, __VA_ARGS__)
@@ -114,6 +115,9 @@ SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag, bool autoclose
 		mem_free(tdata);
 		return NULL;
 	}
+
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, src);
 
 	TRACE(tdata, "opened; src=%p", (void*)src);
 	return io;

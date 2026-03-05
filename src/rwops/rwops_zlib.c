@@ -168,6 +168,9 @@ static SDL_IOStream *common_alloc(
 		return NULL;
 	}
 
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, wrapped);
+
 	z->stream = ALLOC(z_stream, {
 		.zalloc = zlib_alloc,
 		.zfree = zlib_free,

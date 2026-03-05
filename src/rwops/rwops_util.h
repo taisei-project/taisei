@@ -51,3 +51,8 @@ int64_t rwutil_seek_emulated_abs(
 	rwutil_reopen_func reopen, void *reopen_arg,
 	size_t readbuf_size, void *readbuf
 ) attr_nonnull_all attr_nodiscard;
+
+#define PROP_IOSTREAM_NAME              "taisei.iostream.name"
+#define PROP_IOSTREAM_WRAPPED_STREAM    "taisei.iostream.wrapped_stream"
+
+const char *iostream_get_name(SDL_IOStream *stream);

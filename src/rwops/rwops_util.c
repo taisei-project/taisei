@@ -7,6 +7,7 @@
  */
 
 #include "rwops_util.h"
+#include "log.h"
 #include "util/miscmath.h"
 
 int64_t rwutil_compute_seek_pos(int64_t offset, int whence, int64_t pos, int64_t size) {
@@ -64,6 +65,9 @@ int64_t rwutil_seek_emulated_abs(
 	assert(new_pos >= 0);
 
 	if(new_pos < *pos) {
+		log_warn("%s: Inefficient backward seek from %lli to %lli, restarting stream",
+			iostream_get_name(rw), (long long)*pos, (long long)new_pos);
+
 		int status;
 		if((status = reopen(reopen_arg)) < 0) {
 			return status;
@@ -87,4 +91,21 @@ int64_t rwutil_seek_emulated_abs(
 
 	assert(new_pos == *pos);
 	return *pos;
+}
+
+const char *iostream_get_name(SDL_IOStream *stream) {
+	auto props = SDL_GetIOProperties(stream);
+	const char *name = SDL_GetStringProperty(props, PROP_IOSTREAM_NAME, NULL);
+
+	if(name) {
+		return name;
+	}
+
+	SDL_IOStream *wrapped = SDL_GetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, NULL);
+
+	if(wrapped) {
+		return iostream_get_name(wrapped);
+	}
+
+	return "<unnamed stream>";
 }

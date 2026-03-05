@@ -7,6 +7,8 @@
  */
 
 #include "syspath.h"
+
+#include "rwops/rwops_util.h"
 #include "util/stringops.h"
 
 #include <windows.h>
@@ -100,6 +102,9 @@ static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 
 	if(!rwops) {
 		vfs_set_error_from_sdl();
+	} else {
+		auto props = SDL_GetIOProperties(rwops);
+		SDL_SetStringProperty(props, PROP_IOSTREAM_NAME, pnode->path);
 	}
 
 	return rwops;
