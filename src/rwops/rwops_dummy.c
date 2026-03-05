@@ -7,6 +7,7 @@
  */
 
 #include "rwops_dummy.h"
+#include "rwops/rwops_util.h"
 
 // autoclose bit encoded as lowest bit of the context pointer, which is normally always 0
 #define DUMMY_SOURCE(ctx)    ((SDL_IOStream*)((uintptr_t)(ctx) & ~1ull))
@@ -62,5 +63,8 @@ SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose, bool readonly) 
 	} ctx = { .p = src };
 	ctx.u |= (autoclose & 1u);
 
-	return SDL_OpenIO(&iface, ctx.p);
+	auto io = SDL_OpenIO(&iface, ctx.p);
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, src);
+	return io;
 }

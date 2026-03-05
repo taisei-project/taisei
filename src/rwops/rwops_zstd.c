@@ -118,12 +118,14 @@ static SDL_IOStream *rwzstd_alloc(
 		.autoclose = autoclose,
 	});
 
-
 	SDL_IOStream *io = SDL_OpenIO(&iface, zdata);
 
 	if(!io) {
 		mem_free(zdata);
 	} else {
+		auto props = SDL_GetIOProperties(io);
+		SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, wrapped);
+
 		zdata->iostream = io;
 		*out_zdata = zdata;
 	}

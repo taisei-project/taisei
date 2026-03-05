@@ -7,6 +7,7 @@
  */
 
 #include "rwops_sha256.h"
+#include "rwops/rwops_util.h"
 
 struct sha256_ctx {
 	SDL_IOStream *src;
@@ -89,6 +90,9 @@ SDL_IOStream *SDL_RWWrapSHA256(SDL_IOStream *src, SHA256State *sha256, bool auto
 		mem_free(sctx);
 		return NULL;
 	}
+
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, src);
 
 	return io;
 }

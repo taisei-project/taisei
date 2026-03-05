@@ -8,6 +8,7 @@
 
 #include "log.h"
 #include "memory/scratch.h"
+#include "rwops/rwops_util.h"
 #include "rwops/rwops_zlib.h"
 #include "rwops/rwops_zstd.h"
 #include "util/miscmath.h"
@@ -111,6 +112,13 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	// but in practice the znode will live until VFS is shutdown anwyay,
 	// and we should't have any open streams by that point.
 	auto io = NOT_NULL(SDL_IOFromConstMem(znode->ctx.mem + ofs, entry->comp_size));
+
+	WITH_SCRATCH(scratch, ({
+		StringBuffer buf = { scratch };
+		vfs_zippath_syspath(node, &buf);
+		auto props = SDL_GetIOProperties(io);
+		SDL_SetStringProperty(props, PROP_IOSTREAM_NAME, buf.start);
+	}));
 
 	switch(entry->compression) {
 		case ZIP_COMPRESSION_NONE:

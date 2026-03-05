@@ -8,6 +8,7 @@
 
 #include "rwops_segment.h"
 #include "log.h"
+#include "rwops/rwops_util.h"
 #include "util/miscmath.h"
 
 typedef struct Segment {
@@ -191,6 +192,9 @@ SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end, boo
 		mem_free(s);
 		return NULL;
 	}
+
+	auto props = SDL_GetIOProperties(io);
+	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, src);
 
 	return io;
 }
