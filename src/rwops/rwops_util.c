@@ -65,7 +65,7 @@ int64_t rwutil_seek_emulated_abs(
 
 	if(new_pos < *pos) {
 		int status;
-		if((status = reopen(rw)) < 0) {
+		if((status = reopen(reopen_arg)) < 0) {
 			return status;
 		}
 		assert(*pos == 0);
