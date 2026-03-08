@@ -43,7 +43,7 @@ def main(args):
 
     args = parser.parse_args()
 
-    with open(args.potfile, 'r') as f:
+    with open(args.potfile, 'r', encoding='utf8') as f:
         strings = extract_strings(f.read())
 
     update_text_file(args.outfile, format_outfile(strings))

@@ -77,7 +77,7 @@ def update_text_file(outpath, data):
     import io
 
     try:
-        with open(str(outpath), 'r+t') as outfile:
+        with open(str(outpath), 'r+t', encoding='utf8') as outfile:
             contents = outfile.read()
 
             if contents == data:
@@ -87,7 +87,7 @@ def update_text_file(outpath, data):
             outfile.write(data)
             outfile.truncate()
     except (FileNotFoundError, io.UnsupportedOperation):
-        with open(str(outpath), 'w') as outfile:
+        with open(str(outpath), 'w', encoding='utf8') as outfile:
             outfile.write(data)
 
 
