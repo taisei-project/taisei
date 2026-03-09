@@ -781,11 +781,13 @@ static char *copy_pattern(const char *p) {
 }
 
 void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc) {
+	SDL_LockMutex(logging.mutex);
 	dynarray_append(&logging.filters, {
 		.patterns.module = copy_pattern(pmod),
 		.patterns.func = copy_pattern(pfunc),
 		.diff = diff,
 	});
+	SDL_UnlockMutex(logging.mutex);
 }
 
 bool log_add_filter_string(const char *fstr) {
