@@ -93,13 +93,6 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	if(mode & VFS_MODE_SEEKABLE && entry->compression != ZIP_COMPRESSION_NONE) {
-		StringBuffer buf = { acquire_scratch_arena() };
-		vfs_node_repr(node, true, &buf);
-		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", buf.start);
-		release_scratch_arena(buf.arena);
-	}
-
 	uint32_t ofs = zipfile_get_entry_data_offset(&znode->ctx, entry);
 
 	if(ofs == ZIP_INVALID_OFFSET) {
