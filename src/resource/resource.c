@@ -1813,6 +1813,20 @@ void res_shutdown(void) {
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
 
+		ht_str2ptr_ts_iter_t iter;
+		ht_iter_begin(&handler->private.mapping, &iter);
+
+		for(; iter.has_data; ht_iter_next(&iter)) {
+			InternalResource *ires = iter.value;
+			wait_for_resource_load(ires, RESF_RELOAD);
+		}
+
+		ht_iter_end(&iter);
+	}
+
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = get_handler(type);
+
 		if(handler->procs.shutdown != NULL) {
 			handler->procs.shutdown();
 		}
