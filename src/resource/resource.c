@@ -563,7 +563,7 @@ static void register_watched_path(InternalResource *ires, const char *vfspath, F
 			free_slot = wp;
 		}
 
-		if(!strcmp(wp->vfs_path, vfspath)) {
+		if(wp->vfs_path && !strcmp(wp->vfs_path, vfspath)) {
 			filewatch_unwatch(wp->watch);
 			unassociate_ires_watch(ires, wp->watch);
 			wp->watch = w;
