@@ -23,7 +23,19 @@ static bool dummy_close(void *ctx) {
 	return result;
 }
 
+static bool dummy_flush(void *ctx, SDL_IOStatus *status) {
+	SDL_IOStream *src = DUMMY_SOURCE(ctx);
+	bool result = SDL_FlushIO(src);
+	*status = SDL_GetIOStatus(src);
+	return result;
+}
+
 static int64_t dummy_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+	return SDL_SeekIO(DUMMY_SOURCE(ctx), offset, whence);
+}
+
+static int64_t dummy_noseek_assert(void *ctx, int64_t offset, SDL_IOWhence whence) {
+	assert(offset == 0 && whence == SDL_IO_SEEK_CUR);
 	return SDL_SeekIO(DUMMY_SOURCE(ctx), offset, whence);
 }
 
@@ -43,7 +55,7 @@ static size_t dummy_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus 
 	return r;
 }
 
-SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose, bool readonly) {
+SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, const RWWrapDummyOpts *opts) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
@@ -51,17 +63,18 @@ SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose, bool readonly) 
 	SDL_IOStreamInterface iface = {
 		.version = sizeof(iface),
 		.size = dummy_size,
-		.seek = dummy_seek,
+		.seek = opts->assert_no_seek ? dummy_noseek_assert : dummy_seek,
 		.close = dummy_close,
 		.read = dummy_read,
-		.write = readonly ? NULL : dummy_write,
+		.write = opts->readonly ? NULL : dummy_write,
+		.flush = dummy_flush,
 	};
 
 	union {
 		uintptr_t u;
 		void *p;
 	} ctx = { .p = src };
-	ctx.u |= (autoclose & 1u);
+	ctx.u |= (opts->autoclose & 1u);
 
 	auto io = SDL_OpenIO(&iface, ctx.p);
 	auto props = SDL_GetIOProperties(io);

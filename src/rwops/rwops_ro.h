@@ -12,5 +12,8 @@
 #include "rwops_dummy.h"
 
 INLINE SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose) {
-	return SDL_RWWrapDummy(src, autoclose, true);
+	return SDL_RWWrapDummy(src, &(RWWrapDummyOpts) {
+		.autoclose = autoclose,
+		.readonly = true,
+	});
 }
