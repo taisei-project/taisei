@@ -31,8 +31,8 @@ Build-Time Dependencies
 
 - ``gcc`` or ``clang``
 - meson >= 1.8.0
-- Python >= 3.7
-- `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
+- Python >= 3.7 (>= 3.14 recommended)
+- `python-backports.zstd <https://github.com/Rogdham/backports.zstd>`__ if Python < 3.14
 - `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
 
 Run-Time Dependencies
