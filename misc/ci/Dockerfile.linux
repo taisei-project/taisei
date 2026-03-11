@@ -61,6 +61,7 @@ RUN zypper --no-refresh -n install -y \
 	pipewire-devel \
 	pipewire-jack \
 	pipewire-libjack-0_3-devel \
+	python313-backports.zstd \
 	python313-docutils \
 	python313-Pygments \
 	python313-python-gnupg \
