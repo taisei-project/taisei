@@ -910,6 +910,7 @@ void load_font_stage1(ResourceLoadState *st) {
 		free_font_resources(&font);
 		mem_free(fallbacks);
 		res_load_failed(st);
+		return;
 	}
 
 	if(set_font_size(&font, global_font_scale())) {
