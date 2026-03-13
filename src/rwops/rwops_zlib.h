@@ -16,11 +16,9 @@
 // Pass -1 if uncompressed_size is unknown
 
 // For zlib container streams
-SDL_IOStream *SDL_RWWrapZlibReader(
-	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose);
-SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose);
+SDL_IOStream *SDL_RWWrapZlibReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose);
+SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, bool autoclose);
 
 // For raw deflate streams
-SDL_IOStream *SDL_RWWrapInflateReader(
-	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose);
-SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose);
+SDL_IOStream *SDL_RWWrapInflateReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose);
+SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, bool autoclose);

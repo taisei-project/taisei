@@ -15,56 +15,28 @@
 #include <SDL3/SDL.h>
 #include <zlib.h>
 
-#define MIN_CHUNK_SIZE 1024
-
-// #define TEST_ZRWOPS
-// #define DEBUG_ZRWOPS
-
-#ifdef TEST_ZRWOPS
-	#define DEBUG_ZRWOPS
-#endif
-
-#ifdef DEBUG_ZRWOPS
-	#define PRINT(...) tsfprintf(stdout, __VA_ARGS__)
-#else
-	#define PRINT(...)
-#endif
+#define ZLIB_BUFFER_SIZE 32768
 
 typedef struct ZData {
 	SDL_IOStream *iostream;
 	SDL_IOStream *wrapped;
 
-	uint8_t *buffer;
-	uint8_t *buffer_ptr;
-	size_t buffer_size;
+	struct {
+		size_t buffer_fillsize;
+		size_t buffer_pos;
+		int64_t uncompressed_size;
+	} inflate;
 
-	union {
-		// deflate
-		struct {
-			uint8_t *buffer_aux;
-			size_t buffer_aux_size;
-		};
-
-		// inflate
-		struct {
-			size_t buffer_fillsize;
-			int64_t uncompressed_size;
-		};
-	};
-
-	enum {
-		TYPE_DEFLATE,
-		TYPE_INFLATE,
-	} type;
-
-	int window_bits;
+	z_stream stream;
 	int64_t pos;
-	z_stream *stream;
-
+	int window_bits;
+	bool is_deflate;
 	bool autoclose;
+
+	uint8_t buffer[ZLIB_BUFFER_SIZE];
 } ZData;
 
-#define TYPENAME(z) ((z)->type == TYPE_DEFLATE ? "a deflate" : "an inflate")
+#define TYPENAME(z) ((z)->is_deflate ? "a deflate" : "an inflate")
 
 static int64_t common_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZData *z = ctx;
@@ -79,37 +51,30 @@ static int64_t common_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 static int64_t common_size(void *ctx) {
 	ZData *z = ctx;
 
-	if(z->type == TYPE_INFLATE && z->uncompressed_size >= 0) {
-		return z->uncompressed_size;
+	if(!z->is_deflate && z->inflate.uncompressed_size >= 0) {
+		return z->inflate.uncompressed_size;
 	}
 
-	return SDL_SetError("Can't get size of %s stream", TYPENAME(z));
+	SDL_SetError("Can't get size of %s stream", TYPENAME(z));
+	return -1;
 }
 
-static void deflate_flush(ZData *z, SDL_IOStatus *status);
+static bool deflate_do_flush(ZData *z, int flush, SDL_IOStatus *status);
 
 static bool common_close(void *ctx) {
-	PRINT("common_close\n");
 	ZData *z = ctx;
-
-	PRINT("T = %i\n", z->type);
-
-	if(z->type == TYPE_DEFLATE) {
-		SDL_IOStatus status;
-		deflate_flush(z, &status);
-		deflateEnd(z->stream);
-		mem_free(z->buffer_aux);
-	} else {
-		inflateEnd(z->stream);
-	}
-
-	mem_free(z->buffer);
-	mem_free(z->stream);
-
 	bool result = true;
 
+	if(z->is_deflate) {
+		SDL_IOStatus status = SDL_IO_STATUS_READY;
+		result = deflate_do_flush(z, Z_FINISH, &status);
+		deflateEnd(&z->stream);
+	} else {
+		inflateEnd(&z->stream);
+	}
+
 	if(z->autoclose) {
-		result = SDL_CloseIO(z->wrapped);
+		result = SDL_CloseIO(z->wrapped) && result;
 	}
 
 	mem_free(z);
@@ -127,14 +92,11 @@ static void zlib_free(void *opaque, void *address) {
 static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whence);
 static size_t inflate_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status);
 static size_t deflate_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
+static bool deflate_flush(void *ctx, SDL_IOStatus *status);
 
 static SDL_IOStream *common_alloc(
-	ZData **out_z, SDL_IOStream *wrapped, size_t bufsize, bool autoclose, bool writer
+	ZData **out_z, SDL_IOStream *wrapped, bool autoclose, bool writer, int window_bits
 ) {
-	if(bufsize < MIN_CHUNK_SIZE) {
-		bufsize = MIN_CHUNK_SIZE;
-	}
-
 	SDL_IOStreamInterface iface = {
 		.version = sizeof(iface),
 		.size = common_size,
@@ -144,18 +106,22 @@ static SDL_IOStream *common_alloc(
 
 	if(writer) {
 		iface.write = deflate_write;
+		iface.flush = deflate_flush;
 	} else {
 		iface.read = inflate_read;
 		iface.seek = inflate_seek_emulated;
 	}
 
 	auto z = ALLOC(ZData, {
-		.buffer_size = bufsize,
 		.wrapped = wrapped,
 		.autoclose = autoclose,
-		.type = writer ? TYPE_DEFLATE : TYPE_INFLATE,
+		.is_deflate = writer,
+		.stream = {
+			.zalloc = zlib_alloc,
+			.zfree = zlib_free,
+		},
+		.window_bits = window_bits,
 	});
-
 
 	SDL_IOStream *io = SDL_OpenIO(&iface, z);
 
@@ -164,193 +130,135 @@ static SDL_IOStream *common_alloc(
 		return NULL;
 	}
 
+	z->iostream = io;
+	*out_z = z;
+
 	auto props = SDL_GetIOProperties(io);
 	SDL_SetPointerProperty(props, PROP_IOSTREAM_WRAPPED_STREAM, wrapped);
 
-	z->stream = ALLOC(z_stream, {
-		.zalloc = zlib_alloc,
-		.zfree = zlib_free,
-	});
-
-	z->buffer = z->buffer_ptr = mem_alloc(bufsize);
-	z->iostream = io;
-
-	*out_z = z;
 	return io;
 }
 
-#ifdef DEBUG_ZRWOPS
-static void printbuf(void *buf, size_t size) {
-	tsfprintf(stdout, "[ ");
-	for(uint i = 0; i < size; ++i) {
-		tsfprintf(stdout, "%02x ", ((uint8_t*)buf)[i]);
-	}
-	tsfprintf(stdout, "]\n");
-}
-#else
-#define printbuf(buf,size)
-#endif
+static bool deflate_do_flush(ZData *z, int flush, SDL_IOStatus *status) {
+	z->stream.next_in = NULL;
+	z->stream.avail_in = 0;
+	z->stream.next_out = z->buffer;
+	z->stream.avail_out = ZLIB_BUFFER_SIZE;
 
-static void deflate_flush(ZData *z, SDL_IOStatus *status) {
-	size_t totalsize = z->buffer_ptr - z->buffer;
+	int ret;
 
-	PRINT("deflate_flush: %lu\n", totalsize);
+	do {
+		ret = deflate(&z->stream, flush);
 
-	if(!totalsize) {
-		return;
-	}
-
-	z->stream->next_in = z->buffer;
-	z->stream->avail_in = totalsize;
-
-	z->stream->next_out = z->buffer_aux;
-	z->stream->avail_out = z->buffer_aux_size;
-
-	int ret = Z_OK;
-
-	while(ret >= 0) {
-		PRINT("deflate start: (%p %i %p %i %lu)\n", (void*)z->stream->next_in, z->stream->avail_in, (void*)z->stream->next_out, z->stream->avail_out, totalsize);
-
-		ret = deflate(z->stream, Z_SYNC_FLUSH);
-
-		PRINT("deflate end: %i (%p %i %p %i %lu)\n", ret, (void*)z->stream->next_in, z->stream->avail_in, (void*)z->stream->next_out, z->stream->avail_out, totalsize);
-
-		if(!z->stream->avail_out) {
-			SDL_WriteIO(z->wrapped, z->buffer_aux, z->buffer_aux_size);
-			*status = SDL_GetIOStatus(z->wrapped);
-			z->stream->next_out = z->buffer_aux;
-			z->stream->avail_out = z->buffer_aux_size;
+		if(UNLIKELY(ret < 0 && ret != Z_BUF_ERROR)) {
+			SDL_SetError("deflate() failed: %i", ret);
+			log_debug("%s", SDL_GetError());
+			*status = SDL_IO_STATUS_ERROR;
+			return false;
 		}
-	}
 
-	size_t remaining = z->buffer_aux_size - z->stream->avail_out;
-	if(remaining) {
-		SDL_WriteIO(z->wrapped, z->buffer_aux, remaining);
-		*status = SDL_GetIOStatus(z->wrapped);
-	}
+		size_t produced = ZLIB_BUFFER_SIZE - z->stream.avail_out;
 
-	z->buffer_ptr = z->buffer;
+		if(produced > 0) {
+			size_t written = SDL_WriteIO(z->wrapped, z->buffer, produced);
 
-	PRINT("---\n");
+			if(UNLIKELY(written != produced)) {
+				*status = SDL_GetIOStatus(z->wrapped);
+				return false;
+			}
+
+			z->stream.next_out = z->buffer;
+			z->stream.avail_out = ZLIB_BUFFER_SIZE;
+		}
+	} while(flush == Z_FINISH ? ret != Z_STREAM_END : z->stream.avail_out == 0);
+
+	return true;
+}
+
+static bool deflate_flush(void *ctx, SDL_IOStatus *status) {
+	return deflate_do_flush(ctx, Z_SYNC_FLUSH, status);
 }
 
 static size_t deflate_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
 	ZData *z = ctx;
-	size_t available;
-	size_t remaining = size;
-	size_t offset = 0;
 
-	while(remaining) {
-		available = z->buffer_size - (z->buffer_ptr - z->buffer);
-		size_t copysize = remaining > available ? available : remaining;
+	z->stream.next_in = (void*)ptr;
+	z->stream.avail_in = size;
+	z->stream.next_out = z->buffer;
+	z->stream.avail_out = ZLIB_BUFFER_SIZE;
 
-		PRINT("avail = %lu; copysize = %lu\n", available, copysize);
+	while(z->stream.avail_in > 0) {
+		int ret = deflate(&z->stream, Z_NO_FLUSH);
 
-		if(available) {
-			remaining -= copysize;
-			memcpy(z->buffer_ptr, (uint8_t*)ptr + offset, copysize);
-			printbuf(z->buffer_ptr, copysize);
-			offset += copysize;
-			z->buffer_ptr += copysize;
-			z->pos += copysize;
-		} else {
-			deflate_flush(z, status);
+		if(UNLIKELY(ret < 0 && ret != Z_BUF_ERROR)) {
+			SDL_SetError("deflate() failed: %i", ret);
+			log_debug("%s", SDL_GetError());
+			*status = SDL_IO_STATUS_ERROR;
+			return 0;
+		}
+
+		size_t produced = ZLIB_BUFFER_SIZE - z->stream.avail_out;
+
+		if(produced > 0) {
+			size_t written = SDL_WriteIO(z->wrapped, z->buffer, produced);
+
+			if(UNLIKELY(written != produced)) {
+				*status = SDL_GetIOStatus(z->wrapped);
+				return 0;
+			}
+
+			z->stream.next_out = z->buffer;
+			z->stream.avail_out = ZLIB_BUFFER_SIZE;
 		}
 	}
 
+	z->pos += size;
 	return size;
 }
 
 static size_t inflate_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	ZData *z = ctx;
-	size_t totalsize = size;
-	int ret = Z_OK;
 
-	if(!totalsize) {
+	if(!size) {
 		return 0;
 	}
 
-	z->stream->avail_out = totalsize;
-	z->stream->next_out = ptr;
+	z->stream.avail_out = size;
+	z->stream.next_out = ptr;
 
-	PRINT("inflate_read()\n");
+	int ret = Z_OK;
 
-	while(z->stream->avail_out && ret != Z_STREAM_END) {
-		z->stream->avail_in = z->buffer_fillsize - (z->buffer_ptr - z->buffer);
+	while(z->stream.avail_out > 0 && ret != Z_STREAM_END) {
+		size_t avail_in = z->inflate.buffer_fillsize - z->inflate.buffer_pos;
 
-		if(!z->stream->avail_in) {
-			z->buffer_fillsize = SDL_ReadIO(z->wrapped, z->buffer, z->buffer_size);
-			*status = SDL_GetIOStatus(z->wrapped);  // FIXME not sure if correct
-			z->buffer_ptr = z->buffer;
-			z->stream->avail_in = z->buffer_fillsize - (z->buffer_ptr - z->buffer);
+		if(!avail_in) {
+			z->inflate.buffer_fillsize = SDL_ReadIO(z->wrapped, z->buffer, ZLIB_BUFFER_SIZE);
+			z->inflate.buffer_pos = 0;
+			avail_in = z->inflate.buffer_fillsize;
+
+			if(avail_in == 0) {
+				*status = SDL_GetIOStatus(z->wrapped);
+				break;
+			}
 		}
 
-		z->stream->next_in = z->buffer_ptr;
+		z->stream.next_in = z->buffer + z->inflate.buffer_pos;
+		z->stream.avail_in = avail_in;
 
-		PRINT(" -- begin read %i --- \n", z->stream->avail_in);
-		printbuf(z->stream->next_in, z->stream->avail_in);
-		PRINT(" -- end read --- \n");
+		ret = inflate(&z->stream, Z_NO_FLUSH);
+		z->inflate.buffer_pos = z->inflate.buffer_fillsize - z->stream.avail_in;
 
-		switch(ret = inflate(z->stream, Z_NO_FLUSH)) {
-			case Z_OK:
-			case Z_STREAM_END:
-				PRINT("read ok\n");
-				break;
-
-			default:
-				PRINT("inflate error: %i\n", ret);
-				SDL_SetError("inflate error: %i", ret);
-				log_debug("%s", SDL_GetError());
-				ret = Z_STREAM_END;
-				*status = SDL_IO_STATUS_ERROR;
-				break;
+		if(UNLIKELY(ret != Z_OK && ret != Z_STREAM_END)) {
+			SDL_SetError("inflate() failed: %i", ret);
+			log_debug("%s", SDL_GetError());
+			*status = SDL_IO_STATUS_ERROR;
+			break;
 		}
-
-		z->buffer_ptr = z->stream->next_in;
 	}
 
-	z->pos += (totalsize - z->stream->avail_out);
-	return totalsize - z->stream->avail_out;
-}
-
-static SDL_IOStream *wrap_writer(
-	SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose, int window_bits
-) {
-	if(UNLIKELY(!src)) {
-		return NULL;
-	}
-
-	ZData *z;
-	SDL_IOStream *io = common_alloc(&z, src, bufsize, autoclose, true);
-
-	if(UNLIKELY(!io)) {
-		return NULL;
-	}
-
-	z->buffer_aux_size = z->buffer_size;
-	z->buffer_aux = mem_alloc(z->buffer_aux_size);
-	z->window_bits = window_bits;
-
-	if(clevel >= 0) {
-		clevel = clamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
-	}
-
-	int status = deflateInit2(
-		z->stream,
-		clevel,
-		Z_DEFLATED,
-		window_bits,
-		8,
-		Z_DEFAULT_STRATEGY
-	);
-
-	if(status != Z_OK) {
-		SDL_SetError("deflateInit2() failed: %i", status);
-		SDL_CloseIO(io);
-		return NULL;
-	}
-
-	return io;
+	size_t bytes_read = size - z->stream.avail_out;
+	z->pos += bytes_read;
+	return bytes_read;
 }
 
 static int inflate_reopen(void *ctx) {
@@ -365,13 +273,13 @@ static int inflate_reopen(void *ctx) {
 	assert(srcpos == 0);
 
 	z->pos = 0;
-	z->buffer_ptr = z->buffer;
-	z->buffer_fillsize = 0;
+	z->inflate.buffer_pos = 0;
+	z->inflate.buffer_fillsize = 0;
 
-	int status = inflateReset2(z->stream, z->window_bits);
+	int ret = inflateReset2(&z->stream, z->window_bits);
 
-	if(status != Z_OK) {
-		return SDL_SetError("inflateReset2() failed: %i", status);
+	if(ret != Z_OK) {
+		return SDL_SetError("inflateReset2() failed: %i", ret);
 	}
 
 	return 0;
@@ -387,27 +295,55 @@ static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whe
 	);
 }
 
-static SDL_IOStream *wrap_reader(
-	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose, int window_bits
+static SDL_IOStream *wrap_writer(
+	SDL_IOStream *src, int clevel, bool autoclose, int window_bits
 ) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	ZData *z;
-	SDL_IOStream *rw = common_alloc(&z, src, bufsize, autoclose, false);
+	SDL_IOStream *io = common_alloc(&z, src, autoclose, true, window_bits);
+
+	if(UNLIKELY(!io)) {
+		return NULL;
+	}
+
+	if(clevel >= 0) {
+		clevel = clamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
+	}
+
+	int ret = deflateInit2(&z->stream, clevel, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
+
+	if(UNLIKELY(ret != Z_OK)) {
+		SDL_SetError("deflateInit2() failed: %i", ret);
+		SDL_CloseIO(io);
+		return NULL;
+	}
+
+	return io;
+}
+
+static SDL_IOStream *wrap_reader(
+	SDL_IOStream *src, int64_t uncompressed_size, bool autoclose, int window_bits
+) {
+	if(UNLIKELY(!src)) {
+		return NULL;
+	}
+
+	ZData *z;
+	SDL_IOStream *rw = common_alloc(&z, src, autoclose, false, window_bits);
 
 	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 
-	z->window_bits = window_bits;
-	z->uncompressed_size = uncompressed_size;
+	z->inflate.uncompressed_size = uncompressed_size;
 
-	int status = inflateInit2(z->stream, window_bits);
+	int ret = inflateInit2(&z->stream, window_bits);
 
-	if(UNLIKELY(status != Z_OK)) {
-		SDL_SetError("inflateInit2() failed: %i", status);
+	if(UNLIKELY(ret != Z_OK)) {
+		SDL_SetError("inflateInit2() failed: %i", ret);
 		SDL_CloseIO(rw);
 		return NULL;
 	}
@@ -415,22 +351,18 @@ static SDL_IOStream *wrap_reader(
 	return rw;
 }
 
-SDL_IOStream *SDL_RWWrapZlibReader(
-	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose
-) {
-	return wrap_reader(src, bufsize, uncompressed_size, autoclose, 15);
+SDL_IOStream *SDL_RWWrapZlibReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+	return wrap_reader(src, uncompressed_size, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapInflateReader(
-	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose)
-{
-	return wrap_reader(src, bufsize, uncompressed_size, autoclose, -15);
+SDL_IOStream *SDL_RWWrapInflateReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+	return wrap_reader(src, uncompressed_size, autoclose, -15);
 }
 
-SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose) {
-	return wrap_writer(src, clevel, bufsize, autoclose, 15);
+SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, bool autoclose) {
+	return wrap_writer(src, clevel, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose) {
-	return wrap_writer(src, clevel, bufsize, autoclose, -15);
+SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, bool autoclose) {
+	return wrap_writer(src, clevel, autoclose, -15);
 }

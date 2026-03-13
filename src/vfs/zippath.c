@@ -118,7 +118,7 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 			break;
 
 		case ZIP_COMPRESSION_DEFLATE:
-			io = SDL_RWWrapInflateReader(io, entry->uncomp_size, min(4096, entry->comp_size), true);
+			io = SDL_RWWrapInflateReader(io, entry->uncomp_size, true);
 			break;
 
 		case ZIP_COMPRESSION_ZSTD:
