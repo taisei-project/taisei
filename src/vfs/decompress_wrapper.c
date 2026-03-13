@@ -127,7 +127,7 @@ static SDL_IOStream *vfs_decomp_open(VFSNode *filenode, VFSOpenMode mode) {
 	}
 
 	if(VFS_NODE_CAST(VFSDecompNode, filenode)->compr_zstd) {
-		return SDL_RWWrapZstdReaderSeekable(raw, -1, true);
+		return SDL_RWWrapZstdReader(raw, -1, true);
 	}
 
 	return SDL_RWWrapReadOnly(raw, true);

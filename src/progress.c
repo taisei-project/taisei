@@ -977,7 +977,7 @@ static SDL_IOStream *progress_open_file_read(void) {
 	SDL_IOStream *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
 
 	if(file) {
-		return SDL_RWWrapZstdReader(file, true);
+		return SDL_RWWrapZstdReader(file, -1, true);
 	}
 
 	log_error("VFS error: %s; trying legacy path", vfs_get_error());

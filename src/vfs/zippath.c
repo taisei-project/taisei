@@ -123,7 +123,7 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 
 		case ZIP_COMPRESSION_ZSTD:
 		case ZIP_COMPRESSION_ZSTD_DEPRECATED:
-			io = SDL_RWWrapZstdReaderSeekable(io, entry->uncomp_size, true);
+			io = SDL_RWWrapZstdReader(io, entry->uncomp_size, true);
 			break;
 
 		default:

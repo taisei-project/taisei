@@ -74,7 +74,7 @@ bool texture_loader_basisu_load_cached(
 		return false;
 	}
 
-	rw = SDL_RWWrapZstdReader(rw, true);
+	rw = SDL_RWWrapZstdReader(rw, -1, true);
 
 	bool deserialize_ok = pixmap_load_stream(rw, PIXMAP_FILEFORMAT_INTERNAL, out_pixmap, 0);
 	SDL_CloseIO(rw);

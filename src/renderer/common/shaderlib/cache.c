@@ -278,7 +278,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, Me
 		return false;
 	}
 
-	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, true));
+	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, -1, true));
 	bool result = shader_cache_load_entry(stream, entry, arena);
 	SDL_CloseIO(stream);
 
