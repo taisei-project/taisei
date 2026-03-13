@@ -82,6 +82,6 @@ SDL_IOStream *replay_wrap_stream_decompress(uint16_t version, SDL_IOStream *rw, 
 	if((version & ~REPLAY_VERSION_COMPRESSION_BIT) >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
 		return SDL_RWWrapZstdReader(rw, -1, autoclose);
 	} else {
-		return SDL_RWWrapZlibReader(rw, REPLAY_COMPRESSION_CHUNK_SIZE, autoclose);
+		return SDL_RWWrapZlibReader(rw, REPLAY_COMPRESSION_CHUNK_SIZE, -1, autoclose);
 	}
 }
