@@ -94,6 +94,7 @@ typedef struct ZstdData {
 	SDL_IOStream *wrapped;
 	SDL_IOStream *iostream;
 	int64_t pos;
+	bool autoclose;
 
 	union {
 		struct {
@@ -119,8 +120,6 @@ typedef struct ZstdData {
 			#endif
 		} reader;
 	};
-
-	bool autoclose;
 } ZstdData;
 
 #define ZSTD_SEEKTABLE_FRAME_MAGIC  0x184D2A5E
@@ -227,9 +226,7 @@ static size_t rwzstd_write_invalid(void *ctx, const void *ptr, size_t size, SDL_
 static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence);
 static bool rwzstd_writer_flush(void *ctx, SDL_IOStatus *status);
 
-static SDL_IOStream *rwzstd_alloc(
-	ZstdData **out_zdata, SDL_IOStream *wrapped, bool autoclose, bool writer, bool emulate_seek
-) {
+static SDL_IOStream *rwzstd_alloc(ZstdData **out_zdata, SDL_IOStream *wrapped, bool autoclose, bool writer) {
 	SDL_IOStreamInterface iface = { .version = sizeof(iface) };
 
 	if(writer) {
@@ -238,11 +235,10 @@ static SDL_IOStream *rwzstd_alloc(
 		iface.read = rwzstd_read_invalid;
 		iface.seek = rwzstd_seek_disabled;
 		iface.write = rwzstd_write;
-		assume(!emulate_seek);
 	} else {
 		iface.close = rwzstd_reader_close;
 		iface.read = rwzstd_read;
-		iface.seek = emulate_seek ? rwzstd_reader_seek : rwzstd_seek_disabled;
+		iface.seek = rwzstd_reader_seek;
 		iface.size = rwzstd_size;
 		iface.write = rwzstd_write_invalid;
 	}
@@ -729,7 +725,9 @@ static bool rwzstd_reader_init_seektable(ZstdData *zdata) {
 
 	release_scratch_arena(scratch);
 
-	if(decomp_accum != zdata->reader.uncompressed_size) {
+	if(zdata->reader.uncompressed_size < 0) {
+		zdata->reader.uncompressed_size = decomp_accum;
+	} else if(decomp_accum != zdata->reader.uncompressed_size) {
 		log_warn("%s: Seek table ignored: Decompressed size mismatch: %llu != %llu",
 			iostream_get_name(src), (long long int)decomp_accum, (long long int)zdata->reader.uncompressed_size);
 		goto fail;
@@ -756,15 +754,13 @@ fail:
 	return false;
 }
 
-static SDL_IOStream *rwzstd_open_reader(
-	SDL_IOStream *src, bool autoclose, bool seekable, int64_t uncompressed_size
-) {
+static SDL_IOStream *rwzstd_open_reader(SDL_IOStream *src, bool autoclose, int64_t uncompressed_size) {
 	if(!src) {
 		return NULL;
 	}
 
 	ZstdData *z;
-	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false, seekable);
+	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false);
 
 	if(!io) {
 		return NULL;
@@ -779,42 +775,38 @@ static SDL_IOStream *rwzstd_open_reader(
 	z->reader.next_read_size = z->reader.in_buffer_alloc_size;
 	z->reader.uncompressed_size = uncompressed_size;
 
-	if(seekable) {
-		if(z->reader.uncompressed_size >= 0) {
-			rwzstd_reader_init_seektable(z);
+	// Try to load the seekable format seek table if it exists.
+	// If successful, this will also init uncompressed_size if it's unknown.
+	rwzstd_reader_init_seektable(z);
+
+	if(z->reader.uncompressed_size < 0) {
+		// Try to get it from the zstd frame header.
+		// This won't work correctly for multi-frame content.
+		// The content size may also not be present in the header.
+
+		size_t psize = z->reader.in_buffer.size;
+		size_t header_size = 24;  // a bit larger than ZSTD_FRAMEHEADERSIZE_MAX from private API
+		SDL_IOStatus status;  // FIXME
+		rwzstd_reader_fill_in_buffer(z, header_size, &status);
+		z->reader.next_read_size -= z->reader.in_buffer.size - psize;
+
+		ZSTD_inBuffer *in = &z->reader.in_buffer;
+		uint8_t *h = (uint8_t*)in->src + in->pos;
+
+		unsigned long long fcs = ZSTD_getFrameContentSize(h, in->size - in->pos);
+
+		if(fcs == ZSTD_CONTENTSIZE_ERROR) {
+			log_error("%s: Error getting frame content size from zstd stream", iostream_get_name(io));
+		} else if(fcs == ZSTD_CONTENTSIZE_UNKNOWN) {
+			log_info("%s: zstd frame content size is unknown", iostream_get_name(io));
+		} else if(fcs > INT64_MAX) {
+			log_warn("%s: zstd frame content size is too large", iostream_get_name(io));
 		} else {
-			// Try to get it from the zstd frame header.
-			// This won't work correctly for multi-frame content.
-			// The content size may also not be present in the header.
-
-			size_t psize = z->reader.in_buffer.size;
-			size_t header_size = 24;  // a bit larger than ZSTD_FRAMEHEADERSIZE_MAX from private API
-			SDL_IOStatus status;  // FIXME
-			rwzstd_reader_fill_in_buffer(z, header_size, &status);
-			z->reader.next_read_size -= z->reader.in_buffer.size - psize;
-
-			ZSTD_inBuffer *in = &z->reader.in_buffer;
-			uint8_t *h = (uint8_t*)in->src + in->pos;
-
-			unsigned long long fcs = ZSTD_getFrameContentSize(h, in->size - in->pos);
-
-			if(fcs == ZSTD_CONTENTSIZE_ERROR) {
-				log_error("Error getting frame content size from zstd stream");
-			} else if(fcs == ZSTD_CONTENTSIZE_UNKNOWN) {
-				log_warn("zstd frame content size is unknown");
-			} else if(fcs > INT64_MAX) {
-				log_warn("zstd frame content size is too large");
-			} else {
-				z->reader.uncompressed_size = fcs;
-			}
+			z->reader.uncompressed_size = fcs;
 		}
 	}
 
 	return io;
-}
-
-SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, bool autoclose) {
-	return rwzstd_open_reader(src, autoclose, false, -1);
 }
 
 static int rwzstd_reopen(void *ctx) {
@@ -962,12 +954,6 @@ static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence
 	return skip_result;
 }
 
-SDL_IOStream *SDL_RWWrapZstdReaderSeekable(
-	SDL_IOStream *src, int64_t uncompressed_size, bool autoclose
-) {
-	return rwzstd_open_reader(src, autoclose, true, uncompressed_size);
-}
-
 static bool rwzstd_compress(
 	ZstdData *z, ZSTD_inBuffer *in, ZSTD_EndDirective edir, size_t *zstatus, SDL_IOStatus *io_status
 ) {
@@ -995,6 +981,10 @@ static bool rwzstd_compress(
 	}
 
 	return true;
+}
+
+SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+	return rwzstd_open_reader(src, autoclose, uncompressed_size);
 }
 
 static size_t rwzstd_write(void *ctx, const void *data_in, size_t size, SDL_IOStatus *status) {
@@ -1051,7 +1041,7 @@ SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel, bool autoclose
 	}
 
 	ZstdData *z;
-	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, true, false);
+	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, true);
 
 	if(UNLIKELY(!io)) {
 		return NULL;
