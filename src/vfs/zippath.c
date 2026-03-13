@@ -118,20 +118,12 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 			break;
 
 		case ZIP_COMPRESSION_DEFLATE:
-			if(mode & VFS_MODE_SEEKABLE) {
-				io = SDL_RWWrapInflateReaderSeekable(io, entry->uncomp_size, min(4096, entry->comp_size), true);
-			} else {
-				io = SDL_RWWrapInflateReader(io, min(4096, entry->comp_size), true);
-			}
+			io = SDL_RWWrapInflateReaderSeekable(io, entry->uncomp_size, min(4096, entry->comp_size), true);
 			break;
 
 		case ZIP_COMPRESSION_ZSTD:
 		case ZIP_COMPRESSION_ZSTD_DEPRECATED:
-			if(mode & VFS_MODE_SEEKABLE) {
-				io = SDL_RWWrapZstdReaderSeekable(io, entry->uncomp_size, true);
-			} else {
-				io = SDL_RWWrapZstdReader(io, true);
-			}
+			io = SDL_RWWrapZstdReaderSeekable(io, entry->uncomp_size, true);
 			break;
 
 		default:

@@ -25,7 +25,7 @@ static void load_model_stage2(ResourceLoadState *st);
 
 static void load_model_stage1(ResourceLoadState *st) {
 	const char *path = st->path;
-	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());

@@ -315,7 +315,7 @@ static FT_Error FT_Done_Face_Thread_Safe(FT_Face face) {
 static FT_Face load_font_face(char *vfspath, long index) {
 	char *syspath = vfs_repr(vfspath, true);
 
-	SDL_IOStream *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rwops = vfs_open(vfspath, VFS_MODE_READ);
 
 	if(!rwops) {
 		log_error("VFS error: %s", vfs_get_error());

@@ -466,7 +466,7 @@ static bool texture_loader_infer_sources_cubemap(TextureLoadData *ld) {
 static bool load_pixmap(
 	TextureLoadData *ld, const char *path, Pixmap *dst, PixmapFormat preferred_format
 ) {
-	SDL_IOStream *stream = res_open_file(ld->st, path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *stream = res_open_file(ld->st, path, VFS_MODE_READ);
 
 	if(UNLIKELY(!stream)) {
 		log_error("VFS error: %s", vfs_get_error());
