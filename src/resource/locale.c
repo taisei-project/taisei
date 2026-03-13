@@ -82,7 +82,7 @@ static void locale_unload(void *vlocale) {
 }
 
 static void locale_load(ResourceLoadState *st) {
-	SDL_IOStream *stream = vfs_open(st->path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *stream = vfs_open(st->path, VFS_MODE_READ);
 	I18nLocale *locale = NULL;
 	MemArena *scratch = acquire_scratch_arena();
 

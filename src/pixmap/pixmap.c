@@ -121,7 +121,7 @@ bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt,
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) {
 	log_debug("%s   %x", path, preferred_format);
-	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ);
 
 	if(!stream) {
 		log_error("VFS error: %s", vfs_get_error());

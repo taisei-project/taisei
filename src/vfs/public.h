@@ -30,7 +30,6 @@ typedef struct VFSInfo {
 typedef enum VFSOpenMode {
 	VFS_MODE_READ = 1,
 	VFS_MODE_WRITE = 2,
-	VFS_MODE_SEEKABLE  = 4,
 } VFSOpenMode;
 
 typedef enum VFSSyncMode {

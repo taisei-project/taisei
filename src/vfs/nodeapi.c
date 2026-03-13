@@ -184,13 +184,6 @@ SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 		opts.readonly = true;
 	}
 
-#ifdef DEBUG
-	if(!(mode & VFS_MODE_SEEKABLE)) {
-		wrap = true;
-		opts.assert_no_seek = true;
-	}
-#endif
-
 	if(wrap) {
 		stream = SDL_RWWrapDummy(stream, &opts);
 	}

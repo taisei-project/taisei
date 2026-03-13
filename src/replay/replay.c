@@ -71,7 +71,7 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	char *sp = vfs_repr(path, true);
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
-	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());

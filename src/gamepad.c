@@ -56,7 +56,7 @@ static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
 	char *errstr = NULL;
 	const char *const_errstr = NULL;
 
-	SDL_IOStream *mappings = vfs_open(vpath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *mappings = vfs_open(vpath, VFS_MODE_READ);
 	int num_loaded = -1;
 	LogLevel loglvl = LOG_WARN;
 
