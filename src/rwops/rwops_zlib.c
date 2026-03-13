@@ -129,8 +129,7 @@ static size_t inflate_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *stat
 static size_t deflate_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
 
 static SDL_IOStream *common_alloc(
-	ZData **out_z, SDL_IOStream *wrapped, size_t bufsize, bool autoclose,
-	bool writer, bool emulate_seek
+	ZData **out_z, SDL_IOStream *wrapped, size_t bufsize, bool autoclose, bool writer
 ) {
 	if(bufsize < MIN_CHUNK_SIZE) {
 		bufsize = MIN_CHUNK_SIZE;
@@ -144,13 +143,10 @@ static SDL_IOStream *common_alloc(
 	};
 
 	if(writer) {
-		assume(!emulate_seek);
 		iface.write = deflate_write;
 	} else {
 		iface.read = inflate_read;
-		if(emulate_seek) {
-			iface.seek = inflate_seek_emulated;
-		}
+		iface.seek = inflate_seek_emulated;
 	}
 
 	auto z = ALLOC(ZData, {
@@ -318,15 +314,14 @@ static size_t inflate_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *stat
 }
 
 static SDL_IOStream *wrap_writer(
-	SDL_IOStream *src, size_t bufsize,
-	bool autoclose, int clevel, int window_bits
+	SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose, int window_bits
 ) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	ZData *z;
-	SDL_IOStream *io = common_alloc(&z, src, bufsize, autoclose, true, false);
+	SDL_IOStream *io = common_alloc(&z, src, bufsize, autoclose, true);
 
 	if(UNLIKELY(!io)) {
 		return NULL;
@@ -393,17 +388,14 @@ static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whe
 }
 
 static SDL_IOStream *wrap_reader(
-	SDL_IOStream *src, size_t bufsize,
-	bool autoclose,
-	int64_t uncompressed_size, int window_bits,
-	bool emulate_seek
+	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose, int window_bits
 ) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	ZData *z;
-	SDL_IOStream *rw = common_alloc(&z, src, bufsize, autoclose, false, emulate_seek);
+	SDL_IOStream *rw = common_alloc(&z, src, bufsize, autoclose, false);
 
 	if(UNLIKELY(!rw)) {
 		return NULL;
@@ -423,34 +415,22 @@ static SDL_IOStream *wrap_reader(
 	return rw;
 }
 
-SDL_IOStream *SDL_RWWrapZlibReader(SDL_IOStream *src, size_t bufsize,
-				   bool autoclose) {
-	return wrap_reader(src, bufsize, autoclose, -1, 15, false);
+SDL_IOStream *SDL_RWWrapZlibReader(
+	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose
+) {
+	return wrap_reader(src, bufsize, uncompressed_size, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapZlibReaderSeekable(SDL_IOStream *src,
-					   int64_t uncompressed_size,
-					   size_t bufsize, bool autoclose) {
-	return wrap_reader(src, bufsize, autoclose, uncompressed_size, 15, true);
+SDL_IOStream *SDL_RWWrapInflateReader(
+	SDL_IOStream *src, size_t bufsize, int64_t uncompressed_size, bool autoclose)
+{
+	return wrap_reader(src, bufsize, uncompressed_size, autoclose, -15);
 }
 
-SDL_IOStream *SDL_RWWrapInflateReader(SDL_IOStream *src, size_t bufsize,
-				      bool autoclose) {
-	return wrap_reader(src, bufsize, autoclose, -1, 15, false);
+SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose) {
+	return wrap_writer(src, clevel, bufsize, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapInflateReaderSeekable(SDL_IOStream *src,
-					      int64_t uncompressed_size,
-					      size_t bufsize, bool autoclose) {
-	return wrap_reader(src, bufsize, autoclose, uncompressed_size, -15, true);
-}
-
-SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel,
-				   size_t bufsize, bool autoclose) {
-	return wrap_writer(src, bufsize, autoclose, clevel, 15);
-}
-
-SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel,
-				      size_t bufsize, bool autoclose) {
-	return wrap_writer(src, bufsize, autoclose, clevel, -15);
+SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, size_t bufsize, bool autoclose) {
+	return wrap_writer(src, clevel, bufsize, autoclose, -15);
 }
