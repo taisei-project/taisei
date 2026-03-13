@@ -58,7 +58,6 @@
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
-#define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
 #define REPLAY_STRUCT_VERSION_WRITE \
