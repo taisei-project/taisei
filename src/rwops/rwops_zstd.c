@@ -186,7 +186,7 @@ static int64_t rwzstd_size(void *ctx) {
 	int64_t size = zdata->reader.uncompressed_size;
 
 	if(size < 0) {
-		return SDL_SetError("Uncompressed stream size is unknown");
+		SDL_SetError("Uncompressed stream size is unknown");
 	}
 
 	return size;
