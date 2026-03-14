@@ -58,6 +58,10 @@ tbz_filename = '@0@.tar.bz2'.format(dist_name)
 tbz_outpath = join_paths(meson.project_build_root(), tbz_filename)
 tbz_command = [dist_command, '--format=bztar', dist_prefix_args, meson.project_build_root(), tbz_outpath]
 
+tzst_filename = '@0@.tar.zst'.format(dist_name)
+tzst_outpath = join_paths(meson.project_build_root(), tzst_filename)
+tzst_command = [dist_command, '--format=zstdtar', dist_prefix_args, meson.project_build_root(), tzst_outpath]
+
 tar_filename = '@0@.tar'.format(dist_name)
 tar_outpath = join_paths(meson.project_build_root(), tar_filename)
 tar_command = [dist_command, '--format=tar', dist_prefix_args, meson.project_build_root(), tar_outpath]
