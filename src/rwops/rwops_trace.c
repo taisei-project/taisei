@@ -89,6 +89,14 @@ static size_t trace_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus 
 	return w;
 }
 
+static bool trace_flush(void *ctx, SDL_IOStatus *status) {
+	TData *tdata = ctx;
+	bool r = SDL_FlushIO(tdata->wrapped);
+	*status = SDL_GetIOStatus(tdata->wrapped);
+	TRACE(tdata, "flush() = %u; status = %i", r, *status);
+	return r;
+}
+
 SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
@@ -101,6 +109,7 @@ SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag, bool autoclose
 		.close = trace_close,
 		.read = trace_read,
 		.write = trace_write,
+		.flush = trace_flush,
 	};
 
 	size_t taglen = strlen(tag) + 1;
