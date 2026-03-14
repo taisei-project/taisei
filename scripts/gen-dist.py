@@ -23,6 +23,17 @@ from datetime import (
 import argparse
 import os
 import shutil
+import sys
+
+if sys.version_info < (3, 14):
+    from backports.zstd import register_shutil
+    register_shutil()
+
+try:
+    from os.path import isreserved
+except ImportError:
+    def isreserved(p):
+        return False
 
 
 def main(args):
@@ -68,7 +79,7 @@ def main(args):
     if args.prefix is not None:
         p = PurePosixPath(args.prefix)
 
-        if p.is_absolute() or p.is_reserved() or '..' in p.parts:
+        if p.is_absolute() or isreserved(str(p)) or '..' in p.parts:
             raise ValueError('Bad prefix: {}'.format(args.prefix))
 
         args.prefix = str(p)

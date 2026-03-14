@@ -675,7 +675,7 @@ if host_machine.system() == 'windows'
     )
 endif
 
-bindist_targets = ['zip', 'tar', 'txz', 'tgz', 'tbz']
+bindist_targets = ['zip', 'tar', 'txz', 'tgz', 'tbz', 'tzst']
 
 foreach bindist_target : bindist_targets
     run_target(bindist_target,
