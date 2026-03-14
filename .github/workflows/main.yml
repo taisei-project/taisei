@@ -35,7 +35,7 @@ on:
 env:
   MESON_VERSION: '1.8.0'
   EM_VERSION: '3.1.68'
-  PYTHON_VERSION: '3.13'
+  PYTHON_VERSION: '3.14'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -108,7 +108,6 @@ jobs:
         docutils
         gettext
         libvorbis
-        libzip
         ninja
         opusfile
         pygments
@@ -117,9 +116,7 @@ jobs:
 
         pip install
         meson==${{ env.MESON_VERSION }}
-        ninja
         setuptools
-        zstandard
         --break-system-packages
 
     - name: Configure
