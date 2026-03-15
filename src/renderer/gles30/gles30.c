@@ -23,7 +23,7 @@
 	#define BROKEN_GL_BLIT_FRAMEBUFFER 0
 #endif
 
-static bool gles30_init(RendererBackend *backend) {
+static bool gles30_init(RendererBackend *backend, char *opts) {
 	return gles_init(backend, 3, 0);
 }
 

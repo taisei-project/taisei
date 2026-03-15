@@ -1167,7 +1167,7 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  * Renderer interface implementation
  */
 
-static bool gl33_init(RendererBackend *backend) {
+static bool gl33_init(RendererBackend *backend, char *opts) {
 	SDL_GLProfile profile;
 	SDL_GLContextFlag flags = 0;
 
