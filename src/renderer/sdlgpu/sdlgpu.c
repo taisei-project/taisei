@@ -377,7 +377,7 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 	return null_tex;
 }
 
-static void sdlgpu_init(void) {
+static bool sdlgpu_init(RendererBackend *backend) {
 	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_MSL;
 
 	if(dxbc_init_compiler()) {
@@ -411,8 +411,12 @@ static void sdlgpu_init(void) {
 		.device = SDL_CreateGPUDeviceWithProperties(props),
 	};
 
+	SDL_DestroyProperties(props);
+
 	if(!sdlgpu.device) {
-		log_sdl_error(LOG_FATAL, "SDL_CreateGPUDeviceWithProperties");
+		log_sdl_error(LOG_ERROR, "SDL_CreateGPUDeviceWithProperties");
+		dxbc_shutdown_compiler();
+		return false;
 	}
 
 	if(!(SDL_GetGPUShaderFormats(sdlgpu.device) & SDL_GPU_SHADERFORMAT_DXBC)) {
@@ -435,6 +439,8 @@ static void sdlgpu_init(void) {
 	} else {
 		sdlgpu.frame.faux_backbuffer.fmt = SDL_GPU_TEXTUREFORMAT_INVALID;
 	}
+
+	return true;
 }
 
 static void sdlgpu_post_init(void) {
@@ -446,6 +452,7 @@ static void sdlgpu_shutdown(void) {
 
 	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.frame.command_buffers); ++i) {
 		SDL_CancelGPUCommandBuffer(sdlgpu.frame.command_buffers[i]);
+		sdlgpu.frame.command_buffers[i] = NULL;
 	}
 
 	assert(!sdlgpu.render_pass.pass);
@@ -453,7 +460,10 @@ static void sdlgpu_shutdown(void) {
 	assert(!sdlgpu.copy_pass.for_cbuf[CBUF_UPLOAD]);
 
 	for(uint i = 0; i < ARRAY_SIZE(sdlgpu.null_textures); ++i) {
-		sdlgpu_texture_destroy(sdlgpu.null_textures[i]);
+		if(sdlgpu.null_textures[i]) {
+			sdlgpu_texture_destroy(sdlgpu.null_textures[i]);
+			sdlgpu.null_textures[i] = NULL;
+		}
 	}
 
 	SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);

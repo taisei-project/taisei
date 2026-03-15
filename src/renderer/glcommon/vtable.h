@@ -16,8 +16,8 @@
 typedef struct GLVTable {
 // 	GLTextureTypeInfo* (*texture_type_info)(TextureType type);
 // 	GLTexFormatCapabilities (*texture_format_caps)(GLenum internal_fmt);
-	SDL_GLContext (*create_context)(SDL_Window *window);
-	void (*init_context)(SDL_Window *window);
+	SDL_GLContext (*create_context)(RendererBackend *backend, SDL_Window *window);
+	bool (*init_context)(RendererBackend *backend, SDL_Window *window);
 	void (*get_viewport)(FloatRect *vp);
 	void (*set_viewport)(const FloatRect *vp);
 } GLVTable;

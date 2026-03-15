@@ -9,9 +9,11 @@
 #include "opengl.h"
 
 #include "debug.h"
-#include "memory/scratch.h"
 #include "shaders.h"
 #include "texture.h"
+#include "vtable.h"
+
+#include "memory/scratch.h"
 #include "util/env.h"
 
 struct glext_s glext = {};
@@ -803,7 +805,7 @@ static void glcommon_check_issues(void) {
 
 static inline void (*load_gl_func(const char *name))(void);
 
-void glcommon_check_capabilities(void) {
+bool glcommon_check_capabilities(void) {
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
 
@@ -815,7 +817,8 @@ void glcommon_check_capabilities(void) {
 
 #ifdef STATIC_GLES3
 	if(!GLES_ATLEAST(3, 0)) {
-		log_fatal("Compiled with STATIC_GLES3, but got a non-GLES3 context. Can't work with this");
+		log_error("Compiled with STATIC_GLES3, but got a non-GLES3 context. Can't work with this");
+		return false;
 	}
 #endif
 
@@ -943,9 +946,11 @@ void glcommon_check_capabilities(void) {
 
 	glcommon_build_shader_lang_table();
 	glcommon_init_texture_formats();
+
+	return true;
 }
 
-void glcommon_load_library(void) {
+bool glcommon_load_library(void) {
 #ifndef STATIC_GLES3
 	const char *lib = env_get("TAISEI_LIBGL", "");
 
@@ -954,9 +959,12 @@ void glcommon_load_library(void) {
 	}
 
 	if(!SDL_GL_LoadLibrary(lib)) {
-		log_fatal("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
+		log_error("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
+		return false;
 	}
 #endif
+
+	return true;
 }
 
 void glcommon_unload_library(void) {
@@ -978,21 +986,24 @@ static inline void (*load_gl_func(const char *name))(void) {
 	return c_sucks.fp;
 }
 
-void glcommon_load_functions(void) {
+bool glcommon_load_functions(void) {
 #ifndef STATIC_GLES3
 	int profile, version;
 
 	if(!SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile)) {
-		log_fatal("SDL_GL_GetAttribute() failed: %s", SDL_GetError());
+		log_error("SDL_GL_GetAttribute() failed: %s", SDL_GetError());
+		return false;
 	}
 
 	if(profile == SDL_GL_CONTEXT_PROFILE_ES) {
 		if(!(version = gladLoadGLES2(load_gl_func))) {
-			log_fatal("Failed to load OpenGL ES functions");
+			log_error("Failed to load OpenGL ES functions");
+			return false;
 		}
 	} else {
 		if(!(version = gladLoadGL(load_gl_func))) {
-			log_fatal("Failed to load OpenGL functions");
+			log_error("Failed to load OpenGL functions");
+			return false;
 		}
 	}
 
@@ -1019,6 +1030,8 @@ void glcommon_load_functions(void) {
 	glext.version.major = major;
 	glext.version.minor = minor;
 #endif
+
+	return true;
 }
 
 void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SDL_GLContextFlag ctxflags) {
@@ -1038,4 +1051,30 @@ void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SD
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, ctxflags);
 #endif
+}
+
+bool glcommon_init(RendererBackend *backend) {
+	if(!glcommon_load_library()) {
+		return false;
+	}
+
+	// We need to create the GL context early to make sure that it works,
+	// but that requires a window, which is not created until after the
+	// renderer is ready. Create a temporary window to work around that.
+
+	SDL_WindowFlags flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL;
+	SDL_Window *window = SDL_CreateWindow("", 1, 1, flags);
+
+	if(!window) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
+		return NULL;
+	}
+
+	if(!GLVT_OF(*backend).init_context(backend, window)) {
+		SDL_DestroyWindow(window);
+		return false;
+	}
+
+	SDL_DestroyWindow(window);
+	return true;
 }

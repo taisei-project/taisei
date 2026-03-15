@@ -16,8 +16,10 @@ typedef struct FramebufferAttachmentQueryResult {
 	uint miplevel;
 } FramebufferAttachmentQueryResult;
 
+typedef struct RendererBackend RendererBackend;
+
 typedef struct RendererFuncs {
-	void (*init)(void);
+	bool (*init)(RendererBackend*);
 	void (*post_init)(void);
 	void (*shutdown)(void);
 

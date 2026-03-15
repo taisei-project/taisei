@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "renderer/common/backend.h"
+
 #include <SDL3/SDL.h>
 
 #ifdef TAISEI_BUILDCONF_RENDERER_STATIC_GLES30
@@ -138,9 +140,10 @@ static_assert(TSGL_EXTFLAG_KHR == (1 << _TSGL_EXTVNUM_KHR), "");
 struct glext_s; // defined at the very bottom
 extern struct glext_s glext;
 
-void glcommon_load_library(void);
-void glcommon_load_functions(void);
-void glcommon_check_capabilities(void);
+bool glcommon_init(RendererBackend *backend);
+bool glcommon_load_library(void);
+bool glcommon_load_functions(void);
+bool glcommon_check_capabilities(void);
 void glcommon_unload_library(void);
 ext_flag_t glcommon_check_extension(const char *ext) attr_nonnull_all;
 void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SDL_GLContextFlag ctxflags);
