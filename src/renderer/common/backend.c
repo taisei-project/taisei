@@ -8,16 +8,17 @@
 
 #include "backend.h"
 
+#include "memory/scratch.h"
 #include "util.h"
 #include "util/env.h"
 
-#undef R
-#define R(x) extern RendererBackend _r_backend_##x;
-TAISEI_BUILDCONF_RENDERER_BACKENDS
-#undef R
-
 #define R_BACKEND_(x) (_r_backend_##x)
 #define R_BACKEND(x) MACROHAX_EXPAND(MACROHAX_DEFER(R_BACKEND_)(x))
+
+#undef R
+#define R(x) extern RendererBackend R_BACKEND(x);
+TAISEI_BUILDCONF_RENDERER_BACKENDS
+#undef R
 
 RendererBackend *_r_backends[] = {
 	#define R(x) &R_BACKEND(x),
@@ -49,10 +50,18 @@ static RendererBackend *_r_find_backend(const char *name) {
 	return NULL;
 }
 
-static bool _r_backend_try_init(RendererBackend *backend) {
-	log_info("Initializing renderer backend %s", backend->name);
+static bool _r_backend_try_init(RendererBackend *backend, char *opts) {
+	if(opts && !*opts) {
+		opts = NULL;
+	}
 
-	if(!backend->funcs.init(backend)) {
+	if(opts) {
+		log_info("Initializing renderer backend %s with options: %s", backend->name, opts);
+	} else {
+		log_info("Initializing renderer backend %s", backend->name);
+	}
+
+	if(!backend->funcs.init(backend, opts)) {
 		backend->funcs.shutdown();
 		log_error("Failed to initialize renderer backend %s", backend->name);
 		return false;
@@ -70,11 +79,20 @@ void _r_backend_init(void) {
 		return;
 	}
 
+	auto scratch = acquire_scratch_arena();
+
 	RendererBackend *backend;
-	const char *name = env_get("TAISEI_RENDERER", "");
+	char *name = marena_strdup(scratch, env_get("TAISEI_RENDERER", ""));
+	char *opts = NULL;
 	bool try_fallbacks = true;
 
 	if(*name) {
+		char *sep = strchr(name, ':');
+		if(sep) {
+			*sep = '\0';
+			opts = sep + 1;
+		}
+
 		try_fallbacks = false;
 		backend = _r_find_backend(name);
 		if(!backend) {
@@ -84,22 +102,25 @@ void _r_backend_init(void) {
 		backend = &R_BACKEND(TAISEI_BUILDCONF_RENDERER_DEFAULT);
 	}
 
-	if(_r_backend_try_init(backend)) {
-		initialized = true;
-		return;
+	if(_r_backend_try_init(backend, opts)) {
+		goto done;
 	}
 
 	if(try_fallbacks) {
 		for(uint i = 0; i < ARRAY_SIZE(_r_fallback_backends); ++i) {
 			auto b = _r_fallback_backends[i];
-			if(b != backend && _r_backend_try_init(b)) {
-				initialized = true;
-				return;
+			if(b != backend && _r_backend_try_init(b, NULL)) {
+				goto done;
 			}
 		}
 	}
 
 	log_fatal("Could not initialize the rendering subsystem");
+	UNREACHABLE;
+
+done:
+	initialized = true;
+	release_scratch_arena(scratch);
 }
 
 void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base) {

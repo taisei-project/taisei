@@ -377,19 +377,38 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 	return null_tex;
 }
 
-static bool sdlgpu_init(RendererBackend *backend) {
+static bool sdlgpu_init(RendererBackend *backend, char *opts) {
 	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_MSL;
 
 	if(dxbc_init_compiler()) {
 		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
 	}
 
+	sdlgpu.debug = env_get("TAISEI_SDLGPU_DEBUG", false);
+	bool lowpower = env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false);
 	SDL_PropertiesID props = SDL_CreateProperties();
 
-	sdlgpu.debug = env_get("TAISEI_SDLGPU_DEBUG", false);
+	char *opt;
+	if(opts && (opt = strtok_r(NULL, ",", &opts))) {
+		// First option is the backend
+		if(strcmp(opt, "default")) {
+			SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, opt);
+		}
+
+		while((opt = strtok_r(NULL, ",", &opts))) {
+			if(!strcmp(opt, "debug")) {
+				sdlgpu.debug = true;
+			} else if(!strcmp(opt, "lowpower")) {
+				lowpower = true;
+			} else {
+				log_warn("Unknown option '%s' ignored", opt);
+			}
+		}
+	}
+
 	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, sdlgpu.debug);
 	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN,
-		env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false));
+		lowpower);
 	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN,
 		(bool)(shader_formats & SDL_GPU_SHADERFORMAT_SPIRV));
 	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN,
