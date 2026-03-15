@@ -61,6 +61,7 @@ subdir('sdlgpu')
 included_deps = []
 needed_deps = ['common']
 r_macro = []
+r_fallbacks_macro = []
 
 foreach renderer, ropt : renderer_opts
     if ropt.allowed()
@@ -73,6 +74,12 @@ foreach renderer, ropt : renderer_opts
     endif
 endforeach
 
+foreach renderer : renderers_prio
+    if renderer in enabled_renderers
+        r_fallbacks_macro += f'R(@renderer@)'
+    endif
+endforeach
+
 foreach dep : needed_deps
     if not included_deps.contains(dep)
         included_deps += [dep]
@@ -82,8 +89,10 @@ foreach dep : needed_deps
 endforeach
 
 r_macro = ' '.join(r_macro)
+r_fallbacks_macro = ' '.join(r_fallbacks_macro)
 config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
-config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)
+config.set('TAISEI_BUILDCONF_RENDERER_FALLBACK_BACKENDS', r_fallbacks_macro)
+config.set('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)
 
 have_gles_renderer = renderer_opts['gles30'].allowed()
 

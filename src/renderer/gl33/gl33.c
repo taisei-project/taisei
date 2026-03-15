@@ -280,7 +280,7 @@ static void gl41_set_viewport(const FloatRect *vp) {
 }
 #endif
 
-static SDL_GLContext gl33_create_context(SDL_Window *window) {
+static SDL_GLContext gl33_create_context(RendererBackend *backend, SDL_Window *window) {
 	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 
 	int gl_profile;
@@ -294,17 +294,27 @@ static SDL_GLContext gl33_create_context(SDL_Window *window) {
 	}
 
 	if(!ctx) {
-		log_fatal("Failed to create OpenGL context: %s", SDL_GetError());
+		log_error("Failed to create OpenGL context: %s", SDL_GetError());
 	}
 
 	return ctx;
 }
 
-static void gl33_init_context(SDL_Window *window) {
-	R.gl_context = GLVT.create_context(window);
+static bool gl33_init_context(RendererBackend *backend, SDL_Window *window) {
+	auto vtable = &GLVT_OF(*backend);
+	R.gl_context = vtable->create_context(backend, window);
 
-	glcommon_load_functions();
-	glcommon_check_capabilities();
+	if(!R.gl_context) {
+		return false;
+	}
+
+	if(!glcommon_load_functions()) {
+		return false;
+	}
+
+	if(!glcommon_check_capabilities()) {
+		return false;
+	}
 
 	if(glcommon_debug_requested()) {
 		glcommon_debug_enable();
@@ -315,22 +325,22 @@ static void gl33_init_context(SDL_Window *window) {
 	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
 #ifdef STATIC_GLES3
-	GLVT.get_viewport = gl33_get_viewport;
-	GLVT.set_viewport = gl33_set_viewport;
+	vtable->get_viewport = gl33_get_viewport;
+	vtable->set_viewport = gl33_set_viewport;
 #else
 	if(glext.viewport_array) {
-		GLVT.get_viewport = gl41_get_viewport;
-		GLVT.set_viewport = gl41_set_viewport;
+		vtable->get_viewport = gl41_get_viewport;
+		vtable->set_viewport = gl41_set_viewport;
 	} else {
-		GLVT.get_viewport = gl33_get_viewport;
-		GLVT.set_viewport = gl33_set_viewport;
+		vtable->get_viewport = gl33_get_viewport;
+		vtable->set_viewport = gl33_set_viewport;
 	}
 #endif
 
 	glFrontFace(GL_CW);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	GLVT.get_viewport(&R.viewport.default_framebuffer);
+	vtable->get_viewport(&R.viewport.default_framebuffer);
 
 	if(HAVE_GL_FUNC(glReadBuffer)) {
 		glReadBuffer(GL_BACK);
@@ -368,8 +378,10 @@ static void gl33_init_context(SDL_Window *window) {
 	R.features |= r_feature_bit(RFEAT_DEFAULT_FRAMEBUFFER_READBACK);
 
 	if(glext.clear_texture) {
-		_r_backend.funcs.texture_clear = gl44_texture_clear;
+		backend->funcs.texture_clear = gl44_texture_clear;
 	}
+
+	return true;
 }
 
 static void gl33_apply_capability(RendererCapability cap, bool value) {
@@ -1155,7 +1167,7 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  * Renderer interface implementation
  */
 
-static void gl33_init(void) {
+static bool gl33_init(RendererBackend *backend) {
 	SDL_GLProfile profile;
 	SDL_GLContextFlag flags = 0;
 
@@ -1173,7 +1185,7 @@ static void gl33_init(void) {
 	int minor = env_get("TAISEI_GL33_VERSION_MINOR", 3);
 
 	glcommon_setup_attributes(profile, major, minor, flags);
-	glcommon_load_library();
+	return glcommon_init(backend);
 }
 
 static void gl33_post_init(void) {
@@ -1190,16 +1202,11 @@ static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, in
 	SDL_Window *window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_OPENGL);
 
 	if(!window) {
-		log_sdl_error(LOG_FATAL, "SDL_CreateWindow");
+		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
 		return NULL;
 	}
 
-	if(R.gl_context) {
-		SDL_GL_MakeCurrent(window, R.gl_context);
-	} else {
-		GLVT.init_context(window);
-	}
-
+	SDL_GL_MakeCurrent(window, NOT_NULL(R.gl_context));
 	R.window = window;
 	return window;
 }

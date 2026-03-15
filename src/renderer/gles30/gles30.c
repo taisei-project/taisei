@@ -23,17 +23,21 @@
 	#define BROKEN_GL_BLIT_FRAMEBUFFER 0
 #endif
 
-static void gles30_init(void) {
-	gles_init(&_r_backend_gles30, 3, 0);
+static bool gles30_init(RendererBackend *backend) {
+	return gles_init(backend, 3, 0);
 }
 
 #if BROKEN_GL_BLIT_FRAMEBUFFER
 #include "../gl33/gl33.h"
 #include "fbcopy_fallback.h"
 
-static void gles30_init_context(SDL_Window *w) {
-	gles_init_context(w);
+static bool gles30_init_context(RendererBackend *backend, SDL_Window *w) {
+	if(!gles_init_context(backend, w)) {
+		return false;
+	}
+
 	gles30_fbcopyfallback_init();
+	return true;
 }
 
 static void gles30_shutdown(void) {

@@ -11,6 +11,6 @@
 
 #include "../common/backend.h"
 
-void gles_init(RendererBackend *gles_backend, int major, int minor);
-void gles_init_context(SDL_Window *w);
+bool gles_init(RendererBackend *gles_backend, int major, int minor);
+bool gles_init_context(RendererBackend *backend, SDL_Window *w);
 bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);

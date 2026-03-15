@@ -16,7 +16,7 @@ static SDL_Window* null_create_window(const char *title, int x, int y, int w, in
 	return SDL_CreateWindow(title, w, h, flags);
 }
 
-static void null_init(void) { }
+static bool null_init(RendererBackend *backend) { return true; }
 static void null_post_init(void) { }
 static void null_shutdown(void) { }
 

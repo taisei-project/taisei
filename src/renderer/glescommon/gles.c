@@ -44,8 +44,8 @@ static SDL_EGLint *gles_angle_egl_context_attrib_callback(
 	return memcpy(SDL_malloc(sizeof(a)), a, sizeof(a));
 }
 
-void gles_init(RendererBackend *gles_backend, int major, int minor) {
-	GLVT_OF(*gles_backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
+bool gles_init(RendererBackend *backend, int major, int minor) {
+	GLVT_OF(*backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
 
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
 	// Load ANGLE by default by setting up some SDL-specific environment vars.
@@ -71,7 +71,7 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
 #endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
-	_r_backend_inherit(gles_backend, &_r_backend_gl33);
+	_r_backend_inherit(backend, &_r_backend_gl33);
 	glcommon_setup_attributes(SDL_GL_CONTEXT_PROFILE_ES, major, minor, 0);
 
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
@@ -80,11 +80,11 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	}
 #endif
 
-	glcommon_load_library();
+	return glcommon_init(backend);
 }
 
-void gles_init_context(SDL_Window *w) {
-	GLVT_OF(_r_backend_gl33).init_context(w);
+bool gles_init_context(RendererBackend *backend, SDL_Window *w) {
+	return GLVT_OF(_r_backend_gl33).init_context(backend, w);
 }
 
 bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
