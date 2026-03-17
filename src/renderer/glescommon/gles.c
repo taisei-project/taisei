@@ -58,17 +58,16 @@ bool gles_init(RendererBackend *backend, int major, int minor) {
 	char buf[strlen(basepath) + sizeof(TAISEI_BUILDCONF_ANGLE_GLES_PATH) + sizeof(TAISEI_BUILDCONF_ANGLE_EGL_PATH)];
 
 	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_GLES_PATH);
-	env_set("SDL_VIDEO_GL_DRIVER", buf, false);
+	SDL_SetHint(SDL_HINT_OPENGL_LIBRARY, buf);
 
 	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_EGL_PATH);
-	env_set("SDL_VIDEO_EGL_DRIVER", buf, false);
+	SDL_SetHint(SDL_HINT_EGL_LIBRARY, buf);
 	#else
 	// Static absolute paths
-	env_set("SDL_VIDEO_GL_DRIVER", TAISEI_BUILDCONF_ANGLE_GLES_PATH, false);
-	env_set("SDL_VIDEO_EGL_DRIVER", TAISEI_BUILDCONF_ANGLE_EGL_PATH, false);
+	SDL_SetHint(SDL_HINT_OPENGL_LIBRARY, TAISEI_BUILDCONF_ANGLE_GLES_PATH);
+	SDL_SetHint(SDL_HINT_EGL_LIBRARY, TAISEI_BUILDCONF_ANGLE_EGL_PATH);
 	#endif
-
-	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
+	SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 #endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
 	_r_backend_inherit(backend, &_r_backend_gl33);
