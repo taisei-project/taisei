@@ -10,18 +10,15 @@ resources_gfx_dir = join_paths(resources_pkg_main, 'gfx')
 
 preset_webp = [
     # Leanify doesn't handle webp (yet?), but it'll work on alphamaps (they are always png)
-    '--leanify',
     '--format', 'webp',
 ]
 
 preset_png = [
-    '--leanify',
     '--format', 'png',
 ]
 
 preset_fast = [
     # webp encoding is slower (but more efficient)
-    '--no-leanify',
     '--format', 'png',
 ]
 
