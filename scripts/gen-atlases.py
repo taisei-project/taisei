@@ -28,6 +28,7 @@ def main(args):
         futures = []
 
         for target in args[1:]:
+            print(target)
             futures.append(ex.submit(lambda: ninja('-vC', build_dir, target)))
 
         wait_for_futures(futures)
