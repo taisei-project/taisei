@@ -7,6 +7,7 @@
  */
 
 #include "sprite.h"
+#include "atlas.h"
 
 #include "renderer/api.h"
 #include "util/kvparser.h"
@@ -31,10 +32,12 @@ static bool check_sprite_path(const char *path) {
 struct sprite_load_state {
 	Sprite *spr;
 	char *texture_name;
+	char *atlas_name;
 };
 
 static void load_sprite_stage1(ResourceLoadState *st);
-static void load_sprite_stage2(ResourceLoadState *st);
+static void load_sprite_stage2_atlas(ResourceLoadState *st);
+static void load_sprite_stage2_legacy(ResourceLoadState *st);
 
 static void load_sprite_stage1(ResourceLoadState *st) {
 	auto spr = ALLOC(Sprite, {
@@ -45,7 +48,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	if(texture_res_handler.procs.check(st->path)) {
 		state->texture_name = mem_strdup(st->name);
 		res_load_dependency(st, RES_TEXTURE, state->texture_name);
-		res_load_continue_after_dependencies(st, load_sprite_stage2, state);
+		res_load_continue_after_dependencies(st, load_sprite_stage2_legacy, state);
 		return;
 	}
 
@@ -62,6 +65,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	struct { float top, bottom, left, right; } pad = { };
 
 	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
+		{ "atlas",          .out_str   = &state->atlas_name },
 		{ "texture",        .out_str   = &state->texture_name },
 		{ "region_x",       .out_float = &spr->tex_area.x },
 		{ "region_y",       .out_float = &spr->tex_area.y },
@@ -81,9 +85,21 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	if(UNLIKELY(!parsed)) {
 		mem_free(spr);
 		mem_free(state->texture_name);
+		mem_free(state->atlas_name);
 		mem_free(state);
 		log_error("Failed to parse sprite file '%s'", st->path);
 		res_load_failed(st);
+		return;
+	}
+
+	if(state->atlas_name) {
+		if(state->texture_name) {
+			log_warn("%s: \"texture\" specified together with \"atlas\", ignoring", st->name);
+			mem_free(state->texture_name);
+		}
+
+		res_load_dependency(st, RES_ATLAS, state->atlas_name);
+		res_load_continue_after_dependencies(st, load_sprite_stage2_atlas, state);
 		return;
 	}
 
@@ -102,11 +118,37 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	spr->extent.as_cmplx += spr->padding.extent.as_cmplx;
 
-	res_load_continue_after_dependencies(st, load_sprite_stage2, state);
+	res_load_continue_after_dependencies(st, load_sprite_stage2_legacy, state);
 	return;
 }
 
-static void load_sprite_stage2(ResourceLoadState *st) {
+static void load_sprite_stage2_atlas(ResourceLoadState *st) {
+	struct sprite_load_state *state = NOT_NULL(st->opaque);
+	Sprite *spr = NOT_NULL(state->spr);
+	Atlas *atlas = res_get_data(RES_ATLAS, state->atlas_name, st->flags & ~RESF_RELOAD);
+	bool fail = false;
+
+	if(atlas) {
+		if(!atlas_get_sprite(atlas, st->name, spr)) {
+			log_error("No sprite \"%s\" in atlas \"%s\"", st->name, state->atlas_name);
+			fail = true;
+		}
+	} else {
+		fail = true;
+	}
+
+	mem_free(state->atlas_name);
+	mem_free(state);
+
+	if(fail) {
+		mem_free(spr);
+		res_load_failed(st);
+	} else {
+		res_load_finished(st, spr);
+	}
+}
+
+static void load_sprite_stage2_legacy(ResourceLoadState *st) {
 	struct sprite_load_state *state = NOT_NULL(st->opaque);
 	Sprite *spr = NOT_NULL(state->spr);
 
