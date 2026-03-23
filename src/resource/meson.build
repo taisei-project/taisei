@@ -1,6 +1,7 @@
 
 resource_src = files(
     'animation.c',
+    'atlas.c',
     'bgm.c',
     'font.c',
     'locale.c',

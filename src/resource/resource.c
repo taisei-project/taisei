@@ -8,6 +8,7 @@
 
 #include "resource.h"
 
+#include "atlas.h"
 #include "animation.h"
 #include "bgm.h"
 #include "font.h"
@@ -50,6 +51,7 @@ ResourceHandler *_handlers[] = {
 	[RES_SHADER_PROGRAM]    = &shader_program_res_handler,
 	[RES_SPRITE]            = &sprite_res_handler,
 	[RES_TEXTURE]           = &texture_res_handler,
+	[RES_ATLAS]             = &atlas_res_handler,
 };
 
 typedef enum ResourceStatus {
