@@ -9,7 +9,6 @@ resources_gfx_dir = join_paths(resources_pkg_main, 'gfx')
 #   3. Profile-specific
 
 preset_webp = [
-    # Leanify doesn't handle webp (yet?), but it'll work on alphamaps (they are always png)
     '--format', 'webp',
 ]
 
@@ -17,19 +16,26 @@ preset_png = [
     '--format', 'png',
 ]
 
+preset_tsatlas = [
+    '--format', 'tsatlas'
+]
+
+preset_thorough = [
+    '--width=512',
+    '--height=512',
+    '--samples=256',
+    '--single',
+    '--tsatlas-zstd-level=22',
+]
+
 preset_fast = [
-    # webp encoding is slower (but more efficient)
-    '--format', 'png',
+    '--width=4096',
+    '--height=4096',
+    '--samples=0',
+    '--multiple',
 ]
 
 atlas_common_args = [
-    '--width=4096',
-    '--height=4096',
-    '--multiple',
-    '--crop',
-
-    preset_webp,
-
     # Padding to prevent filter bleeding.
     # 1 is normally enough, but not when mipmaps are involved.
     '--border=2'
@@ -37,16 +43,16 @@ atlas_common_args = [
 
 atlases = [
     ['common',      []],
-    ['common_ui',   ['--width=1024', '--height=1024']],
+    ['common_ui',   []],
     ['huge',        []],
-    ['portraits',   ['--width=4096', '--height=4096']],
+    ['portraits',   ['--tsatlas-sort=perimeter']],
 ]
 
 atlas_profiles = [
-    ['',        []],
-    ['-fast',   [preset_fast]],
-    ['-png',    [preset_png]],
-    ['-webp',   [preset_webp]],
+    ['',        [preset_tsatlas, preset_thorough]],
+    ['-fast',   [preset_tsatlas, preset_fast]],
+    ['-png',    [preset_png,     preset_fast]],
+    ['-webp',   [preset_webp,    preset_fast]],
 ]
 
 foreach profile : atlas_profiles
