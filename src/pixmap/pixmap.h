@@ -317,6 +317,9 @@ char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 const char *pixmap_format_name(PixmapFormat fmt);
 uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height);
 
+bool pixmap_from_sdl_surface(SDL_Surface *surf, Pixmap *px);
+SDL_Surface *pixmap_to_sdl_surface(const Pixmap *px);
+
 SwizzleMask swizzle_canonize(SwizzleMask sw_in);
 bool swizzle_is_valid(SwizzleMask sw);
 bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels);
