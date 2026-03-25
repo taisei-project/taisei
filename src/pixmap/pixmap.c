@@ -255,6 +255,142 @@ const char *pixmap_format_name(PixmapFormat fmt) {
 	}
 }
 
+static SDL_PixelFormat sdl_pixfmt_conversion(SDL_PixelFormat fmt) {
+	if(SDL_ISPIXELFORMAT_FLOAT(fmt)) {
+		if(SDL_BYTESPERPIXEL(fmt) > 8) {
+			if(SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+				return SDL_PIXELFORMAT_RGBA128_FLOAT;
+			} else {
+				return SDL_PIXELFORMAT_RGB96_FLOAT;
+			}
+		} else {
+			if(SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+				return SDL_PIXELFORMAT_RGBA64_FLOAT;
+			} else {
+				return SDL_PIXELFORMAT_RGB48_FLOAT;
+			}
+		}
+	}
+
+	if(SDL_ISPIXELFORMAT_10BIT(fmt) || SDL_BYTESPERPIXEL(fmt) > 4) {
+		if(SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+			return SDL_PIXELFORMAT_RGBA64;
+		} else {
+			return SDL_PIXELFORMAT_RGB48;
+		}
+	}
+
+	if(SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+		return SDL_PIXELFORMAT_RGBA32;
+	} else {
+		return SDL_PIXELFORMAT_RGB24;
+	}
+}
+
+static PixmapFormat sdl_pixfmt_to_taisei(SDL_PixelFormat fmt) {
+	switch(fmt) {
+		case SDL_PIXELFORMAT_RGB24:         return PIXMAP_FORMAT_RGB8;
+		case SDL_PIXELFORMAT_RGB48:         return PIXMAP_FORMAT_RGB16;
+		case SDL_PIXELFORMAT_RGB48_FLOAT:   return PIXMAP_FORMAT_RGB16F;
+		case SDL_PIXELFORMAT_RGB96_FLOAT:   return PIXMAP_FORMAT_RGB32F;
+		case SDL_PIXELFORMAT_RGBA32:        return PIXMAP_FORMAT_RGBA8;
+		case SDL_PIXELFORMAT_RGBA64:        return PIXMAP_FORMAT_RGBA16;
+		case SDL_PIXELFORMAT_RGBA64_FLOAT:  return PIXMAP_FORMAT_RGBA16;
+		case SDL_PIXELFORMAT_RGBA128_FLOAT: return PIXMAP_FORMAT_RGBA32;
+		default: return 0;
+	}
+}
+
+static SDL_PixelFormat sdl_pixfmt_from_taisei(PixmapFormat fmt) {
+	switch(fmt) {
+		case PIXMAP_FORMAT_RGB8:    return SDL_PIXELFORMAT_RGB24;
+		case PIXMAP_FORMAT_RGB16:   return SDL_PIXELFORMAT_RGB48;
+		case PIXMAP_FORMAT_RGB16F:  return SDL_PIXELFORMAT_RGB48_FLOAT;
+		case PIXMAP_FORMAT_RGB32F:  return SDL_PIXELFORMAT_RGB96_FLOAT;
+		case PIXMAP_FORMAT_RGBA8:   return SDL_PIXELFORMAT_RGBA32;
+		case PIXMAP_FORMAT_RGBA16:  return SDL_PIXELFORMAT_RGBA64;
+		case PIXMAP_FORMAT_RGBA16F: return SDL_PIXELFORMAT_RGBA64_FLOAT;
+		case PIXMAP_FORMAT_RGBA32F: return SDL_PIXELFORMAT_RGBA128_FLOAT;
+		default:                    return SDL_PIXELFORMAT_UNKNOWN;
+	}
+}
+
+bool pixmap_from_sdl_surface(SDL_Surface *surf, Pixmap *px) {
+	assert(!px->data.untyped);
+
+	SDL_PixelFormat target_sdl_fmt = sdl_pixfmt_conversion(surf->format);
+	SDL_Surface *temp_surf = NULL;
+	bool ok = false;
+
+	if(target_sdl_fmt != surf->format) {
+		temp_surf = SDL_ConvertSurface(surf, target_sdl_fmt);
+
+		if(!temp_surf) {
+			log_sdl_error(LOG_ERROR, "SDL_ConvertSurface");
+			return false;
+		}
+
+		surf = temp_surf;
+	}
+
+	PixmapFormat px_fmt = sdl_pixfmt_to_taisei(surf->format);
+
+	if(!px_fmt) {
+		log_error("Can't map %s to a supported pixmap format", SDL_GetPixelFormatName(surf->format));
+		goto fail;
+	}
+
+	px->width = surf->w;
+	px->height = surf->h;
+	px->format = px_fmt;
+	px->data.untyped = pixmap_alloc_buffer_for_copy(px, &px->data_size);
+	px->origin = PIXMAP_ORIGIN_TOPLEFT;
+
+	assert(surf->pitch == surf->w * PIXMAP_FORMAT_PIXEL_SIZE(px->format));
+	assert(!SDL_MUSTLOCK(surf));
+	memcpy(px->data.untyped, surf->pixels, px->data_size);
+	ok = true;
+
+fail:
+	if(temp_surf) {
+		SDL_DestroySurface(temp_surf);
+	}
+
+	return ok;
+}
+
+SDL_Surface *pixmap_to_sdl_surface(const Pixmap *px) {
+	SDL_PixelFormat fmt = sdl_pixfmt_from_taisei(px->format);
+
+	if(fmt == SDL_PIXELFORMAT_UNKNOWN) {
+		log_error("Can't map %s to an SDL pixel format", pixmap_format_name(px->format));
+		return NULL;
+	}
+
+	SDL_Surface *surf = NULL;
+	int pitch = PIXMAP_FORMAT_PIXEL_SIZE(px->format) * px->width;
+
+	if(px->origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
+		surf = SDL_CreateSurface(px->width, px->height, fmt);
+		if(!surf) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateSurface");
+		} else {
+			assert(!SDL_MUSTLOCK(surf));
+			assert(surf->pitch == pitch);
+			Pixmap flipped = *px;
+			flipped.data.untyped = surf->pixels;
+			pixmap_flip_y(px, &flipped);
+		}
+	} else {
+		surf = SDL_CreateSurfaceFrom(px->width, px->height, fmt, px->data.untyped, pitch);
+		if(!surf) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateSurfaceFrom");
+		}
+	}
+
+	return surf;
+}
+
 SwizzleMask swizzle_canonize(SwizzleMask sw_in) {
 	SwizzleMask sw_out;
 	sw_out.r = sw_in.r ? sw_in.r : 'r';
