@@ -26,3 +26,4 @@ typedef struct PixmapFileFormatHandler {
 extern PixmapFileFormatHandler pixmap_fileformat_internal;
 extern PixmapFileFormatHandler pixmap_fileformat_png;
 extern PixmapFileFormatHandler pixmap_fileformat_webp;
+extern PixmapFileFormatHandler pixmap_fileformat_bmp;

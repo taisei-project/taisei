@@ -7,8 +7,8 @@
  */
 
 #include "pixmap.h"
-
 #include "fileformats/fileformats.h"
+
 #include "log.h"
 #include "util.h"
 #include "util/io.h"
@@ -18,6 +18,7 @@ static PixmapFileFormatHandler *fileformat_handlers[] = {
 	[PIXMAP_FILEFORMAT_INTERNAL] = &pixmap_fileformat_internal,
 	[PIXMAP_FILEFORMAT_PNG] = &pixmap_fileformat_png,
 	[PIXMAP_FILEFORMAT_WEBP] = &pixmap_fileformat_webp,
+	[PIXMAP_FILEFORMAT_BMP] = &pixmap_fileformat_bmp,
 };
 
 uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height) {

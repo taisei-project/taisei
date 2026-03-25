@@ -19,6 +19,7 @@ typedef enum PixmapFileFormat {
 	// NOTE: these are probed from first to last
 	PIXMAP_FILEFORMAT_WEBP,
 	PIXMAP_FILEFORMAT_PNG,
+	PIXMAP_FILEFORMAT_BMP,
 	PIXMAP_FILEFORMAT_INTERNAL,
 
 	PIXMAP_NUM_FILEFORMATS
