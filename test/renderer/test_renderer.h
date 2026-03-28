@@ -76,10 +76,6 @@ static Texture *test_renderer_load_texture(const char *path) {
 	PixmapFormat fmt = PIXMAP_FORMAT_RGBA8;
 	PixmapOrigin origin = PIXMAP_ORIGIN_TOPLEFT;
 
-	if(r_features() & RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) {
-		origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	}
-
 	if(!pixmap_load_stream(istream, PIXMAP_FILEFORMAT_AUTO, &px, fmt)) {
 		log_fatal("pixmap_load_stream() failed");
 	}

@@ -66,6 +66,8 @@ int main(int argc, char **argv) {
 	hrtime_t last_print_time = last_time;
 
 	r_mat_proj_perspective(90, SCREEN_W/(float)SCREEN_H, 0, 3);
+	(*r_mat_proj_current_ptr())[1][1] *= -1;
+
 	r_mat_mv_translate(0, 0, -2.5);
 	r_mat_mv_rotate(-1.0, 1, 0, 0);
 

@@ -10,7 +10,7 @@
 #include "video.h"
 
 void set_ortho(float w, float h) {
-	r_mat_proj_ortho(0, w, h, 0, -100, 100);
+	r_mat_proj_ortho(0, w, 0, h, -100, 100);
 
 	// FIXME: should we take this out of here and call it explicitly instead?
 	r_disable(RCAP_DEPTH_TEST);

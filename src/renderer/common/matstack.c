@@ -111,7 +111,7 @@ void r_mat_proj_push_ortho_ex(float left, float right, float bottom, float top, 
 }
 
 void r_mat_proj_push_ortho(float width, float height) {
-	r_mat_proj_push_ortho_ex(0, width, height, 0, -1, 1);
+	r_mat_proj_push_ortho_ex(0, width, 0, height, -1, 1);
 }
 
 void r_mat_proj_push_perspective(float angle, float aspect, float near, float far) {

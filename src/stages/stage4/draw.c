@@ -56,7 +56,8 @@ static bool stage4_water(Framebuffer *fb) {
 	// TODO: SSR-less version for postprocess < 2
 
 	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
-	r_mat_proj_push_perspective(stage_3d_context.cam.fovy, stage_3d_context.cam.aspect, stage_3d_context.cam.near, stage_3d_context.cam.far);
+	r_mat_proj_push();
+	camera3d_perspective(&stage_3d_context.cam, *r_mat_proj_current_ptr());
 	r_state_push();
 	r_mat_mv_push();
 	stage3d_apply_transforms(&stage_3d_context, *r_mat_mv_current_ptr());

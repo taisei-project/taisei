@@ -12,6 +12,7 @@
 #include "dynarray.h"
 #include "events.h"
 #include "memory/arena.h"
+#include "pixmap/pixmap.h"
 #include "renderer/api.h"
 #include "util.h"
 #include "util/glm.h"
@@ -616,7 +617,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		}
 
 		Pixmap px;
-		px.origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+		px.origin = PIXMAP_ORIGIN_TOPLEFT;
 		px.format = PIXMAP_FORMAT_RGB8;
 		px.width = max(g_bm_fill->bitmap.width, max(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = max(g_bm_fill->bitmap.rows, max(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
@@ -643,9 +644,9 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				ssize_t inner_coord_x = x - inner_ofs_x;
 				ssize_t inner_coord_y = y - inner_ofs_y;
 
-				ssize_t fill_index   = fill_coord_x   + (g_bm_fill->bitmap.rows   - fill_coord_y   - 1) * g_bm_fill->bitmap.pitch;
-				ssize_t border_index = border_coord_x + (g_bm_border->bitmap.rows - border_coord_y - 1) * g_bm_border->bitmap.pitch;
-				ssize_t inner_index  = inner_coord_x  + (g_bm_inner->bitmap.rows  - inner_coord_y  - 1) * g_bm_inner->bitmap.pitch;
+				ssize_t fill_index   = fill_coord_x   + fill_coord_y * g_bm_fill->bitmap.pitch;
+				ssize_t border_index = border_coord_x + border_coord_y * g_bm_border->bitmap.pitch;
+				ssize_t inner_index  = inner_coord_x  + inner_coord_y * g_bm_inner->bitmap.pitch;
 
 				if(
 					fill_coord_x >= 0 && fill_coord_x < g_bm_fill->bitmap.width &&
@@ -1321,15 +1322,6 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 	glm_scale(mat_texture, (vec3) { 1/overlay.w, 1/overlay.h, 1.0 });
 	glm_translate(mat_texture, (vec3) { -overlay.x.min, overlay.y.min, 0 });
 
-	// FIXME: is there a better way?
-	float texmat_offset_sign;
-
-	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		texmat_offset_sign = -1;
-	} else {
-		texmat_offset_sign = 1;
-	}
-
 	const uint32_t *tptr = ucs4text;
 
 	while(*tptr) {
@@ -1370,7 +1362,7 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 
 		glm_translate_to(mat_texture, (vec3) {
 			g_x - imgdims.w * 0.5f,
-			g_y * texmat_offset_sign + overlay.h - imgdims.h * 0.5f
+			g_y + overlay.h - imgdims.h * 0.5f
 		}, attribs.tex_transform);
 		glm_scale(attribs.tex_transform, (vec3) { imgdims.w, imgdims.h, 1.0 });
 

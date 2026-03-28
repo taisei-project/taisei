@@ -18,6 +18,7 @@
 #include "framebuffer_async_read.h"
 #include "framebuffer.h"
 #include "index_buffer.h"
+#include "renderer/glcommon/opengl.h"
 #include "shader_object.h"
 #include "shader_program.h"
 #include "texture.h"
@@ -374,7 +375,7 @@ static bool gl33_init_context(RendererBackend *backend, SDL_Window *window) {
 		R.features |= r_feature_bit(RFEAT_PARTIAL_MIPMAPS);
 	}
 
-	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
+	// R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
 	R.features |= r_feature_bit(RFEAT_DEFAULT_FRAMEBUFFER_READBACK);
 
 	if(glext.clear_texture) {
@@ -423,8 +424,8 @@ static int get_framebuffer_height(Framebuffer *fb) {
 }
 
 static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
-	int fb_height = get_framebuffer_height(fb);
-	vp->y = fb_height - vp->y - vp->h;
+	// int fb_height = get_framebuffer_height(fb);
+	// vp->y = fb_height - vp->y - vp->h;
 }
 
 static inline FloatRect* get_framebuffer_viewport(Framebuffer *fb) {
@@ -506,8 +507,25 @@ static void gl33_sync_magic_uniforms(void) {
 	Framebuffer *fb = R.framebuffer.active;
 	Uniform **u = shader->magic_uniforms;
 
+	mat4 proj;
+	mat4 clip_conversion = {
+		{ 1.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f, 1.0f },
+	};
+
+	if(R.framebuffer.active == NULL) {
+		clip_conversion[1][1] = -1.0f;
+		glFrontFace(GL_CW);
+	} else {
+		glFrontFace(GL_CCW);
+	}
+
+	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
+
 	r_uniform_mat4(u[UMAGIC_MATRIX_MV], *_r_matrices.modelview.head);
-	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], *_r_matrices.projection.head);
+	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], proj);
 	r_uniform_mat4(u[UMAGIC_MATRIX_TEX], *_r_matrices.texture.head);
 	r_uniform_vec4_rgba(u[UMAGIC_COLOR], &R.color);
 	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], (float*)&R.viewport.active);

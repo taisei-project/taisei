@@ -29,7 +29,7 @@ float get_sample(float x) {
 
 void main(void) {
 	vec4 c = vec4(1.0);
-	vec2 coord = flip_native_to_bottomleft(texCoord); // TODO: move to vertex shader
+	vec2 coord = vec2(texCoord.x, 1 - texCoord.y);
 	float s = get_sample(coord.x);
 
 	c.a = float(coord.y <= s);

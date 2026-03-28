@@ -38,7 +38,6 @@ void main(void) {
 	}
 
 	vec2 frag_loc = texCoord * viewport;
-	frag_loc.y = viewport.y - frag_loc.y;
 
 	#ifdef BBOX_TEST
 	float gap_bbox = max(gap_size.x, gap_size.y);

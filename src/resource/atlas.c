@@ -252,8 +252,7 @@ static void atlas_load_stage1(ResourceLoadState *st) {
 	for(uint i = 0; i < atlas->num_sprites; ++i) {
 		auto sprite = atlas->sprites + i;
 
-		// read it upside down because our RHI is funny
-		size_t row = atlas->height - sprite->image.offset_y - 1;
+		size_t row = sprite->image.offset_y;
 		size_t col = sprite->image.offset_x;
 		size_t row_size = sprite->image.width * pixel_size;
 
@@ -286,7 +285,7 @@ static void atlas_load_stage1(ResourceLoadState *st) {
 				}
 			}
 
-			rowp -= atlas->width;
+			rowp += atlas->width;
 		}
 
 	}
@@ -319,7 +318,7 @@ static void atlas_load_stage2(ResourceLoadState *st) {
 		.format = PIXMAP_FORMAT_RGBA8,
 		.width = atlas->width,
 		.height = atlas->height,
-		.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
+		.origin = PIXMAP_ORIGIN_TOPLEFT,
 	};
 
 	px.data_size = pixmap_data_size(px.format, px.width, px.height);

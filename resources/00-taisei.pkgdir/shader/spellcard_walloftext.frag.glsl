@@ -6,7 +6,7 @@
 void main(void) {
 	float n = 10; // rough number of rings of text
 
-	vec2 pos = (vec2(flip_native_to_topleft(texCoordRaw)) - origin * vec2(ratio, 1.0)) * n;
+	vec2 pos = (texCoordRaw - origin * vec2(ratio, 1.0)) * n;
 	pos.x /= ratio;
 
 	// Slightly distorted mapping to polar coordinates. I wrote this
@@ -30,7 +30,6 @@ void main(void) {
 	pos.x *= h/w;
 	pos.x += t * (mod(pos.y, 2.0) - 0.5);
 	pos = mod(pos, vec2(1 + 0.01 / w, 1));
-	pos = flip_topleft_to_native(pos);
 	pos *= vec2(w, h);
 
 	vec4 texel = texture(tex, pos);

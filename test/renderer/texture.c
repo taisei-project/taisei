@@ -18,13 +18,14 @@ int main(int argc, char **argv) {
 
 	const char *vert_shader_src =
 		"#version 420\n"
+		"layout(location = 0) uniform mat4 r_projectionMatrix;"
 		"layout(location = 0) in vec2 a_position;\n"
 		"layout(location = 1) in vec2 a_uv;\n"
 		"layout(location = 2) in vec4 a_color;\n"
 		"layout(location = 0) out vec2 v_uv;\n"
 		"layout(location = 1) out vec4 v_color;\n"
 		"void main(void) {\n"
-		"	gl_Position = vec4(a_position, 0, 1);\n"
+		"	gl_Position = r_projectionMatrix * vec4(a_position, 0, 1);\n"
 		"	v_uv = a_uv;\n"
 		"	v_color = a_color;\n"
 		"}\n";
@@ -55,15 +56,10 @@ int main(int argc, char **argv) {
 	r_vertex_attrib_format_interleaved(ARRAY_SIZE(va_spec), va_spec, va_format, 0);
 
 	Vertex2D vertices[] = {
-		// { {  1, -1, }, { 1, 1 }, { 1, 0, 0, 1 }, },
-		// { {  1,  1, }, { 1, 0 }, { 0, 1, 0, 1 }, },
-		// { { -1, -1, }, { 0, 1 }, { 0, 0, 1, 1 }, },
-		// { { -1,  1, }, { 0, 0 }, { 1, 1, 0, 1 }, },
-
-		{ {  1, -1, }, { 1, 0 }, { 1, 0, 0, 1 }, },
-		{ {  1,  1, }, { 1, 1 }, { 0, 1, 0, 1 }, },
 		{ { -1, -1, }, { 0, 0 }, { 0, 0, 1, 1 }, },
+		{ {  1, -1, }, { 1, 0 }, { 1, 0, 0, 1 }, },
 		{ { -1,  1, }, { 0, 1 }, { 1, 1, 0, 1 }, },
+		{ {  1,  1, }, { 1, 1 }, { 0, 1, 0, 1 }, },
 	};
 
 	VertexBuffer *vert_buf = r_vertex_buffer_create(sizeof(vertices), vertices);
