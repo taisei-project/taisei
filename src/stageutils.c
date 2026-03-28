@@ -9,6 +9,7 @@
 #include "stageutils.h"
 
 #include "global.h"
+#include "renderer/api.h"
 #include "resource/material.h"
 #include "resource/model.h"
 #include "util/glm.h"
@@ -68,6 +69,10 @@ void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
 	camera3d_apply_inverse_transforms(&s->cam, mat);
 }
 
+void camera3d_perspective(Camera3D *cam, mat4 proj) {
+	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, proj);
+	proj[1][1] *= -1.0f; 	// CURSED
+}
 
 // The author that brought you linear3dpos and that one function
 // that calculates the closest point to a line segment proudly presents:
@@ -87,11 +92,11 @@ void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
 // Actually, glm implements most of what is needed for this. Nice!
 //
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
-	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
+	vec4 viewport = {0, 0, VIEWPORT_W, VIEWPORT_H};
 	vec3 p = {re(pos), im(pos),1};
 
 	mat4 mpersp;
-	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
+	camera3d_perspective(cam, mpersp);
 	camera3d_apply_rotations(cam, mpersp);
 
 	glm_unproject(p, mpersp, viewport, dest);
@@ -99,10 +104,10 @@ void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 }
 
 void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) {
-	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
+	vec4 viewport = {0, 0, VIEWPORT_W, VIEWPORT_H};
 
 	mat4 mpersp;
-	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
+	camera3d_perspective(cam, mpersp);
 	camera3d_apply_rotations(cam, mpersp);
 
 	glm_project(pos, mpersp, viewport, dest);
@@ -236,7 +241,9 @@ void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawR
 void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]) {
 	r_mat_mv_push();
 	stage3d_apply_transforms(s, *r_mat_mv_current_ptr());
-	r_mat_proj_push_perspective(s->cam.fovy, s->cam.aspect, s->cam.near, s->cam.far);
+
+	r_mat_proj_push();
+	camera3d_perspective(&s->cam, *r_mat_proj_current_ptr());
 
 	for(uint i = 0; i < nsegments; ++i) {
 		const Stage3DSegment *seg = segments + i;

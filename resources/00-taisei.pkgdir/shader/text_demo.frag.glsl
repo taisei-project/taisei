@@ -14,7 +14,7 @@ vec3 colormap(float p) {
 
 void spriteMain(out vec4 fragColor) {
 	float t = customParams.r;
-	vec2 tco = flip_native_to_bottomleft(texCoordOverlay);
+	vec2 tco = vec2(texCoordOverlay.x, 1.0 - texCoordOverlay.y);
 	float base_gradient = smoothstep(-0.5, 0.8, tco.y);
 
 	vec4 clr = vec4(

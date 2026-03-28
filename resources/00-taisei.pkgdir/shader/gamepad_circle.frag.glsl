@@ -48,7 +48,7 @@ vec4 joystickPointer(vec2 p, float d, vec4 color) {
 }
 
 void main(void) {
-	vec2 uv = 2.22 * (flip_native_to_topleft(texCoordRaw) - 0.5);
+	vec2 uv = 2.22 * (texCoordRaw - 0.5);
 	vec2 snapCardinalsSinCos = snap_angles_sincos.xy;
 	vec2 snapDiagonalsSinCos = snap_angles_sincos.zw;
 

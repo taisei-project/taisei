@@ -12,6 +12,7 @@
 #include "../glcommon/debug.h"
 #include "gl33.h"
 #include "opengl.h"
+#include "pixmap/pixmap.h"
 #include "util.h"
 
 static GLenum class_to_gltarget(TextureClass cls) {
@@ -124,7 +125,7 @@ static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
 
 static void gl33_texture_type_query_fmtinfo(GLTextureFormatInfo *fmt_info, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
 	result->optimal_pixmap_format = fmt_info->transfer_format.pixmap_format;
-	result->optimal_pixmap_origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	result->optimal_pixmap_origin = PIXMAP_ORIGIN_TOPLEFT;
 
 	// TODO: Perhaps allow suboptimal transfer formats on non-GLES, as we did previously.
 	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);
@@ -179,9 +180,8 @@ static GLenum target_from_class_and_layer(TextureClass cls, uint layer) {
 			[CUBEMAP_FACE_POS_X] = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 			[CUBEMAP_FACE_NEG_X] = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 
-			// NOTE: apaprently these are swapped in OpenGL…
-			[CUBEMAP_FACE_POS_Y] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-			[CUBEMAP_FACE_NEG_Y] = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+			[CUBEMAP_FACE_POS_Y] = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+			[CUBEMAP_FACE_NEG_Y] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 
 			[CUBEMAP_FACE_POS_Z] = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 			[CUBEMAP_FACE_NEG_Z] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
@@ -525,7 +525,7 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uin
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		glCompressedTexSubImage2D(
 			gl_target, mipmap,
-			x, tex->params.height - y - image->height, image->width, image->height,
+			x, y, image->width, image->height,
 			tex->fmt_info->internal_format,
 			image->data_size,
 			image->data.untyped
@@ -533,7 +533,7 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uin
 	} else {
 		glTexSubImage2D(
 			gl_target, mipmap,
-			x, tex->params.height - y - image->height, image->width, image->height,
+			x, y, image->width, image->height,
 			xfer->gl_format,
 			xfer->gl_type,
 			image->data.untyped

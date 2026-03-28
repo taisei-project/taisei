@@ -9,9 +9,9 @@ UNIFORM(2) vec2 origin_ofs;
 void spriteMain(out vec4 fragColor) {
 	float fill = customParams.r;
 	vec4 texel = texture(tex, texCoord);
-	vec2 tc = flip_native_to_bottomleft(texCoordRaw) - vec2(0.5) + origin_ofs;
+	vec2 tc = texCoordRaw - vec2(0.5) - origin_ofs;
 
-	float x = atan(tc.x, tc.y) - pi * (2.0 * fill - 1.0);
+	float x = atan(tc.x, -tc.y) - pi * (2.0 * fill - 1.0);
 
 	// Crude anti-aliasing.
 	// smoothing = 2*fwidth(x) produces a uniform blur,

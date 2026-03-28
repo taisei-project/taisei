@@ -3,7 +3,9 @@
 #define I_WATER_H
 
 float water_sampleRawNoise(vec2 p) {
-	return texture(water_noisetex, p * (1.0 / 16.0)).x;
+	p.y = 1 - p.y;
+	p = p * (1.0 / 16.0);
+	return texture(water_noisetex, p).x;
 }
 
 float water_sampleWarpedNoise(vec2 p, mat2 s, vec2 m) {

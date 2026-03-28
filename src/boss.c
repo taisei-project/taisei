@@ -1306,8 +1306,8 @@ static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArg
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
-	r_uniform_vec2("origin", re(p->pos), VIEWPORT_H - im(p->pos));
-	r_uniform_vec2("clear_origin", re(p->pos), VIEWPORT_H - im(p->pos));
+	r_uniform_vec2("origin", re(p->pos), im(p->pos));
+	r_uniform_vec2("clear_origin", re(p->pos), im(p->pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);

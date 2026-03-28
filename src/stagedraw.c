@@ -682,8 +682,8 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	cmplx pos = fpos;
 
 	r_shader("boss_zoom");
-	r_uniform_vec2("blur_orig", re(pos)  / VIEWPORT_W,  1-im(pos)  / VIEWPORT_H);
-	r_uniform_vec2("fix_orig",  re(fpos) / VIEWPORT_W,  1-im(fpos) / VIEWPORT_H);
+	r_uniform_vec2("blur_orig", re(pos)  / VIEWPORT_W,  im(pos)  / VIEWPORT_H);
+	r_uniform_vec2("fix_orig",  re(fpos) / VIEWPORT_W,  im(fpos) / VIEWPORT_H);
 	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
@@ -778,7 +778,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 			if(trans_intro) {
 				r_shader("spellcard_intro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, im(pos) / VIEWPORT_H);
 				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
 				int tn = global.frames - b->current->endtime;
@@ -786,7 +786,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, im(pos) / VIEWPORT_H);
 				r_uniform_float("t", max(0, tn / (float)delay + 1));
 			}
 

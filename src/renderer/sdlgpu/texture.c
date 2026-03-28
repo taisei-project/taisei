@@ -7,6 +7,7 @@
  */
 
 #include "texture.h"
+#include "pixmap/pixmap.h"
 #include "sdlgpu.h"
 
 #include "../api.h"
@@ -694,7 +695,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 		&(SDL_GPUTextureRegion) {
 			.texture = tex->gpu_texture,
 			.x = x,
-			.y = tex_h - y - image->height,
+			.y = y,
 			.w = image->width,
 			.h = image->height,
 			.d = 1,
@@ -769,7 +770,7 @@ bool sdlgpu_texture_type_query(
 	}
 
 	result->optimal_pixmap_format = sdlgpu_texfmt_to_pixfmt(format);
-	result->optimal_pixmap_origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	result->optimal_pixmap_origin = PIXMAP_ORIGIN_TOPLEFT;
 
 	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
 	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);

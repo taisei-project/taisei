@@ -653,7 +653,7 @@ static void sdlgpu_draw_generic(
 		.shader_program = sdlgpu.st.shader,
 		.vertex_array = varr,
 		.depth_format = outputs.depth_format,
-		.front_face = sdlgpu.st.framebuffer ? SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE : SDL_GPU_FRONTFACE_CLOCKWISE,
+		.front_face = SDL_GPU_FRONTFACE_CLOCKWISE,
 	};
 
 	if(!(pd.cap_bits & r_capability_bit(RCAP_CULL_FACE))) {
@@ -721,15 +721,11 @@ static void sdlgpu_draw_generic(
 
 	mat4 proj;
 	mat4 clip_conversion = {
-		{ 1.0f, 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.5f, 0.0f },
-		{ 0.0f, 0.0f, 0.5f, 1.0f },
+		{ 1.0f,  0.0f, 0.0f, 0.0f },
+		{ 0.0f, -1.0f, 0.0f, 0.0f },
+		{ 0.0f,  0.0f, 0.5f, 0.0f },
+		{ 0.0f,  0.0f, 0.5f, 1.0f },
 	};
-
-	if(sdlgpu.st.framebuffer != NULL) {
-		clip_conversion[1][1] = -1.0f;
-	}
 
 	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
 
@@ -815,7 +811,7 @@ static r_feature_bits_t sdlgpu_features(void) {
 		r_feature_bit(RFEAT_DRAW_INSTANCED) |
 		r_feature_bit(RFEAT_DEPTH_TEXTURE) |
 		r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS) |
-		r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) |
+		// r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) |
 		r_feature_bit(RFEAT_PARTIAL_MIPMAPS) |
 		(sdlgpu.frame.faux_backbuffer.tex ?
 			r_feature_bit(RFEAT_DEFAULT_FRAMEBUFFER_READBACK) : 0) |

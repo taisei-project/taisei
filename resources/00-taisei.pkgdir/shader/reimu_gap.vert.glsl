@@ -14,12 +14,11 @@ void main(void) {
 		int link = gap_links[i];
 		vec2 next_gap = gaps[link];
 		float next_gap_angle = gap_angles[link];
-		vec2 tc = vec2(texCoord.x, 1 - texCoord.y) * viewport;
+		vec2 tc = texCoord * viewport;
 		tc -= gap.xy;
 		tc *= rot((next_gap_angle - gap_angle));
 		tc += next_gap.xy;
 		tc /= viewport;
-		tc.y = 1 - tc.y;
 		gap_views[i] = tc;
 		gap_rotations[i] = vec4(rot(gap_angle));
 	}

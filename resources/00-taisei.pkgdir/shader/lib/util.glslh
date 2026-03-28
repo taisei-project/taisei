@@ -32,11 +32,7 @@ float min3(vec3 c) {
 vec2 uv_to_region(vec4 region, vec2 uv) {
     return vec2(
         mix(region.x, region.x + region.z, uv.x),
-        #ifdef NATIVE_ORIGIN_BOTTOMLEFT
-        1.0 - mix(region.y, region.y + region.w, 1.0 - uv.y)
-        #else
         mix(region.y, region.y + region.w, uv.y)
-        #endif
     );
 }
 
@@ -90,58 +86,6 @@ vec3 sample_normalmap(sampler2D src, vec2 uv) {
     return vec3(xy, z);
 }
 
-float flip_topleft_to_native(float x) {
-#ifdef NATIVE_ORIGIN_BOTTOMLEFT
-    return 1 - x;
-#else
-    return x;
-#endif
-}
-
-vec2 flip_topleft_to_native(vec2 v) {
-    v.y = flip_topleft_to_native(v.y);
-    return v;
-}
-
-float flip_bottomleft_to_native(float x) {
-#ifdef NATIVE_ORIGIN_TOPLEFT
-    return 1 - x;
-#else
-    return x;
-#endif
-}
-
-vec2 flip_bottomleft_to_native(vec2 v) {
-    v.y = flip_bottomleft_to_native(v.y);
-    return v;
-}
-
-float flip_native_to_topleft(float x) {
-#ifdef NATIVE_ORIGIN_TOPLEFT
-    return x;
-#else
-    return 1 - x;
-#endif
-}
-
-vec2 flip_native_to_topleft(vec2 v) {
-    v.y = flip_native_to_topleft(v.y);
-    return v;
-}
-
-float flip_native_to_bottomleft(float x) {
-#ifdef NATIVE_ORIGIN_BOTTOMLEFT
-    return x;
-#else
-    return 1 - x;
-#endif
-}
-
-vec2 flip_native_to_bottomleft(vec2 v) {
-    v.y = flip_native_to_bottomleft(v.y);
-    return v;
-}
-
 vec2 equirectMapCoord(vec3 v) {
 	float phi = atan(v.y, v.x);
 	float theta = acos(v.z / length(v));
@@ -149,7 +93,7 @@ vec2 equirectMapCoord(vec3 v) {
 }
 
 vec3 fixCubeCoord(vec3 v) {
-	return v.xzy * vec3(1, -1, 1);
+	return v.xzy;
 }
 
 /*

@@ -291,8 +291,6 @@ static bool iqm_read_vert_texcoords(
 			log_error("%s: read error: %s", fpath, SDL_GetError());
 			return false;
 		}
-
-		vertices[i].uv[1] = 1.0 - vertices[i].uv[1];
 	}
 
 	return true;

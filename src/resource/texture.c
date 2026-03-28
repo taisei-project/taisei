@@ -53,11 +53,6 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	float s = frag.w/tw;
 	float t = frag.h/th;
 
-	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		// FIXME: please somehow abstract this shit away!
-		frag.y = th - frag.y - frag.h;
-	}
-
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
@@ -110,12 +105,6 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 	} else {
 		rw = ratio * aspect;
 		rh = ratio;
-	}
-
-	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		// FIXME: we should somehow account for this globally if possible...
-		yoff *= -1;
-		yoff += (1 - ratio);
 	}
 
 	bool texture_matrix_tainted = false;

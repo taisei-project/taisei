@@ -24,7 +24,7 @@ float vignette(vec2 uv, float threshold, float intensity) {
 void main(void) {
 	vec2 uv_raw = texCoord;
 	float v = vignette(uv_raw, 0.75, 20);
-	vec2 uv = flip_native_to_bottomleft(texCoord - wave_offset);
+	vec2 uv = texCoord + wave_offset;
 
 	mat2 m = mat2(0, -1,
 				  1,  0);
@@ -34,17 +34,17 @@ void main(void) {
 	vec2 dnduv = v * dFduv(n, uv) * 0.2;
 	vec2 dnduv2 = dnduv * dnduv * 0.5;
 
-	vec2 reflect_uv = flip_native_to_bottomleft(texCoord);
-	reflect_uv.y += 0.03;
+	vec2 reflect_uv = vec2(texCoord.x, 1 - texCoord.y);
+	reflect_uv.y -= 0.03;
 	reflect_uv -= 0.5;
 	reflect_uv.x *= 3 / (1 + smoothstep(0.5, 1, gl_FragCoord.z));  //  yikes
 	reflect_uv += 0.5;
 	reflect_uv.y *= reflect_uv.y;
 	reflect_uv += 0.03 * sign(dnduv) * sqrt(abs(dnduv)) * vec2(0.1, 1);  // oof
-	reflect_uv = flip_bottomleft_to_native(reflect_uv);
 
 	float reflection_vignette = vignette(clamp(reflect_uv - vec2(0, 0.35), 0, 1), 0.5, 40);
 	reflection_vignette *= vignette(reflect_uv, 0.2, 20);
+	reflect_uv.y = 1 - reflect_uv.y;
 
 	vec4 surface;
 
@@ -58,6 +58,7 @@ void main(void) {
 		reflection.rgb = mix(reflection.rgb, water_color.rgb, reflection.a * 0.5);
 		reflection = reflection * reflection_color * (0.5 * reflection_vignette);
 		surface = alphaCompose(water_color, reflection);
+		surface = reflection;
 	}
 
 	float w = max((dnduv2.y - dnduv2.x * 0.25), 0) * 0.10;

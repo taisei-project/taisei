@@ -31,13 +31,13 @@ vec3 bottomLayer(mat3 tbn, vec2 uv, vec3 pos);
 void main(void) {
 	vec2 uv = waterTexCoord;
 
-	float height = water_sampleWarpedNoise(uv, mat2(2), vec2(-time, 0));
+	float height =  water_sampleWarpedNoise(uv, mat2(2), vec2(-time, 0));
 	vec2 dheightduv = dFduv(height, uv).yx;
 	vec2 dheightduv2 = dheightduv * dheightduv;
 	float wave_highlight = max(dheightduv2.y - 5 * dheightduv2.x, 0);
 
 	mat3 tbn = mat3(normalize(tangent), normalize(bitangent), normalize(normal));
-	vec3 surface_normal = normalize(vec3(-wave_height * dheightduv, 1));
+	vec3 surface_normal = normalize(vec3(wave_height * dheightduv, 1));
 
 	vec3 bottom;
 
@@ -55,6 +55,7 @@ void main(void) {
 	}
 
 	vec3 combined = topLayer(tbn * surface_normal, pos, bottom, wave_highlight);
+	// combined = bottom;
 	PBR_Generic_MaybeTonemap(combined, features_mask);
 	fragColor = vec4(combined, 1.0);
 }
@@ -89,6 +90,8 @@ vec3 bottomLayer(mat3 tbn, vec2 uv, vec3 pos) {
 	vec3 color = p.mat.ambient;
 	color += PBR_PointLights(pbr, light_count, light_positions, light_colors);
 	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, environmentRGB_depthScale.rgb, features_mask);
+
+	// color.rgb = vec3(pbr.NdotV);
 
 	return color;
 }
