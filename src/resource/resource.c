@@ -1534,6 +1534,9 @@ Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, R
 		ResourceStatus status = wait_for_resource_load(ires, flags);
 
 		if(status == RES_STATUS_FAILED) {
+			if(!(flags & RESF_OPTIONAL)) {
+				log_fatal("Required %s '%s' couldn't be loaded", type_name(type), name);
+			}
 			return NULL;
 		}
 
