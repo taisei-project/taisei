@@ -122,6 +122,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 			RES_TEXTURE, ld->_map_##_map, st->flags & ~RESF_RELOAD); \
 		if(UNLIKELY(ld->mat->_map_##_map == NULL)) { \
 			log_error("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \
+			mem_free(ld->mat); \
 			free_mat_load_data(ld); \
 			res_load_failed(st); \
 			return; \
