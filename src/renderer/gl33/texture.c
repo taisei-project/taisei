@@ -123,16 +123,14 @@ static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
 	return fmt_info;
 }
 
-static void gl33_texture_type_query_fmtinfo(GLTextureFormatInfo *fmt_info, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+static void gl33_texture_type_query_fmtinfo(GLTextureFormatInfo *fmt_info, PixmapFormat pxfmt, TextureTypeQueryResult *result) {
 	result->optimal_pixmap_format = fmt_info->transfer_format.pixmap_format;
-	result->optimal_pixmap_origin = PIXMAP_ORIGIN_TOPLEFT;
 
 	// TODO: Perhaps allow suboptimal transfer formats on non-GLES, as we did previously.
 	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);
-	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
 }
 
-bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, TextureTypeQueryResult *result) {
 	GLTextureFormatInfo *fmt_info = pick_format(type, flags);
 
 	if(fmt_info == NULL) {
@@ -140,7 +138,7 @@ bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat 
 	}
 
 	if(result) {
-		gl33_texture_type_query_fmtinfo(fmt_info, pxfmt, pxorigin, result);
+		gl33_texture_type_query_fmtinfo(fmt_info, pxfmt, result);
 	}
 
 	return true;
@@ -201,9 +199,8 @@ static void gl33_texture_set(Texture *tex, uint mipmap, uint layer, const Pixmap
 	assert(image != NULL);
 
 	TextureTypeQueryResult qr;
-	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, image->origin, &qr);
+	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, &qr);
 	assert(qr.supplied_pixmap_format_supported);
-	assert(qr.supplied_pixmap_origin_supported);
 	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
 	void *image_data = image->data.untyped;
@@ -515,9 +512,8 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uin
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	TextureTypeQueryResult qr;
-	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, image->origin, &qr);
+	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, &qr);
 	assert(qr.supplied_pixmap_format_supported);
-	assert(qr.supplied_pixmap_origin_supported);
 	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
 	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
@@ -625,7 +621,6 @@ bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
 	gl33_texture_get_size(tex, mipmap, &dst->width, &dst->height);
 
-	dst->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 	dst->format = tex->fmt_info->transfer_format.pixmap_format;
 	dst->data.untyped = pixmap_alloc_buffer_for_copy(dst, &dst->data_size);
 

@@ -74,7 +74,6 @@ static Texture *test_renderer_load_texture(const char *path) {
 
 	Pixmap px = {};
 	PixmapFormat fmt = PIXMAP_FORMAT_RGBA8;
-	PixmapOrigin origin = PIXMAP_ORIGIN_TOPLEFT;
 
 	if(!pixmap_load_stream(istream, PIXMAP_FILEFORMAT_AUTO, &px, fmt)) {
 		log_fatal("pixmap_load_stream() failed");
@@ -83,7 +82,6 @@ static Texture *test_renderer_load_texture(const char *path) {
 	SDL_CloseIO(istream);
 
 	pixmap_convert_inplace_realloc(&px, fmt);
-	pixmap_flip_to_origin_inplace(&px, origin);
 
 	Texture *tex = r_texture_create(&(TextureParams) {
 		.class = TEXTURE_CLASS_2D,

@@ -54,7 +54,7 @@ void sdlgpu_texture_prepare(Texture *tex);
 void sdlgpu_texture_taint(Texture *tex);
 void sdlgpu_texture_clear(Texture *tex, const Color *clr);
 void sdlgpu_texture_destroy(Texture *tex);
-bool sdlgpu_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
+bool sdlgpu_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, TextureTypeQueryResult *result);
 bool sdlgpu_texture_sampler_compatible(Texture *tex, UniformType sampler_type) attr_nonnull(1);
 bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
 bool sdlgpu_texture_transfer(Texture *dst, Texture *src);

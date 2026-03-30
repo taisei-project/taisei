@@ -278,17 +278,16 @@ bool texture_loader_try_set_texture_type(
 	TextureLoadData *ld,
 	TextureType tex_type,
 	PixmapFormat px_fmt,
-	PixmapOrigin px_org,
 	bool srgb_fallback,
 	TextureTypeQueryResult *out_qr
 ) {
 	TextureTypeQueryResult qr;
-	bool type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, px_org, &qr);
+	bool type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, &qr);
 
 	if(!type_supported && (ld->params.flags & TEX_FLAG_SRGB) && srgb_fallback) {
 		ld->params.flags &= ~TEX_FLAG_SRGB;
 		ld->preprocess.linearize = true;
-		type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, px_org, &qr);
+		type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, &qr);
 	}
 
 	if(type_supported) {
@@ -308,11 +307,10 @@ bool texture_loader_set_texture_type_uncompressed(
 	TextureLoadData *ld,
 	TextureType tex_type,
 	PixmapFormat px_fmt,
-	PixmapOrigin px_org,
 	TextureTypeQueryResult *out_qr
 ) {
 	assert(!TEX_TYPE_IS_COMPRESSED(tex_type));
-	bool ok = texture_loader_try_set_texture_type(ld, tex_type, px_fmt, px_org, true, out_qr);
+	bool ok = texture_loader_try_set_texture_type(ld, tex_type, px_fmt, true, out_qr);
 
 	if(!ok) {
 		log_error("%s: Texture type %s not supported", ld->st->name, r_texture_type_name(tex_type));
@@ -334,13 +332,12 @@ bool texture_loader_prepare_pixmaps(
 	TextureFlags tex_flags
 ) {
 	TextureTypeQueryResult qr;
-	if(!r_texture_type_query(tex_type, tex_flags, pm_main->format, pm_main->origin, &qr)) {
+	if(!r_texture_type_query(tex_type, tex_flags, pm_main->format, &qr)) {
 		log_error("%s: Texture type %s not supported", ld->st->name, r_texture_type_name(tex_type));
 		return false;
 	}
 
 	pixmap_convert_inplace_realloc(pm_main, qr.optimal_pixmap_format);
-	pixmap_flip_to_origin_inplace(pm_main, qr.optimal_pixmap_origin);
 
 	if(pm_alphamap && pm_alphamap->data.untyped) {
 		TextureType alphamap_type;
@@ -351,13 +348,12 @@ bool texture_loader_prepare_pixmaps(
 			alphamap_type = TEX_TYPE_R_8;
 		}
 
-		if(!r_texture_type_query(alphamap_type, 0, pm_alphamap->format, pm_alphamap->origin, &qr)) {
+		if(!r_texture_type_query(alphamap_type, 0, pm_alphamap->format, &qr)) {
 			log_error("%s: Alphamap texture type %s not supported", ld->st->name, r_texture_type_name(alphamap_type));
 			return false;
 		}
 
 		pixmap_convert_inplace_realloc(pm_alphamap, qr.optimal_pixmap_format);
-		pixmap_flip_to_origin_inplace(pm_alphamap, qr.optimal_pixmap_origin);
 	}
 
 	return true;
@@ -509,7 +505,7 @@ static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 		if(px == ref) {
 			ld->preferred_format = ld->preferred_format ? ld->preferred_format : px->format;
 			TextureType tex_type = r_texture_type_from_pixmap_format(ld->preferred_format);
-			bool apply_format_ok = texture_loader_set_texture_type_uncompressed(ld, tex_type, px->format, px->origin, NULL);
+			bool apply_format_ok = texture_loader_set_texture_type_uncompressed(ld, tex_type, px->format, NULL);
 
 			if(!apply_format_ok) {
 				texture_loader_failed(ld);
@@ -711,7 +707,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 
 	ld->preferred_format = ld->preferred_format ? ld->preferred_format : ld->pixmaps->format;
 	TextureType tex_type = r_texture_type_from_pixmap_format(ld->preferred_format);
-	bool apply_format_ok = texture_loader_set_texture_type_uncompressed(ld, tex_type, ld->pixmaps->format, ld->pixmaps->origin, NULL);
+	bool apply_format_ok = texture_loader_set_texture_type_uncompressed(ld, tex_type, ld->pixmaps->format, NULL);
 
 	if(!apply_format_ok) {
 		texture_loader_failed(ld);

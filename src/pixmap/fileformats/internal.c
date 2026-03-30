@@ -13,7 +13,7 @@
 #include "util.h"
 
 enum {
-	PXI_VERSION = 1,
+	PXI_VERSION = 2,
 	PXI_CRC32_INIT = 42069,
 };
 
@@ -52,7 +52,6 @@ static bool px_internal_save(SDL_IOStream *stream, const Pixmap *pixmap,
 	W_U32(cstream, pixmap->height);
 	W_U32(cstream, pixmap->data_size);
 	W_U16(cstream, pixmap->format);
-	W_U8(cstream, pixmap->origin);
 	W_BYTES(cstream, pixmap->data.untyped, pixmap->data_size);
 
 	SDL_CloseIO(cstream);
@@ -104,24 +103,12 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 	SDL_ReadU32LE(cstream, &pixmap->data_size);
 
 	uint16_t tmp_u16 = 0;
-	uint8_t tmp_u8 = 0;
 
 	SDL_ReadU16LE(cstream, &tmp_u16);
 	pixmap->format = tmp_u16;
 
-	SDL_ReadU8(cstream, &tmp_u8);
-	pixmap->origin = tmp_u8;
-
 	if(pixmap->data_size > PIXMAP_BUFFER_MAX_SIZE) {
 		log_error("Data size is too large");
-		goto fail;
-	}
-
-	if(
-		pixmap->origin != PIXMAP_ORIGIN_BOTTOMLEFT &&
-		pixmap->origin != PIXMAP_ORIGIN_TOPLEFT
-	) {
-		log_error("Invalid origin 0x%x", pixmap->origin);
 		goto fail;
 	}
 

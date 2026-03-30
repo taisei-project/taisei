@@ -180,7 +180,6 @@ static void pixmap_copy_meta(const Pixmap *src, Pixmap *dst) {
 	dst->format = src->format;
 	dst->width = src->width;
 	dst->height = src->height;
-	dst->origin = src->origin;
 }
 
 void pixmap_copy(const Pixmap *src, Pixmap *dst) {
@@ -328,29 +327,4 @@ void pixmap_flip_y_inplace(Pixmap *src) {
 		memcpy(data + row * row_length, data + (rows - row - 1) * row_length, row_length);
 		memcpy(data + (rows - row - 1) * row_length, swap_buffer, row_length);
 	}
-}
-
-void pixmap_flip_to_origin(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) {
-	assert(dst->data.untyped != NULL);
-
-	if(src->origin == origin) {
-		pixmap_copy(src, dst);
-	} else {
-		pixmap_flip_y(src, dst);
-		dst->origin = origin;
-	}
-}
-
-void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
-	pixmap_flip_to_origin(src, dst, origin);
-}
-
-void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) {
-	if(src->origin == origin) {
-		return;
-	}
-
-	pixmap_flip_y_inplace(src);
-	src->origin = origin;
 }

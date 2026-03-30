@@ -105,10 +105,6 @@ static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap,
 		bit_depth
 	);
 
-	// NOTE: We read the image upside down here to avoid needing to flip it for
-	// the GL backend. This is just a slight optimization, not a hard dependency.
-	pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-
 	size_t pixel_size = pixmap_format_pixel_size(pixmap->format);
 
 	if(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / (pixmap->width * pixel_size)) {
@@ -119,7 +115,7 @@ static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap,
 	png_bytep buffer = pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap, &pixmap->data_size);
 
 	for(int pass = 0; pass < num_passes; ++pass) {
-		for(int row = pixmap->height - 1; row >= 0; --row) {
+		for(int row = 0; row < pixmap->height; ++row) {
 			png_read_row(png, buffer + row * pixmap->width * pixel_size, NULL);
 		}
 	}
@@ -254,14 +250,8 @@ static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
 	}
 #endif
 
-	if(px.origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
-		for(int row = px.height - 1; row >= 0; --row) {
-			png_write_row(png, px.data.r8->values + row * px.width * pixel_size);
-		}
-	} else {
-		for(int row = 0; row < px.height; ++row) {
-			png_write_row(png, px.data.r8->values + row * px.width * pixel_size);
-		}
+	for(int row = 0; row < px.height; ++row) {
+		png_write_row(png, px.data.r8->values + row * px.width * pixel_size);
 	}
 
 	png_write_end(png, info_ptr);

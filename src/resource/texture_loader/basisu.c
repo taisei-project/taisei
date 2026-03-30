@@ -9,6 +9,7 @@
 #include "basisu.h"
 #include "basisu_cache.h"
 
+#include "pixmap/pixmap.h"
 #include "rwops/rwops_sha256.h"
 #include "util.h"
 #include "util/env.h"
@@ -152,15 +153,14 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 	TextureLoadData *ld,
 	uint32_t taisei_meta,
 	basist_source_format basis_source_fmt,
-	PixmapOrigin org,
 	PixmapFormat fallback_format,
+	bool force_decompress,
 	TextureTypeQueryResult *out_qr
 ) {
 	const char *ctx = ld->st->name;
 	TextureTypeQueryResult qr;
 
-	if(env_get("TAISEI_BASISU_FORCE_UNCOMPRESSED", false)) {
-		log_info("%s: Uncompressed fallback forced by environment", ctx);
+	if(force_decompress) {
 		goto uncompressed;
 	}
 
@@ -308,13 +308,8 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 		}
 
 		TextureType tex_type = r_texture_type_from_pixmap_format(px_fmt);
-		if(!texture_loader_try_set_texture_type(ld, tex_type, px_fmt, org, false, &qr)) {
+		if(!texture_loader_try_set_texture_type(ld, tex_type, px_fmt, false, &qr)) {
 			BASISU_DEBUG("%s: Skip: texture type %s not supported by renderer", ctx, r_texture_type_name(tex_type));
-			continue;
-		}
-
-		if(!qr.supplied_pixmap_origin_supported) {
-			BASISU_DEBUG("%s: Skip: supplied origin not supported; flipping not implemented", ctx);
 			continue;
 		}
 
@@ -336,7 +331,7 @@ uncompressed:
 	(void)0;  // C is dumb
 
 	TextureType tex_type = r_texture_type_from_pixmap_format(fallback_format);
-	if(texture_loader_set_texture_type_uncompressed(ld, tex_type, PIXMAP_FORMAT_RGBA8, org, &qr)) {
+	if(texture_loader_set_texture_type_uncompressed(ld, tex_type, PIXMAP_FORMAT_RGBA8, &qr)) {
 		if(out_qr) {
 			*out_qr = qr;
 		}
@@ -353,7 +348,6 @@ struct basisu_load_data {
 	basist_transcoder *tc;
 	uint mip_bias;
 	PixmapFormat px_decode_format;
-	PixmapOrigin px_origin;
 	bool transcoding_started;
 	bool swizzle_supported;
 	bool is_uncompressed_fallback;
@@ -670,7 +664,6 @@ static bool texture_loader_basisu_load_pixmap(
 		param,
 		&level_desc,
 		bld->px_decode_format,
-		bld->px_origin,
 		data_size,
 		out_pixmap
 	)) {
@@ -689,7 +682,6 @@ static bool texture_loader_basisu_load_pixmap(
 		out_pixmap->format = bld->px_decode_format;
 		out_pixmap->width = level_desc.orig_width;
 		out_pixmap->height = level_desc.orig_height;
-		out_pixmap->origin = bld->px_origin;
 
 		texture_loader_basisu_cache(bld->basis_hash, param, &level_desc, out_pixmap);
 	}
@@ -805,6 +797,18 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			return;
 	}
 
+	bool force_decompress = false;
+
+	if(env_get("TAISEI_BASISU_FORCE_UNCOMPRESSED", false)) {
+		log_info("%s: Uncompressed fallback forced by environment", ctx);
+		force_decompress = true;
+	}
+
+	if(file_info.y_flipped && !force_decompress) {
+		log_warn("%s: Basis Universal texture has incorrect orientation (Y-flipped), forced to decompress", ctx);
+		force_decompress = true;
+	}
+
 	file_info.total_images = num_load_images;
 
 	uint32_t taisei_meta = file_info.userdata.userdata[0];
@@ -827,7 +831,6 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		ld->params.flags &= ~TEX_FLAG_SRGB;
 	}
 
-	bld.px_origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
 	PixmapFormat px_fallback_format = PIXMAP_FORMAT_RGBA8;
 	basist_texture_format basis_fallback_format = BASIST_FORMAT_RGBA32;
 
@@ -837,8 +840,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		ld,
 		taisei_meta,
 		file_info.source_format,
-		bld.px_origin,
 		ld->preferred_format ? ld->preferred_format : px_fallback_format,
+		force_decompress,
 		&qr
 	);
 
@@ -881,6 +884,9 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			for(uint mip = 0; mip < ld->params.mipmaps; ++mip) {
 				p.level_index = mip + bld.mip_bias;
 				TRY_SILENT(texture_loader_basisu_load_pixmap, ctx, &bld, ld, &p, ld->pixmaps + mip);
+				if(file_info.y_flipped) {
+					pixmap_flip_y_inplace(ld->pixmaps + mip);
+				}
 			}
 
 			break;
@@ -893,6 +899,9 @@ void texture_loader_basisu(TextureLoadData *ld) {
 					p.level_index = mip + bld.mip_bias;
 					Pixmap *px = &ld->cubemaps[mip].faces[face];
 					TRY_SILENT(texture_loader_basisu_load_pixmap, ctx, &bld, ld, &p, px);
+					if(file_info.y_flipped) {
+						pixmap_flip_y_inplace(px);
+					}
 				}
 			}
 

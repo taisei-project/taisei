@@ -18,7 +18,6 @@ bool texture_loader_basisu_load_cached(
 	const basist_transcode_level_params *tc_params,
 	const basist_image_level_desc *level_desc,
 	PixmapFormat expected_px_format,
-	PixmapOrigin expected_px_origin,
 	uint32_t expected_size,
 	Pixmap *out_pixmap
 ) attr_nonnull_all attr_nodiscard;

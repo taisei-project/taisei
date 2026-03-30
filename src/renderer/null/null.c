@@ -91,12 +91,10 @@ static bool null_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
-static bool null_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+static bool null_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, TextureTypeQueryResult *result) {
 	if(result) {
 		result->optimal_pixmap_format = pxfmt;
-		result->optimal_pixmap_origin = pxorigin;
 		result->supplied_pixmap_format_supported = true;
-		result->supplied_pixmap_origin_supported = true;
 	}
 
 	return true;

@@ -87,7 +87,6 @@ static bool ping_read_request(FramebufferReadRequest *rq) {
 			.width = rq->transfer.width,
 			.height = rq->transfer.height,
 			.format = rq->transfer.format,
-			.origin = PIXMAP_ORIGIN_TOPLEFT,
 			.data_size = data_size,
 			.data.untyped = data,
 		}, rq->userdata);
