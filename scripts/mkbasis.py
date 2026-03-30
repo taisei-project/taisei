@@ -520,16 +520,16 @@ def main(args):
 
     parser.add_argument('--y-flip',
         dest='y_flip',
-        help='flip the texture vertically (default)',
+        help='flip the texture vertically',
         action='store_true',
-        default=True,
+        default=False,
     )
 
     parser.add_argument('--no-y-flip',
         dest='y_flip',
-        help="don't flip the texture vertically",
+        help="don't flip the texture vertically (default)",
         action='store_false',
-        default=True,
+        default=False,
     )
 
     parser.add_argument('--slow',
