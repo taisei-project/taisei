@@ -804,9 +804,15 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		force_decompress = true;
 	}
 
-	if(file_info.y_flipped && !force_decompress) {
-		log_warn("%s: Basis Universal texture has incorrect orientation (Y-flipped), forced to decompress", ctx);
-		force_decompress = true;
+	if(file_info.y_flipped) {
+		if(env_get("TAISEI_BASISU_REJECT_FLIPPED", false)) {
+			log_error("%s: Basis Universal texture has incorrect orientation (Y-flipped)", ctx);
+			texture_loader_basisu_failed(ld, &bld);
+			return;
+		} else if(!force_decompress) {
+			log_warn("%s: Basis Universal texture has incorrect orientation (Y-flipped), forced to decompress", ctx);
+			force_decompress = true;
+		}
 	}
 
 	file_info.total_images = num_load_images;
