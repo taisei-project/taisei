@@ -191,7 +191,7 @@ vec3 PBR_EnvironmentLight(
 	const float MAX_REFLECTION_LOD = 8.0;  // TODO pass as uniform or use LOD query extension
 // 	vec3 reflection = textureLod(prefiltered_cubemap, R, st.params.roughness * MAX_REFLECTION_LOD).rgb;
 	vec3 reflection = texture(prefiltered_cubemap, R).rgb;
-	vec2 brdf = texture(brdf_lut, vec2(st.NdotV, 1 - st.params.mat.roughness)).rg;
+	vec2 brdf = texture(brdf_lut, vec2(st.NdotV, st.params.mat.roughness)).rg;
 	vec3 specular = reflection * (F * brdf.x + brdf.y);
 
 // 	vec3 l = kD * diffuse + specular;
