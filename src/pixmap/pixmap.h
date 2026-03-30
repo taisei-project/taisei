@@ -55,11 +55,6 @@ typedef enum PixmapLayout {
 	PIXMAP_LAYOUT_RGBA,
 } PixmapLayout;
 
-typedef enum PixmapOrigin {
-	PIXMAP_ORIGIN_TOPLEFT,
-	PIXMAP_ORIGIN_BOTTOMLEFT,
-} PixmapOrigin;
-
 #define PIXMAP_COMPRESSION_FORMATS(X, ...) \
 	X(ETC1_RGB, RGB, __VA_ARGS__) \
 	X(ETC2_RGBA, RGBA, __VA_ARGS__) \
@@ -275,7 +270,6 @@ typedef struct Pixmap {
 	uint32_t height;
 	uint32_t data_size;
 	PixmapFormat format;
-	PixmapOrigin origin;
 } Pixmap;
 
 typedef union SwizzleMask {
@@ -301,10 +295,6 @@ void pixmap_swizzle_inplace(Pixmap *px, SwizzleMask swizzle);
 void pixmap_flip_y(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_flip_y_inplace(Pixmap *src) attr_nonnull(1);
-
-void pixmap_flip_to_origin(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) attr_nonnull(1, 2);
-void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) attr_nonnull(1, 2);
-void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) attr_nonnull(1);
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
 bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 3) attr_nodiscard;

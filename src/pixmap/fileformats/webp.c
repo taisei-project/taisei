@@ -74,9 +74,6 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 		pixmap->format = PIXMAP_FORMAT_RGBA8;
 	}
 
-	// TODO: add a way to indicate preference
-	pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(pixmap->format);
 	size_t scanline_size = pixel_size * pixmap->width;
 
@@ -89,16 +86,8 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 	pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap, &pixmap->data_size);
 	bool ok = false;
 
-	int stride;
-	uint8_t *begin;
-
-	if(pixmap->origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
-		stride = -(int)scanline_size;
-		begin = (uint8_t*)pixmap->data.untyped + pixmap->data_size - scanline_size;
-	} else {
-		stride = scanline_size;
-		begin = pixmap->data.untyped;
-	}
+	int stride = scanline_size;
+	uint8_t *begin = pixmap->data.untyped;
 
 	if(pixmap->format == PIXMAP_FORMAT_RGBA8) {
 		if(UNLIKELY(!(ok = WebPDecodeRGBAInto(

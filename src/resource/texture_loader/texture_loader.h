@@ -62,7 +62,6 @@ bool texture_loader_try_set_texture_type(
 	TextureLoadData *ld,
 	TextureType tex_type,
 	PixmapFormat px_fmt,
-	PixmapOrigin px_org,
 	bool srgb_fallback,
 	TextureTypeQueryResult *out_qr
 ) attr_nodiscard;
@@ -71,7 +70,6 @@ bool texture_loader_set_texture_type_uncompressed(
 	TextureLoadData *ld,
 	TextureType tex_type,
 	PixmapFormat px_fmt,
-	PixmapOrigin px_org,
 	TextureTypeQueryResult *out_qr
 ) attr_nodiscard;
 

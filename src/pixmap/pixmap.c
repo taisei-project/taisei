@@ -345,7 +345,6 @@ bool pixmap_from_sdl_surface(SDL_Surface *surf, Pixmap *px) {
 	px->height = surf->h;
 	px->format = px_fmt;
 	px->data.untyped = pixmap_alloc_buffer_for_copy(px, &px->data_size);
-	px->origin = PIXMAP_ORIGIN_TOPLEFT;
 
 	assert(surf->pitch == surf->w * PIXMAP_FORMAT_PIXEL_SIZE(px->format));
 	assert(!SDL_MUSTLOCK(surf));
@@ -371,22 +370,9 @@ SDL_Surface *pixmap_to_sdl_surface(const Pixmap *px) {
 	SDL_Surface *surf = NULL;
 	int pitch = PIXMAP_FORMAT_PIXEL_SIZE(px->format) * px->width;
 
-	if(px->origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
-		surf = SDL_CreateSurface(px->width, px->height, fmt);
-		if(!surf) {
-			log_sdl_error(LOG_ERROR, "SDL_CreateSurface");
-		} else {
-			assert(!SDL_MUSTLOCK(surf));
-			assert(surf->pitch == pitch);
-			Pixmap flipped = *px;
-			flipped.data.untyped = surf->pixels;
-			pixmap_flip_y(px, &flipped);
-		}
-	} else {
-		surf = SDL_CreateSurfaceFrom(px->width, px->height, fmt, px->data.untyped, pitch);
-		if(!surf) {
-			log_sdl_error(LOG_ERROR, "SDL_CreateSurfaceFrom");
-		}
+	surf = SDL_CreateSurfaceFrom(px->width, px->height, fmt, px->data.untyped, pitch);
+	if(!surf) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateSurfaceFrom");
 	}
 
 	return surf;

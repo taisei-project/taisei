@@ -427,7 +427,7 @@ void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count
 }
 
 Texture *r_texture_create(const TextureParams *params) {
-	assert(r_texture_type_query(params->type, params->flags, 0, 0, NULL));
+	assert(r_texture_type_query(params->type, params->flags, 0, NULL));
 	return B.texture_create(params);
 }
 
@@ -495,8 +495,8 @@ bool r_texture_transfer(Texture *dst, Texture *src) {
 	return B.texture_transfer(dst, src);
 }
 
-bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
-	return B.texture_type_query(type, flags, pxfmt, pxorigin, result);
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, TextureTypeQueryResult *result) {
+	return B.texture_type_query(type, flags, pxfmt, result);
 }
 
 const char *r_texture_type_name(TextureType type) {

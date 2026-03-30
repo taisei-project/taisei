@@ -52,7 +52,6 @@ bool texture_loader_basisu_load_cached(
 	const basist_transcode_level_params *tc_params,
 	const basist_image_level_desc *level_desc,
 	PixmapFormat expected_px_format,
-	PixmapOrigin expected_px_origin,
 	uint32_t expected_size,
 	Pixmap *out_pixmap
 ) {
@@ -100,21 +99,6 @@ bool texture_loader_basisu_load_cached(
 				out_pixmap->format
 			);
 		}
-
-		goto bad_entry;
-	}
-
-	if(out_pixmap->origin != expected_px_origin) {
-		const char *origin_name[] = {
-			[PIXMAP_ORIGIN_BOTTOMLEFT] = "BOTTOMLEFT",
-			[PIXMAP_ORIGIN_TOPLEFT] = "TOPLEFT",
-		};
-
-		log_error("%s: Bad cache entry: Expected origin %s, got %s",
-			path,
-			origin_name[expected_px_origin],
-			origin_name[out_pixmap->origin]
-		);
 
 		goto bad_entry;
 	}

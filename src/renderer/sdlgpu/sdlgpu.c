@@ -367,7 +367,6 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 		.data_size = sizeof(pixel),
 		.width = 1,
 		.height = 1,
-		.origin = PIXMAP_ORIGIN_TOPLEFT,
 	};
 
 	for(uint i = 0; i < num_layers; ++i) {

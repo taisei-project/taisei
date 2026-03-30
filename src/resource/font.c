@@ -617,12 +617,10 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		}
 
 		Pixmap px;
-		px.origin = PIXMAP_ORIGIN_TOPLEFT;
 		px.format = PIXMAP_FORMAT_RGB8;
 		px.width = max(g_bm_fill->bitmap.width, max(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = max(g_bm_fill->bitmap.rows, max(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
 		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
-
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
 
@@ -677,16 +675,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			}
 		}
 
-		TextureTypeQueryResult qr = {};
 
-		// TODO: Only query this once on init.
-		if(r_texture_type_query(SS_TEXTURE_TYPE, SS_TEXTURE_FLAGS, px.format, px.origin, &qr)) {
-			pixmap_convert_inplace_realloc(&px, qr.optimal_pixmap_format);
-			pixmap_flip_to_origin_inplace(&px, qr.optimal_pixmap_origin);
-		} else {
-			log_error("Texture query failed!");
-			assert(0);
-		}
 
 		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
 			log_error(

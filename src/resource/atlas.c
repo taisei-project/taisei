@@ -318,7 +318,6 @@ static void atlas_load_stage2(ResourceLoadState *st) {
 		.format = PIXMAP_FORMAT_RGBA8,
 		.width = atlas->width,
 		.height = atlas->height,
-		.origin = PIXMAP_ORIGIN_TOPLEFT,
 	};
 
 	px.data_size = pixmap_data_size(px.format, px.width, px.height);

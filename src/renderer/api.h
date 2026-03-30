@@ -198,9 +198,7 @@ typedef struct TextureParams {
 
 typedef struct TextureTypeQueryResult {
 	PixmapFormat optimal_pixmap_format;
-	PixmapOrigin optimal_pixmap_origin;
 	bool supplied_pixmap_format_supported;
-	bool supplied_pixmap_origin_supported;
 } TextureTypeQueryResult;
 
 typedef enum FramebufferAttachment {
@@ -756,7 +754,7 @@ void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 bool r_texture_transfer(Texture *dst, Texture *src) attr_nonnull(1);
 
-bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) attr_nodiscard;
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, TextureTypeQueryResult *result) attr_nodiscard;
 const char *r_texture_type_name(TextureType type);
 TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt);
 
