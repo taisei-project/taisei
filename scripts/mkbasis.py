@@ -210,7 +210,12 @@ def process(args):
     with TemporaryDirectory() as tempdir:
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
-        width, height = image_size(img)
+
+        if args.dry_run:
+            width, height = 16, 8
+        else:
+            width, height = image_size(img)
+
         cubemap = None
 
         if args.equirect_cubemap:
