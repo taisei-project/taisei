@@ -56,10 +56,10 @@ static void setup_nodes_grid(NodesGrid *grid, Rect area) {
 
 			Node *n = NOT_NULL(get_node(grid, r, c));
 			n->pos = CMPLX(x, y);
-			n->links.top    = NOT_NULL(get_node(grid, r - 1, c));
-			n->links.bottom = NOT_NULL(get_node(grid, r + 1, c));
-			n->links.left   = NOT_NULL(get_node(grid, r,     c - 1));
-			n->links.right  = NOT_NULL(get_node(grid, r,     c + 1));
+			n->links.top    = get_node(grid, r - 1, c);
+			n->links.bottom = get_node(grid, r + 1, c);
+			n->links.left   = get_node(grid, r,     c - 1);
+			n->links.right  = get_node(grid, r,     c + 1);
 		}
 	}
 }
