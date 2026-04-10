@@ -22,7 +22,6 @@ void gl33_framebuffer_read_async(
 		.width = region.w,
 		.height = region.h,
 		.format = fmtinfo->transfer_format.pixmap_format,
-		.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
 	};
 
 	pxm.data.untyped = pixmap_alloc_buffer(pxm.format, pxm.width, pxm.height, &pxm.data_size);
@@ -32,6 +31,10 @@ void gl33_framebuffer_read_async(
 		region.x, region.y, region.w, region.h,
 		fmtinfo->transfer_format.gl_format, fmtinfo->transfer_format.gl_type,
 		pxm.data.untyped);
+
+	if(framebuffer == NULL) {
+		pixmap_flip_y_inplace(&pxm);
+	}
 
 	callback(&pxm, userdata);
 	mem_free(pxm.data.untyped);
