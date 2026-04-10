@@ -98,12 +98,16 @@ def preprocess(args, tempdir):
         if args.multiply_alpha:
             cmd += [
                 '(',
-                    '+clone',
+                    '-clone', '0',
                     '-background', args.multiply_alpha_blend_background,
-                    '-alpha', 'remove',
+                    '-flatten',
                 ')',
-                '+swap',
-                '-compose', 'copy_opacity',
+                '(',
+                    '-clone', '0',
+                    '-alpha', 'extract',
+                ')',
+                '-delete', '0',
+                '-compose', 'CopyOpacity',
                 '-composite',
             ]
 
@@ -111,14 +115,13 @@ def preprocess(args, tempdir):
             cmd += [
                 '(',
                     '+clone',
-                    '-channel', 'a',
-                    '-separate',
+                    '-alpha', 'extract',
                     args.alphamap_path,
                     '-colorspace', 'gray',
                     '-compose', 'multiply',
                     '-composite',
                 ')',
-                '-compose', 'copy_opacity',
+                '-compose', 'CopyOpacity',
                 '-composite',
             ]
     elif args.channels == 'r':
