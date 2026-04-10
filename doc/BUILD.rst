@@ -44,7 +44,6 @@ Required
 - OpenGL >= 3.3, or OpenGL ES >= 3.0
 - SDL3 >= 3.4.0
 - cglm >= 0.7.8
-- libpng >= 1.5.0
 - libwebpdecoder >= 0.5 or libwebp >= 0.5
 - libzstd >= 1.4.0
 - freetype2
@@ -55,6 +54,7 @@ Required
 Optional
 ''''''''
 
+- libpng >= 1.5.0 (more efficient PNG loading/saving, otherwise uses SDL3's built-in codec)
 - SPIRV-Cross >= 2019-03-22 (for OpenGL ES and SDL-GPU backends)
 - libglslang (for OpenGL ES and SDL-GPU backends)
 - `ANGLE <https://github.com/google/angle>`__ (useful for platforms with flaky/non-existent OpenGL support, such as
@@ -534,4 +534,3 @@ Generally recommended when packaging ANGLE for distribution.
 .. code:: sh
 
    meson configure build/ -Dinstall_angle=true
-
