@@ -42,7 +42,6 @@
 #include "watchdog.h"
 
 #include <locale.h>
-#include <png.h>
 #include <zlib.h>
 
 #undef UNICODE
@@ -183,9 +182,6 @@ static void init_sdl(void) {
 static void log_lib_versions(void) {
 	log_info("Compiled against zlib %s", ZLIB_VERSION);
 	log_info("Using zlib %s", zlibVersion());
-
-	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
-	log_info("Using libpng %s", png_get_header_ver(NULL));
 }
 
 static void log_system_specs(void) {

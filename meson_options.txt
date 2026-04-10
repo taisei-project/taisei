@@ -195,6 +195,13 @@ option(
 )
 
 option(
+    'use_libpng',
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Use libpng instead of SDL3 to read and write PNG files'
+)
+
+option(
     'deprecation_warnings',
     choices : ['default', 'error', 'no-error', 'ignore'],
     type : 'combo',

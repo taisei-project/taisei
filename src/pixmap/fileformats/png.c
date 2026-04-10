@@ -9,7 +9,9 @@
 #include "fileformats.h"
 
 #include "log.h"
-#include "util/pngcruft.h"
+#include "rwops/rwops_util.h"
+
+#include <png.h>
 
 static const uint8_t png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -29,16 +31,77 @@ static inline PixmapLayout clrtype_to_layout(png_byte color_type) {
 	UNREACHABLE;
 }
 
-static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap,
-			PixmapFormat preferred_format) {
+static PNG_CALLBACK(void, px_png_write, (png_structp png_ptr, png_bytep data, png_size_t length)) {
+	SDL_IOStream *out = png_get_io_ptr(png_ptr);
+	SDL_WriteIO(out, data, length);
+}
+
+static PNG_CALLBACK(void, px_png_flush, (png_structp png_ptr)) {
+	SDL_IOStream *out = png_get_io_ptr(png_ptr);
+	SDL_FlushIO(out);
+}
+
+static PNG_CALLBACK(void, px_png_read, (png_structp png_ptr, png_bytep data, png_size_t length)) {
+	SDL_IOStream *out = png_get_io_ptr(png_ptr);
+	SDL_ReadIO(out, data, length);
+}
+
+noreturn static PNG_CALLBACK(void, px_png_error, (png_structp png_ptr, png_const_charp error_msg)) {
+	SDL_IOStream *stream = png_get_error_ptr(png_ptr);
+	log_error("%s: PNG error: %s", error_msg, iostream_get_name(stream));
+	png_longjmp(png_ptr, 1);
+}
+
+static PNG_CALLBACK(void, px_png_warning, (png_structp png_ptr, png_const_charp warning_msg)) {
+	SDL_IOStream *stream = png_get_error_ptr(png_ptr);
+	log_warn("%s: PNG warning: %s", warning_msg, iostream_get_name(stream));
+}
+
+static PNG_CALLBACK(png_voidp, px_png_malloc, (png_structp png, png_alloc_size_t size)) {
+	return mem_alloc(size);
+}
+
+static PNG_CALLBACK(void, px_png_free, (png_structp png, png_voidp ptr)) {
+	mem_free(ptr);
+}
+
+static png_structp px_png_create_read_struct(SDL_IOStream *stream) {
+	png_structp png = png_create_read_struct_2(
+		PNG_LIBPNG_VER_STRING,
+		stream, px_png_error, px_png_warning,
+		NULL, px_png_malloc, px_png_free);
+
+	if(UNLIKELY(!png)) {
+		return NULL;
+	}
+
+	png_set_read_fn(png, stream, px_png_read);
+	return png;
+}
+
+static png_structp px_png_create_write_struct(SDL_IOStream *stream) {
+	png_structp png = png_create_write_struct_2(
+		PNG_LIBPNG_VER_STRING,
+		stream, px_png_error, px_png_warning,
+		NULL, px_png_malloc, px_png_free);
+
+	if(UNLIKELY(!png)) {
+		return NULL;
+	}
+
+	png_set_write_fn(png, stream, px_png_write, px_png_flush);
+	return png;
+}
+
+static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
 	png_structp png = NULL;
 	png_infop png_info = NULL;
 	const char *volatile error = NULL;
 
 	pixmap->data.untyped = NULL;
 
-	if(!(png = pngutil_create_read_struct())) {
-		error = "png_create_read_struct() failed";
+	if(!(png = px_png_create_read_struct(stream))) {
+		error = "px_png_create_read_struct() failed";
 		goto done;
 	}
 
@@ -52,11 +115,8 @@ static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap,
 		goto done;
 	}
 
-	pngutil_init_rwops_read(png, stream);
 	png_read_info(png, png_info);
-
 	png_byte color_type = png_get_color_type(png, png_info);
-
 	png_set_alpha_mode(png, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
 
 	/*
@@ -167,9 +227,7 @@ static void px_png_save_apply_conversions(
 DIAGNOSTIC_GCC(push)
 DIAGNOSTIC_GCC(ignored "-Wclobbered")
 
-static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
-			const PixmapSaveOptions *base_opts
-) {
+static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap, const PixmapSaveOptions *base_opts) {
 	if(
 		pixmap_format_is_compressed(src_pixmap->format) ||
 		pixmap_format_is_float(src_pixmap->format)
@@ -196,10 +254,10 @@ static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
 
 	Pixmap px = {};
 
-	png = pngutil_create_write_struct();
+	png = px_png_create_write_struct(stream);
 
 	if(png == NULL) {
-		error = "pngutil_create_write_struct() failed";
+		error = "px_png_create_write_struct() failed";
 		goto done;
 	}
 
@@ -226,8 +284,6 @@ static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
 		case PIXMAP_LAYOUT_RGBA: png_color = PNG_COLOR_TYPE_RGBA; break;
 		default: UNREACHABLE;
 	}
-
-	pngutil_init_rwops_write(png, stream);
 
 	png_set_IHDR(
 		png, info_ptr,
