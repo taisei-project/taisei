@@ -290,12 +290,12 @@ YumemiSlave *stagex_host_yumemi_slave(cmplx pos, int type) {
 	TASK_HOST_EVENTS(slave->events);
 	stagex_init_yumemi_slave(slave, pos, type);
 	INVOKE_TASK(yumemi_slave_fadein, ENT_BOX(slave));
-	INVOKE_TASK_AFTER(&slave->events.despawned, yumemi_slave_fader, ENT_BOX(slave));
+	INVOKE_TASK_AFTER(&slave->events->despawned, yumemi_slave_fader, ENT_BOX(slave));
 	return slave;
 }
 
 void stagex_despawn_yumemi_slave(YumemiSlave *slave) {
-	coevent_signal_once(&slave->events.despawned);
+	coevent_signal_once(&slave->events->despawned);
 }
 
 TASK(laser_sweep_sound) {

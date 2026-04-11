@@ -149,7 +149,7 @@ DEFINE_EXTERN_TASK(stagex_spell_fork_bomb) {
 					   .gy = gy
 		});
 		WAIT(5*split_time);
-		INVOKE_SUBTASK(common_charge, {boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), 3*split_time, .sound = COMMON_CHARGE_SOUNDS});
+		INVOKE_SUBTASK(common_charge, {boss->pos, *RGBA(0.5, 0.6, 2.0, 0.0), 3*split_time, .sound = COMMON_CHARGE_SOUNDS});
 		WAIT(3*split_time);
 	}
 }

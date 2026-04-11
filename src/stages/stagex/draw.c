@@ -10,6 +10,7 @@
 
 #include "color.h"
 #include "global.h"
+#include "memory/scratch.h"
 #include "random.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
@@ -445,9 +446,9 @@ void stagex_drawsys_init(void) {
 		log_fatal("VFS error: %s", vfs_get_error());
 	}
 
-	char buf[32];
-	SDL_RWgets(stream, buf, sizeof(buf));
-	draw_data->codetex_num_segments = strtol(buf, NULL, 0);
+	auto scratch = acquire_scratch_arena();
+	draw_data->codetex_num_segments = strtol(SDL_RWgets_arena(stream, scratch, NULL), NULL, 0);
+	release_scratch_arena(scratch);
 	SDL_CloseIO(stream);
 
 	Texture *tex_code = res_texture("stagex/code");

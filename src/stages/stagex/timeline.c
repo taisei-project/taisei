@@ -609,7 +609,7 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 	e->move = move_linear(I*cnormalize(0.5*(VIEWPORT_W+I*VIEWPORT_H)-e->pos));
 
 	for(;;) {
-		INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
 
 		int num = 5;
@@ -717,7 +717,7 @@ TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
 	e->move = ARGS.move;
 
 	for(int t = 0; t < 2; t++) {
-		INVOKE_SUBTASK(common_charge, .anchor = &e->pos, .color = RGBA(1.0,0.1,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, .anchor = &e->pos, .color = *RGBA(1.0,0.1,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
 		int points = 10;
 		real length = 100;
@@ -768,7 +768,7 @@ TASK(amaranth_fairy, { cmplx pos; MoveParams move; }) {
 	auto e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 2)));
 	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
 
-	INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
 
 	e->move = ARGS.move;
@@ -916,7 +916,7 @@ TASK(scissor_fairy, { cmplx origin; MoveParams move; int dir;}) {
 	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS/2);
 
 
-	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
 	real scissor = 0;
 	for(int t = 0; t < BEATS; t++) {
@@ -992,7 +992,7 @@ TASK(funk_fairy, { cmplx pos; MoveParams move; }) {
 
 	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
 
-	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS);
 	int count = 4;
 
@@ -1025,7 +1025,7 @@ TASK(drum_fairy, { cmplx pos; }) {
 	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
 	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
 
-	INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS/2);
 
 	for(int t = 0; t < 20; t++) {

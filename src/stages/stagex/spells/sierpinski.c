@@ -76,10 +76,10 @@ TASK(slave, { cmplx origin; int type; }) {
 		.ent = ENT_BOX(slave).as_generic
 	);
 
-	common_charge(60, &slave->pos, 0, RGBA(0.2, 0.3, 1.0, 0));
+	common_charge(60, &slave->pos, 0, *RGBA(0.2, 0.3, 1.0, 0));
 	INVOKE_SUBTASK(rule90, slave->pos, 180);
 	WAIT(60);
-	common_charge(120, &slave->pos, 0, RGBA(1, 0.3, 0.2, 0));
+	common_charge(120, &slave->pos, 0, *RGBA(1, 0.3, 0.2, 0));
 	stagex_yumemi_slave_laser_sweep(slave, ARGS.type ? 1 : -1, global.plr.pos);
 }
 

@@ -107,7 +107,7 @@ DEFINE_EXTERN_TASK(stagex_spell_rings) {
 	real dir = rng_sign();
 
 	for(;;) {
-		common_charge(spawn_interval, &boss->pos, 0, RGBA(1, 0.5, 0, 0));
+		common_charge(spawn_interval, &boss->pos, 0, *RGBA(1, 0.5, 0, 0));
 		play_sfx("redirect");
 		INVOKE_TASK(ring,
 			.pos = boss->pos,
