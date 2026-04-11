@@ -26,7 +26,7 @@ DEFINE_ENTITY_TYPE(YumemiSlave, {
 
 	COEVENTS_ARRAY(
 		despawned
-	) events;
+	) *events;
 });
 
 void stagex_init_yumemi_slave(YumemiSlave *slave, cmplx pos, int type);

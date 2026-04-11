@@ -291,7 +291,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	COEVENTS_ARRAY(destroy[CELLS_W*CELLS_H]) cell_events;
+	COEVENTS_ARRAY(destroy[CELLS_W*CELLS_H]) *cell_events;
 	TASK_HOST_EVENTS(cell_events);
 
 	int highlighted_cell = -1;
@@ -313,7 +313,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 			}
 			cell_gaps[idx] = rng_irange(0, CELL_W * CELL_H);
 			INVOKE_SUBTASK(spawn_cell,
-				idx, cell_gaps[idx], &cell_events.destroy[idx], &clear_dir, &highlighted_cell);
+				idx, cell_gaps[idx], &cell_events->destroy[idx], &clear_dir, &highlighted_cell);
 			WAIT(10);
 		}
 	}
@@ -323,7 +323,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 
 		plr_cell = find_player_cell();
 		clear_dir = 0;
-		coevent_signal(&cell_events.destroy[plr_cell]);
+		coevent_signal(&cell_events->destroy[plr_cell]);
 
 		clear_dir = cell_find_expansion_dir(plr_cell);
 		int start_delay = 40;
@@ -342,7 +342,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 
 
 		int dest_cell = cell_apply_dir(plr_cell, clear_dir);
-		coevent_signal(&cell_events.destroy[dest_cell]);
+		coevent_signal(&cell_events->destroy[dest_cell]);
 		cell_gaps[dest_cell] = -1;
 
 		boss->move = move_towards(boss->move.velocity,
@@ -366,7 +366,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 			.color = RGBA(0,0,1,0.5)
 		);
 
-		INVOKE_SUBTASK_DELAYED(180, common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), 60, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK_DELAYED(180, common_charge, boss->pos, *RGBA(0.5, 0.6, 2.0, 0.0), 60, .sound = COMMON_CHARGE_SOUNDS);
 
 		int delay = 240;
 		int pinginterval = 40;
@@ -387,11 +387,11 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		WAIT(delay);
 
 		cell_gaps[dest_cell] = cell_gaps[src_cell];
-		INVOKE_SUBTASK(spawn_cell, dest_cell, cell_gaps[dest_cell], &cell_events.destroy[dest_cell], &clear_dir, &highlighted_cell);
+		INVOKE_SUBTASK(spawn_cell, dest_cell, cell_gaps[dest_cell], &cell_events->destroy[dest_cell], &clear_dir, &highlighted_cell);
 
 		if(step == 0) {
 			cell_gaps[plr_cell] = rng_irange(0, CELL_W * CELL_H);
-			INVOKE_SUBTASK(spawn_cell, plr_cell, cell_gaps[plr_cell], &cell_events.destroy[plr_cell], &clear_dir, &highlighted_cell);
+			INVOKE_SUBTASK(spawn_cell, plr_cell, cell_gaps[plr_cell], &cell_events->destroy[plr_cell], &clear_dir, &highlighted_cell);
 		}
 
 		highlighted_cell = -1;
