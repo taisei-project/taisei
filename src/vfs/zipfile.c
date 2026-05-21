@@ -53,10 +53,10 @@ static int zip_entry_name_search_cmp(const void *a, const void *b) {
 }
 
 static const ZipEntry *vfs_zipfile_find_entry(VFSZipNode *znode, const char *name, size_t name_len) {
-	return bsearch(&(ZipSearchKey) {
+	return bsearch((&(ZipSearchKey) {
 			.name = name,
 			.len = name_len,
-		}, znode->entries, znode->num_entries, sizeof(*znode->entries), zip_entry_name_search_cmp);
+		}), znode->entries, znode->num_entries, sizeof(*znode->entries), zip_entry_name_search_cmp);
 }
 
 static VFSNode *vfs_zipfile_locate(VFSNode *node, const char *path) {
