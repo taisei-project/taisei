@@ -9,10 +9,17 @@
 #pragma once
 #include "taisei.h"
 
+// XXX: these headers trips some of these deprecation warnings; include early as a workaround
 #include <stdio.h>
-
-// XXX: this header trips some of these deprecation warnings; include it early as a workaround
 #include <SDL3/SDL_cpuinfo.h>
+
+// These wrappers are to be used in memory/backend_libc.c, or if using the libc allocator is specifically required.
+INLINE void *libc_malloc(size_t size) { return malloc(size); }
+INLINE void libc_free(void *ptr) { free(ptr); }
+INLINE void *libc_calloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
+INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
+
+#ifdef DEBUG
 
 #define HARMFUL_FUNC(func, msg) \
     __typeof__(func) (func) __attribute__((deprecated(msg)))
@@ -58,12 +65,6 @@ HARMFUL_FUNC(rand, "Use the random.h API instead");
 #undef srand
 HARMFUL_FUNC(srand, "Use the random.h API instead");
 
-// These wrappers are to be used in memory/backend_libc.c, or if using the libc allocator is specifically required.
-INLINE void *libc_malloc(size_t size) { return malloc(size); }
-INLINE void libc_free(void *ptr) { free(ptr); }
-INLINE void *libc_calloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
-INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
-
 #undef malloc
 HARMFUL_FUNC(malloc, "Use the memory.h API instead");
 
@@ -82,3 +83,5 @@ HARMFUL_FUNC(strdup, "Use mem_strdup from memory.h instead");
 #undef HARMFUL_FUNC
 
 PRAGMA(GCC diagnostic pop)
+
+#endif
