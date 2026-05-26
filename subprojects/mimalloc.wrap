@@ -3,7 +3,7 @@ directory=mimalloc
 method=cmake
 url=https://github.com/taisei-project/mimalloc.git
 push-url=git@github.com:taisei-project/mimalloc.git
-revision=taisei-3.0.3
+revision=taisei-3.3.2
 
 [provide]
 mimalloc=mimalloc_static_dep
