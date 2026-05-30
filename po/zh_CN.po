@@ -2252,7 +2252,7 @@ msgstr "这辈子我已经受够那种事了。"
 #: src/dialog/marisa.c:142
 msgid ""
 "Geez, everyone’s getting even more reckless the further up I go. What gives?"
-msgstr "天啊, 越往上走固, 大家就越癫狂了. 这到底是怎么回事? "
+msgstr "天啊, 越往上走, 大家就越癫狂了. 这到底是怎么回事? "
 
 #: src/dialog/marisa.c:145
 msgid "Wait ‘til you meet their leader!"
