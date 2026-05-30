@@ -6772,27 +6772,3 @@ msgstr ""
 "世间那些最具雄心又不可或缺的伟业, 注定要包罗万象。世人多视科学为既定知识之集"
 "合, 宛若所有「伟大发现」皆已尘埃落定的封闭琥珀—— 然事实恰恰相反。科学实乃永无"
 "止境的重重帷幕, 每次揭开都展现出比先前更加壮丽而精微的奇观。"
-
-#: po/extra_strings.c:86
-msgid "ReimuA"
-msgstr "灵梦A"
-
-#: po/extra_strings.c:87
-msgid "ReimuB"
-msgstr "灵梦B"
-
-#: po/extra_strings.c:88
-msgid "MarisaA"
-msgstr "魔理沙A"
-
-#: po/extra_strings.c:89
-msgid "MarisaB"
-msgstr "魔理沙B"
-
-#: po/extra_strings.c:90
-msgid "YōmuA"
-msgstr "妖梦A"
-
-#: po/extra_strings.c:90
-msgid "YōmuB"
-msgstr "妖梦B"
