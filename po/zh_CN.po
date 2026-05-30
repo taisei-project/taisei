@@ -6664,6 +6664,8 @@ msgstr ""
 "\n"
 "在此塔上, 攀登者须防失足之险, 故当目视顶峰, 步步为营, 行差踏错半步不得. "
 
+# 上面第一句话那段歌词出自《All Along the Watchtower》，下一句是——the thief, he kindly spoke. "There are many here among us who feel that life is but a joke... "（小偷温和地说，“我们中许多人觉得生活就是个玩笑……”）
+
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
 msgstr "三百库仑的祈愿"
@@ -6683,7 +6685,7 @@ msgstr ""
 "这首歌宛若经历千锤百炼, 或许这很符合自机们的处境. 想象一下, 在猛烈的雷雨中攀"
 "登高塔, 还要努力不感到疲惫.\n"
 "\n"
-"而衣玖, 便是千刀万剐之始."
+"而衣玖, 便是灾劫之始."
 
 # 坏了译者感觉自己也被巴别塔影响了
 #: po/extra_strings.c:70
@@ -6730,7 +6732,9 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
-msgstr "神化的涌现属性 ~ Ambivalent Soul"
+msgstr "神化之涌现属性 ~ Ambivalent Soul"
+
+# Emergent Property可以理解为：整体大于部分之和
 
 #: po/extra_strings.c:81
 msgid ""
@@ -6746,7 +6750,7 @@ msgstr ""
 "世间最令人敬畏的玄奇伟力, 终究非凡胎肉眼所能企及。然确有天纵奇才之辈, 或已筑"
 "就连通此岸与彼岸的通天之桥……\n"
 "\n"
-"艾丽已然升格新人, 口中便再无真理。"
+"艾丽已然升格新人, 口中便再无真言。"
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
