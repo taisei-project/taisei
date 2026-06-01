@@ -5457,7 +5457,7 @@ msgstr "全屏"
 
 #: src/menu/options.c:783
 msgid "Display"
-msgstr "显示"
+msgstr "显示器"
 
 #: src/menu/options.c:787
 msgid "Window size"
@@ -5473,7 +5473,7 @@ msgstr "可调整大小窗口"
 
 #: src/menu/options.c:804
 msgid "Pause the game when not focused"
-msgstr "不聚焦窗口时暂停游戏"
+msgstr "窗口不在前台时暂停游戏"
 
 #: src/menu/options.c:808
 msgid "Vertical synchronization"
@@ -5723,10 +5723,12 @@ msgstr "Boss血量条风格"
 #: src/menu/options.c:1230
 msgid "classic"
 msgstr "经典"
+# 这个经典是TH12.8之前的线形血量条
 
 #: src/menu/options.c:1231
 msgid "modern"
 msgstr "现代"
+# 这个现代是TH12.8及之后的圆形血量条
 
 #: src/menu/options.c:1233
 msgid "Floating score text visibility"
@@ -6076,7 +6078,7 @@ msgstr "巴别塔之攀"
 
 #: src/stageinfo.c:124
 msgid "Roof of the World"
-msgstr "世界之脊"
+msgstr "世界之巅"
 
 #: src/stageinfo.c:125
 msgid "Extra Stage"
@@ -6192,6 +6194,8 @@ msgstr "莉格露 EX"
 #: src/stages/stage4/stage4.c:30
 msgid "Bloodless “Gate of Walachia”"
 msgstr "无血「瓦拉几亚之门」"
+# 应该是Wallachia而不是Walachia
+# 弗拉德三世：孩子们我怎么成吸血鬼了
 
 #: src/stages/stage4/stage4.c:35
 msgid "Bloodless “Dry Fountain”"
@@ -6200,6 +6204,7 @@ msgstr "无血「干枯的喷泉」"
 #: src/stages/stage4/stage4.c:40
 msgid "Bloodless “Red Spike”"
 msgstr "无血「红色尖刺」"
+# 谁叫你把土耳其人穿成串串香
 
 #: src/stages/stage4/stage4.c:48
 msgid "Limit “Animate Wall”"
@@ -6772,3 +6777,27 @@ msgstr ""
 "世间那些最具雄心又不可或缺的伟业, 注定要包罗万象。世人多视科学为既定知识之集"
 "合, 宛若所有「伟大发现」皆已尘埃落定的封闭琥珀—— 然事实恰恰相反。科学实乃永无"
 "止境的重重帷幕, 每次揭开都展现出比先前更加壮丽而精微的奇观。"
+
+#: po/extra_strings.c:86
+msgid "ReimuA"
+msgstr "灵梦A"
+
+#: po/extra_strings.c:87
+msgid "ReimuB"
+msgstr "灵梦B"
+
+#: po/extra_strings.c:88
+msgid "MarisaA"
+msgstr "魔理沙A"
+
+#: po/extra_strings.c:89
+msgid "MarisaB"
+msgstr "魔理沙B"
+
+#: po/extra_strings.c:90
+msgid "YōmuA"
+msgstr "妖梦A"
+
+#: po/extra_strings.c:90
+msgid "YōmuB"
+msgstr "妖梦B"
