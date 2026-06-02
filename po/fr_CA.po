@@ -6347,7 +6347,7 @@ msgstr "Durée"
 
 #: src/menu/spellpractice.c:144
 msgid "Bonus Rank"
-msgstr "Bonus de classement"
+msgstr "Bonus"
 
 #: src/menu/spellpractice.c:153
 #, c-format
