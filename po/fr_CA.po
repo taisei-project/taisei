@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -53,17 +53,14 @@ msgid "Normal"
 msgstr "Normal"
 
 #: src/boss.c:1001
-#, fuzzy
 msgid "Survival"
-msgstr "Bonus de survie"
+msgstr "Survie"
 
 #: src/boss.c:1002
-#, fuzzy
 msgid "Extra"
-msgstr "Commencer Extra"
+msgstr "Extra"
 
 #: src/boss.c:1003
-#, fuzzy
 msgid "Move"
 msgstr "Monter"
 
@@ -117,9 +114,8 @@ msgid "“%s”"
 msgstr "“%s”"
 
 #: src/cutscenes/intro.inc.h:2
-#, fuzzy
 msgid "Introduction"
-msgstr "Intuition"
+msgstr "Prologue"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
@@ -3410,11 +3406,11 @@ msgstr ""
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
-msgstr ""
+msgstr "De la neige en été? J'ai comme un déjà-vu…"
 
 #: src/dialog/reimu.c:52
 msgid "Nobody can stop me now!"
-msgstr ""
+msgstr "Personne ne peut m'arrêter maintenant!"
 
 #: src/dialog/reimu.c:56
 msgid "Mwahahaha!"
@@ -3832,6 +3828,7 @@ msgid ""
 "This feeling is annoying, whatever it is. Make it stop, or tell me how to "
 "make it stop."
 msgstr ""
+"Peu importe ce que c'est, ça dérange. Arrête ça ou dis moi comment l'arrêter."
 
 #: src/dialog/reimu.c:372
 msgid "Huh? I-I don’t know! I barely remember anything!"
@@ -5289,47 +5286,40 @@ msgid "Start"
 msgstr "Start"
 
 #: src/gamepad.c:878
-#, fuzzy
 msgid "Left Stick"
-msgstr "Gauche X"
+msgstr "Joystick Gauche"
 
 #: src/gamepad.c:879
-#, fuzzy
 msgid "Right Stick"
-msgstr "Droite X"
+msgstr "Joystick Droite"
 
 #: src/gamepad.c:880
-#, fuzzy
 msgid "Left Bumper"
-msgstr "Gâchette Gauche"
+msgstr "Gâchette Haute Gauche"
 
 #: src/gamepad.c:881
-#, fuzzy
 msgid "Right Bumper"
-msgstr "Gâchette Droite"
+msgstr "Gâchette Haute Droite"
 
 #: src/gamepad.c:882
 msgid "Up"
-msgstr ""
+msgstr "Haut"
 
 #: src/gamepad.c:883
 msgid "Down"
-msgstr ""
+msgstr "Bas"
 
 #: src/gamepad.c:884
-#, fuzzy
 msgid "Left"
-msgstr "Gauche X"
+msgstr "Gauche"
 
 #: src/gamepad.c:885
-#, fuzzy
 msgid "Right"
-msgstr "Droite X"
+msgstr "Droite"
 
 #: src/gamepad.c:886
-#, fuzzy
 msgid "Misc"
-msgstr "Divers 2"
+msgstr "Misc"
 
 #: src/gamepad.c:887
 msgid "P1"
@@ -5754,12 +5744,11 @@ msgstr "Sélectionner un personnage"
 
 #: src/menu/cutsceneview.c:23
 msgid "Cutscene Viewer"
-msgstr ""
+msgstr "Lecteur de scènes"
 
 #: src/menu/cutsceneview.c:49
-#, fuzzy
 msgid "(Locked)"
-msgstr "Verrouillé"
+msgstr "(Verrouillé)"
 
 #: src/menu/difficultyselect.c:44
 msgid ""
@@ -5805,7 +5794,7 @@ msgstr "Charger la sauvegarde rapide"
 
 #: src/menu/gameovermenu.c:62
 msgid "Spell Failed"
-msgstr "Sort raté"
+msgstr "Carte raté"
 
 #: src/menu/gameovermenu.c:64
 msgid "Restart"
@@ -6341,25 +6330,24 @@ msgid "№ %d"
 msgstr ""
 
 #: src/menu/spellpractice.c:133
-#, fuzzy
 msgid "Spell Information"
-msgstr "Entraînement de sorts"
+msgstr "Infos Carte Magique"
 
 #: src/menu/spellpractice.c:141
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: src/menu/spellpractice.c:142
 msgid "Health"
-msgstr ""
+msgstr "Barre de vie"
 
 #: src/menu/spellpractice.c:143
 msgid "Duration"
-msgstr ""
+msgstr "Durée"
 
 #: src/menu/spellpractice.c:144
 msgid "Bonus Rank"
-msgstr ""
+msgstr "Bonus"
 
 #: src/menu/spellpractice.c:153
 #, c-format
@@ -6368,7 +6356,7 @@ msgstr ""
 
 #: src/menu/spellpractice.c:181
 msgid "Clears/Attempts"
-msgstr ""
+msgstr "Complétées/Tentatives"
 
 #: src/player.c:114
 msgid "Full Power!"
@@ -6497,7 +6485,7 @@ msgstr "Vies:"
 
 #: src/stagedraw.c:1296
 msgid "Spell Cards:"
-msgstr "Cartes de sort:"
+msgstr "Cartes Magiques:"
 
 #: src/stagedraw.c:1300
 msgid "Power:"
@@ -6615,7 +6603,7 @@ msgstr "Descente dans la folie"
 #: src/stageinfo.c:248
 #, c-format
 msgid "Spell %d"
-msgstr "Spell %d"
+msgstr "Carte %d"
 
 #: src/stageinfo.c:251
 #, c-format
@@ -6632,7 +6620,7 @@ msgstr "Esquive correctement!"
 
 #: src/stages/stage1/spells/snow_halation.c:189
 msgid "I bet you can’t do it! Idiot!"
-msgstr "Je parie que tu ne peux pas le faire! Idiot!"
+msgstr "Je parie que tu ne peux pas le faire! Idiote!"
 
 #: src/stages/stage1/spells/snow_halation.c:190
 msgid "I spent so much time on this attack!"
@@ -6648,7 +6636,7 @@ msgstr "Je crois que tu ne comprends même pas le chronomètre!"
 
 #: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
-msgstr "Toi- Toi Idiooottt!"
+msgstr "Toi- Toi Idioootttee!"
 
 #: src/stages/stage1/stage1.c:30
 msgid "Freeze Sign “Perfect Freeze”"
@@ -6780,23 +6768,23 @@ msgstr "Des bombes?"
 
 #: src/stages/stage6/nonspells/boss_nonspell_3.c:64
 msgid "Paradigm Shift!"
-msgstr ""
+msgstr "Changement de paradigme!"
 
 #: src/stages/stage6/spells/toe.c:662
 msgid "Symmetry broken!"
-msgstr ""
+msgstr "Brisure de symétrie!"
 
 #: src/stages/stage6/spells/toe.c:775
 msgid "Coupling the Higgs!"
-msgstr ""
+msgstr "Mécanisme de Higgs!"
 
 #: src/stages/stage6/spells/toe.c:781
 msgid "Perturbation theory"
-msgstr ""
+msgstr "Échec de la théorie"
 
 #: src/stages/stage6/spells/toe.c:782
 msgid "breaking down!"
-msgstr ""
+msgstr "des perturbations!"
 
 #: src/stages/stage6/stage6.c:29
 msgid "Newton Sign “Occam’s Razor”"

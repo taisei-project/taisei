@@ -246,7 +246,9 @@ TASK(fairy_stardust_emitter, {
 }
 
 TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
-	Enemy *e = TASK_BIND(ARGS.e);
+	// NOTE: DO NOT USE TAKS_BIND() HERE
+	// common_drop_items() yields internally, and we need it to keep going even after the enemy is gone.
+	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
 
 	if(e->damage_info && DAMAGETYPE_IS_PLAYER(e->damage_info->type)) {
 		common_drop_items(e->pos, &ARGS.items);

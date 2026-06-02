@@ -8,6 +8,7 @@
 
 #include "plrmodes.h"
 
+#include "i18n/i18n.h"
 #include "plrmodes/reimu.h"
 #include "plrmodes/marisa.h"
 #include "plrmodes/youmu.h"
@@ -70,7 +71,7 @@ int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {
 	assert((unsigned)mode->shot_mode < NUM_SHOT_MODES_PER_CHARACTER);
 
 	return snprintf(out, outsize, "%s%c",
-		internal ? mode->character->lower_name : mode->character->proper_name,
+		internal ? mode->character->lower_name : _(mode->character->proper_name),
 		mode->shot_mode + 'A'
 	);
 }
