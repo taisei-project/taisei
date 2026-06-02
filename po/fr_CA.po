@@ -6776,7 +6776,7 @@ msgstr "Brisure de symétrie!"
 
 #: src/stages/stage6/spells/toe.c:775
 msgid "Coupling the Higgs!"
-msgstr "Couplage des Higgs!"
+msgstr "Mécanisme de Higgs!"
 
 #: src/stages/stage6/spells/toe.c:781
 msgid "Perturbation theory"
