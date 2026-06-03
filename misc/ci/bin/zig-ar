@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Hide thin archive support from Meson
+# See https://github.com/mesonbuild/meson/issues/15887
+
+set -o pipefail
+
+# Meson actually checks for [T], but this should hide both [T] and --thin
+zig ar "$@" | (grep -v -- --thin || true)
+
