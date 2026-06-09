@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-25 10:43-0500\n"
+"POT-Creation-Date: 2026-06-09 20:11+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: onihilist <onihilist@proton.me>\n"
 "Language-Team: \n"
@@ -64,7 +64,7 @@ msgstr "Extra"
 msgid "Move"
 msgstr "Monter"
 
-#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:968 src/gamepad.c:979
 #: src/menu/options.c:1403
 msgid "Unknown"
 msgstr "Inconnu"
@@ -81,7 +81,7 @@ msgstr ""
 "Taisei Project\n"
 "présenté par…"
 
-#: src/credits.c:160
+#: src/credits.c:161
 msgid "Special Thanks"
 msgstr "Remerciements"
 
@@ -5251,157 +5251,157 @@ msgstr "Difficile"
 msgid "Lunatic"
 msgstr "Lunatique"
 
-#: src/gamepad.c:109
+#: src/gamepad.c:111
 msgid "Unknown device"
 msgstr "Appareil inconnu"
 
-#: src/gamepad.c:871
+#: src/gamepad.c:900
 msgid "A"
 msgstr "A"
 
-#: src/gamepad.c:872
+#: src/gamepad.c:901
 msgid "B"
 msgstr "B"
 
-#: src/gamepad.c:873
+#: src/gamepad.c:902
 msgid "X"
 msgstr "X"
 
-#: src/gamepad.c:874
+#: src/gamepad.c:903
 msgid "Y"
 msgstr "Y"
 
-#: src/gamepad.c:875 src/menu/cutsceneview.c:54 src/menu/media.c:60
+#: src/gamepad.c:904 src/menu/cutsceneview.c:54 src/menu/media.c:60
 #: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
 #: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr "Retour"
 
-#: src/gamepad.c:876
+#: src/gamepad.c:905
 msgid "Guide"
 msgstr "Guide"
 
-#: src/gamepad.c:877
+#: src/gamepad.c:906
 msgid "Start"
 msgstr "Start"
 
-#: src/gamepad.c:878
+#: src/gamepad.c:907
 msgid "Left Stick"
 msgstr "Joystick Gauche"
 
-#: src/gamepad.c:879
+#: src/gamepad.c:908
 msgid "Right Stick"
 msgstr "Joystick Droite"
 
-#: src/gamepad.c:880
+#: src/gamepad.c:909
 msgid "Left Bumper"
 msgstr "Gâchette Haute Gauche"
 
-#: src/gamepad.c:881
+#: src/gamepad.c:910
 msgid "Right Bumper"
 msgstr "Gâchette Haute Droite"
 
-#: src/gamepad.c:882
+#: src/gamepad.c:911
 msgid "Up"
 msgstr "Haut"
 
-#: src/gamepad.c:883
+#: src/gamepad.c:912
 msgid "Down"
 msgstr "Bas"
 
-#: src/gamepad.c:884
+#: src/gamepad.c:913
 msgid "Left"
 msgstr "Gauche"
 
-#: src/gamepad.c:885
+#: src/gamepad.c:914
 msgid "Right"
 msgstr "Droite"
 
-#: src/gamepad.c:886
+#: src/gamepad.c:915
 msgid "Misc"
 msgstr "Misc"
 
-#: src/gamepad.c:887
+#: src/gamepad.c:916
 msgid "P1"
 msgstr "J1"
 
-#: src/gamepad.c:888
+#: src/gamepad.c:917
 msgid "P2"
 msgstr "J2"
 
-#: src/gamepad.c:889
+#: src/gamepad.c:918
 msgid "P3"
 msgstr "J3"
 
-#: src/gamepad.c:890
+#: src/gamepad.c:919
 msgid "P4"
 msgstr "J4"
 
-#: src/gamepad.c:891
+#: src/gamepad.c:920
 msgid "Touchpad"
 msgstr "Pavé tactile"
 
-#: src/gamepad.c:892
+#: src/gamepad.c:921
 msgid "Misc 2"
 msgstr "Divers 2"
 
-#: src/gamepad.c:893
+#: src/gamepad.c:922
 msgid "Misc 3"
 msgstr "Divers 3"
 
-#: src/gamepad.c:894
+#: src/gamepad.c:923
 msgid "Misc 4"
 msgstr "Divers 4"
 
-#: src/gamepad.c:895
+#: src/gamepad.c:924
 msgid "Misc 5"
 msgstr "Divers 5"
 
-#: src/gamepad.c:896
+#: src/gamepad.c:925
 msgid "Misc 6"
 msgstr "Divers 6"
 
-#: src/gamepad.c:902 src/gamepad.c:917
+#: src/gamepad.c:931 src/gamepad.c:946
 msgid "Left Trigger"
 msgstr "Gâchette Gauche"
 
-#: src/gamepad.c:903 src/gamepad.c:918
+#: src/gamepad.c:932 src/gamepad.c:947
 msgid "Right Trigger"
 msgstr "Gâchette Droite"
 
-#: src/gamepad.c:904
+#: src/gamepad.c:933
 msgid "Stick Up"
 msgstr "Joystick Haut"
 
-#: src/gamepad.c:905
+#: src/gamepad.c:934
 msgid "Stick Down"
 msgstr "Joystick Bas"
 
-#: src/gamepad.c:906
+#: src/gamepad.c:935
 msgid "Stick Left"
 msgstr "Joystick Gauche"
 
-#: src/gamepad.c:907
+#: src/gamepad.c:936
 msgid "Stick Right"
 msgstr "Joystick Droite"
 
-#: src/gamepad.c:913
+#: src/gamepad.c:942
 msgid "Left X"
 msgstr "Gauche X"
 
-#: src/gamepad.c:914
+#: src/gamepad.c:943
 msgid "Left Y"
 msgstr "Gauche Y"
 
-#: src/gamepad.c:915
+#: src/gamepad.c:944
 msgid "Right X"
 msgstr "Droite X"
 
-#: src/gamepad.c:916
+#: src/gamepad.c:945
 msgid "Right Y"
 msgstr "Droite Y"
 
-#: src/i18n/i18n.c:187
+#: src/i18n/i18n.c:189
 msgid "__NAME__"
 msgstr "Français"
 
@@ -5870,7 +5870,7 @@ msgstr "Commencer l’histoire"
 msgid "Start Extra"
 msgstr "Commencer Extra"
 
-#: src/menu/mainmenu.c:121
+#: src/menu/mainmenu.c:121 src/menu/stagepractice.c:35
 msgid "Stage Practice"
 msgstr "Entraînement de stage"
 
@@ -5893,6 +5893,12 @@ msgstr "Salle des médias"
 #: src/menu/mainmenu.c:133
 msgid "Quit"
 msgstr "Quitter"
+
+#: src/menu/mainmenu.c:242
+msgid ""
+"Unofficial derivative Tōhō Project fangame\n"
+"Not affiliated with ZUN or Team Shanghai Alice"
+msgstr ""
 
 #: src/menu/media.c:57 src/menu/musicroom.c:136
 msgid "Music Room"
@@ -6358,6 +6364,10 @@ msgstr ""
 msgid "Clears/Attempts"
 msgstr "Complétées/Tentatives"
 
+#: src/menu/stagepractice.c:85
+msgid "??????"
+msgstr ""
+
 #: src/player.c:114
 msgid "Full Power!"
 msgstr "Puissance maximale!"
@@ -6450,11 +6460,11 @@ msgstr ""
 msgid "Soul Sign “Reality-Piercing Apparition”"
 msgstr "Signe de l’Âme “Apparition Percant la Réalité”"
 
-#: src/plrmodes/youmu_b.c:625
+#: src/plrmodes/youmu_b.c:624
 msgid "Haunting Revelation"
 msgstr "Révélation Hantée"
 
-#: src/plrmodes/youmu_b.c:626
+#: src/plrmodes/youmu_b.c:625
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
@@ -6462,7 +6472,7 @@ msgstr ""
 "Les fantômes sont réels, mais ils n’ont rien à craindre. Sauf si, bien sûr, "
 "vous vous trouvez sur le chemin d’une femme déterminée maniant l’épée…"
 
-#: src/plrmodes/youmu_b.c:627
+#: src/plrmodes/youmu_b.c:626
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr "Épée Égide “Tranche Omnidirectionnelle Saigyō”"
 

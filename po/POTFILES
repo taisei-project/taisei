@@ -184,9 +184,11 @@ src/move.c
 src/move.h
 src/pch/taisei_pch.h
 src/pixmap/conversion.c
+src/pixmap/fileformats/bmp.c
 src/pixmap/fileformats/fileformats.h
 src/pixmap/fileformats/internal.c
 src/pixmap/fileformats/png.c
+src/pixmap/fileformats/png_sdl3.c
 src/pixmap/fileformats/webp.c
 src/pixmap/pixmap.c
 src/pixmap/pixmap.h
@@ -340,6 +342,8 @@ src/replay/tsrtool.h
 src/replay/write.c
 src/resource/animation.c
 src/resource/animation.h
+src/resource/atlas.c
+src/resource/atlas.h
 src/resource/bgm.c
 src/resource/bgm.h
 src/resource/font.c
@@ -380,8 +384,6 @@ src/ringbuf.h
 src/rwops/all.h
 src/rwops/rwops_arena.c
 src/rwops/rwops_arena.h
-src/rwops/rwops_autobuf.c
-src/rwops/rwops_autobuf.h
 src/rwops/rwops_crc32.c
 src/rwops/rwops_crc32.h
 src/rwops/rwops_dummy.c
@@ -606,8 +608,6 @@ src/util/miscmath.c
 src/util/miscmath.h
 src/util/platform_posix.c
 src/util/platform_win32.c
-src/util/pngcruft.c
-src/util/pngcruft.h
 src/util/rectpack.c
 src/util/rectpack.h
 src/util/sha256.c
