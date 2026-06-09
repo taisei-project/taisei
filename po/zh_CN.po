@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-25 10:43-0500\n"
+"POT-Creation-Date: 2026-06-09 20:11+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Swordsdeer\n"
 "Language-Team: \n"
@@ -64,7 +64,7 @@ msgstr ""
 msgid "Move"
 msgstr ""
 
-#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:939 src/gamepad.c:950
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:968 src/gamepad.c:979
 #: src/menu/options.c:1403
 msgid "Unknown"
 msgstr "未知"
@@ -81,7 +81,7 @@ msgstr ""
 "泰西Project\n"
 "由以下人员为您呈现……"
 
-#: src/credits.c:160
+#: src/credits.c:161
 msgid "Special Thanks"
 msgstr "特别感谢"
 
@@ -3042,8 +3042,8 @@ msgid ""
 "Heck, I’ll even take one of those little glowy tablet thingies with all "
 "those ‘Pee Dee Effs’ on ‘em! They're so bright they hurt my eyes, but—"
 msgstr ""
-"就是那些发着光的小平板也行啊! 上面全是那些亮得刺眼的「屁弟欸芙」文件, 虽然看得我眼睛"
-"疼, 但——"
+"就是那些发着光的小平板也行啊! 上面全是那些亮得刺眼的「屁弟欸芙」文件, 虽然看"
+"得我眼睛疼, 但——"
 
 #: src/dialog/marisa.c:632
 msgid ""
@@ -3390,7 +3390,6 @@ msgstr "你干嘛不说自己是赤色杀人魔呢？！"
 # （brine是什么玩意啊，深海少女? ）
 # （额，brine maiden居然是一副画，不过中文里的brine和shrine听起来就不是一个东西）
 # 还是让胡桃文明点吧
-
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
 msgstr "没错啊, 这就是巫女穿的啊，巫女的制服。"
@@ -4424,7 +4423,8 @@ msgstr "「嚣张」? 胡说八道。"
 msgid ""
 "During my recent battles, I have achieved a flow state most blademasters "
 "only dream of!"
-msgstr "在最近的战斗中, 我已进入了一种连顶尖剑豪都只能梦寐以求的 「心流之境」! "
+msgstr ""
+"在最近的战斗中, 我已进入了一种连顶尖剑豪都只能梦寐以求的 「心流之境」! "
 
 #: src/dialog/youmu.c:406
 msgid ""
@@ -4762,162 +4762,161 @@ msgstr ""
 msgid "Lunatic"
 msgstr ""
 
-#: src/gamepad.c:109
+#: src/gamepad.c:111
 msgid "Unknown device"
 msgstr "未知设备"
 
-#: src/gamepad.c:871
+#: src/gamepad.c:900
 msgid "A"
 msgstr ""
 
-#: src/gamepad.c:872
+#: src/gamepad.c:901
 msgid "B"
 msgstr ""
 
-#: src/gamepad.c:873
+#: src/gamepad.c:902
 msgid "X"
 msgstr ""
 
-#: src/gamepad.c:874
+#: src/gamepad.c:903
 msgid "Y"
 msgstr ""
 
-#: src/gamepad.c:875 src/menu/cutsceneview.c:54 src/menu/media.c:60
+#: src/gamepad.c:904 src/menu/cutsceneview.c:54 src/menu/media.c:60
 #: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
 #: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
 msgid "Back"
 msgstr "返回"
 
-#: src/gamepad.c:876
+#: src/gamepad.c:905
 msgid "Guide"
 msgstr "教程"
 
-#: src/gamepad.c:877
+#: src/gamepad.c:906
 msgid "Start"
 msgstr ""
 
-#: src/gamepad.c:878
+#: src/gamepad.c:907
 msgid "Left Stick"
 msgstr "左摇杆"
 
-#: src/gamepad.c:879
+#: src/gamepad.c:908
 msgid "Right Stick"
 msgstr "右摇杆"
 
-#: src/gamepad.c:880
+#: src/gamepad.c:909
 msgid "Left Bumper"
 msgstr "左肩键"
 
-#: src/gamepad.c:881
+#: src/gamepad.c:910
 msgid "Right Bumper"
 msgstr "右肩键"
 
-#: src/gamepad.c:882
+#: src/gamepad.c:911
 msgid "Up"
 msgstr ""
 
-#: src/gamepad.c:883
+#: src/gamepad.c:912
 msgid "Down"
 msgstr ""
 
-#: src/gamepad.c:884
+#: src/gamepad.c:913
 msgid "Left"
 msgstr ""
 
-#: src/gamepad.c:885
+#: src/gamepad.c:914
 msgid "Right"
 msgstr ""
 
-#: src/gamepad.c:886
+#: src/gamepad.c:915
 msgid "Misc"
 msgstr ""
 
-#: src/gamepad.c:887
+#: src/gamepad.c:916
 msgid "P1"
 msgstr ""
 
-#: src/gamepad.c:888
+#: src/gamepad.c:917
 msgid "P2"
 msgstr ""
 
-#: src/gamepad.c:889
+#: src/gamepad.c:918
 msgid "P3"
 msgstr ""
 
-#: src/gamepad.c:890
+#: src/gamepad.c:919
 msgid "P4"
 msgstr ""
 
-#: src/gamepad.c:891
+#: src/gamepad.c:920
 msgid "Touchpad"
 msgstr "触摸板"
 
-#: src/gamepad.c:892
+#: src/gamepad.c:921
 msgid "Misc 2"
 msgstr ""
 
-#: src/gamepad.c:893
+#: src/gamepad.c:922
 msgid "Misc 3"
 msgstr ""
 
-#: src/gamepad.c:894
+#: src/gamepad.c:923
 msgid "Misc 4"
 msgstr ""
 
-#: src/gamepad.c:895
+#: src/gamepad.c:924
 msgid "Misc 5"
 msgstr ""
 
-#: src/gamepad.c:896
+#: src/gamepad.c:925
 msgid "Misc 6"
 msgstr ""
 
-#: src/gamepad.c:902 src/gamepad.c:917
+#: src/gamepad.c:931 src/gamepad.c:946
 msgid "Left Trigger"
 msgstr "左扳机"
 
-#: src/gamepad.c:903 src/gamepad.c:918
+#: src/gamepad.c:932 src/gamepad.c:947
 msgid "Right Trigger"
 msgstr "右扳机"
 
-#: src/gamepad.c:904
+#: src/gamepad.c:933
 msgid "Stick Up"
 msgstr ""
 
-#: src/gamepad.c:905
+#: src/gamepad.c:934
 msgid "Stick Down"
 msgstr ""
 
-#: src/gamepad.c:906
+#: src/gamepad.c:935
 msgid "Stick Left"
 msgstr ""
 
-#: src/gamepad.c:907
+#: src/gamepad.c:936
 msgid "Stick Right"
 msgstr ""
 
-#: src/gamepad.c:913
+#: src/gamepad.c:942
 msgid "Left X"
 msgstr ""
 
-#: src/gamepad.c:914
+#: src/gamepad.c:943
 msgid "Left Y"
 msgstr ""
 
-#: src/gamepad.c:915
+#: src/gamepad.c:944
 msgid "Right X"
 msgstr ""
 
-#: src/gamepad.c:916
+#: src/gamepad.c:945
 msgid "Right Y"
 msgstr ""
 
-#: src/i18n/i18n.c:187
+#: src/i18n/i18n.c:189
 msgid "__NAME__"
 msgstr "简体中文"
 
-#谢谢Renko的宽容,可以去 space.bilibili.com/430093998 关注TA(ᗜᴗᗜ)
-
+# 谢谢Renko的宽容,可以去 space.bilibili.com/430093998 关注TA(ᗜᴗᗜ)
 #: src/menu/charprofile.c:61
 msgid "Hakurei Reimu"
 msgstr "博丽 灵梦"
@@ -4981,8 +4980,8 @@ msgid ""
 msgstr ""
 "自信而活跃的魔女。\n"
 "\n"
-"对魔法的极限与现实的本质的好奇一如既往, 而当她听闻「诡异疯狂」的传闻时, 她的好"
-"奇便占据了上风。\n"
+"对魔法的极限与现实的本质的好奇一如既往, 而当她听闻「诡异疯狂」的传闻时, 她的"
+"好奇便占据了上风。\n"
 "\n"
 "但可能这本「魔法书」还是永远没人去读才更好?\n"
 "\n"
@@ -5019,7 +5018,8 @@ msgid ""
 msgstr ""
 "某种意义上「半死不活」的剑客。\n"
 "\n"
-"「哪里有什么天才，我只是把别人玩游戏的工夫都用在了剑术上」——这大概会是她的台词。\n"
+"「哪里有什么天才，我只是把别人玩游戏的工夫都用在了剑术上」——这大概会是她的台"
+"词。\n"
 "\n"
 "性格对什么事都认真过头, 但还很害怕自己的另外一半(半灵)。\n"
 "\n"
@@ -5193,10 +5193,11 @@ msgid ""
 msgstr ""
 "对自己被遗忘有点沮丧。\n"
 "\n"
-"这货大概给自己找了一位搞理论物理这门「黑魔法」的导师。至于她的副业是个自大狂。\n"
+"这货大概给自己找了一位搞理论物理这门「黑魔法」的导师。至于她的副业是个自大"
+"狂。\n"
 "\n"
-"她已然登上世界之巅, 对足下众生漠不关心。但愿当她的巴别塔开始倾颓时, "
-"那些坠落的砖石不会伤及下方无辜的妖怪。"
+"她已然登上世界之巅, 对足下众生漠不关心。但愿当她的巴别塔开始倾颓时, 那些坠落"
+"的砖石不会伤及下方无辜的妖怪。"
 
 #: src/menu/charprofile.c:168
 msgid "Locked"
@@ -5363,7 +5364,7 @@ msgstr ""
 msgid "Start Extra"
 msgstr ""
 
-#: src/menu/mainmenu.c:121
+#: src/menu/mainmenu.c:121 src/menu/stagepractice.c:35
 msgid "Stage Practice"
 msgstr ""
 
@@ -5385,6 +5386,12 @@ msgstr ""
 
 #: src/menu/mainmenu.c:133
 msgid "Quit"
+msgstr ""
+
+#: src/menu/mainmenu.c:242
+msgid ""
+"Unofficial derivative Tōhō Project fangame\n"
+"Not affiliated with ZUN or Team Shanghai Alice"
 msgstr ""
 
 #: src/menu/media.c:57 src/menu/musicroom.c:136
@@ -5723,13 +5730,13 @@ msgstr "Boss血量条风格"
 #: src/menu/options.c:1230
 msgid "classic"
 msgstr "经典"
-# 这个经典是TH12.8之前的线形血量条
 
+# 这个经典是TH12.8之前的线形血量条
 #: src/menu/options.c:1231
 msgid "modern"
 msgstr "现代"
-# 这个现代是TH12.8及之后的圆形血量条
 
+# 这个现代是TH12.8及之后的圆形血量条
 #: src/menu/options.c:1233
 msgid "Floating score text visibility"
 msgstr "浮动分数文字可见性"
@@ -5851,6 +5858,10 @@ msgstr ""
 msgid "Clears/Attempts"
 msgstr "收取/总尝试次数"
 
+#: src/menu/stagepractice.c:85
+msgid "??????"
+msgstr ""
+
 # (注:对话框每42个字节或21个汉字添加一个空格以换行)
 # (Note:For Dialog a space is added every 42 bytes or 21 Chinese characters to wrap the line)
 #: src/player.c:114
@@ -5940,11 +5951,11 @@ msgstr ""
 msgid "Soul Sign “Reality-Piercing Apparition”"
 msgstr "魂符「斩断现世的幽魂」"
 
-#: src/plrmodes/youmu_b.c:625
+#: src/plrmodes/youmu_b.c:624
 msgid "Haunting Revelation"
 msgstr ""
 
-#: src/plrmodes/youmu_b.c:626
+#: src/plrmodes/youmu_b.c:625
 msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
@@ -5952,7 +5963,7 @@ msgstr ""
 "鬼魂是真实存在的, 但它们并不可怕。 当然, 除非你恰好挡在了一位 决心已定的持剑"
 "女士面前……"
 
-#: src/plrmodes/youmu_b.c:627
+#: src/plrmodes/youmu_b.c:626
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr "神盾剑「西行无向斩」"
 
@@ -6194,9 +6205,9 @@ msgstr "莉格露 EX"
 #: src/stages/stage4/stage4.c:30
 msgid "Bloodless “Gate of Walachia”"
 msgstr "无血「瓦拉几亚之门」"
+
 # 应该是Wallachia而不是Walachia
 # 弗拉德三世：孩子们我怎么成吸血鬼了
-
 #: src/stages/stage4/stage4.c:35
 msgid "Bloodless “Dry Fountain”"
 msgstr "无血「干枯的喷泉」"
@@ -6204,8 +6215,8 @@ msgstr "无血「干枯的喷泉」"
 #: src/stages/stage4/stage4.c:40
 msgid "Bloodless “Red Spike”"
 msgstr "无血「红色尖刺」"
-# 谁叫你把土耳其人穿成串串香
 
+# 谁叫你把土耳其人穿成串串香
 #: src/stages/stage4/stage4.c:48
 msgid "Limit “Animate Wall”"
 msgstr "界限「Animate Wall」(生命高墙）"
@@ -6537,12 +6548,11 @@ msgid ""
 msgstr ""
 "二面的主题曲。\n"
 "\n"
-"这条宁静祥和的小径, 却难免会出现不少麻烦的家伙——毫无疑问, 这首曲子的节奏"
-"快的令人惊奇。有个嚣张的家伙还在这露了个短脸。 这段令人舒畅的旋律, 旨在"
-"让你感到幸运。"
+"这条宁静祥和的小径, 却难免会出现不少麻烦的家伙——毫无疑问, 这首曲子的节奏快的"
+"令人惊奇。有个嚣张的家伙还在这露了个短脸。 这段令人舒畅的旋律, 旨在让你感到幸"
+"运。"
 
 # 很快吗, 还有好运在哪
-
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
 msgstr "阴暗之神的欢乐登场"
@@ -6671,7 +6681,6 @@ msgstr ""
 "在此塔上, 攀登者须防失足之险, 故当目视顶峰, 步步为营, 行差踏错半步不得. "
 
 # 上面第一句话那段歌词出自《All Along the Watchtower》，下一句是——the thief, he kindly spoke. "There are many here among us who feel that life is but a joke... "（小偷温和地说，“我们中许多人觉得生活就是个玩笑……”）
-
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
 msgstr "三百库仑的祈愿"
@@ -6729,18 +6738,17 @@ msgid ""
 msgstr ""
 "艾丽的一阶段主题曲。\n"
 "\n"
-"一位故人。我常从这般构想中获得启迪: 无名之辈湮没于时光的微末之躯, 但历经沉寂终"
-"抵云霄。\n"
+"一位故人。我常从这般构想中获得启迪: 无名之辈湮没于时光的微末之躯, 但历经沉寂"
+"终抵云霄。\n"
 "\n"
-"上回相见时她或是卑微门吏, 然苹果砸落头顶顿悟天机。 而今, 她镇守的早已是另一重天"
-"门。"
+"上回相见时她或是卑微门吏, 然苹果砸落头顶顿悟天机。 而今, 她镇守的早已是另一重"
+"天门。"
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
 msgstr "神化之涌现属性 ~ Ambivalent Soul"
 
 # Emergent Property可以理解为：整体大于部分之和
-
 #: po/extra_strings.c:81
 msgid ""
 "Elly’s second theme.\n"
