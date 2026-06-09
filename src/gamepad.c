@@ -16,6 +16,7 @@
 #include "log.h"
 #include "transition.h"
 #include "util.h"
+#include "util/env.h"
 #include "util/miscmath.h"
 #include "util/stringops.h"
 #include "vfs/public.h"
@@ -39,6 +40,7 @@ static struct {
 	GamepadAxisState *axes;
 	GamepadButtonState *buttons;
 	DYNAMIC_ARRAY(GamepadDevice) devices;
+	uint64_t suppressed_buttons;
 	int active_dev_num;
 	bool initialized;
 	bool update_needed;
@@ -297,6 +299,25 @@ void gamepad_init(void) {
 
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED)) {
 		return;
+	}
+
+	if(env_get("TAISEI_GAMEPAD_SUPPRESS_STEAM_TOUCH_BUTTONS", true)) {
+		// The Steam Deck and Steam Controller have a few touch sensors that are mapped to buttons in SDL.
+		// These interfere with the way our control config menus work.
+		// Completely ignore them as a workaround.
+		// Note: those "misc" buttons may be used for something else by other devices. In theory we could narrow this
+		// suppression to the Steam hardware only by checking SDL_GetGamepadVendor and SDL_GetGamepadProduct.
+		// But that's also fragile, because any future devices with similar touch sensors will slip past the check.
+		// Ideally there should be a way to discover which buttons are actually mapped to touch sensors, but I'm not
+		// aware of a reliable one right now. Better disable these extra buttons by default, but let power users
+		// override it via the env variable if they really need them.
+
+		gamepad.suppressed_buttons |=
+			(1 << GAMEPAD_BUTTON_MISC3) |  // Left stick touch
+			(1 << GAMEPAD_BUTTON_MISC4) |  // Right stick touch
+			(1 << GAMEPAD_BUTTON_MISC5) |  // Left grip touch
+			(1 << GAMEPAD_BUTTON_MISC6) |  // Right grip touch
+			0;
 	}
 
 	if(!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
@@ -608,7 +629,7 @@ static GamepadButtonState* gamepad_button_state(GamepadButton button) {
 	return NULL;
 }
 
-static const char* gamepad_button_name_internal(GamepadButton btn);
+static const char *gamepad_button_name_internal(GamepadButton btn);
 
 static struct {
 	GamepadButton button;
@@ -640,7 +661,15 @@ static inline hrtime_t gamepad_repeat_interval(ConfigIndex opt) {
 	return HRTIME_RESOLUTION * (double)config_get_float(opt);
 }
 
+static bool gamepad_button_suppressed(GamepadButton button) {
+	return button >= 0 && button < 64 && (gamepad.suppressed_buttons & (1 << button));
+}
+
 static void gamepad_button(GamepadButton button, bool pressed, bool is_repeat) {
+	if(gamepad_button_suppressed(button)) {
+		return;
+	}
+
 	int key = gamepad_game_key_for_button(button);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
 	GamepadButtonState *btnstate = gamepad_button_state(button);
@@ -920,7 +949,7 @@ static const char *const gamepad_axis_names[GAMEPAD_AXIS_MAX] = {
 
 static_assert(ARRAY_SIZE(gamepad_axis_names) == GAMEPAD_AXIS_MAX);
 
-static const char* gamepad_button_name_internal(GamepadButton btn) {
+static const char *gamepad_button_name_internal(GamepadButton btn) {
 	if(btn > GAMEPAD_BUTTON_INVALID && btn < GAMEPAD_BUTTON_MAX) {
 		return gamepad_button_names[btn];
 	}
@@ -932,7 +961,7 @@ static const char* gamepad_button_name_internal(GamepadButton btn) {
 	return NULL;
 }
 
-const char* gamepad_button_name(GamepadButton btn) {
+const char *gamepad_button_name(GamepadButton btn) {
 	const char *name = gamepad_button_name_internal(btn);
 
 	if(name == NULL) {
@@ -942,7 +971,7 @@ const char* gamepad_button_name(GamepadButton btn) {
 	return name;
 }
 
-const char* gamepad_axis_name(GamepadAxis axis) {
+const char *gamepad_axis_name(GamepadAxis axis) {
 	if(axis > GAMEPAD_AXIS_INVALID && axis < GAMEPAD_AXIS_MAX) {
 		return gamepad_axis_names[axis];
 	}

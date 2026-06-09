@@ -112,7 +112,7 @@ bool gamepad_initialized(void);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 int gamepad_device_count(void);
-const char* gamepad_device_name(int);
+const char *gamepad_device_name(int);
 void gamepad_device_guid(int num, char *guid_str, size_t guid_str_sz);
 int gamepad_device_num_from_guid(const char *guid_str);
 int gamepad_get_active_device(void);
@@ -121,8 +121,8 @@ bool gamepad_update_devices(void);
 bool gamepad_button_pressed(GamepadButton btn);
 bool gamepad_game_key_pressed(KeyIndex key);
 
-const char* gamepad_button_name(GamepadButton btn);
-const char* gamepad_axis_name(GamepadAxis btn);
+const char *gamepad_button_name(GamepadButton btn);
+const char *gamepad_axis_name(GamepadAxis btn);
 
 GamepadButton gamepad_button_from_name(const char *name);
 GamepadAxis gamepad_axis_from_name(const char *name);
