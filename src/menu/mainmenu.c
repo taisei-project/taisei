@@ -234,11 +234,30 @@ void draw_main_menu(MenuData *menu) {
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
+
+	Font *font = res_font("small");
+	ShaderProgram *shader = res_shader("text_default");
+
+	const char *disclaimer =
+		_("Unofficial derivative Tōhō Project fangame\n"
+		"Not affiliated with ZUN or Team Shanghai Alice");
+
+	float disclaimer_height = text_height(font, disclaimer, 0);
+	float version_height = text_height(font, version, 0);
+
+	text_draw(disclaimer, &(TextParams) {
+		.align = ALIGN_RIGHT,
+		.pos = { SCREEN_W-5, SCREEN_H - disclaimer_height - version_height },
+		.font_ptr = font,
+		.shader_ptr = shader,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+	});
+
 	text_draw(TAISEI_VERSION, &(TextParams) {
 		.align = ALIGN_RIGHT,
-		.pos = { SCREEN_W-5, SCREEN_H-10 },
-		.font = "small",
-		.shader_ptr = res_shader("text_default"),
+		.pos = { SCREEN_W-5, SCREEN_H - version_height * 0.5f },
+		.font_ptr = font,
+		.shader_ptr = shader,
 		.color = RGBA(1, 1, 1, 1),
 	});
 
