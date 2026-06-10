@@ -1,5 +1,6 @@
 project('taisei', 'c',
     license : 'MIT',
+    license_files : 'COPYING.txt',
     # NOTE: See https://github.com/mesonbuild/meson/issues/11163
     version : run_command([
         files('scripts/version.py'),
@@ -492,30 +493,8 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     not is_developer_build
 ))
 
-if host_machine.system() == 'windows'
-    custom_target('COPYING.txt',
-        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-        input : 'COPYING',
-        output : 'COPYING.txt',
-        install : true,
-        install_dir : doc_path,
-        install_tag : 'license',
-    )
-else
-    install_data('COPYING', install_dir : doc_path, install_tag : 'license')
-endif
-
-if host_machine.system() == 'windows'
-    custom_target('COPYING_CN.txt',
-        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-        input : 'COPYING_CN.txt',
-        output : 'COPYING_CN.txt',
-        install : true,
-        install_dir : doc_path,
-        install_tag : 'license',
-    )
-else
-    install_data('COPYING_CN.txt', install_dir : doc_path, install_tag : 'license')
+if get_option('licensedir') == ''
+    install_data(meson.project_license_files(), install_dir : doc_path, install_tag : 'license')
 endif
 
 if angle_enabled
