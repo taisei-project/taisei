@@ -5833,14 +5833,13 @@ msgstr "Media-Raum"
 msgid "Quit"
 msgstr "Verlassen"
 
-# NOTE: MACHINE TRANSLATION, PLEASE CHECK!
 #: src/menu/mainmenu.c:242
 msgid ""
 "Unofficial derivative Tōhō Project fangame\n"
 "Not affiliated with ZUN or Team Shanghai Alice"
 msgstr ""
-"Inoffizielles Tōhō-Project-Fangame (Derivat)\n"
-"Nicht verbunden mit ZUN oder Team Shanghai Alice"
+"Inoffizielles Tōhō-Project-Fangame\n"
+"Keine Verbindung zu ZUN oder Team Shanghai Alice"
 
 #: src/menu/media.c:57 src/menu/musicroom.c:136
 msgid "Music Room"
