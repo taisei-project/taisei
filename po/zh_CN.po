@@ -5388,14 +5388,13 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
-# NOTE: MACHINE TRANSLATION, PLEASE CHECK!
 #: src/menu/mainmenu.c:242
 msgid ""
 "Unofficial derivative Tōhō Project fangame\n"
 "Not affiliated with ZUN or Team Shanghai Alice"
 msgstr ""
-"非官方东方Project二次创作同人游戏\n"
-"与ZUN及上海爱丽丝幻乐团无关"
+"本游戏为东方Project的同人二次创作\n"
+"与ZUN或上海爱丽丝幻乐团没有隶属关系"
 
 #: src/menu/media.c:57 src/menu/musicroom.c:136
 msgid "Music Room"
