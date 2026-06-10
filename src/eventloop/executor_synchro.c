@@ -120,7 +120,7 @@ begin_frame:
 			}
 		}
 
-		SDL_DelayPrecise(clamp((shrtime_t)time_get() - (shrtime_t)evloop.frame_times.next, 0, max_sleep));
+		SDL_DelayPrecise(clamp((shrtime_t)evloop.frame_times.next - (shrtime_t)time_get(), 0, max_sleep));
 		while(time_get() < evloop.frame_times.next);
 	}
 }
