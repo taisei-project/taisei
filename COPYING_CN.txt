@@ -1,5 +1,5 @@
-Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
-Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
+Copyright (c) 2011-2026, Lukas Weber <laochailan@web.de>.
+Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
 
 泰西Project是东方Project的二次创作及免费同人游戏，原作者是上海爱丽丝幻乐团的ZUN。
 
@@ -24,7 +24,7 @@ SOFTWARE.
 游戏原声带由Tuck V创作，并在知识共享-署名 4.0 国际 （CC BY 4.0）下许可。
 原始音频文件在 resources/00-taisei.pkgdir/bgm/.
  https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
- 
+
 放在 atlas/portraits/ 的角色立绘是我们雇佣afensorm创作的，亦在知识共享-署名 4.0 国际 （CC BY 4.0）下许可。
  https://afens.surge.sh
  https://gensokyo.social/@afensorm
