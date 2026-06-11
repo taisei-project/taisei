@@ -409,7 +409,7 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 #define SS_WIDTH 2048
 #define SS_HEIGHT 2048
 
-#define SS_TEXTURE_TYPE TEX_TYPE_RGB_8
+#define SS_TEXTURE_TYPE TEX_TYPE_RGBA_8
 #define SS_TEXTURE_FLAGS 0
 
 INLINE RectPackSectionSource rps_source(void) {
@@ -617,10 +617,10 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		}
 
 		Pixmap px;
-		px.format = PIXMAP_FORMAT_RGB8;
+		px.format = PIXMAP_FORMAT_RGBA8;
 		px.width = max(g_bm_fill->bitmap.width, max(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = max(g_bm_fill->bitmap.rows, max(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
-		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
+		px.data.rgba8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
 
@@ -633,7 +633,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 
 		for(ssize_t x = 0; x < px.width; ++x) {
 			for(ssize_t y = 0; y < px.height; ++y) {
-				PixelRGB8 *p = px.data.rgb8 + (x + y * px.width);
+				PixelRGBA8 *p = px.data.rgba8 + (x + y * px.width);
 
 				ssize_t fill_coord_x = x - fill_ofs_x;
 				ssize_t fill_coord_y = y - fill_ofs_y;
@@ -672,10 +672,10 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				} else {
 					p->b = 0;
 				}
+
+				p->a = 0;
 			}
 		}
-
-
 
 		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
 			log_error(
@@ -687,7 +687,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				SS_HEIGHT
 			);
 
-			mem_free(px.data.rg8);
+			mem_free(px.data.rgba8);
 			FT_Done_Glyph(g_src);
 			FT_Done_Glyph(g_fill);
 			FT_Done_Glyph(g_border);
@@ -696,7 +696,7 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			return NULL;
 		}
 
-		mem_free(px.data.rg8);
+		mem_free(px.data.rgba8);
 
 		float xpad = px.width - g_bm_fill->bitmap.width;
 		float ypad = px.height - g_bm_fill->bitmap.rows;
