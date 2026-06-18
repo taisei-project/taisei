@@ -26,7 +26,7 @@ def package_dmg(install_path, destination):
             --icon "README.txt" 50 200
             --icon "STORY.txt" 200 200
             --icon "GAME.html" 350 200
-            --icon "COPYING" 125 350
+            --icon "COPYING.txt" 125 350
             --icon "ENVIRON.html" 275 350
             --hide-extension "Taisei.app"
             --app-drop-link 300 50''') + [
