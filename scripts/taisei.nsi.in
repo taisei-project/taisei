@@ -44,7 +44,7 @@ Var INSTALL_DESKTOP
 !define MUI_HEADERIMAGE_BITMAP "@MESON_SOURCE_ROOT@/misc/icons/taisei.ico"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "@MESON_BUILD_ROOT@/COPYING.txt"
+!insertmacro MUI_PAGE_LICENSE "@MESON_SOURCE_ROOT@/COPYING.txt"
 
 !define MULTIUSER_INSTALLMODEPAGE_TEXT_ALLUSERS "Install globally for all users (required for replay file association)"
 !insertmacro MULTIUSER_PAGE_INSTALLMODE
