@@ -132,7 +132,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 	bool result = false;
 
 	mountpoint = vfs_path_normalize(mountpoint, buf[0]);
-	strcpy(buf[1], buf[0]);
+	strlcpy(buf[1], buf[0], sizeof(buf[1]));
 	vfs_path_split_right(buf[1], &mpbase, &mpname);
 
 	if((mpnode = vfs_locate(root, mountpoint))) {

@@ -8,6 +8,7 @@
 
 #include "stringops.h"
 #include "miscmath.h"
+#include <string.h>
 
 bool strendswith(const char *s, const char *e) {
 	int ls = strlen(s);
@@ -59,7 +60,7 @@ char* strjoin(const char *first, ...) {
 	size_t size = strlen(first) + 1;
 	char *str = mem_alloc(size);
 
-	strcpy(str, first);
+	memcpy(str, first, size);
 	va_start(args, first);
 
 	for(;;) {
@@ -69,9 +70,11 @@ char* strjoin(const char *first, ...) {
 			break;
 		}
 
-		size += strlen(next);
+		size_t prev_size = size;
+		size_t next_len = strlen(next);
+		size += next_len;
 		str = mem_realloc(str, size);
-		strcat(str, next);
+		memcpy(str + prev_size - 1, next, next_len + 1);
 	}
 
 	va_end(args);
@@ -152,8 +155,10 @@ char* strappend(char **dst, const char *src) {
 		return *dst = mem_strdup(src);
 	}
 
-	*dst = mem_realloc(*dst, strlen(*dst) + strlen(src) + 1);
-	strcat(*dst, src);
+	size_t dst_len = strlen(*dst);
+	size_t src_len = strlen(src);
+	*dst = mem_realloc(*dst, dst_len + src_len + 1);
+	memcpy(dst + dst_len, src, src_len + 1);
 	return *dst;
 }
 

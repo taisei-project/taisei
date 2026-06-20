@@ -61,8 +61,9 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 			if(*objname) {
 				res_load_dependency(st, RES_SHADER_OBJECT, objname);
 				++ldata.num_objects;
-				strcpy(listptr, objname);
-				listptr += strlen(objname) + 1;
+				uint cpylen = strlen(objname) + 1;
+				memcpy(listptr, objname, cpylen);
+				listptr += cpylen;
 			}
 		}
 

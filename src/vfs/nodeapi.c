@@ -25,7 +25,7 @@ VFSNode *vfs_node_locate(VFSNode *root, const char *path) {
 
 	#ifndef NDEBUG
 	char buf[strlen(path)+1];
-	strcpy(buf, path);
+	memcpy(buf, path, sizeof(buf));
 	vfs_path_normalize(path, buf);
 	assert(!strcmp(path, buf));
 	#endif

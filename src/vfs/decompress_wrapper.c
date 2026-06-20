@@ -253,7 +253,7 @@ bool vfs_make_decompress_view(const char *path) {
 	vfs_path_normalize(path, buf);
 
 	char npath[strlen(path)+1];
-	strcpy(npath, buf);
+	memcpy(npath, buf, sizeof(npath));
 
 	vfs_path_split_right(buf, &path_parent, &path_subdir);
 

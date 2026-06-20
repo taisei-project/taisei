@@ -12,12 +12,14 @@
 #include "dynarray.h"
 #include "events.h"
 #include "memory/arena.h"
+#include "memory/scratch.h"
 #include "pixmap/pixmap.h"
 #include "renderer/api.h"
 #include "util.h"
 #include "util/glm.h"
 #include "util/kvparser.h"
 #include "util/rectpack.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 #include <ft2build.h>
@@ -1405,9 +1407,11 @@ float text_ucs4_draw(const uint32_t *text, const TextParams *params) {
 
 float text_draw_wrapped(const char *text, float max_width, const TextParams *params) {
 	Font *font = font_from_params(params);
-	char buf[strlen(text) * 2 + 1];
-	text_wrap(font, text, max_width, buf, sizeof(buf));
-	return _text_draw(font, buf, params);
+	StringBuffer buf = { acquire_scratch_arena() };
+	text_wrap(font, text, max_width, &buf);
+	auto r = _text_draw(font, buf.start, params);
+	release_scratch_arena(buf.arena);
+	return r;
 }
 
 void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out_bbox) {
@@ -1511,17 +1515,19 @@ void text_ucs4_shorten(Font *font, uint32_t *text, float width) {
 	} while(text_ucs4_width(font, text, 0) > width);
 }
 
-void text_wrap(Font *font, const char *src, float width, char *buf, size_t bufsize) {
-	assert(bufsize > strlen(src) + 1);
+void text_wrap(Font *font, const char *src, float width, StringBuffer *buf) {
 	assert(width > 0);
 
-	char src_copy[strlen(src) + 1];
+	StringBuffer tmpbuf = { acquire_scratch_arena() };
+	int src_len = strbuf_cat(&tmpbuf, src);
+	char *src_copy = strbuf_commit(&tmpbuf);
+
 	char *sptr = src_copy;
 	char *next = NULL;
-	char *curline = buf;
 
-	strcpy(src_copy, src);
-	*buf = 0;
+	strbuf_reserve(buf, src_len + 1);
+	char *curline = NOT_NULL(buf->start);
+	*curline = 0;
 
 	while((next = strtok_r(NULL, " \t", &sptr))) {
 		float curwidth;
@@ -1532,36 +1538,37 @@ void text_wrap(Font *font, const char *src, float width, char *buf, size_t bufsi
 
 		if(*curline) {
 			curwidth = text_width(font, curline, 0);
+			strbuf_cat(&tmpbuf, curline);
+			strbuf_cat(&tmpbuf, " ");
 		} else {
 			curwidth = 0;
 		}
 
-		char tmpbuf[strlen(curline) + strlen(next) + 2];
-		strcpy(tmpbuf, curline);
-		strcat(tmpbuf, " ");
-		strcat(tmpbuf, next);
-
-		float totalwidth = text_width(font, tmpbuf, 0);
+		strbuf_cat(&tmpbuf, next);
+		float totalwidth = text_width(font, tmpbuf.start, 0);
+		strbuf_clear(&tmpbuf);
 
 		if(totalwidth > width) {
 			if(curwidth == 0) {
 				log_fatal(
 					"Single word '%s' won't fit on one line. "
 					"Word width: %g, max width: %g, source string: %s",
-					next, text_width(font, tmpbuf, 0), width, src
+					next, totalwidth, width, src
 				);
 			}
 
-			strlcat(buf, "\n", bufsize);
-			curline = strchr(curline, 0);
+			strbuf_cat(buf, "\n");
+			curline = buf->pos;
 		} else {
 			if(*curline) {
-				strlcat(buf, " ", bufsize);
+				strbuf_cat(buf, " ");
 			}
 		}
 
-		strlcat(buf, next, bufsize);
+		strbuf_cat(buf, next);
 	}
+
+	release_scratch_arena(tmpbuf.arena);
 }
 
 const FontMetrics *font_get_metrics(Font *font) {

@@ -18,7 +18,7 @@ StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *fon
 
 	if(text != NULL) {
 		assert(strlen(text) < sizeof(t->text));
-		strcpy(t->text, text);
+		strlcpy(t->text, text, sizeof(t->text));
 	}
 
 	t->font = font;

@@ -10,8 +10,10 @@
 #include "fileformats/fileformats.h"
 
 #include "log.h"
+#include "memory/scratch.h"
 #include "util.h"
 #include "util/io.h"
+#include "util/strbuf.h"
 #include "vfs/public.h"
 
 static PixmapFileFormatHandler *fileformat_handlers[] = {
@@ -193,10 +195,10 @@ bool pixmap_check_filename(const char *path) {
 	return (bool)pixmap_handler_for_filename(path);
 }
 
-char *pixmap_source_path(const char *prefix, const char *path) {
-	char base_path[strlen(prefix) + strlen(path) + 1];
-	strcpy(base_path, prefix);
-	strcpy(base_path + strlen(prefix), path);
+static char *_pixmap_source_path(const char *prefix, const char *path, StringBuffer *sb) {
+	strbuf_cat(sb, prefix);
+	strbuf_cat(sb, path);
+	char *base_path = strbuf_commit(sb);
 
 	if(pixmap_check_filename(base_path) && vfs_query(base_path).exists) {
 		return mem_strdup(base_path);
@@ -212,19 +214,27 @@ char *pixmap_source_path(const char *prefix, const char *path) {
 		PixmapFileFormatHandler *h = NOT_NULL(fileformat_handlers[i]);
 
 		for(const char **l_ext = h->filename_exts; *l_ext; ++l_ext) {
-			char ext[strlen(*l_ext) + 2];
-			ext[0] = '.';
-			strcpy(ext + 1, *l_ext);
+			strbuf_cat(sb, ".");
+			strbuf_cat(sb, *l_ext);
 
-			char *p = try_path("", base_path, ext);
+			char *p = try_path("", base_path, sb->start);
 
 			if(p != NULL) {
 				return p;
 			}
+
+			strbuf_clear(sb);
 		}
 	}
 
 	return NULL;
+}
+
+char *pixmap_source_path(const char *prefix, const char *path) {
+	StringBuffer sb = { acquire_scratch_arena() };
+	char *result = _pixmap_source_path(prefix, path, &sb);
+	release_scratch_arena(sb.arena);
+	return result;
 }
 
 const char *pixmap_format_name(PixmapFormat fmt) {

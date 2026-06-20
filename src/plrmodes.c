@@ -92,7 +92,7 @@ PlayerMode *plrmode_parse(const char *name) {
 	CharacterID char_id = (CharacterID)-1;
 	ShotModeID shot_id = (ShotModeID)-1;
 	char buf[strlen(name) + 1];
-	strcpy(buf, name);
+	memcpy(buf, name, sizeof(buf));
 
 	for(int i = 0; i < sizeof(buf); ++i) {
 		buf[i] = tolower(buf[i]);

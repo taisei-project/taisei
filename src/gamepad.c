@@ -247,7 +247,7 @@ static GamepadDevice *gamepad_find_device(char *guid_out, size_t guid_out_sz, in
 	}
 
 	*out_localdevnum = GAMEPAD_DEVNUM_INVALID;
-	strcpy(guid_out, want_guid);
+	strlcpy(guid_out, want_guid, guid_out_sz);
 
 	return NULL;
 }

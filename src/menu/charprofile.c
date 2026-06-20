@@ -13,11 +13,13 @@
 #include "events.h"
 #include "i18n/i18n.h"
 #include "mainmenu.h"
+#include "memory/scratch.h"
 #include "portrait.h"
 #include "progress.h"
 #include "resource/font.h"
 #include "resource/resource.h"
 #include "util/glm.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 80)
@@ -187,11 +189,12 @@ static int check_unlocked_profile(int i) {
 	return selected;
 }
 
-static char *format_description(const CharacterProfile *profile) {
-	return strfmt("%s: %s\n%s: %s\n\n%s",
+static char *format_description(const CharacterProfile *profile, StringBuffer *buf) {
+	strbuf_printf(buf, "%s: %s\n%s: %s\n\n%s",
 		_("Species"),_(profile->species),
 		_("Area of Study"), _(profile->area_of_study),
 		_(profile->description));
+	return strbuf_commit(buf);
 }
 
 static void charprofile_logic(MenuData *m) {
@@ -200,13 +203,13 @@ static void charprofile_logic(MenuData *m) {
 	});
 	MenuEntry *cursor_entry = dynarray_get_ptr(&m->entries, m->cursor);
 	Font *font = res_font("small");
-	char buf[512] = {};
 	int j = check_unlocked_profile(m->cursor);
 
-	char *description = format_description(&profiles[j]);
-	text_wrap(font, description, DESCRIPTION_WIDTH, buf, sizeof(buf));
-	mem_free(description);
-	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
+	StringBuffer buf = { acquire_scratch_arena() };
+	char *description = format_description(&profiles[j], &buf);
+	text_wrap(font, description, DESCRIPTION_WIDTH, &buf);
+	double height = text_height(font, buf.start, 0) + font_get_lineskip(font) * 2;
+	release_scratch_arena(buf.arena);
 
 	fapproach_asymptotic_p(&m->drawdata[0], 1, 0.1, 1e-5);
 	fapproach_asymptotic_p(&m->drawdata[1], 1 - cursor_entry->drawdata, 0.1, 1e-5);
@@ -307,7 +310,8 @@ static void charprofile_draw(MenuData *m) {
 	});
 	r_mat_mv_pop();
 
-	char *description = format_description(&profiles[selected]);
+	StringBuffer buf = { acquire_scratch_arena() };
+	char *description = format_description(&profiles[selected], &buf);
 	text_draw_wrapped(description, DESCRIPTION_WIDTH, &(TextParams) {
 		.align = ALIGN_LEFT,
 		.pos = { -175, 120 },
@@ -315,7 +319,8 @@ static void charprofile_draw(MenuData *m) {
 		.shader_ptr = res_shader("text_default"),
 		.color = RGBA(o, o, o, o),
 	});
-	mem_free(description);
+	release_scratch_arena(buf.arena);
+
 	r_mat_mv_pop();
 
 	o = 0.3*sin(m->frames/20.0)+0.5;

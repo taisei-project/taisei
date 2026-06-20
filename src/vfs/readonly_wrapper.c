@@ -124,15 +124,15 @@ VFSNode *vfs_ro_wrap(VFSNode *base) {
 }
 
 bool vfs_make_readonly(const char *path) {
+	if(vfs_query(path).is_readonly) {
+		return true;
+	}
+
 	char buf[strlen(path)+1], *path_parent, *path_subdir;
 	vfs_path_normalize(path, buf);
 
 	char npath[strlen(path)+1];
-	strcpy(npath, buf);
-
-	if(vfs_query(path).is_readonly) {
-		return true;
-	}
+	memcpy(npath, buf, sizeof(npath));
 
 	vfs_path_split_right(buf, &path_parent, &path_subdir);
 
