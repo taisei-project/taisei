@@ -1791,22 +1791,19 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		b->strvalue = mem_realloc(b->strvalue, prev_len + text_len + 1);
 		memcpy(b->strvalue + prev_len, text, text_len + 1);
 
-		if(strlen(b->strvalue) > max_len) {
-			/*
-			 * EFFICIENT AS FUCK
-			 */
+		uint num_codepoints = SDL_utf8strlen(b->strvalue);
+		if(num_codepoints > max_len) {
+			// Too long. Trim excess codepoints from the end.
+			uint extra_codepoints = num_codepoints - max_len;
+			const char *pstr = b->strvalue + prev_len + text_len;
 
-			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
-			size_t ulen = ucs4len(u);
-
-			if(ulen > max_len) {
-				*(u + max_len) = 0;
-				mem_free(b->strvalue);
-				b->strvalue = ucs4_to_utf8_alloc(u);
-				snd = "hit";
+			while(extra_codepoints--) {
+				SDL_StepBackUTF8(b->strvalue, &pstr);
 			}
 
-			mem_free(u);
+			*(char*)pstr = 0;
+			assert(SDL_utf8strlen(b->strvalue) == max_len);
+			snd = "hit";
 		}
 
 		SDL_free(text_allocated);
@@ -1832,22 +1829,15 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			config_set_str(b->configentry, b->strvalue);
 			b->blockinput = false;
 		} else if(scan == SDL_SCANCODE_BACKSPACE) {
-			/*
-			 * MORE EFFICIENT THAN FUCK
-			 */
+			const char *pstr = b->strvalue + strlen(b->strvalue);
 
-			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
-
-			if(*u) {
-				play_sfx_ui("generic_shot");
-				*(ucs4chr(u, 0) - 1) = 0;
-			} else {
+			if(pstr == b->strvalue) {
 				play_sfx_ui("hit");
+			} else {
+				SDL_StepBackUTF8(b->strvalue, &pstr);
+				*(char*)pstr = 0;
+				play_sfx_ui("generic_shot");
 			}
-
-			mem_free(b->strvalue);
-			b->strvalue = ucs4_to_utf8_alloc(u);
-			mem_free(u);
 		}
 
 		return true;
