@@ -39,6 +39,12 @@ HARMFUL_FUNC(strncat, "This function likely doesn't do what you expect, use strl
 #undef strncpy
 HARMFUL_FUNC(strncpy, "This function likely doesn't do what you expect, use strlcpy");
 
+#undef strcat
+HARMFUL_FUNC(strcat, "Use strlcat or memcpy");
+
+#undef strcpy
+HARMFUL_FUNC(strcpy, "Use strlcpy or memcpy");
+
 #undef printf
 HARMFUL_FUNC(printf, "Use log_info instead");
 
