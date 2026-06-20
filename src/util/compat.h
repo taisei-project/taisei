@@ -333,3 +333,13 @@ typedef _Complex double cmplx;
 // We want to have it now, and we don't care about the useless original purpose of C's `auto`.
 // from __future__ import auto
 #define auto __auto_type
+
+#ifdef TAISEI_BUILDCONF_HAVE_COUNTOF
+	#include <stdcountof.h>
+#else
+	#define countof _Countof
+
+	#ifndef TAISEI_BUILDCONF_HAVE_COUNTOF_KEYWORD
+		#define _Countof(x) (sizeof(x)/sizeof(*(x)))
+	#endif
+#endif

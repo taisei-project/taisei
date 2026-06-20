@@ -41,7 +41,7 @@ INLINE double bits_to_double(uint64_t i) {
 	return ((DoubleBits) { .bits = i }).val;
 }
 
-#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
+#define ARRAY_SIZE(arr) countof(arr)
 
 #define SWAP(_a, _b) ({ \
 	auto _swap_temp = _a; \
