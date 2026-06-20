@@ -29,7 +29,7 @@ static size_t strbuf_size_available(StringBuffer *strbuf) {
 	return size_available;
 }
 
-static size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
+size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 	size_t size_available = strbuf_size_available(strbuf);
 
 	if(size_required >= size_available) {
