@@ -8,11 +8,19 @@
 
 #include "shader_program.h"
 
+#include "memory/memory.h"
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "util/kvparser.h"
 
 static char *shader_program_path(const char *name) {
-	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, SHPROG_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, SHPROG_EXT);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 static bool check_shader_program_path(const char *path) {

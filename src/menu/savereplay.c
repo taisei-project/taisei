@@ -15,10 +15,12 @@
 #include "difficulty.h"
 #include "events.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "plrmodes.h"
 #include "progress.h"
 #include "replay/struct.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 attr_nonnull_all
@@ -34,11 +36,15 @@ static void do_save_replay(Replay *rpy) {
 	strlcpy(drepr, difficulty_name(stg->diff), 16);
 	drepr[0] += 'a' - 'A';
 
+	StringBuffer buf = { acquire_scratch_arena() };
+
 	if(rpy->stages.num_elements > 1) {
-		name = strfmt("taisei_%s_%s_%s", strtime, prepr, drepr);
+		strbuf_printf(&buf, "taisei_%s_%s_%s", strtime, prepr, drepr);
 	} else {
-		name = strfmt("taisei_%s_stg%X_%s_%s", strtime, stg->stage, prepr, drepr);
+		strbuf_printf(&buf, "taisei_%s_stg%X_%s_%s", strtime, stg->stage, prepr, drepr);
 	}
+
+	name = strbuf_commit(&buf);
 
 	if(rpy->playername) {
 		replay_save(rpy, name);
@@ -48,7 +54,7 @@ static void do_save_replay(Replay *rpy) {
 		rpy->playername = NULL;
 	}
 
-	mem_free(name);
+	release_scratch_arena(buf.arena);
 }
 
 static void save_rpy(MenuData *menu, void *a) {

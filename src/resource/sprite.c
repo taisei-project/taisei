@@ -9,19 +9,26 @@
 #include "sprite.h"
 #include "atlas.h"
 
+#include "memory/memory.h"
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "util/kvparser.h"
 
 static char *sprite_path(const char *name) {
-	char *path = strjoin(SPRITE_PATH_PREFIX, name, SPRITE_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, SPRITE_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, SPRITE_EXTENSION);
 
-	VFSInfo pinfo = vfs_query(path);
+	VFSInfo pinfo = vfs_query(buf.start);
 
 	if(!pinfo.exists) {
-		mem_free(path);
-		return texture_res_handler.procs.find(name);;
+		release_scratch_arena(buf.arena);
+		return texture_res_handler.procs.find(name);
 	}
 
+	char *path = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
 	return path;
 }
 

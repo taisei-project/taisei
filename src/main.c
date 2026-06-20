@@ -36,6 +36,7 @@
 #include "util/env.h"
 #include "util/gamemode.h"
 #include "util/io.h"
+#include "util/strbuf.h"
 #include "version.h"
 #include "vfs/setup.h"
 #include "video.h"
@@ -112,14 +113,15 @@ static void init_log_file(void) {
 	char *logpath = vfs_repr("storage/log.txt", true);
 
 	if(logpath != NULL) {
-		char *m = strfmt(
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_printf(&buf,
 			"For more information, see the log file at %s\n\n"
 			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
 			logpath
 		);
 		mem_free(logpath);
-		log_set_gui_error_appendix(m);
-		mem_free(m);
+		log_set_gui_error_appendix(buf.start);
+		release_scratch_arena(buf.arena);
 	} else {
 		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
 	}

@@ -12,6 +12,8 @@
 #include "config.h"
 #include "events.h"
 #include "mainmenu.h"
+
+#include "memory/memory.h"
 #include "menu.h"
 
 #include "i18n/i18n.h"
@@ -1783,7 +1785,11 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		}
 
 		assert(text != NULL);
-		strappend(&b->strvalue, text);
+
+		size_t prev_len = strlen(b->strvalue);
+		size_t text_len = strlen(text);
+		b->strvalue = mem_realloc(b->strvalue, prev_len + text_len + 1);
+		memcpy(b->strvalue + prev_len, text, text_len + 1);
 
 		if(strlen(b->strvalue) > max_len) {
 			/*

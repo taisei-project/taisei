@@ -91,6 +91,3 @@ Color *color_set_opacity(Color *clr, float opacity)
 
 bool color_equals(const Color *clr, const Color *clr2)
 	attr_nonnull(1, 2);
-
-char *color_str(const Color *clr)
-	attr_nonnull(1) attr_returns_allocated;

@@ -8,12 +8,19 @@
 
 #include "animation.h"
 
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "resource.h"
 #include "util/kvparser.h"
 
 static char *animation_path(const char *name) {
-	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, ANI_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, ANI_EXTENSION);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 static bool check_animation_path(const char *path) {

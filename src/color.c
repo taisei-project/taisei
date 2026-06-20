@@ -184,14 +184,3 @@ bool color_equals(const Color *clr, const Color *clr2) {
 		clr->a == clr2->a
 	);
 }
-
-char *color_str(const Color *clr) {
-	return strfmt(
-		"RGBA(%f, %f, %f, %f) at %p",
-		clr->r,
-		clr->g,
-		clr->b,
-		clr->a,
-		(void*)clr
-	);
-}

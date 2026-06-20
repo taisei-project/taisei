@@ -8,8 +8,11 @@
 
 #include "syspath.h"
 
-#include "util/stringops.h"
+#include "memory/memory.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_util.h"
+#include "util/strbuf.h"
+#include "util/stringops.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -60,7 +63,15 @@ static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 
 static VFSNode *vfs_syspath_locate(VFSNode *node, const char *path) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	return vfs_syspath_create_internal(strjoin(pnode->path, "/", path, NULL));
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, pnode->path);
+	strbuf_cat(&buf, "/");
+	strbuf_cat(&buf, path);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+
+	return vfs_syspath_create_internal(s);
 }
 
 static const char *vfs_syspath_iter(VFSNode *node, void **opaque) {
@@ -112,7 +123,13 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	}
 
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	char *p = strjoin(pnode->path, VFS_PATH_SEPARATOR_STR, subdir, NULL);
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, pnode->path);
+	strbuf_cat(&buf, "/");
+	strbuf_cat(&buf, subdir);
+
+	char *p = strbuf_commit(&buf);
 	bool ok = !mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	if(!ok && errno == EEXIST) {
@@ -131,7 +148,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		vfs_set_error("Can't create directory %s (errno: %i)", p, errno);
 	}
 
-	mem_free(p);
+	release_scratch_arena(buf.arena);
 	return ok;
 }
 

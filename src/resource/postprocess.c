@@ -8,6 +8,7 @@
 
 #include "postprocess.h"
 
+#include "memory/scratch.h"
 #include "resource.h"
 #include "renderer/api.h"
 #include "util/kvparser.h"
@@ -228,7 +229,13 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
  */
 
 static char *postprocess_path(const char *name) {
-	return strjoin(PP_PATH_PREFIX, name, PP_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, PP_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, PP_EXTENSION);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 static bool check_postprocess_path(const char *path) {

@@ -14,6 +14,7 @@
 #include "events.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "menu/menu.h"
 #include "renderer/api.h"
 #include "replay/demoplayer.h"
@@ -23,6 +24,7 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 typedef struct CreditsEntry {
@@ -202,14 +204,19 @@ static void credits_fill(void) {
 		"for playing"
 	), ENTRY_TIME);
 
-	char *visit_us = strfmt(F_("Visit Us\n"
-	                          "%s\n\n"
-	                          "And join our Discord server\n"
-	                          "%s"),
-	                        "https://taisei-project.org/",
-	                        "https://discord.gg/JEHCMzW");
-	credits_add(visit_us, ENTRY_TIME);
-	mem_free(visit_us);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf,
+		F_(
+			"Visit Us\n"
+			"%s\n\n"
+			"And join our Discord server\n"
+			"%s"
+		),
+		"https://taisei-project.org/",
+		"https://discord.gg/JEHCMzW"
+	);
+	credits_add(buf.start, ENTRY_TIME);
+	release_scratch_arena(buf.arena);
 
 	// Yukkuri Kyouko!
 	credits_add(_("*\nAnd don't forget to take it easy!"), YUKKURI_TIME);

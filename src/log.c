@@ -114,9 +114,10 @@ noreturn static void log_abort(const char *msg) {
 
 	if(msg) {
 		if(logging.err_appendix) {
-			char *m = strfmt("%s\n\n%s", msg, logging.err_appendix);
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, m, NULL);
-			mem_free(m);
+			StringBuffer buf = { acquire_scratch_arena() };
+			strbuf_printf(&buf, "%s\n\n%s", msg, logging.err_appendix);
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, buf.start, NULL);
+			release_scratch_arena(buf.arena);
 		} else {
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, msg, NULL);
 		}

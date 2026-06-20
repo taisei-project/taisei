@@ -7,6 +7,9 @@
  */
 
 #include "private.h"
+#include "memory/memory.h"
+#include "memory/scratch.h"
+#include "util/strbuf.h"
 #include "vdir.h"
 
 #include "list.h"
@@ -222,10 +225,12 @@ void (vfs_set_error)(char *fmt, ...) {
 	vfs_tls_t *tls = vfs_tls_get();
 	va_list args;
 	va_start(args, fmt);
-	char *err = vstrfmt(fmt, args);
-	mem_free(tls->error_str);
-	tls->error_str = err;
+	StringBuffer buf = { acquire_scratch_arena() };
+	uint len = strbuf_vprintf(&buf, fmt, args);
 	va_end(args);
+	tls->error_str = mem_realloc(tls->error_str, len + 1);
+	memcpy(tls->error_str, buf.start, len + 1);
+	release_scratch_arena(buf.arena);
 
 	// log_debug("%s", tls->error_str);
 }
