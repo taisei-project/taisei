@@ -388,6 +388,25 @@ config.set('TAISEI_BUILDCONF_HAVE_MICROSOFT_QSORT_S', cc.links(
     args : ['-Wall', '-Werror']
 ))
 
+config.set('TAISEI_BUILDCONF_HAVE_COUNTOF', cc.compiles(
+    '''
+    #include <stdcountof.h>
+    int x[] = { 1, 2, 3 };
+    _Static_assert(countof(x) == 3, "");
+    ''',
+    name : 'countof macro',
+    args : ['-Wall', '-Werror']
+))
+
+config.set('TAISEI_BUILDCONF_HAVE_COUNTOF_KEYWORD', cc.compiles(
+    '''
+    int x[] = { 1, 2, 3 };
+    _Static_assert(_Countof(x) == 3, "");
+    ''',
+    name : '_Countof keyword',
+    args : ['-Wall', '-Werror']
+))
+
 prefer_relpath_systems = [
     'windows',
 ]

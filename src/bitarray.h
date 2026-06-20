@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "util/crap.h"
+
 typedef uint_fast16_t bitarray_word_t;
 
 #define BITARRAY_WORD_BITS (sizeof(bitarray_word_t) * 8)
@@ -19,8 +21,6 @@ typedef uint_fast16_t bitarray_word_t;
 #define BIT_ARRAY(N) struct { \
     bitarray_word_t words[BITARRAY_NUM_WORDS_FROM_BITS(N)]; \
 }
-
-#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
 
 INLINE bool _bitarray_get(uint nwords, bitarray_word_t words[nwords], uint bit) {
     return (bool)(1 & (words[bit / BITARRAY_WORD_BITS] >> (bit & (BITARRAY_WORD_BITS - 1))));
