@@ -36,5 +36,8 @@ INLINE int strbuf_cat(StringBuffer *strbuf, const char *str) {
 	return strbuf_ncat(strbuf, strlen(str), str);
 }
 
+size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required)
+	attr_nonnull(1);
+
 char *strbuf_commit(StringBuffer *strbuf)
 	attr_nonnull(1);
