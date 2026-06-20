@@ -8,10 +8,12 @@
 
 #include "loadpacks.h"
 
+#include "memory/scratch.h"
 #include "public.h"
 #include "error.h"
 
 #include "log.h"
+#include "util/strbuf.h"
 #include "util/stringops.h"
 
 static bool vfs_mount_pkgdir(const char *dst, const char *src) {
@@ -65,6 +67,8 @@ void vfs_load_packages(const char *dir, const char *unionmp) {
 		log_fatal("VFS error: %s", vfs_get_error());
 	}
 
+	StringBuffer buf = { acquire_scratch_arena() };
+
 	for(size_t i = 0; i < numpaks; ++i) {
 		const char *entry = paklist[i];
 		struct pkg_loader_t *loader = find_loader(entry);
@@ -76,14 +80,15 @@ void vfs_load_packages(const char *dir, const char *unionmp) {
 		log_info("Adding package: %s", entry);
 		assert(loader->mount != NULL);
 
-		char *tmp = strfmt("%s/%s", dir, entry);
+		strbuf_printf(&buf, "%s/%s", dir, entry);
 
-		if(!loader->mount(unionmp, tmp)) {
+		if(!loader->mount(unionmp, buf.start)) {
 			log_error("VFS error: %s", vfs_get_error());
 		}
 
-		mem_free(tmp);
+		strbuf_clear(&buf);
 	}
 
+	release_scratch_arena(buf.arena);
 	vfs_dir_list_free(paklist, numpaks);
 }

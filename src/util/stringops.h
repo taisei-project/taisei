@@ -11,6 +11,7 @@
 
 #include "memory/arena.h"
 #include "systime.h"
+#include "util/compat.h"
 
 #include <time.h>
 #include <SDL3/SDL.h>
@@ -57,12 +58,6 @@ bool strstartswith(const char *s, const char *p) attr_pure;
 bool strendswith_any(const char *s, const char **earray) attr_pure;
 bool strstartswith_any(const char *s, const char **earray) attr_pure;
 void stralloc(char **dest, const char *src);
-char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
-char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated attr_printf(1, 0);
-char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
-char* vstrfmt_arena(MemArena *arena, const char *fmt, va_list args) attr_returns_allocated attr_printf(2, 0);
-char* strfmt_arena(MemArena *arena, const char *fmt, ...) attr_printf(2, 3) attr_returns_allocated;
-char* strappend(char **dst, const char *src);
 void expand_escape_sequences(char *str);
 
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);

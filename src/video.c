@@ -12,12 +12,16 @@
 #include "events.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "memory/memory.h"
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
+#include "stageinfo.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/fbmgr.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "version.h"
 #include "video_postprocess.h"
 
@@ -767,7 +771,11 @@ void video_take_screenshot(bool viewport_only) {
 	char timestamp[FILENAME_TIMESTAMP_MIN_BUF_SIZE];
 	get_system_time(&systime);
 	filename_timestamp(timestamp, sizeof(timestamp), systime);
-	tdata->dest_path = strfmt("storage/screenshots/taisei_%s.png", timestamp);
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf, "storage/screenshots/taisei_%s.png", timestamp);
+	tdata->dest_path = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
 
 	Framebuffer *fb = NULL;
 	FramebufferAttachment attachment = FRAMEBUFFER_ATTACH_NONE;

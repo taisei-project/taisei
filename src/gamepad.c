@@ -14,10 +14,12 @@
 #include "hirestime.h"
 #include "i18n/i18n.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "transition.h"
 #include "util.h"
 #include "util/env.h"
 #include "util/miscmath.h"
+#include "util/strbuf.h"
 #include "util/stringops.h"
 #include "vfs/public.h"
 
@@ -54,13 +56,15 @@ static struct {
 static bool gamepad_event_handler(SDL_Event *event, void *arg);
 
 static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
+	StringBuffer buf = { acquire_scratch_arena() };
+
 	char *repr = vfs_repr(vpath, true);
-	char *errstr = NULL;
-	const char *const_errstr = NULL;
+	const char *errstr = NULL;
 
 	SDL_IOStream *mappings = vfs_open(vpath, VFS_MODE_READ);
 	int num_loaded = -1;
 	LogLevel loglvl = LOG_WARN;
+
 
 	if(!mappings) {
 		if(!warn_noexist) {
@@ -68,28 +72,29 @@ static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
 
 			if(!vinfo.error && !vinfo.exists && !vinfo.is_dir) {
 				loglvl = LOG_INFO;
-				const_errstr = errstr = strfmt("Custom mappings file '%s' does not exist (this is ok)", repr);
+				strbuf_printf(&buf, "Custom mappings file '%s' does not exist (this is ok)", repr);
+				errstr = strbuf_commit(&buf);
 				goto cleanup;
 			}
 		}
 
-		const_errstr = vfs_get_error();
+		errstr = vfs_get_error();
 		goto cleanup;
 	}
 
 	if((num_loaded = SDL_AddGamepadMappingsFromIO(mappings, true)) < 0) {
-		const_errstr = SDL_GetError();
+		errstr = SDL_GetError();
 	}
 
 cleanup:
-	if(const_errstr) {
-		log_custom(loglvl, "Couldn't load mappings: %s", const_errstr);
+	if(errstr) {
+		log_custom(loglvl, "Couldn't load mappings: %s", errstr);
 	} else if(num_loaded >= 0) {
 		log_info("Loaded %i mappings from '%s'", num_loaded, repr);
 	}
 
+	release_scratch_arena(buf.arena);
 	mem_free(repr);
-	mem_free(errstr);
 	return num_loaded;
 }
 

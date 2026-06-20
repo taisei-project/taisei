@@ -8,7 +8,10 @@
 
 #include "syspath.h"
 
+#include "memory/memory.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_util.h"
+#include "util/strbuf.h"
 #include "util/stringops.h"
 
 #include <windows.h>
@@ -112,7 +115,15 @@ static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 
 static VFSNode *vfs_syspath_locate(VFSNode *node, const char *path) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	return vfs_syspath_create_internal(strjoin(pnode->path, "\\", path, NULL));
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, pnode->path);
+	strbuf_cat(&buf, "/");
+	strbuf_cat(&buf, path);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+
+	return vfs_syspath_create_internal(s);
 }
 
 typedef struct VFSWin32IterData {
@@ -127,9 +138,11 @@ static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
 	HANDLE search_handle;
 
 	if(!*opaque) {
-		char *pattern = strjoin(pnode->path, "\\*.*", NULL);
-		wchar_t *wpattern = WIN_UTF8ToString(pattern);
-		mem_free(pattern);
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_cat(&buf, pnode->path);
+		strbuf_cat(&buf, "\\*.*");
+		wchar_t *wpattern = WIN_UTF8ToString(buf.start);
+		release_scratch_arena(buf.arena);
 		search_handle = FindFirstFile(wpattern, &fdata);
 		mem_free(wpattern);
 
@@ -203,7 +216,11 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		subdir = "";
 	}
 
-	char *p = strjoin(pnode->path, "\\", subdir, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, pnode->path);
+	strbuf_cat(&buf, "\\");
+	strbuf_cat(&buf, subdir);
+	char *p = buf.start;
 	wchar_t *wp = WIN_UTF8ToString(p);
 	bool ok = CreateDirectory(wp, NULL);
 	DWORD err = GetLastError();
@@ -224,8 +241,8 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		vfs_set_error("Can't create directory %s (win32 error: %lu)", p, err);
 	}
 
-	mem_free(p);
 	mem_free(wp);
+	release_scratch_arena(buf.arena);
 	return ok;
 }
 

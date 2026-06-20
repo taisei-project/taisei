@@ -13,6 +13,7 @@
 #include "gamepad.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "plrmodes.h"
 #include "projectile.h"
 #include "replay/stage.h"
@@ -23,6 +24,7 @@
 #include "stats.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 
 DEFINE_ENTITY_TYPE(PlayerIndicators, {
 	Player *plr;
@@ -1292,12 +1294,14 @@ static void player_ani_moving(Player *plr, int dir) {
 	const char *seqname = moveseqname(dir);
 	const char *lastseqname = moveseqname(plr->lastmovesequence);
 
-	char *transition = strjoin(lastseqname,"2",seqname,NULL);
-
-	aniplayer_hard_switch(&plr->ani,transition,1);
-	aniplayer_queue(&plr->ani,seqname,0);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, lastseqname);
+	strbuf_cat(&buf, "2");
+	strbuf_cat(&buf, seqname);
+	aniplayer_hard_switch(&plr->ani, buf.start, 1);
+	release_scratch_arena(buf.arena);
+	aniplayer_queue(&plr->ani, seqname, 0);
 	plr->lastmovesequence = dir;
-	mem_free(transition);
 }
 
 void player_applymovement(Player *plr) {

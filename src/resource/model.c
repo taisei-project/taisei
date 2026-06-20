@@ -8,6 +8,7 @@
 
 #include "model.h"
 
+#include "memory/scratch.h"
 #include "renderer/api.h"
 #include "resource.h"
 
@@ -67,7 +68,13 @@ static void load_model_stage2(ResourceLoadState *st) {
 }
 
 static char *model_path(const char *name) {
-	return strjoin(MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, MDL_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, MDL_EXTENSION);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 static bool check_model_path(const char *path) {

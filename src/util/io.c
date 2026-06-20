@@ -9,7 +9,9 @@
 #include "io.h"
 
 #include "log.h"
+#include "memory/scratch.h"
 #include "stringops.h"
+#include "util/strbuf.h"
 #include "vfs/public.h"
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
@@ -78,8 +80,9 @@ size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char* fm
 
 size_t SDL_RWvprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, va_list args) {
 	auto snapshot = marena_snapshot(scratch);
-	char *str = vstrfmt_arena(scratch, fmt, args);
-	size_t ret = SDL_WriteIO(rwops, str, strlen(str));
+	StringBuffer buf = { scratch };
+	uint len = strbuf_vprintf(&buf, fmt, args);
+	size_t ret = SDL_WriteIO(rwops, buf.start, len);
 	marena_rollback(scratch, &snapshot);
 	return ret;
 }
@@ -92,12 +95,17 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) {
 }
 
 char *try_path(const char *prefix, const char *name, const char *ext) {
-	char *p = strjoin(prefix, name, ext, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, prefix);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, ext);
 
-	if(vfs_query(p).exists) {
-		return p;
+	char *result = NULL;
+
+	if(vfs_query(buf.start).exists) {
+		result = mem_strdup(buf.start);
 	}
 
-	mem_free(p);
-	return NULL;
+	release_scratch_arena(buf.arena);
+	return result;
 }

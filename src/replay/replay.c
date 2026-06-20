@@ -7,10 +7,12 @@
  */
 
 #include "replay.h"
+#include "memory/scratch.h"
 #include "struct.h"
 #include "stage.h"
 
 #include "rwops/rwops_stdiofp.h"
+#include "util/strbuf.h"
 
 void replay_destroy_events(Replay *rpy) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
@@ -25,17 +27,23 @@ void replay_reset(Replay *rpy) {
 	*rpy = (typeof(*rpy)) {};
 }
 
-static char *replay_getpath(const char *name, bool ext) {
-	return ext ?
-		strfmt("storage/replays/%s.%s", name, REPLAY_EXTENSION) :
-		strfmt("storage/replays/%s",    name);
+static char *replay_getpath(const char *name, bool ext, StringBuffer *buf) {
+	if(ext) {
+		strbuf_printf(buf, "storage/replays/%s." REPLAY_EXTENSION, name);
+	} else {
+		strbuf_printf(buf, "storage/replays/%s", name);
+	}
+
+	return strbuf_commit(buf);
 }
 
 bool replay_save(Replay *rpy, const char *name) {
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	StringBuffer buf = { acquire_scratch_arena() };
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
 	char *sp = vfs_repr(p, true);
 	log_info("Saving %s", sp);
 	mem_free(sp);
+	release_scratch_arena(buf.arena);
 
 	SDL_IOStream *file = vfs_open(p, VFS_MODE_WRITE);
 	mem_free(p);
@@ -87,9 +95,10 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 }
 
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	StringBuffer buf = { acquire_scratch_arena() };
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
 	bool result = replay_load_vfspath(rpy, p, mode);
-	mem_free(p);
+	release_scratch_arena(buf.arena);
 	return result;
 }
 

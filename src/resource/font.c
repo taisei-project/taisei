@@ -12,6 +12,7 @@
 #include "dynarray.h"
 #include "events.h"
 #include "memory/arena.h"
+#include "memory/memory.h"
 #include "memory/scratch.h"
 #include "pixmap/pixmap.h"
 #include "renderer/api.h"
@@ -266,7 +267,13 @@ static void shutdown_fonts(void) {
 }
 
 static char *font_path(const char *name) {
-	return strjoin(FONT_PATH_PREFIX, name, FONT_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, FONT_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, FONT_EXTENSION);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 bool check_font_path(const char *path) {

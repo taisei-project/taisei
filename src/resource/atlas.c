@@ -90,7 +90,13 @@ struct Atlas {
 };
 
 static char *atlas_find(const char *name) {
-	return strjoin(ATLAS_PATH_PREFIX, name, ATLAS_EXTENSION, NULL);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, ATLAS_PATH_PREFIX);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, ATLAS_EXTENSION);
+	char *s = mem_strdup(buf.start);
+	release_scratch_arena(buf.arena);
+	return s;
 }
 
 static bool atlas_check(const char *path) {
