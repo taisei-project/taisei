@@ -88,7 +88,7 @@ static bool texture_loader_parse_class(
 	}
 
 	char buf[strlen(val) + 1];
-	strcpy(buf, val);
+	memcpy(buf, val, sizeof(buf));
 	char *ignore, *pbuf = strtok_r(buf, " \t", &ignore);
 
 	if(!SDL_strcasecmp(pbuf, "2d")) {
@@ -117,7 +117,7 @@ static void texture_loader_parse_filter(
 	}
 
 	char buf[strlen(val) + 1];
-	strcpy(buf, val);
+	memcpy(buf, val, sizeof(buf));
 	char *ignore, *pbuf = strtok_r(buf, " \t", &ignore);
 
 	if(!SDL_strcasecmp(pbuf, "default")) {
@@ -170,7 +170,7 @@ static void texture_loader_parse_warp(
 	}
 
 	char buf[strlen(val) + 1];
-	strcpy(buf, val);
+	memcpy(buf, val, sizeof(buf));
 	char *ignore, *pbuf = strtok_r(buf, " \t", &ignore);
 
 	if(!SDL_strcasecmp(pbuf, "default")) {
@@ -207,7 +207,7 @@ static bool texture_loader_parse_format(
 	uint channels = 0;
 
 	char buf[strlen(val) + 1];
-	strcpy(buf, val);
+	memcpy(buf, val, sizeof(buf));
 
 	if(*val) {
 		char *c = strrchr(buf, 0) - 1;

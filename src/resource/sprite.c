@@ -188,9 +188,10 @@ static void load_sprite_stage2_legacy(ResourceLoadState *st) {
 
 Sprite *prefix_get_sprite(const char *name, const char *prefix) {
 	uint plen = strlen(prefix);
-	char buf[plen + strlen(name) + 1];
-	strcpy(buf, prefix);
-	strcpy(buf + plen, name);
+	uint nlen = strlen(name);
+	char buf[plen + nlen + 1];
+	memcpy(buf, prefix, plen);
+	memcpy(buf + plen, name, nlen + 1);
 	Sprite *spr = res_sprite(buf);
 	return spr;
 }

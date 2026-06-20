@@ -9,6 +9,7 @@
 #include "pathutil.h"
 
 #include "public.h"
+#include "util/stringops.h"
 
 char *vfs_path_normalize(const char *path, char *out) {
 	const char *p = path;
@@ -119,11 +120,11 @@ void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, 
 	assert(bufsize >= strlen(basepath) + strlen(relpath) + 1);
 
 	if(!*basepath) {
-		strcpy(buf, relpath);
+		strlcpy(buf, relpath, bufsize);
 		return;
 	}
 
-	strcpy(buf, basepath);
+	strlcpy(buf, basepath, bufsize);
 	char *end = strrchr(buf, 0);
 
 	while(end > buf) {
@@ -134,7 +135,7 @@ void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, 
 		--end;
 	}
 
-	strcpy(end, relpath);
+	strlcpy(end, relpath, bufsize);
 }
 
 void vfs_path_root_prefix(char *path) {

@@ -84,7 +84,7 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 
 	if(*overrides) {
 		char buf[strlen(overrides)+1], *save, *arg, *e;
-		strcpy(buf, overrides);
+		memcpy(buf, overrides, sizeof(buf));
 		arg = buf;
 
 		while((e = strtok_r(arg, " ", &save))) {

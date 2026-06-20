@@ -1571,7 +1571,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				char tmp[8];
 				snprintf(tmp, 8, "%.0f%%", 100 * val);
 				if(!strcmp(tmp, "-0%"))
-					strcpy(tmp, "0%");
+					strlcpy(tmp, "0%", sizeof(tmp));
 
 				r_mat_mv_push();
 				r_mat_mv_translate(origin - (w+cw) * 0.5, OPTIONS_ITEM_HEIGHT * i, 0);

@@ -31,7 +31,7 @@ static VFSNode *vfs_vdir_locate(VFSNode *node, const char *path) {
 	char mutpath[strlen(path)+1];
 	char *primpath, *subpath;
 
-	strcpy(mutpath, path);
+	memcpy(mutpath, path, sizeof(mutpath));
 	vfs_path_split_left(mutpath, &primpath, &subpath);
 
 	if((subnode = ht_get(&vdir->table, primpath, NULL))) {

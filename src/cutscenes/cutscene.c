@@ -16,6 +16,7 @@
 #include "events.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "progress.h"
 #include "renderer/api.h"
 #include "replay/demoplayer.h"
@@ -23,6 +24,7 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 #include "watchdog.h"
 
@@ -309,10 +311,6 @@ static void draw_center_text(
 	text_draw(_(e->text), &p);
 }
 
-static char *text_add_quotes(const char* text) {
-	return strfmt(F_("“%s”"), text);
-}
-
 static void draw_text(CutsceneState *st) {
 	Font *font = res_font("standard");
 	const float lines = 7;
@@ -344,6 +342,8 @@ static void draw_text(CutsceneState *st) {
 		.overlay_projection = &textbox,
 	};
 
+	StringBuffer buf = { acquire_scratch_arena() };
+
 	for(CutsceneTextVisual *tv = st->text_visuals.first; tv; tv = tv->next) {
 		const CutscenePhaseTextEntry *e = tv->entry;
 
@@ -369,22 +369,24 @@ static void draw_text(CutsceneState *st) {
 			p.pos.x += ofs;
 		}
 
-		char *text;
+		const char *text;
+
 		if(e->type == CTT_DIALOGUE) {
-			text = text_add_quotes(_(e->text));
+			strbuf_printf(&buf, F_("“%s”"), _(e->text));
+			text = strbuf_commit(&buf);
 		} else {
-			text = mem_strdup(_(e->text));
+			text = _(e->text);
 		}
 
-		char buf[strlen(text) * 2 + 1];
-		text_wrap(font, text, w, buf, sizeof(buf));
-		text_draw(buf, &p);
+		text_wrap(font, text, w, &buf);
+		text_draw(buf.start, &p);
 
-		y += text_height(font, buf, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
+		y += text_height(font, buf.start, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
 
-		mem_free(text);
+		strbuf_clear(&buf);
 	}
 
+	release_scratch_arena(buf.arena);
 	r_state_pop();
 }
 

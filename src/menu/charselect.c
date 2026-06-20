@@ -12,6 +12,7 @@
 #include "common.h"
 #include "events.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "menu.h"
 #include "menu/mainmenu.h"
 #include "plrmodes.h"
@@ -19,6 +20,7 @@
 #include "progress.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
@@ -105,9 +107,11 @@ static void update_char_menu(MenuData *menu) {
 	assume(m != NULL);
 
 	Font *font = res_font("standard");
-	char buf[256] = {};
-	text_wrap(font, _(m->description), DESCRIPTION_WIDTH, buf, sizeof(buf));
-	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	text_wrap(font, _(m->description), DESCRIPTION_WIDTH, &buf);
+	double height = text_height(font, buf.start, 0) + font_get_lineskip(font) * 2;
+	release_scratch_arena(buf.arena);
 
 	fapproach_asymptotic_p(&menu->drawdata[0], SELECTED_SUBSHOT(menu) - PLR_SHOT_A, 0.1, 1e-5);
 	fapproach_asymptotic_p(&menu->drawdata[1], 1 - cursor_entry->drawdata, 0.1, 1e-5);

@@ -11,11 +11,13 @@
 #include "audio/audio.h"
 #include "common.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "options.h"
 #include "progress.h"
 #include "renderer/api.h"
 #include "resource/font.h"
 #include "resource/resource.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 enum {
@@ -154,6 +156,8 @@ static void musicroom_draw(MenuData *m) {
 	const float text_x = 50;
 	const float text_y = SCREEN_H - comment_height + font_get_lineskip(text_font) * 1.5 + comment_offset;
 
+	StringBuffer sb = { acquire_scratch_arena() };
+
 	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
 		float a = e->drawdata / 10.0 * comment_alpha;
 
@@ -190,21 +194,23 @@ static void musicroom_draw(MenuData *m) {
 			const char *artist = bgm_get_artist(p->bgm);
 
 			if(artist) {
-				const char *prefix = "— ";
-				char buf[strlen(prefix) + strlen(artist) + 1];
-				strcpy(buf, prefix);
-				strcat(buf, artist);
+				strbuf_cat(&sb, "— ");
+				strbuf_cat(&sb, artist);
 
-				text_draw(buf, &(TextParams) {
+				text_draw(strbuf_commit(&sb), &(TextParams) {
 					.pos = { SCREEN_W - text_x, SCREEN_H + comment_offset - font_get_lineskip(text_font) },
 					.font_ptr = text_font,
 					.shader_ptr = text_shader,
 					.color = RGBA(a, a, a, a),
 					.align = ALIGN_RIGHT,
 				});
+
+				strbuf_clear(&sb);
 			}
 		}
 	});
+
+	release_scratch_arena(sb.arena);
 }
 
 static void action_play_bgm(MenuData *m, void *arg) {

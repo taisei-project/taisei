@@ -12,6 +12,7 @@
 #include "renderer/api.h"
 #include "resource.h"
 #include "sprite.h"
+#include "util/strbuf.h"
 
 typedef enum {
 	ALIGN_LEFT = 0, // must be 0
@@ -100,7 +101,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out
 
 void text_ucs4_shorten(Font *font, uint32_t *text, float width) attr_nonnull(1, 2);
 
-void text_wrap(Font *font, const char *src, float width, char *buf, size_t bufsize) attr_nonnull(1, 2, 4);
+void text_wrap(Font *font, const char *src, float width, StringBuffer *buf) attr_nonnull(1, 2, 4);
 
 void text_bbox(Font *font, const char *text, uint maxlines, TextBBox *bbox) attr_nonnull(1, 2, 4);
 void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *bbox) attr_nonnull(1, 2, 4);
