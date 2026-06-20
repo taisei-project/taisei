@@ -12,10 +12,6 @@
 // IWYU pragma: always_keep
 
 #include "build_config.h"             // IWYU pragma: export
-#include "util/compat.h"              // IWYU pragma: export
-#include "util/assert.h"              // IWYU pragma: export
-#include "util/consideredharmful.h"   // IWYU pragma: export
-#include "memory/memory.h"            // IWYU pragma: export
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this
@@ -26,6 +22,11 @@
 	#define IF_DEBUG(statement) ((void)0)
 	#define IF_NOT_DEBUG(statement) do { statement } while(0)
 #endif
+
+#include "util/compat.h"              // IWYU pragma: export
+#include "util/assert.h"              // IWYU pragma: export
+#include "util/consideredharmful.h"   // IWYU pragma: export
+#include "memory/memory.h"            // IWYU pragma: export
 
 #ifdef TAISEI_BUILDCONF_LOG_FATAL_MSGBOX
 	#define LOG_FATAL_MSGBOX
