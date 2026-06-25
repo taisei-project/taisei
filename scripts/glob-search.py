@@ -5,10 +5,6 @@ from taiseilib.common import (
     run_main,
 )
 
-from pathlib import Path
-import fnmatch
-
-
 def main(args):
     import argparse
     parser = argparse.ArgumentParser(description='Search directory by multiple glob patterns.', prog=args[0])
@@ -26,12 +22,10 @@ def main(args):
 
     args = parser.parse_args(args[1:])
 
-    for path in (p.relative_to(args.directory) for p in args.directory.rglob('*')):
-        path = str(path)
-        for pattern in args.patterns:
-            if fnmatch.fnmatchcase(path, pattern):
-                print(path)
-                break
+    for pattern in args.patterns:
+        for path in args.directory.glob(pattern):
+            relpath = path.relative_to(args.directory)
+            print(relpath)
 
 
 if __name__ == '__main__':

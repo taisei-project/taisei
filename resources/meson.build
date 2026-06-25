@@ -98,7 +98,7 @@ foreach pkg : packages
             pkg_pkgdir,
             install_dir : data_path,
             install_tag : res_install_tag,
-            exclude_files : glob_result.stdout().split('\n')
+            exclude_files : glob_result.stdout().strip().split('\n')
         )
     endif
 endforeach
@@ -156,7 +156,7 @@ if host_machine.system() == 'nx'
             shaders_build_dir,
             install_dir : data_path,
             install_tag : res_install_tag,
-            exclude_files : glob_result.stdout().split('\n')
+            exclude_files : glob_result.stdout().strip().split('\n')
         )
     endif
 endif
