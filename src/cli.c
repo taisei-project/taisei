@@ -82,7 +82,6 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"diff",               required_argument,  0, 'd'},            "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
 		{{"shotmode",           required_argument,  0, 's'},            "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"dumpstages",         no_argument,        0, 'u'},            "Print a list of all stages in the game"},
-		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from PATH", "PATH"},
 		{{"cutscene",           required_argument,  0, OPT_CUTSCENE},   "Play cutscene by numeric ID and exit", "ID"},
 		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
 		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
@@ -95,6 +94,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"populate-cache",     no_argument,        0, OPT_POPCACHE},   "Attempt to load all available resources, populating the cache, then exit"},
 		{{"width",              required_argument,  0, 'W'},            "Set window width", "WIDTH"},
 		{{"height",             required_argument,  0, 'H'},            "Set window height", "HEIGHT"},
+		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from PATH", "PATH"},
 		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
 		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
 		{}
