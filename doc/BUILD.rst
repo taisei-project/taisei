@@ -34,6 +34,7 @@ Build-Time Dependencies
 - Python >= 3.7 (>= 3.14 recommended)
 - `python-backports.zstd <https://github.com/Rogdham/backports.zstd>`__ if Python < 3.14
 - `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
+- gettext tools (``xgettext``, ``msgfmt``, etc.)
 
 Run-Time Dependencies
 """""""""""""""""""""
@@ -49,7 +50,6 @@ Required
 - freetype2
 - opusfile
 - zlib
-- gettext
 
 Optional
 ''''''''
