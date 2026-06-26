@@ -24,10 +24,31 @@
 #include "memory/scratch.h"
 #include "util/env.h"
 
+#ifndef SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN
+	// Added in SDL 3.4.0
+	#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN "SDL.gpu.device.create.feature.clip_distance"
+#endif
+
+#ifndef SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN
+	// Added in SDL 3.4.0
+	#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN "SDL.gpu.device.create.feature.depth_clamping"
+#endif
+
+#ifndef SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN
+	// Added in SDL 3.4.0
+	#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN "SDL.gpu.device.create.feature.indirect_draw_first_instance"
+#endif
+
+#ifndef SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN
+	// Added in SDL 3.4.0
+	#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
+#endif
+
 #ifndef SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN
 	// Added in SDL 3.4.2
 	#define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
 #endif
+
 
 SDLGPUGlobal sdlgpu;
 
