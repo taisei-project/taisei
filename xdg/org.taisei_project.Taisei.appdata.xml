@@ -23,7 +23,7 @@
 	</provides>
 	<url type="homepage">https://taisei-project.org</url>
 	<url type="bugtracker">https://github.com/taisei-project/taisei/issues</url>
-	<url type="help">https://github.com/taisei-project/taisei/blob/v1.4/doc/GAME.rst</url>
+	<url type="help">https://github.com/taisei-project/taisei/blob/v1.4.5/doc/GAME.rst</url>
 	<screenshots>
 		<screenshot type="default">
 			<image>https://taisei-project.org/static/screenshots/009_1.4/taisei_20230908_01-32-03-510.png</image>
@@ -39,6 +39,12 @@
 		</screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.4.5" date="2026-06-27">
+			<url>https://taisei-project.org/news/0022_v1.4.5</url>
+			<description>
+				<p>This is a stable maintenance release. It adds localization, updates to some menus, and various fixes.</p>
+			</description>
+		</release>
 		<release version="1.4.4" date="2025-07-12">
 			<url>https://taisei-project.org/news/0021_v1.4.4</url>
 			<description>
