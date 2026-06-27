@@ -43,10 +43,9 @@ bool replay_save(Replay *rpy, const char *name) {
 	char *sp = vfs_repr(p, true);
 	log_info("Saving %s", sp);
 	mem_free(sp);
-	release_scratch_arena(buf.arena);
 
 	SDL_IOStream *file = vfs_open(p, VFS_MODE_WRITE);
-	mem_free(p);
+	release_scratch_arena(buf.arena);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
