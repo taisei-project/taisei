@@ -9,8 +9,9 @@
 #pragma once
 #include "taisei.h"
 
+#include "renderer/common/backend.h"
 #include "renderer/api.h"
 
-void gles30_fbcopyfallback_init(void);
+void gles30_fbcopyfallback_init(RendererBackend *backend);
 void gles30_fbcopyfallback_shutdown(void);
 void gles30_fbcopyfallback_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags);

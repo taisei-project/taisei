@@ -1224,7 +1224,11 @@ static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, in
 		return NULL;
 	}
 
-	SDL_GL_MakeCurrent(window, NOT_NULL(R.gl_context));
+	if(!SDL_GL_MakeCurrent(window, R.gl_context)) {
+		log_sdl_error(LOG_FATAL, "SDL_GL_MakeCurrent");
+		UNREACHABLE;
+	}
+
 	R.window = window;
 	return window;
 }

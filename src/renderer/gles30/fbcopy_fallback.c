@@ -7,7 +7,9 @@
  */
 
 #include "fbcopy_fallback.h"
+#include "gles30.h"
 
+#include "hashtable.h"
 #include "memory/scratch.h"
 #include "util.h"
 
@@ -19,7 +21,7 @@ static struct {
 	Uniform *input_colors[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS];
 } blit_uniforms;
 
-void gles30_fbcopyfallback_init(void) {
+void gles30_fbcopyfallback_init(RendererBackend *backend) {
 	StringBuffer sbuf = { acquire_scratch_arena() };
 
 	strbuf_printf(&sbuf,
@@ -65,7 +67,7 @@ void gles30_fbcopyfallback_init(void) {
 
 	log_info("\n%s\n ", frag_src.content);
 
-	ShaderObject *frag_shobj = r_shader_object_compile(&frag_src);
+	ShaderObject *frag_shobj = backend->funcs.shader_object_compile(&frag_src);
 	strbuf_clear(&sbuf);
 
 	if(!frag_shobj) {
@@ -93,7 +95,7 @@ void gles30_fbcopyfallback_init(void) {
 		.stage = SHADER_STAGE_VERTEX,
 	};
 
-	ShaderObject *vert_shobj = r_shader_object_compile(&vert_src);
+	ShaderObject *vert_shobj = backend->funcs.shader_object_compile(&vert_src);
 
 	release_scratch_arena(sbuf.arena);
 
@@ -101,22 +103,26 @@ void gles30_fbcopyfallback_init(void) {
 		log_fatal("Failed to compile internal blit vertex shader");
 	}
 
-	if(!(blit_shader = r_shader_program_link(2, (ShaderObject*[]) { vert_shobj, frag_shobj }))) {
+	if(!(blit_shader = backend->funcs.shader_program_link(2, (ShaderObject*[]) { vert_shobj, frag_shobj }))) {
 		log_fatal("Failed to link internal blit shader");
 	}
 
-	r_shader_object_destroy(vert_shobj);
-	r_shader_object_destroy(frag_shobj);
+	backend->funcs.shader_object_destroy(vert_shobj);
+	backend->funcs.shader_object_destroy(frag_shobj);
 
-	blit_uniforms.outputs_enabled = NOT_NULL(r_shader_uniform(blit_shader, "outputs_enabled"));
-	blit_uniforms.depth_enabled = NOT_NULL(r_shader_uniform(blit_shader, "depth_enabled"));
-	blit_uniforms.input_depth = NOT_NULL(r_shader_uniform(blit_shader, "input_depth"));
+	#define UNIFORM(s,u) backend->funcs.shader_uniform(s, u, htutil_hashfunc_string(u))
+
+	blit_uniforms.outputs_enabled = NOT_NULL(UNIFORM(blit_shader, "outputs_enabled"));
+	blit_uniforms.depth_enabled = NOT_NULL(UNIFORM(blit_shader, "depth_enabled"));
+	blit_uniforms.input_depth = NOT_NULL(UNIFORM(blit_shader, "input_depth"));
 
 	for(int i = 0; i < ARRAY_SIZE(blit_uniforms.input_colors); ++i) {
 		char tmp[64];
 		snprintf(tmp, sizeof(tmp), "input_color%i", i);
-		blit_uniforms.input_colors[i] = NOT_NULL(r_shader_uniform(blit_shader, tmp));
+		blit_uniforms.input_colors[i] = NOT_NULL(UNIFORM(blit_shader, tmp));
 	}
+
+	#undef UNIFORM
 }
 
 void gles30_fbcopyfallback_shutdown(void) {
