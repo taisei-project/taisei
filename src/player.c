@@ -774,7 +774,7 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 
 	r_framebuffer(fb_aux);
 	r_shader("circle_distort");
-	r_uniform_vec3("distortOriginRadius", re(p->pos), VIEWPORT_H - im(p->pos), radius);
+	r_uniform_vec3("distortOriginRadius", re(p->pos), im(p->pos), radius);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_blend(BLEND_NONE);
 	draw_framebuffer_tex(fb_main, VIEWPORT_W, VIEWPORT_H);
