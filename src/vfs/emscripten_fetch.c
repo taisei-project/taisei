@@ -106,7 +106,7 @@ static emscripten_fetch_t *fetch_begin_request(FetchFSContext *ctx, const char *
 
 	emscripten_fetch_attr_t attr;
 	emscripten_fetch_attr_init(&attr);
-	strcpy(attr.requestMethod, "GET");
+	strlcpy(attr.requestMethod, "GET", sizeof(attr.requestMethod));
 	attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
 	attr.destinationPath = content_id;
 	attr.overriddenMimeType = "application/octet-stream";
@@ -190,7 +190,7 @@ static void evict_stale_cache(void) {
 		}
 
 		if(!ht_lookup(&idset, d->d_name, NULL)) {
-			strcpy(fname, d->d_name);
+			strlcpy(fname, d->d_name, sizeof(path) - sizeof(CACHE_PATH));
 			log_info("Removing stale cache entry %s", path);
 			unlink(path);
 		}
