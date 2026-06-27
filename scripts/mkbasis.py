@@ -147,7 +147,7 @@ def preprocess(args, tempdir):
     return args.input
 
 
-def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
+def equirect_to_cubemap(equirect, cube_side, tempdir):
     import py360convert
 
     tempdir = tempdir / 'cubemap'
@@ -156,13 +156,27 @@ def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
     with Image.open(equirect) as equirect_img:
         equirect_array = np.array(equirect_img)
 
-    # HACK: py360convert flips these faces for some reason; apply corrections
-    transforms = {
-        'U': np.flipud,
-        'R': np.fliplr,
-        'B': np.fliplr,
-    }
+    # Taisei coordinate system:         +X right, +Y forward, +Z up
+    # py360convert coordinate system:   +X right, +Y up,      +Z forward
 
+    # or at least that's what i've assumed.
+    # nothing is documented and the details are burrowed in the code.
+
+    # i don't fucking know why exactly this series of ritualistic dance moves contorts the faces into the right shape,
+    # i figured this shit out experimentally, it's 2 hours i'll never get back and i don't ever want to think about
+    # this crap again.
+
+    # it was probably possible to actually reason through this, but i'm too tired and retarded to care.
+    # feel free to solve this mystery and write an actually useful comment here if you hate yourself.
+
+    transforms = {
+        'F': np.flipud,
+        'B': np.fliplr,
+        'L': lambda x: np.flipud(np.rot90(x, k=-1)),
+        'R': lambda x: np.flipud(np.rot90(x, k=1)),
+        'U': np.flipud,
+        'D': np.fliplr,
+    }
     faces = {}
 
     for face, array in py360convert.e2c(equirect_array, cube_side, cube_format='dict').items():
@@ -173,10 +187,10 @@ def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
     cubemap = Cubemap(
         px=faces['R'],
         nx=faces['L'],
-        py=faces['U'],
-        ny=faces['D'],
-        pz=faces['F'],
-        nz=faces['B'],
+        py=faces['F'],
+        ny=faces['B'],
+        pz=faces['U'],
+        nz=faces['D'],
     )
 
     return cubemap
@@ -226,7 +240,7 @@ def process(args):
                 raise MkbasisInputError(
                     f'bad equirectangular map dimensions ({width}x{height}): '
                      'must be multiples of 8 and have 2:1 aspect ratio')
-            cubemap = equirect_to_cubemap(args, img, width, height, height // 2, tempdir)
+            cubemap = equirect_to_cubemap(img, height // 2, tempdir)
         elif width % 4 != 0 or height % 4 != 0:
             raise MkbasisInputError(f'image dimensions are not multiples of 4 ({width}x{height})')
 
