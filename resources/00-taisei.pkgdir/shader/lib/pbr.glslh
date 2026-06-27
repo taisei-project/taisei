@@ -158,7 +158,7 @@ vec3 PBR_ReflectionRay(PBRState st) {
 
 vec3 PBR_EnvironmentLightFake(PBRState st, samplerCube envmap) {
 	vec3 reflected_ray = PBR_ReflectionRay(st);
-	vec3 reflection = texture(envmap, fixCubeCoord(reflected_ray)).rgb;
+	vec3 reflection = texture(envmap, reflected_ray).rgb;
 	float r = (1 - st.params.mat.roughness);
 	vec3 l = (r * r) * reflection * mix(vec3(0.5), st.params.mat.albedo, st.params.mat.metallic);
 	return l * st.params.mat.ambient_occlusion;
@@ -175,7 +175,7 @@ vec3 PBR_EnvironmentLight(
 	//  * "Prefiltered" cubemap is not actually prefiltered - mipmaps are used as usual, and roughness is not taken into account. This makes reflections much sharper than they should be.
 
 	vec3 reflected_ray = PBR_ReflectionRay(st);
-	vec3 R = fixCubeCoord(reflected_ray);
+	vec3 R = reflected_ray;
 	vec3 F = PBR_FresnelSchlickRoughness(st.NdotV, st.F0, st.params.mat.roughness);
 
 	// Diffuse

@@ -92,10 +92,6 @@ vec2 equirectMapCoord(vec3 v) {
 	return vec2(0.5 + phi / tau, 1 - theta / pi);
 }
 
-vec3 fixCubeCoord(vec3 v) {
-	return v.xzy;
-}
-
 /*
  * Adapted from https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl
  */
