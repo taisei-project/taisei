@@ -32,7 +32,7 @@ void main(void) {
     float hp = fill.x;
     float alt = fill.y;
 
-    float angle = atan(uvShifted.x, -uvShifted.y);
+    float angle = atan(uvShifted.x, uvShifted.y);
     float normAngle = 0.5 * angle / pi + 0.5;
     float normMinAngle = fillNormAngles.x;
     float normMaxAngle = fillNormAngles.y;
