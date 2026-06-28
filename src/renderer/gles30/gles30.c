@@ -69,7 +69,6 @@ static SDL_Window *gles30_create_window(const char *title, int x, int y, int w, 
 	NOT_NULL(global_window);
 
 	SDL_SetWindowTitle(global_window, title);
-	SDL_SetWindowSize(global_window, w, h);
 	SDL_SetWindowResizable(global_window, flags & SDL_WINDOW_RESIZABLE);
 	SDL_SetWindowFullscreen(global_window, flags & SDL_WINDOW_FULLSCREEN);
 
