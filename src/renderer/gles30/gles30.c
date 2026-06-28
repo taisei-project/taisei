@@ -83,7 +83,7 @@ static SDL_Window *gles30_create_window(const char *title, int x, int y, int w, 
 
 #else
 
-static bool gles30_init(RendererBackend *backend) {
+static bool gles30_init(RendererBackend *backend, char *opts) {
 	return gles_init(backend, 3, 0);
 }
 
