@@ -433,6 +433,13 @@ static void video_update_mode_lists(void) {
 	}
 }
 
+static void video_set_minimum_size(uint w, uint h) {
+#ifndef __EMSCRIPTEN__	/* broken */
+	log_debug("Set minimum size: %dx%d", w, h);
+	SDL_SetWindowMinimumSize(video.window, w, h);
+#endif
+}
+
 static void video_update_scaling_factor(void) {
 	IntExtent main_fb = video_get_screen_framebuffer_size();
 	assert(main_fb.w > 0);
@@ -444,7 +451,7 @@ static void video_update_scaling_factor(void) {
 		video_update_mode_lists();
 
 		IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
-		SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
+		video_set_minimum_size(min_size.w, min_size.h);
 	}
 }
 
@@ -506,7 +513,7 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 
 		if(video.scaling_factor != 0) {
 			IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
-			SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
+			video_set_minimum_size(min_size.w, min_size.h);
 		}
 
 		video_update_mode_settings();
