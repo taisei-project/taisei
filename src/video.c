@@ -441,9 +441,7 @@ static void video_set_minimum_size(uint w, uint h) {
 }
 
 static void video_update_scaling_factor(void) {
-	IntExtent main_fb = video_get_screen_framebuffer_size();
-	assert(main_fb.w > 0);
-	double scaling_factor = (double)main_fb.w / video.current.width;
+	double scaling_factor = SDL_GetWindowDisplayScale(video.window);
 
 	if(scaling_factor != video.scaling_factor) {
 		log_debug("Scaling factor updated: %f --> %f", video.scaling_factor, scaling_factor);
@@ -869,6 +867,11 @@ static bool video_handle_event(SDL_Event *event, void *arg) {
 	switch(event->type) {
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 			log_debug("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+			video_update_mode_settings();
+			break;
+
+		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+			log_debug("SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED");
 			video_update_mode_settings();
 			break;
 
