@@ -6359,8 +6359,8 @@ msgid ""
 "The tried-and-true: homing amulets and sharp needles. You don’t have the "
 "luxury of time to think about aiming."
 msgstr ""
-"Alt und bewährt: Zielsuchende Talismänner und scharfe Nadeln. Du hast nicht "
-"die Zeit über das Zielen nachzudenken."
+"Alt und bewährt: Lenk-Talismänner und scharfe Nadeln. Du hast keine Zeit "
+"über das Zielen nachzudenken."
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
@@ -6391,8 +6391,8 @@ msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
 msgstr ""
-"Mensch und Phantom arbeiten zusammen für ein gemeinsames Ziel. Deine innere "
-"Dualität reicht dir die Hand… oder den Schwanz."
+"Mensch und Phantom mit einem einzigen Ziel. Deine innere Dualität reicht dir "
+"die Hand… oder den Schwanz."
 
 #: src/plrmodes/youmu_a.c:710
 msgid "Soul Sign “Reality-Piercing Apparition”"
@@ -6407,8 +6407,8 @@ msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
 msgstr ""
-"Geister sind echt, aber man muss keine Angst vor ihnen haben.\n"
-"Es sei denn, du stehst im Weg entschlossenen Schwertkämpferin…"
+"Es gibt Geister, aber keine Angst…\n"
+"es sei denn, du stehst einer bestimmten Schwertkämpferin im Weg…"
 
 #: src/plrmodes/youmu_b.c:626
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
