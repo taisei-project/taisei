@@ -67,19 +67,19 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	color_mul_scalar(&second_clr, 0.7);
 
 	text_draw(title, &(TextParams) {
-		.pos = { 20 - text_width(res_font("standard"), title, 0), y },
+		.pos = { 0 - text_width(res_font("standard"), title, 0), y },
 		.color = &second_clr,
 		.shader_ptr = text_shader,
 	});
 
 	if(p && p->unlocked) {
 		text_draw(_(stg->subtitle), &(TextParams) {
-			.pos = { 30, y },
+			.pos = { 10, y },
 			.color = &clr,
 			.shader_ptr = text_shader,
 		});
 		text_draw(difficulty_name(stg->difficulty), &(TextParams) {
-			.pos = { 40 + text_width(res_font("standard"), _(stg->subtitle), 0), y },
+			.pos = { 20 + text_width(res_font("standard"), _(stg->subtitle), 0), y },
 			.color = &second_clr,
 			.shader_ptr = text_shader,
 		});
@@ -89,7 +89,7 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 		r_shader_standard_notex();
 
 		r_mat_mv_push();
-		r_mat_mv_translate(30 + width / 2, y - 3, 0);
+		r_mat_mv_translate(10 + width / 2, y - 3, 0);
 		r_color(&second_clr);
 		r_mat_mv_scale(width, 1.3, 1);
 		r_draw_quad();
