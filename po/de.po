@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 
 #: src/boss.c:416
 msgid "~ Spell Card Attack! ~"
@@ -5719,9 +5719,8 @@ msgid ""
 "or live long enough to\n"
 "become a professor"
 msgstr ""
-"Du stirbst entweder als Student\n"
-"oder lebst lang genug\n"
-"um Professor zu werden"
+"Stirb als Student oder\n"
+"überleb bis zur Berufung"
 
 #: src/menu/difficultyselect.c:65
 msgid "Select Difficulty"
@@ -6052,7 +6051,7 @@ msgstr "Steuerung konfigurieren…"
 
 #: src/menu/options.c:1035
 msgid "Remap square input into circular"
-msgstr "Quadratische Eingabe auf Kreiseingabe abbilden"
+msgstr "Quadratische Eingabe auf Kreis abbilden"
 
 #: src/menu/options.c:1041
 msgid "Direction snap factor"
@@ -6184,7 +6183,7 @@ msgstr "modern"
 
 #: src/menu/options.c:1233
 msgid "Floating score text visibility"
-msgstr "Sichtbarkeit des schwebenden Punktetexts"
+msgstr "Sichtbarkeit des Punktetexts"
 
 #: src/menu/options.c:1239
 msgid "SFX Volume"
