@@ -94,17 +94,19 @@ static int fuzzy_match_locales(
 		if(preferred_locale->country) {
 			snprintf(locale_str, sizeof(locale_str), "%s_%s", preferred_locale->language, preferred_locale->country);
 		} else {
-			memcpy(locale_str, preferred_locale->language, language_len);
+			strlcpy(locale_str, preferred_locale->language, sizeof(locale_str));
 		}
 
-		for(size_t j = 0; j < i18n.num_known_locales; j++) {
+		for(int j = -1; j < i18n.num_known_locales; j++) {
+			const char *candidate = j >= 0 ? i18n.known_locales[j] : I18N_LOCALEID_BUILTIN;
+
 			// complete match: good to go
-			if(strcasecmp(i18n.known_locales[j], locale_str) == 0) {
+			if(strcasecmp(candidate, locale_str) == 0) {
 				return j;
 			}
 
 			// only languages match: ok but move on
-			if(strncasecmp(i18n.known_locales[j], preferred_locale->language, language_len) == 0) {
+			if(strncasecmp(candidate, preferred_locale->language, language_len) == 0) {
 				chosen = j;
 			}
 		}
