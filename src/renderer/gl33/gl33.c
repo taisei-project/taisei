@@ -117,7 +117,6 @@ static struct {
 	r_feature_bits_t features;
 
 	SDL_GLContext gl_context;
-	SDL_Window *window;
 
 #ifndef STATIC_GLES3
 	bool fb_sRGB_state;
@@ -477,7 +476,7 @@ void gl33_sync_scissor(void) {
 static IntExtent gl33_get_default_framebuffer_size(void) {
 	IntExtent s;
 	// TODO: cache this at window creation time and refresh on resize events?
-	SDL_GetWindowSizeInPixels(R.window, &s.w, &s.h);
+	SDL_GetWindowSizeInPixels(SDL_GL_GetCurrentWindow(), &s.w, &s.h);
 	return s;
 }
 
@@ -1229,7 +1228,6 @@ static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, in
 		UNREACHABLE;
 	}
 
-	R.window = window;
 	return window;
 }
 
