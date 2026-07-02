@@ -11,6 +11,7 @@
 #include "config.h"
 #include "dynarray.h"
 #include "events.h"
+#include "i18n/i18n.h"
 #include "memory/arena.h"
 #include "memory/memory.h"
 #include "memory/scratch.h"
@@ -21,12 +22,16 @@
 #include "util/kvparser.h"
 #include "util/rectpack.h"
 #include "util/strbuf.h"
+#include "util/stringops.h"
 #include "video.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
 #include FT_MODULE_H
+
+#include <linebreak.h>
+#include <graphemebreak.h>
 
 static void init_fonts(void);
 static void post_init_fonts(void);
@@ -1051,13 +1056,14 @@ static float cursor_advance(Cursor *c, Glyph *g) {
 	return startpos;
 }
 
-float text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
+float text_ucs4_width_raw(Font *font, size_t text_len, const uint32_t text[text_len], uint maxlines) {
 	const uint32_t *tptr = text;
 	uint numlines = 0;
 	float width = 0;
 	Cursor c = cursor_init(font);
+	const uint32_t *tend = tptr + text_len;
 
-	while(*tptr) {
+	while(tptr < tend && *tptr) {
 		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
@@ -1081,19 +1087,20 @@ float text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 
 float text_width_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
-	return text_ucs4_width_raw(font, buf, maxlines);
+	size_t len = utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
+	return text_ucs4_width_raw(font, len, buf, maxlines);
 }
 
-void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *bbox) {
+void text_ucs4_bbox(Font *font, size_t len, const uint32_t text[len], uint maxlines, TextBBox *bbox) {
 	const uint32_t *tptr = text;
+	const uint32_t *tend = tptr + len;
 	uint numlines = 0;
 
 	*bbox = (typeof(*bbox)) {};
 	float y = 0;
 	Cursor c = cursor_init(font);
 
-	while(*tptr) {
+	while(tptr < tend && *tptr) {
 		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
@@ -1137,25 +1144,26 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *b
 
 void text_bbox(Font *font, const char *text, uint maxlines, TextBBox *bbox) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
-	text_ucs4_bbox(font, buf, maxlines, bbox);
+	size_t len = utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
+	text_ucs4_bbox(font, len, buf, maxlines, bbox);
 }
 
-float text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) {
-	return text_ucs4_width_raw(font, text, maxlines) / font->metrics.scale;
+float text_ucs4_width(Font *font, size_t len, const uint32_t text[len], uint maxlines) {
+	return text_ucs4_width_raw(font, len, text, maxlines) / font->metrics.scale;
 }
 
 float text_width(Font *font, const char *text, uint maxlines) {
 	return text_width_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-float text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
+float text_ucs4_height_raw(Font *font, size_t len, const uint32_t text[len], uint maxlines) {
 	// FIXME: I'm not sure this is correct. Perhaps it should consider max_glyph_height at least?
 
 	uint text_lines = 1;
 	const uint32_t *tptr = text;
+	const uint32_t *tend = text + len;
 
-	while((tptr = ucs4chr(tptr, '\n'))) {
+	while((tptr = ucs4chr(tptr, '\n')) && tptr < tend) {
 		if(text_lines++ == maxlines) {
 			break;
 		}
@@ -1170,12 +1178,12 @@ float text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 
 float text_height_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
-	return text_ucs4_height_raw(font, buf, maxlines);
+	size_t len = utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
+	return text_ucs4_height_raw(font, len, buf, maxlines);
 }
 
-float text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) {
-	return text_ucs4_height_raw(font, text, maxlines) / font->metrics.scale;
+float text_ucs4_height(Font *font, size_t len, const uint32_t text[len], uint maxlines) {
+	return text_ucs4_height_raw(font, len, text, maxlines) / font->metrics.scale;
 }
 
 float text_height(Font *font, const char *text, uint maxlines) {
@@ -1183,7 +1191,7 @@ float text_height(Font *font, const char *text, uint maxlines) {
 }
 
 static inline void adjust_xpos(
-	Font *font, const uint32_t *ucs4text, Alignment align, float x_orig, float *x
+	Font *font, size_t len, const uint32_t ucs4text[len], Alignment align, float x_orig, float *x
 ) {
 	float line_width;
 
@@ -1194,13 +1202,13 @@ static inline void adjust_xpos(
 		}
 
 		case ALIGN_RIGHT: {
-			line_width = text_ucs4_width_raw(font, ucs4text, 1);
+			line_width = text_ucs4_width_raw(font, len, ucs4text, 1);
 			*x = x_orig - line_width;
 			break;
 		}
 
 		case ALIGN_CENTER: {
-			line_width = text_ucs4_width_raw(font, ucs4text, 1);
+			line_width = text_ucs4_width_raw(font, len, ucs4text, 1);
 			*x = x_orig - line_width * 0.5;
 			break;
 		}
@@ -1234,8 +1242,7 @@ static void set_batch_texture(SpriteStateParams *stp, Texture *tex) {
 	}
 }
 
-attr_nonnull(1, 2, 3)
-static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextParams *params) {
+static float _text_ucs4_draw(Font *font, size_t ucs4len, const uint32_t ucs4text[ucs4len], const TextParams *params) {
 	SpriteStateParams batch_state_params;
 
 	memcpy(batch_state_params.aux_textures, params->aux_textures, sizeof(batch_state_params.aux_textures));
@@ -1267,7 +1274,7 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 		float w, h;
 	} overlay;
 
-	text_ucs4_bbox(font, ucs4text, 0, &bbox);
+	text_ucs4_bbox(font, ucs4len, ucs4text, 0, &bbox);
 
 	Color color;
 
@@ -1299,7 +1306,7 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 	float orig_y = y;
 	c.x = y = 0;
 
-	adjust_xpos(font, ucs4text, params->align, 0, &c.x);
+	adjust_xpos(font, ucs4len, ucs4text, params->align, 0, &c.x);
 
 	if(params->overlay_projection) {
 		FloatRect *op = params->overlay_projection;
@@ -1321,13 +1328,14 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 	glm_translate(mat_texture, (vec3) { -overlay.x.min, overlay.y.min, 0 });
 
 	const uint32_t *tptr = ucs4text;
+	const uint32_t *tend = tptr + ucs4len;
 
-	while(*tptr) {
+	while(tptr < tend && *tptr) {
 		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
 			cursor_reset(&c);
-			adjust_xpos(font, tptr, params->align, 0, &c.x);
+			adjust_xpos(font, tend - tptr, tptr, params->align, 0, &c.x);
 			y += font->metrics.lineskip;
 			continue;
 		}
@@ -1386,30 +1394,30 @@ static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPar
 
 static float _text_draw(Font *font, const char *text, const TextParams *params) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
+	size_t len = utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 
 	if(params->max_width > 0) {
-		text_ucs4_shorten(font, buf, params->max_width);
+		len  = text_ucs4_shorten(font, len, buf, params->max_width);
 	}
 
-	return _text_ucs4_draw(font, buf, params);
+	return _text_ucs4_draw(font, len, buf, params);
 }
 
 float text_draw(const char *text, const TextParams *params) {
 	return _text_draw(font_from_params(params), text, params);
 }
 
-float text_ucs4_draw(const uint32_t *text, const TextParams *params) {
+float text_ucs4_draw(size_t len, const uint32_t text[len], const TextParams *params) {
 	Font *font = font_from_params(params);
 
 	if(params->max_width > 0) {
-		uint32_t buf[ucs4len(text) + 1];
+		uint32_t buf[len];
 		memcpy(buf, text, sizeof(buf));
-		text_ucs4_shorten(font, buf, params->max_width);
-		return _text_ucs4_draw(font, buf, params);
+		size_t l = text_ucs4_shorten(font, len, buf, params->max_width);
+		return _text_ucs4_draw(font, l, buf, params);
 	}
 
-	return _text_ucs4_draw(font, text, params);
+	return _text_ucs4_draw(font, len, text, params);
 }
 
 float text_draw_wrapped(const char *text, float max_width, const TextParams *params) {
@@ -1502,80 +1510,235 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out
 	out_sprite->h = bbox_height / font->metrics.scale;
 }
 
-void text_ucs4_shorten(Font *font, uint32_t *text, float width) {
-	assert(!ucs4chr(text, '\n'));
+size_t text_ucs4_shorten(Font *font, size_t len, uint32_t text[len], float width) {
+	// assert(!ucs4chr(text, '\n'));
 
-	if(text_ucs4_width(font, text, 0) <= width) {
-		return;
+	if(text_ucs4_width(font, len, text, 0) <= width) {
+		return len;
 	}
 
-	int l = ucs4len(text);
+	int l = len;
 
 	do {
 		if(l < 1) {
-			return;
+			break;
 		}
 
 		text[l] = 0;
 		text[l - 1] = UNICODE_ELLIPSIS;
 		--l;
-	} while(text_ucs4_width(font, text, 0) > width);
+	} while(text_ucs4_width(font, len, text, 0) > width);
+
+	return l;
+}
+
+typedef struct UCS4WrapContext {
+	size_t src_len;
+	const uint32_t *src;
+	uint32_t *out;
+	uint32_t out_len;
+	float max_line_width;
+	Font *font;
+	char *breaks;
+	char lang[3];
+} UCS4WrapContext;
+
+attr_unused
+static int text_ucs4_wrap_dump_segment(UCS4WrapContext *ctx, int start, int end, StringBuffer *buf) {
+	int seg_len = end - start + 1;
+	return ucs4_to_utf8(seg_len, ctx->src + start, buf);
+}
+
+static float text_ucs4_wrap_eval_width(UCS4WrapContext *ctx, int start, int end) {
+	int seg_len = end - start + 1;
+	float width = text_ucs4_width(ctx->font, seg_len, ctx->src + start, 0);
+	return width;
+}
+
+static void text_ucs4_wrap_add_segment(UCS4WrapContext *ctx, int start, int end) {
+	if(ctx->out_len && ctx->out[ctx->out_len - 1] != '\n') {
+		ctx->out[ctx->out_len++] = '\n';
+	}
+
+	int segment_len = end - start + 1;
+
+	if(segment_len <= 0) {
+		return;
+	}
+
+	memcpy(ctx->out + ctx->out_len, ctx->src + start, segment_len * sizeof(*ctx->out));
+	ctx->out_len += segment_len;
+
+}
+
+static inline bool text_ucs4_wrap_is_removable_space(UCS4WrapContext *ctx, int idx) {
+	uint32_t c = ctx->src[idx];
+	return c == ' ' || c == '\t';
+}
+
+static void text_ucs4_wrap_trim_trailing_space(UCS4WrapContext *ctx, int start, int *end) {
+	while(*end > start && text_ucs4_wrap_is_removable_space(ctx, *end)) {
+		--*end;
+	}
+}
+
+static void text_ucs4_wrap_trim_leading_space(UCS4WrapContext *ctx, int *start, int end) {
+	while(end > *start && text_ucs4_wrap_is_removable_space(ctx, *start)) {
+		++*start;
+	}
+}
+
+static void text_ucs4_wrap_consider_segment(UCS4WrapContext *ctx, int start, int end) {
+	text_ucs4_wrap_trim_trailing_space(ctx, start, &end);
+
+	if(end < start) {
+		return;
+	}
+
+	int segment_len = end - start + 1;
+	assert(segment_len >= 0);
+
+	float seg_width = text_ucs4_wrap_eval_width(ctx, start, end);
+
+	if(seg_width <= ctx->max_line_width) {
+		text_ucs4_wrap_add_segment(ctx, start, end);
+		return;
+	}
+
+	// Line is too long.
+	// Try to break at acceptable "word" boundaries first.
+
+	int break_indices[segment_len];
+	int num_break_indices = 0;
+
+	for(int i = start; i <= end; ++i) {
+		if(ctx->breaks[i] == LINEBREAK_ALLOWBREAK) {
+			break_indices[num_break_indices++] = i;
+		}
+	}
+
+	int i_lo = 0;
+	int i_hi = num_break_indices - 1;
+	int split = -1;
+
+	while(i_lo <= i_hi) {
+		int i_mid = i_lo + (i_hi - i_lo) / 2;
+		int subseg_end = break_indices[i_mid];
+		text_ucs4_wrap_trim_trailing_space(ctx, start, &subseg_end);
+
+		float sub_width = text_ucs4_wrap_eval_width(ctx, start, subseg_end);
+
+		if(sub_width <= ctx->max_line_width) {
+			split = subseg_end;
+			i_lo = i_mid + 1;
+		} else {
+			i_hi = i_mid - 1;
+		}
+	}
+
+	if(split < 0) {
+		// No "nice" line breaks.
+		// Try at least not to break a grapheme.
+
+		char gbreaks[segment_len];
+		set_graphemebreaks_utf32(ctx->src + start, segment_len, ctx->lang, gbreaks);
+
+		int end_lo = start;
+		int end_hi = end;
+
+		while(end_lo <= end_hi) {
+			int end_mid = end_lo + (end_hi - end_lo) / 2;
+
+			int seg_end = end_mid;
+			while(seg_end < end && gbreaks[seg_end - start] != GRAPHEMEBREAK_BREAK) {
+				++seg_end;
+			}
+
+			float sub_width = text_ucs4_wrap_eval_width(ctx, start, seg_end);
+
+			if(sub_width <= ctx->max_line_width) {
+				end_lo = end_mid + 1;
+				split = seg_end;
+			} else {
+				end_hi = end_mid - 1;
+			}
+		}
+
+		if(UNLIKELY(split < 0)) {
+			// Impossible to split in a way that satisfies our max width.
+			// Take the earliest possible split that won't break a grapheme, let it overflow.
+
+			split = end_lo;
+			while(split < end && gbreaks[split - start] != GRAPHEMEBREAK_BREAK) {
+				++split;
+			}
+		}
+	}
+
+	text_ucs4_wrap_add_segment(ctx, start, split);
+	int next_start = split + 1;
+	text_ucs4_wrap_trim_leading_space(ctx, &next_start, end);
+	text_ucs4_wrap_consider_segment(ctx, next_start, end);	// hope your compiler tail-calls this
+}
+
+uint32_t *text_ucs4_wrap(
+	Font *font, MemArena *arena, size_t len, const uint32_t src[len], float width, uint32_t *out_len
+) {
+	if(UNLIKELY(len == 0)) {
+		uint32_t *out = marena_alloc(arena, sizeof(*out));
+		*out = 0;
+		*out_len = 0;
+		return out;
+	}
+
+	uint32_t *out;
+	size_t alloc_len = len * 2 + 1;
+	size_t alloc_size = alloc_len * sizeof(*out);
+	out = marena_alloc(arena, alloc_size);
+
+	UCS4WrapContext ctx = {
+		.src_len = len,
+		.src = src,
+		.out = out,
+		.out_len = 0,
+		.font = font,
+		.max_line_width = width,
+	};
+
+	memcpy(ctx.lang, i18n_get_current_locale_id(), 2);
+
+	char breaks[len];
+	set_linebreaks_utf32(src, len, ctx.lang, breaks);
+	ctx.breaks = breaks;
+
+	int segment_start = 0;
+
+	for(uint i = 0; i < len; ++i) {
+		if(breaks[i] == LINEBREAK_MUSTBREAK) {
+			text_ucs4_wrap_consider_segment(&ctx, segment_start, i);
+			segment_start = i + 1;
+		}
+	}
+
+	text_ucs4_wrap_consider_segment(&ctx, segment_start, len - 1);
+
+	*out_len = ctx.out_len;
+	return marena_realloc(arena, out, alloc_size, ctx.out_len * sizeof(*out));
 }
 
 void text_wrap(Font *font, const char *src, float width, StringBuffer *buf) {
 	assert(width > 0);
 
-	StringBuffer tmpbuf = { acquire_scratch_arena() };
-	int src_len = strbuf_cat(&tmpbuf, src);
-	char *src_copy = strbuf_commit(&tmpbuf);
+	MemArena *scratch = acquire_scratch_arena();
+	size_t ucs4_bufsize = strlen(src) * sizeof(utf32_t);
+	utf32_t *ucs4 = marena_alloc(scratch, ucs4_bufsize);
+	size_t len = utf8_to_ucs4(src, ucs4_bufsize, ucs4);
 
-	char *sptr = src_copy;
-	char *next = NULL;
+	uint32_t ucs4_wrapped_len;
+	auto ucs4_wrapped = text_ucs4_wrap(font, scratch, len, ucs4, width, &ucs4_wrapped_len);
 
-	strbuf_reserve(buf, src_len + 1);
-	char *curline = NOT_NULL(buf->start);
-	*curline = 0;
-
-	while((next = strtok_r(NULL, " \t", &sptr))) {
-		float curwidth;
-
-		if(!*next) {
-			continue;
-		}
-
-		if(*curline) {
-			curwidth = text_width(font, curline, 0);
-			strbuf_cat(&tmpbuf, curline);
-			strbuf_cat(&tmpbuf, " ");
-		} else {
-			curwidth = 0;
-		}
-
-		strbuf_cat(&tmpbuf, next);
-		float totalwidth = text_width(font, tmpbuf.start, 0);
-		strbuf_clear(&tmpbuf);
-
-		if(totalwidth > width) {
-			if(curwidth == 0) {
-				log_fatal(
-					"Single word '%s' won't fit on one line. "
-					"Word width: %g, max width: %g, source string: %s",
-					next, totalwidth, width, src
-				);
-			}
-
-			strbuf_cat(buf, "\n");
-			curline = buf->pos;
-		} else {
-			if(*curline) {
-				strbuf_cat(buf, " ");
-			}
-		}
-
-		strbuf_cat(buf, next);
-	}
-
-	release_scratch_arena(tmpbuf.arena);
+	ucs4_to_utf8(ucs4_wrapped_len, ucs4_wrapped, buf);
+	release_scratch_arena(scratch);
 }
 
 const FontMetrics *font_get_metrics(Font *font) {

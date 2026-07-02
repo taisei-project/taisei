@@ -93,30 +93,31 @@ float font_get_lineskip(Font *font) attr_nonnull(1);
 const GlyphMetrics *font_get_char_metrics(Font *font, charcode_t c) attr_nonnull(1);
 
 float text_draw(const char *text, const TextParams *params) attr_nonnull(1, 2);
-float text_ucs4_draw(const uint32_t *text, const TextParams *params) attr_nonnull(1, 2);
+float text_ucs4_draw(size_t len, const uint32_t text[len], const TextParams *params) attr_nonnull(2, 3);
 
 float text_draw_wrapped(const char *text, float max_width, const TextParams *params) attr_nonnull(1, 3);
 
 void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out_bbox) attr_nonnull(1, 2, 3, 4);
 
-void text_ucs4_shorten(Font *font, uint32_t *text, float width) attr_nonnull(1, 2);
+size_t text_ucs4_shorten(Font *font, size_t len, uint32_t text[len], float width) attr_nonnull(1, 3);
 
 void text_wrap(Font *font, const char *src, float width, StringBuffer *buf) attr_nonnull(1, 2, 4);
+uint32_t *text_ucs4_wrap(Font *font, MemArena *arena, size_t len, const uint32_t src[len], float width, uint32_t *out_len) attr_nonnull(1, 2, 6);
 
 void text_bbox(Font *font, const char *text, uint maxlines, TextBBox *bbox) attr_nonnull(1, 2, 4);
-void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *bbox) attr_nonnull(1, 2, 4);
+void text_ucs4_bbox(Font *font, size_t len, const uint32_t text[len], uint maxlines, TextBBox *bbox) attr_nonnull(1, 3, 5);
 
 float text_width_raw(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
-float text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
+float text_ucs4_width_raw(Font *font, size_t len, const uint32_t text[len], uint maxlines) attr_nonnull(1, 3);
 
 float text_width(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
-float text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
+float text_ucs4_width(Font *font, size_t len, const uint32_t text[len], uint maxlines) attr_nonnull(1, 3);
 
 float text_height_raw(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
-float text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
+float text_ucs4_height_raw(Font *font, size_t len, const uint32_t text[len], uint maxlines) attr_nonnull(1, 3);
 
 float text_height(Font *font, const char *text, uint maxlines) attr_nonnull(1, 2);
-float text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) attr_nonnull(1, 2);
+float text_ucs4_height(Font *font, size_t len, const uint32_t text[len], uint maxlines) attr_nonnull(1, 3);
 
 // FIXME: come up with a better, stateless API for this
 bool font_get_kerning_available(Font *font) attr_nonnull(1);
