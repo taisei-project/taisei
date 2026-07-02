@@ -45,6 +45,7 @@ Required
 - OpenGL >= 3.3, or OpenGL ES >= 3.0
 - SDL3 >= 3.2.0 (>= 3.4.2 recommended)
 - cglm >= 0.7.8
+- libunibreak
 - libwebpdecoder >= 0.5 or libwebp >= 0.5
 - libzstd >= 1.4.0
 - freetype2

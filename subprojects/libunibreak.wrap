@@ -1,0 +1,8 @@
+[wrap-git]
+directory=libunibreak
+url=https://github.com/taisei-project/libunibreak.git
+push-url=git@github.com:taisei-project/libunibreak.git
+revision=taisei-6.1
+
+[provide]
+dependency_names = libunibreak

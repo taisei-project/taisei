@@ -15,6 +15,7 @@ project('taisei', 'c',
         'freetype:default_library=static',
         'glslang:default_library=static',
         'libpng:default_library=static',
+        'libunibreak:default_library=static',
         'libwebp:default_library=static',
         'libzstd:default_library=static',
         'ogg:default_library=static',
@@ -32,6 +33,8 @@ project('taisei', 'c',
         'cglm:build_tests=false',
 
         'basis_universal:enable_ktx2=false',
+
+        'libunibreak:tests=disabled',
 
         'libzstd:install_headers=false',
         'libzstd:install_libraries=false',
@@ -197,6 +200,7 @@ dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : [
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
 dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
+dep_libunibreak = dependency('libunibreak',                         required : true)
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -214,6 +218,7 @@ taisei_deps = [
     dep_freetype,
     dep_gamemode,
     dep_koishi,
+    dep_libunibreak,
     dep_m,
     dep_png,
     dep_sdl3,
