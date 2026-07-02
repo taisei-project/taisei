@@ -22,12 +22,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
 
@@ -83,7 +83,7 @@ jobs:
         ninja zip -C build/
 
     - name: Upload Log
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_emscripten_latest_build_log
         path: build/meson-logs/meson-log.txt

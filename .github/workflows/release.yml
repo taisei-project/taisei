@@ -58,7 +58,7 @@ jobs:
     steps:
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 1
         ref: ${{ env.REF }}
@@ -86,7 +86,7 @@ jobs:
 
     # NOTE: 'fetch-depth: 0' == "get all history", not "no history"
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -137,7 +137,7 @@ jobs:
         scripts/sign-release.py build/linux/Taisei-${{ env.BUILD_VERSION }}*-linux-x86_64.tar.xz
 
     - name: Upload Artifact (Binary)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: linux-x86_64-${{ env.BUILD_VERSION }}-txz
@@ -145,7 +145,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload Artifact (Debug)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: linux-x86_64-${{ env.BUILD_VERSION }}-debugsyms
@@ -158,7 +158,7 @@ jobs:
         scripts/sign-release.py build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz
 
     - name: Upload Artifact (Source)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: source-${{ env.BUILD_VERSION }}-txz
@@ -174,7 +174,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_x64_linux_release_log
         path: build/linux/meson-logs/meson-log.txt
@@ -209,7 +209,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -251,7 +251,7 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Artifact (DMG)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: macos-universal-${{ env.BUILD_VERSION }}-dmg
@@ -259,7 +259,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload Artifact (Debug)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: macos-universal-${{ env.BUILD_VERSION }}-debugsyms
@@ -275,7 +275,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_macos_universal_release_log
         path: build-release/*/meson-logs/meson-log.txt
@@ -294,7 +294,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -334,7 +334,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86_64.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-setup-exe
@@ -347,7 +347,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86_64.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-zip
@@ -355,7 +355,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload Artifact (Debug)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-debugsyms
@@ -372,7 +372,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_windows_x64_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -391,7 +391,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -431,7 +431,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-setup-x86.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-setup-exe
@@ -444,7 +444,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}*-windows-x86.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-zip
@@ -452,7 +452,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-debugsyms
@@ -469,7 +469,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_windows_x86_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -488,7 +488,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -501,7 +501,7 @@ jobs:
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -557,7 +557,7 @@ jobs:
         scripts/sign-release.py build/emscripten/Taisei-${{ env.BUILD_VERSION }}*-emscripten-wasm32.tar.xz
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: emscripten-wasm32-${{ env.BUILD_VERSION }}-txz
@@ -572,7 +572,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_emscripten_build_log
         path: build/emscripten/meson-logs/meson-log.txt
@@ -591,7 +591,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -633,7 +633,7 @@ jobs:
         scripts/sign-release.py build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: success()
       with:
         name: switch-aarch64-${{ env.BUILD_VERSION }}-zip
@@ -648,7 +648,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_switch_release_log
         path: build/nx/meson-logs/meson-log.txt
