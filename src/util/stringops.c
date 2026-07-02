@@ -8,6 +8,9 @@
 
 #include "stringops.h"
 #include "miscmath.h"
+#include "util/strbuf.h"
+
+#include <stdint.h>
 #include <string.h>
 
 bool strendswith(const char *s, const char *e) {
@@ -77,7 +80,7 @@ size_t ucs4len(const uint32_t *ucs4) {
 	return len;
 }
 
-void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) {
+size_t utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) {
 	uint32_t *bufptr = buf;
 	assert(bufsize > 0);
 
@@ -87,25 +90,26 @@ void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) {
 	}
 
 	*bufptr++ = 0;
+	return bufptr - buf - 1;
 }
 
-uint32_t* utf8_to_ucs4_alloc(const char *utf8) {
-	uint32_t *ucs4 = (uint32_t*)(void*)SDL_iconv_string(UCS4_ID, "UTF-8", utf8, strlen(utf8) + 1);
-	assert(ucs4 != NULL);
-	return ucs4;
-}
+int ucs4_to_utf8(size_t ucs4_len, const uint32_t *ucs4, StringBuffer *buf) {
+	int len = 0;
 
-void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) {
-	assert(bufsize > ucs4len(ucs4));
-	char *temp = ucs4_to_utf8_alloc(ucs4);
-	memcpy(buf, temp, bufsize);
-	SDL_free(temp);
-}
+	// optimistic guess: best case-encoding (1 byte per codepoint) + final null
+	strbuf_reserve(buf, ucs4_len + 1);
 
-char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
-	char *utf8 = SDL_iconv_string("UTF-8", UCS4_ID, (const char*)ucs4, sizeof(uint32_t) * (ucs4len(ucs4) + 1));
-	assert(utf8 != NULL);
-	return utf8;
+	for(uint i = 0; i < ucs4_len; ++i) {
+		// enough for worse-case encoding (4 bytes) + final null
+		strbuf_reserve(buf, 5);
+		const char *oldpos = buf->pos;
+		buf->pos = SDL_UCS4ToUTF8(ucs4[i], buf->pos);
+		len += buf->pos - oldpos;
+	}
+
+	*buf->pos = 0;
+	assert(len == strlen(buf->start));
+	return len;
 }
 
 #ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
