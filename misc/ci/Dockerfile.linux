@@ -32,6 +32,7 @@ RUN zypper --no-refresh -n install -y \
 	libopus-devel \
 	libpng16-devel \
 	libpulse-devel \
+	libunibreak-devel \
 	libusb-devel \
 	libwebp-devel \
 	libX11-devel \
