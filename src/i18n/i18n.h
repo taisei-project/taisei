@@ -22,6 +22,7 @@ void i18n_shutdown(void);
 void i18n_set_locale(const char *locale_id);
 const char *const *i18n_list_locales(size_t *num_locales);
 const char *i18n_get_locale_name(const char *locale_id);
+const char *i18n_get_current_locale_id(void) attr_returns_nonnull;
 
 const char *_i18n_translate_prehashed(const char *msgid, hash_t hash);
 
