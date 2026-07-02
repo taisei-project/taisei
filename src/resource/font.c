@@ -1517,19 +1517,44 @@ size_t text_ucs4_shorten(Font *font, size_t len, uint32_t text[len], float width
 		return len;
 	}
 
-	int l = len;
+	char breaks[len];
+	char lang[3] = {};
+	memcpy(lang, i18n_get_current_locale_id(), 2);
 
-	do {
-		if(l < 1) {
-			break;
+	set_graphemebreaks_utf32(text, len, lang, breaks);
+
+	int end_lo = 0;
+	int end_hi = len - 1;
+	int trunc = 0;
+
+	while(end_lo <= end_hi) {
+		int end_mid = end_lo + (end_hi - end_lo) / 2;
+
+		int seg_end = end_mid;
+		while(seg_end >= 0 && breaks[seg_end] != GRAPHEMEBREAK_BREAK) {
+			--seg_end;
 		}
+		seg_end = min(end_hi, seg_end + 1);
 
-		text[l] = 0;
-		text[l - 1] = UNICODE_ELLIPSIS;
-		--l;
-	} while(text_ucs4_width(font, len, text, 0) > width);
+		int seg_len = seg_end + 1;
 
-	return l;
+		uint32_t temp = text[seg_end];
+		text[seg_end] = UNICODE_ELLIPSIS;
+		float seg_width = text_ucs4_width(font, seg_len, text, 0);
+		text[seg_end] = temp;
+
+		if(seg_width <= width) {
+			end_lo = end_mid + 1;
+			trunc = seg_end;
+		} else {
+			end_hi = end_mid - 1;
+		}
+	}
+
+	text[trunc] = UNICODE_ELLIPSIS;
+	text[trunc + 1] = 0;
+
+	return trunc + 1;
 }
 
 typedef struct UCS4WrapContext {
