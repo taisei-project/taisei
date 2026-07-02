@@ -9,9 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "memory/arena.h"
 #include "systime.h"
 #include "util/compat.h"
+#include "util/strbuf.h"
 
 #include <time.h>
 #include <SDL3/SDL.h>
@@ -63,11 +63,9 @@ void expand_escape_sequences(char *str);
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);
 
-void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
-uint32_t* utf8_to_ucs4_alloc(const char *utf8) attr_nonnull(1) attr_returns_allocated attr_nonnull(1);
+size_t utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
 
-void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) attr_nonnull(1, 3);
-char* ucs4_to_utf8_alloc(const uint32_t *ucs4) attr_nonnull(1) attr_returns_allocated attr_nonnull(1);
+int ucs4_to_utf8(size_t ucs4_len, const uint32_t *ucs4, StringBuffer *buf) attr_nonnull(2, 3);
 
 uint32_t utf8_getch(const char **src) attr_nonnull(1);
 
