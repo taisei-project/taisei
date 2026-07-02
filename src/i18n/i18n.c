@@ -198,3 +198,10 @@ const char *i18n_get_locale_name(const char *locale_id) {
 	return name;
 }
 
+const char *i18n_get_current_locale_id(void) {
+	if(i18n.active_locale_idx > 0) {
+		return i18n.known_locales[i18n.active_locale_idx];
+	}
+
+	return I18N_LOCALEID_BUILTIN;
+}
