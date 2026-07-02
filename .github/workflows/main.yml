@@ -107,6 +107,7 @@ jobs:
         brew install
         docutils
         gettext
+        libunibreak
         libvorbis
         ninja
         opusfile
