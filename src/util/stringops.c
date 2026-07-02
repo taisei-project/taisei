@@ -85,7 +85,7 @@ size_t utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) {
 	assert(bufsize > 0);
 
 	while(*utf8) {
-		*bufptr++ = utf8_getch(&utf8);
+		*bufptr++ = SDL_StepUTF8(&utf8, NULL);
 		assert(bufptr < buf + bufsize);
 	}
 
@@ -161,96 +161,6 @@ size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
 	assert(written != 0);
 
 	return snprintf(buf, buf_size, "%s-%s", buf_datetime, buf_msecs);
-}
-
-uint32_t utf8_getch(const char **src) {
-	// Ported from SDL_ttf and slightly modified
-
-	assert(*src != NULL);
-
-	const uint8_t *p = *(const uint8_t**)src;
-	size_t left = 0;
-	bool overlong = false;
-	uint32_t ch = UNICODE_UNKNOWN;
-
-	if(**src == 0) {
-		return UNICODE_UNKNOWN;
-	}
-
-	if(p[0] >= 0xFC) {
-		if((p[0] & 0xFE) == 0xFC) {
-			if(p[0] == 0xFC && (p[1] & 0xFC) == 0x80) {
-				overlong = true;
-			}
-			ch = p[0] & 0x01;
-			left = 5;
-		}
-	} else if(p[0] >= 0xF8) {
-		if((p[0] & 0xFC) == 0xF8) {
-			if(p[0] == 0xF8 && (p[1] & 0xF8) == 0x80) {
-				overlong = true;
-			}
-			ch = p[0] & 0x03;
-			left = 4;
-		}
-	} else if(p[0] >= 0xF0) {
-		if((p[0] & 0xF8) == 0xF0) {
-			if(p[0] == 0xF0 && (p[1] & 0xF0) == 0x80) {
-				overlong = true;
-			}
-			ch = p[0] & 0x07;
-			left = 3;
-		}
-	} else if(p[0] >= 0xE0) {
-		if((p[0] & 0xF0) == 0xE0) {
-			if(p[0] == 0xE0 && (p[1] & 0xE0) == 0x80) {
-				overlong = true;
-			}
-			ch = p[0] & 0x0F;
-			left = 2;
-		}
-	} else if(p[0] >= 0xC0) {
-		if((p[0] & 0xE0) == 0xC0) {
-			if((p[0] & 0xDE) == 0xC0) {
-				overlong = true;
-			}
-			ch = p[0] & 0x1F;
-			left = 1;
-		}
-	} else {
-		if((p[0] & 0x80) == 0x00) {
-			ch = p[0];
-		}
-	}
-
-	++*src;
-
-	while(left > 0 && **src != 0) {
-		++p;
-
-		if((p[0] & 0xC0) != 0x80) {
-			ch = UNICODE_UNKNOWN;
-			break;
-		}
-
-		ch <<= 6;
-		ch |= (p[0] & 0x3F);
-
-		++*src;
-		--left;
-	}
-
-	if(
-		overlong ||
-		left > 0 ||
-		(ch >= 0xD800 && ch <= 0xDFFF) ||
-		(ch == 0xFFFE || ch == 0xFFFF) ||
-		ch > 0x10FFFF
-	) {
-		ch = UNICODE_UNKNOWN;
-	}
-
-	return ch;
 }
 
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]) {
