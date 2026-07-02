@@ -105,6 +105,7 @@ jobs:
     - name: Install Tools
       run: >
         brew install
+        cglm
         docutils
         gettext
         libunibreak
