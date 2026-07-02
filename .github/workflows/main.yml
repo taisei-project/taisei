@@ -48,7 +48,7 @@ jobs:
     container: taiseiproject/linux-toolkit:20260312
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -77,7 +77,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_linux_fail_log
         path: build/meson-logs/meson-log.txt
@@ -89,7 +89,7 @@ jobs:
     runs-on: macos-15
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -98,7 +98,7 @@ jobs:
         git config --global --add safe.directory $(pwd)
 
     - name: Install Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
@@ -142,7 +142,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_macos_fail_log
         path: build/meson-logs/meson-log.txt
@@ -155,7 +155,7 @@ jobs:
     container: taiseiproject/linux-toolkit:20260312
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -178,7 +178,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_windows_fail_log
         path: build/meson-logs/meson-log.txt
@@ -201,7 +201,7 @@ jobs:
         fi
 
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -212,7 +212,7 @@ jobs:
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -256,7 +256,7 @@ jobs:
         meson compile tar -C build/ --verbose
 
     - name: Checkout taisei-web-test
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       if: ${{ steps.set-vars.outputs.publish == 'true' }}
       with:
         repository: taisei-project/taisei-web-test
@@ -305,7 +305,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_emscripten_stable_build_log
         path: build/meson-logs/meson-log.txt
@@ -318,7 +318,7 @@ jobs:
     container: taiseiproject/switch-toolkit:20240305
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -337,7 +337,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: taisei_switch_build_log
         path: build/meson-logs/meson-log.txt
