@@ -238,7 +238,6 @@ static void replayview_draw_stagemenu(MenuData *m) {
 
 		// NOTE: e->name is already localized!
 
-		log_warn("%s", e->name);
 		text_draw(e->name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 20*i },
