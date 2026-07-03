@@ -39,7 +39,7 @@
 		</screenshot>
 	</screenshots>
 	<releases>
-		<release version="1.4.5" date="2026-06-27">
+		<release version="1.4.5" date="2026-07-03">
 			<url>https://taisei-project.org/news/0022_v1.4.5</url>
 			<description>
 				<p>This is a stable maintenance release. It adds localization, updates to some menus, and various fixes.</p>
