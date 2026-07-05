@@ -207,20 +207,21 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 }
 
 TASK(starcaller_fairy, { cmplx pos; MoveParams move_exit; }) {
-	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 5, .power = 5)));
+	auto fairy = ecls_spawn_huge_fairy(ARGS.pos, ITEMS(.points = 5, .power = 5));
+	Enemy *e = TASK_BIND(fairy.entity);
 
 	int summon_time = 120;
 	int precharge_time = 20;
 	int charge_time = difficulty_value(120, 80, 60, 60);
 
-	INVOKE_TASK_DELAYED(summon_time - precharge_time, common_charge, {
+	INVOKE_SUBTASK_DELAYED(summon_time - precharge_time, common_charge, {
 		.time = charge_time + precharge_time,
 		.pos = e->pos,
 		.color = *RGBA(0.5, 0.2, 1.0, 0.0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 
-	ecls_anyfairy_summon(e, summon_time);
+	ecls_fairy_summon(fairy, summon_time);
 	WAIT(charge_time);
 
 	int step = difficulty_value(80, 40, 40, 30);

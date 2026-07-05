@@ -10,29 +10,30 @@
 
 // TODO SUPER REDESIGN THIS, IT'S A MESS!
 
-static void kurumi_extra_shield_draw(Enemy *e, EnemyDrawParams p) {
+TASK(kurumi_vladsarmy_shield_draw, { BoxedEnemy e; }) {
 	// TODO: something nicer here
+	auto e = TASK_BIND(ARGS.e);
 
-	float h = clamp(e->hp / e->spawn_hp, 0, 1);
-	h *= h;
+	SpriteParams sp = {
+		.sprite_ptr = res_sprite("enemy/swirl"),
+		.shader_ptr = res_shader("sprite_negative"),
+	};
 
-	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA_MUL_ALPHA(
+	for(int t = 0;; ++t) {
+		WAIT_EVENT_OR_DIE(&e->events.draw);
+
+		float h = clamp(e->hp / e->spawn_hp, 0, 1);
+		h *= h;
+
+		sp.color = RGBA_MUL_ALPHA(
 			1 + (1 - h), 0.3 + 0.7 * h, 0.2 + 0.8 * h,
 			1 + 1 - h
-		),
-		.sprite_ptr = res_sprite("enemy/swirl"),
-		.pos.as_cmplx = p.pos,
-		.rotation.angle = p.time * -10 * DEG2RAD,
-		.shader_ptr = res_shader("sprite_negative"),
-	});
-}
+		);
+		sp.pos.as_cmplx = enemy_visual_pos(e);
+		sp.rotation.angle = t * -10 * DEG2RAD;
 
-static void draw_negative_fairy(Enemy *e, EnemyDrawParams p) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = ecls_anyfairy_sprite_params(e, p, &spbuf);
-	sp.shader_ptr = res_shader("sprite_negative");
-	r_draw_sprite(&sp);
+		r_draw_sprite(&sp);
+	}
 }
 
 TASK(kurumi_vladsarmy_shield_death_proj, { cmplx pos; MoveParams move; }) {
@@ -92,8 +93,10 @@ TASK(kurumi_vladsarmy_shield, { BoxedBoss boss; real angle; }) {
 	int hp = 1500;
 	Boss *b = NOT_NULL(ENT_UNBOX(ARGS.boss));
 
-	Enemy *e = create_enemy(b->pos, hp, (EnemyVisual) { kurumi_extra_shield_draw });
+	Enemy *e = create_enemy(b->pos, hp);
 	e->flags = EFLAG_IMPENETRABLE;
+
+	INVOKE_TASK(kurumi_vladsarmy_shield_draw, ENT_BOX(e));
 
 	int timeout = 800;
 	INVOKE_SUBTASK_WHEN(&e->events.killed, kurumi_vladsarmy_shield_death, ENT_BOX(e));
@@ -107,8 +110,10 @@ TASK(kurumi_vladsarmy_shield, { BoxedBoss boss; real angle; }) {
 }
 
 TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 2, .power = 1)));
-	e->visual.draw = draw_negative_fairy;
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 2, .power = 1));
+	fairy.visual->shader = res_shader("sprite_negative");
+
+	auto e = TASK_BIND(fairy.entity);
 
 	int escapetime = difficulty_value(400, 400, 400, 4000);
 
@@ -213,10 +218,11 @@ TASK(kurumi_vladsarmy_drainer, { BoxedBoss boss; BoxedEnemy enemy; }) {
 }
 
 TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_time; int chase_time; int attack_type; BoxedBoss boss; }){
-	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.start_pos, ITEMS(.points = 1)));
-	e->visual.draw = draw_negative_fairy;
-	e->flags |= EFLAG_NO_AUTOKILL;
+	auto fairy = ecls_spawn_fairy_blue(ARGS.start_pos, ITEMS(.points = 1));
+	fairy.visual->shader = res_shader("sprite_negative");
 
+	auto e = TASK_BIND(fairy.entity);
+	e->flags |= EFLAG_NO_AUTOKILL;
 	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.1);
 
 	WAIT(50);

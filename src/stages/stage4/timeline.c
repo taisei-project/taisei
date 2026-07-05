@@ -467,8 +467,7 @@ TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
 }
 
 TASK(hex_fairy, { cmplx pos; cmplx lattice_vec; MoveParams escape_move; }) {
-	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4)));
-	ecls_anyfairy_summon(e, 120);
+	Enemy *e = TASK_BIND(ecls_fairy_summon(ecls_spawn_fairy_blue(ARGS.pos, ITEMS(.points = 4)), 120).entity);
 
 	int num_flowers = 4;
 	WAIT(20);
@@ -525,8 +524,7 @@ TASK(spawn_hex_fairy, { cmplx offset; real angle; MoveParams escape_move; }) {
 
 
 TASK(spiral_fairy, { cmplx pos; cmplx dir; }) {
-	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 1)));
-	ecls_anyfairy_summon(e, 120);
+	Enemy *e = TASK_BIND(ecls_fairy_summon(ecls_spawn_fairy_red(ARGS.pos, ITEMS(.power = 1)), 120).entity);
 
 	e->move = move_linear(ARGS.dir);
 
@@ -581,14 +579,15 @@ TASK(spawn_spiral_fairy, { real twist; }) {
 }
 
 TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
-	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points=2)));
+	auto fairy = ecls_spawn_fairy_blue(ARGS.pos, ITEMS(.points = 2));
+	Enemy *e = TASK_BIND(fairy.entity);
 	INVOKE_SUBTASK_DELAYED(60, common_charge,
 		.time = 90,
 		.pos = e->pos,
 		.color = *color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
-	ecls_anyfairy_summon(e, 120);
+	ecls_fairy_summon(fairy, 120);
 	WAIT(30);
 	e->move = move_accelerated(2*ARGS.dir, 0.01*I*ARGS.dir);
 

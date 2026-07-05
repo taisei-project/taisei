@@ -418,12 +418,11 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 }
 
 TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
-	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(
+	Enemy *e = TASK_BIND(ecls_fairy_summon(ecls_spawn_huge_fairy(ARGS.pos, ITEMS(
 		.power = 5,
 		.points = 5,
-	)));
+	)), 120).entity);
 
-	ecls_anyfairy_summon(e, 120);
 	WAIT(30);
 	common_charge(90, &e->pos, 0, *RGBA(0.5, 1, 0.25, 0));
 

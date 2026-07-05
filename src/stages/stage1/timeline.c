@@ -313,8 +313,8 @@ TASK(waveshot, { cmplx pos; cmplx dir; real spread; real freq; int shots; int in
 }
 
 TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
-	ecls_anyfairy_summon(e, 120);
+	Enemy *e = TASK_BIND(
+		ecls_fairy_summon(ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)), 120).entity);
 
 	cmplx dir = cnormalize(global.plr.pos - e->pos);
 	cmplx ofs = -24 * dir;
@@ -337,14 +337,15 @@ TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
 }
 
 TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 8)));
+	auto fairy = ecls_spawn_huge_fairy(ARGS.pos, ITEMS(.points = 8));
+	Enemy *e = TASK_BIND(fairy.entity);
 	INVOKE_SUBTASK_DELAYED(80, common_charge, {
 		.time = 120,
 		.pos = e->pos,
 		.color = *RGBA(1.0, 0, 0.2, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
-	ecls_anyfairy_summon(e, 120);
+	ecls_fairy_summon(fairy, 120);
 
 	WAIT(80);
 
@@ -601,14 +602,15 @@ TASK(spawn_midboss) {
 }
 
 TASK(tritoss_fairy, { cmplx pos; cmplx end_velocity; }) {
-	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(.points = 5, .power = 6)));
+	auto fairy = ecls_spawn_super_fairy(ARGS.pos, ITEMS(.points = 5, .power = 6));
+	Enemy *e = TASK_BIND(fairy.entity);
 	INVOKE_SUBTASK_DELAYED(120, common_charge, {
 		.pos = e->pos,
 		.time = 60,
 		.color = *RGBA(0.1, 0.2, 1.0, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
-	ecls_anyfairy_summon(e, 180);
+	ecls_fairy_summon(fairy, 180);
 
 	int interval = difficulty_value(12, 9, 5, 3);
 	int rounds = 680/interval;

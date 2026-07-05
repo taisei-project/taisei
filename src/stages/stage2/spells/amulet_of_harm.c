@@ -15,19 +15,30 @@ TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	p->move.velocity += ov;
 }
 
-static void amulet_draw(Enemy *e, EnemyDrawParams p) {
-	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA(2, 1, 1, 0),
-		.sprite_ptr = res_sprite("fairy_circle_big"),
-		.pos.as_cmplx = p.pos,
-		.rotation.angle = p.time * 5 * DEG2RAD,
-	});
+TASK(amulet_draw, { BoxedEnemy e; }) {
+	auto e = TASK_BIND(ARGS.e);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("enemy/swirl"),
-		.pos.as_cmplx = p.pos,
-		.rotation.angle = p.time * -10 * DEG2RAD,
-	});
+	auto spr_circle = res_sprite("fairy_circle_big");
+	auto spr_swirl = res_sprite("enemy/swirl");
+
+	for(int t = 0;; ++t) {
+		WAIT_EVENT_OR_DIE(&e->events.draw);
+
+		cmplx p = enemy_visual_pos(e);
+
+		r_draw_sprite(&(SpriteParams) {
+			.color = RGBA(2, 1, 1, 0),
+			.sprite_ptr = spr_circle,
+			.pos.as_cmplx = p,
+			.rotation.angle = t * 5 * DEG2RAD,
+		});
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = spr_swirl,
+			.pos.as_cmplx = p,
+			.rotation.angle = t * -10 * DEG2RAD,
+		});
+	}
 }
 
 TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; }) {
@@ -70,12 +81,13 @@ TASK(amulet, {
 	MoveParams move;
 	CoEvent *death_event;
 }) {
-	Enemy *core = create_enemy(ARGS.pos, 2000, (EnemyVisual) { amulet_draw });
+	Enemy *core = create_enemy(ARGS.pos, 2000);
 	core->hurt_radius = 18;
 	core->hit_radius = 36;
 	core->flags |= EFLAG_NO_VISUAL_CORRECTION;
 	core->move = ARGS.move;
 
+	INVOKE_TASK(amulet_draw, ENT_BOX(core));
 	INVOKE_TASK_AFTER(NOT_NULL(ARGS.death_event), common_kill_enemy, ENT_BOX(core));
 
 	int num_spinners = difficulty_value(2, 3, 4, 4);

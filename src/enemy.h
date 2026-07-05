@@ -54,24 +54,17 @@ typedef struct EnemyDrawParams {
 
 typedef void (*EnemyDrawFunc)(Enemy*, EnemyDrawParams);
 
-typedef struct EnemyVisual {
-	EnemyDrawFunc draw;
-	void *drawdata;
-} EnemyVisual;
-
-#define ENEMY_NOVISUAL ((EnemyVisual) {})
-
 DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
 	MoveParams move;
-	EnemyVisual visual;
 
 	COEVENTS_ARRAY(
 		predamage,
 		damaged,
-		killed
+		killed,
+		draw
 	) events;
 
 	/*
@@ -118,15 +111,15 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	)
 });
 
-Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual);
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp);
 
 #ifdef ENEMY_DEBUG
 	Enemy *_enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
 	#define create_enemy_p(...) _enemy_attach_dbginfo(create_enemy_p(__VA_ARGS__), _DEBUG_INFO_PTR_)
 #endif
 
-#define create_enemy(pos, hp, visual) \
-	create_enemy_p(&global.enemies, pos, hp, visual)
+#define create_enemy(pos, hp) \
+	create_enemy_p(&global.enemies, pos, hp)
 
 void delete_enemy(EnemyList *enemies, Enemy* enemy);
 void delete_enemies(EnemyList *enemies);
@@ -137,7 +130,7 @@ bool enemy_is_vulnerable(Enemy *enemy);
 bool enemy_is_targetable(Enemy *enemy);
 bool enemy_in_viewport(Enemy *enemy);
 float enemy_get_hurt_radius(Enemy *enemy);
-cmplx enemy_visual_pos(Enemy *enemy);
+cmplx enemy_visual_pos(const Enemy *enemy);
 
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);

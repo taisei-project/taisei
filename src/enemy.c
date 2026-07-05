@@ -82,7 +82,7 @@ static inline void enemy_update(Enemy *e, int t) {
 	e->dir = re(v) < 0;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual) {
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
@@ -97,7 +97,6 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visua
 	e->spawn_hp = hp;
 	e->hp = hp;
 	e->flags = 0;
-	e->visual = visual;
 	e->hurt_radius = 7;
 	e->hit_radius = 30;
 
@@ -166,7 +165,6 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	COEVENT_CANCEL_ARRAY(e->events);
 	ent_unregister(&e->ent);
 	STAGE_RELEASE_OBJ(alist_unlink(enemies, e));
-	mem_free(e->visual.drawdata);
 
 	return NULL;
 }
@@ -179,7 +177,7 @@ void delete_enemies(EnemyList *enemies) {
 	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
-cmplx enemy_visual_pos(Enemy *enemy) {
+cmplx enemy_visual_pos(const Enemy *enemy) {
 	if(enemy->flags & EFLAG_NO_VISUAL_CORRECTION) {
 		return enemy->pos;
 	}
@@ -196,33 +194,8 @@ cmplx enemy_visual_pos(Enemy *enemy) {
 	return p;
 }
 
-static void draw_enemy(Enemy *e) {
-	e->visual.draw(e, (EnemyDrawParams) {
-		.time = global.frames - e->birthtime,
-		.pos = enemy_visual_pos(e),
-	});
-}
-
 static void ent_draw_enemy(EntityInterface *ent) {
-	Enemy *e = ENT_CAST(ent, Enemy);
-
-	if(!e->visual.draw) {
-		return;
-	}
-
-#ifdef ENEMY_DEBUG
-	static Enemy prev_state;
-	memcpy(&prev_state, e, sizeof(Enemy));
-#endif
-
-	draw_enemy(e);
-
-#ifdef ENEMY_DEBUG
-	if(memcmp(&prev_state, e, sizeof(Enemy))) {
-		set_debug_info(&e->debug);
-		log_fatal("Enemy modified its own state in draw rule");
-	}
-#endif
+	coevent_signal(&ENT_CAST(ent, Enemy)->events.draw);
 }
 
 bool enemy_is_vulnerable(Enemy *enemy) {

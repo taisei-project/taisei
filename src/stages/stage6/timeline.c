@@ -15,15 +15,17 @@
 #include "stage6.h"
 
 TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
-	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
+	auto fairy = ecls_spawn_super_fairy(ARGS.pos, ITEMS(
 		.points = 12,
 		.power = 6,
 		.life = 1,
-	)));
+	));
 
 	int summon_time = 180;
 	int precharge_time = 30;
 	int charge_time = 60;
+
+	auto e = TASK_BIND(fairy.entity);
 
 	INVOKE_SUBTASK_DELAYED(summon_time - precharge_time, common_charge,
 		.anchor = &e->pos,
@@ -32,7 +34,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
 
-	ecls_anyfairy_summon(e, summon_time);
+	ecls_fairy_summon(fairy, summon_time);
 	WAIT(charge_time);
 
 	int duration = difficulty_value(220, 260, 300, 340);
@@ -231,8 +233,8 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 #define SNIPER_SPAWNTIME 180
 
 TASK(sniper_fairy, { cmplx pos; MoveParams move_exit; }) {
-	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
-	ecls_anyfairy_summon(e, SNIPER_SPAWNTIME);
+	auto e = TASK_BIND(
+		ecls_fairy_summon(ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)), SNIPER_SPAWNTIME).entity);
 
 	INVOKE_SUBTASK(sniper_fairy_shot, ENT_BOX(e));
 	AWAIT_SUBTASKS;
