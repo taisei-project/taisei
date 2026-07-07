@@ -536,8 +536,7 @@ TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; int d0; int 
 }
 
 TASK(laser45_big_fairy, { cmplx origin; }) {
-	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
-	ecls_anyfairy_summon(e, 60);
+	auto e = TASK_BIND(ecls_fairy_summon(ecls_spawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)), 60).entity);
 
 	for(int i = 0; i < 3; ++i) {
 		RADIAL_LOOP(l, 8, I) {
@@ -553,9 +552,9 @@ TASK(laser45_big_fairy, { cmplx origin; }) {
 }
 
 TASK(intro_swirl, { cmplx origin; cmplx dir; }) {
-	auto e = TASK_BIND(espawn_swirl(ARGS.origin, ITEMS(.points = 0)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, 180);
+	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.points = 0));
+	auto e = TASK_BIND(swirl.entity);
+	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, 180);
 	e->move = move_accelerated(0, ARGS.dir * -0.05);
 	WAIT(5);
 	PROJECTILE(
@@ -568,10 +567,9 @@ TASK(intro_swirl, { cmplx origin; cmplx dir; }) {
 }
 
 TASK(intro_fairy, { cmplx origin; }) {
-	auto e = TASK_BIND(espawn_big_fairy(ARGS.origin, ITEMS(.power = 2, .points = 2)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_big_fairy(ARGS.origin, ITEMS(.power = 2, .points = 2));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	int duration = BEATS;
 	for(int t = 0; t < duration; t++) {
@@ -601,10 +599,9 @@ TASK(intro_fairy, { cmplx origin; }) {
 }
 
 TASK(square_fairy, { cmplx origin; int corruption; }) {
-	auto e = TASK_BIND(espawn_fairy_red(ARGS.origin, ITEMS(.power = 1)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_fairy_red(ARGS.origin, ITEMS(.power = 1));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	e->move = move_linear(I*cnormalize(0.5*(VIEWPORT_W+I*VIEWPORT_H)-e->pos));
 
@@ -635,14 +632,12 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 		play_sfx("special_shot1");
 		WAIT(BEATS*4.5);
 	}
-
-
 }
 
 TASK(transition_swirl, { cmplx origin; cmplx dir; int corruption; }) {
-	auto e = TASK_BIND(espawn_swirl(ARGS.origin, ITEMS(.power = 0)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS/2);
+	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.power = 0));
+	auto e = TASK_BIND(swirl.entity);
+	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
 
 	e->move = move_accelerated(ARGS.dir, 0.01*cdir(0.1)*ARGS.dir);
 
@@ -711,9 +706,9 @@ TASK(wheat_laser_proj, { cmplx pos; cmplx dir; int delay; }) {
 
 
 TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
-	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 	e->move = ARGS.move;
 
 	for(int t = 0; t < 2; t++) {
@@ -765,11 +760,10 @@ TASK(amaranth_proj, { cmplx pos; MoveParams move; }) {
 }
 
 TASK(amaranth_fairy, { cmplx pos; MoveParams move; }) {
-	auto e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 2)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-
+	auto fairy = ecls_spawn_fairy_blue(ARGS.pos, ITEMS(.points = 2));
+	auto e = TASK_BIND(fairy.entity);
 	INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	e->move = ARGS.move;
 
@@ -840,9 +834,9 @@ TASK(octahedron, { cmplx pos; MoveParams move; vec3 axis; real final_size; real 
 }
 
 TASK(octahedron_fairy, { cmplx origin; }) {
-	auto e = TASK_BIND(espawn_super_fairy(ARGS.origin, ITEMS(.power = 3, .bomb_fragment = 1)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_super_fairy(ARGS.origin, ITEMS(.power = 3, .bomb_fragment = 1));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	for(int t = 0; t < 600; t += WAIT(BEATS/8)) {
 		cmplx aim = cdir(t*0.1);
@@ -862,9 +856,9 @@ TASK(assist_laser, { cmplx pos; cmplx accel; }) {
 }
 
 TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
-	auto e = TASK_BIND(espawn_fairy_blue(ARGS.origin, ITEMS(.points = 1)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_fairy_blue(ARGS.origin, ITEMS(.points = 1));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	e->move = ARGS.move;
 	WAIT(5);
@@ -884,9 +878,9 @@ TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
 }
 
 TASK(transition_swirl2, { cmplx origin; cmplx dir; }) {
-	auto e = TASK_BIND(espawn_swirl(ARGS.origin, ITEMS(.power = 0)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS/2);
+	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.power = 0));
+	auto e = TASK_BIND(swirl.entity);
+	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
 	e->move = move_linear(ARGS.dir);
 
 	WAIT(5);
@@ -911,10 +905,9 @@ TASK(transition_swirls2) {
 }
 
 TASK(scissor_fairy, { cmplx origin; MoveParams move; int dir;}) {
-	auto e = TASK_BIND(espawn_fairy_red(ARGS.origin, ITEMS(.power = 1)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS/2);
-
+	auto fairy = ecls_spawn_fairy_red(ARGS.origin, ITEMS(.power = 1));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
 
 	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
@@ -987,10 +980,9 @@ TASK(funk_bullet, { cmplx pos; MoveParams move; }) {
 }
 
 TASK(funk_fairy, { cmplx pos; MoveParams move; }) {
-	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS);
@@ -1021,9 +1013,9 @@ TASK(funk_fairies) {
 }
 
 TASK(drum_fairy, { cmplx pos; }) {
-	auto e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 3)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto fairy = ecls_spawn_huge_fairy(ARGS.pos, ITEMS(.points = 3));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS/2);
@@ -1074,10 +1066,9 @@ static LaserRule staircase_laser_rule(cmplx tread, cmplx riser, real velocity) {
 }
 
 TASK(staircase_swirl, { cmplx pos; cmplx dir; bool cross;}) {
-	auto e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1)));
-	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
-
-	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, BEATS);
+	auto swirl = ecls_spawn_swirl(ARGS.pos, ITEMS(.points = 1));
+	auto e = TASK_BIND(swirl.entity);
+	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
 	play_sfx("laser1");
 	if(!ARGS.cross) {
@@ -1175,10 +1166,10 @@ TASK(aimed_laser45_warp, { cmplx origin; cmplx dir; int delay; const Color *clr;
 }
 
 TASK(laser45_warp_fairy, { cmplx origin; cmplx final_pos; }) {
-	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
-	ecls_anyfairy_summon(e, BEATS);
+	auto fairy = ecls_spawn_huge_fairy(ARGS.origin, ITEMS(.points = 5));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_summon(fairy, BEATS);
 	e->move = move_towards(ARGS.final_pos, 0.03);
-
 }
 
 DEFINE_EXTERN_TASK(stagex_timeline) {
@@ -1230,7 +1221,6 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 		INVOKE_SUBTASK_DELAYED((11+i*0.5)*BEATS, scissor_fairy, .origin = pos, .move = move_linear(-2*I), .dir = rng_sign());
 
 	}
-
 
 	STAGE_BOOKMARK_DELAYED(14*BEATS, funk-fairies);
 	INVOKE_SUBTASK_DELAYED(14*BEATS, funk_fairies);
