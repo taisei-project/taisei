@@ -130,7 +130,7 @@ static Enemy *get_bombshield_hitbox(BossShield *shield) {
 
 	if(is_bombshield_actiev(shield)) {
 		if(!hitbox) {
-			hitbox = create_enemy_p(&global.enemies, 0, 1, ENEMY_NOVISUAL);
+			hitbox = create_enemy_p(&global.enemies, 0, 1);
 			hitbox->flags = (
 				EFLAG_IMPENETRABLE |
 				EFLAG_INVULNERABLE |
