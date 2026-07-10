@@ -875,6 +875,14 @@ static bool video_handle_event(SDL_Event *event, void *arg) {
 			video_update_mode_settings();
 			break;
 
+		case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+			config_set_int(CONFIG_FULLSCREEN, true);
+			break;
+
+		case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+			config_set_int(CONFIG_FULLSCREEN, false);
+			break;
+
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			if(config_get_int(CONFIG_FOCUS_LOSS_PAUSE)) {
 				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
@@ -1081,9 +1089,6 @@ void video_swap_buffers(void) {
 	if(video.framedump.name_prefix) {
 		video_take_framedump();
 	}
-
-	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
-	config_set_int(CONFIG_FULLSCREEN, video_is_fullscreen());
 }
 
 VideoBackend video_get_backend(void) {
