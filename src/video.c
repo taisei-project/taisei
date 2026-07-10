@@ -441,7 +441,9 @@ static void video_set_minimum_size(uint w, uint h) {
 }
 
 static void video_update_scaling_factor(void) {
-	double scaling_factor = SDL_GetWindowDisplayScale(video.window);
+	IntExtent main_fb = video_get_screen_framebuffer_size();
+	assert(main_fb.w > 0);
+	double scaling_factor = (double)main_fb.w / video.current.width;
 
 	if(scaling_factor != video.scaling_factor) {
 		log_debug("Scaling factor updated: %f --> %f", video.scaling_factor, scaling_factor);
