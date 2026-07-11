@@ -250,7 +250,7 @@ msgstr ""
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
-msgstr "Hmm. İlginç."
+msgstr "Hmm. Çok görkemli."
 
 #: src/cutscenes/intro.inc.h:58
 msgid "Where the heck did *you* come from?!"
@@ -397,7 +397,7 @@ msgstr "Onu yok edebilirm!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
-msgstr ""
+msgstr "Gah! … şimdi ben insanlara gizlice gelme konusunda de dedim, Flan?"
 
 #: src/cutscenes/marisa_bad_end.inc.h:28
 msgid "Sorry!"
@@ -443,14 +443,15 @@ msgstr "Bir süre sonra o anladıki o bir 'Akıllı cihaz' dı, örneğin bir bi
 msgid ""
 "This one was far more advanced than any she'd seen from the Outside World, "
 "including that young occultist’s phone.\n"
-msgstr ""
+msgstr "Bu Dış Dünyada gördüğünden genç mistik güçlünün tefonundan bile daha gelişmişti.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:43
 msgid ""
 "It behaved both as a solid and a liquid, able to rapidly change shapes by "
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
-msgstr ""
+msgstr "Hem sıvı hemde katı gibiydi, şeklini belli yerlere baskı uygulayarak değiştirip "
+"farkı hallere çevrilebiliyor: bir telefon, bir kitap, bir klavyeli dijital yazıcı…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
@@ -488,7 +489,7 @@ msgstr "Doğu büyüler diyarında batılı bir malikane."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:12
 msgid "I get such a nervous feeling around the newcomers…"
-msgstr ""
+msgstr "Yeni gelenler arasında çok sinirli bir hissim var…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:13
 msgid "They're fine, they're fine! Look at ‘er, isn’t she kinda cute?"
@@ -593,7 +594,7 @@ msgstr "Huh? Ne o?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:56
 msgid "Perhaps the fairy maids are remodeling upstairs?"
-msgstr ""
+msgstr "Belki peri hizmetliler yukarıyı yeniden düzenliyorlardır?"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:57
 msgid ""
@@ -601,6 +602,9 @@ msgid ""
 "The mansion began to shake intense, as if down to its very foundation, "
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
+"\n"
+"Malikane sallanmaya başladı, hızlı başlaması sanki tamamıyla yıkılmadan "
+"önce son vakfına kalmış.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
 msgid ""
@@ -656,7 +660,8 @@ msgstr "Oh hayır…"
 msgid ""
 "Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed "
 "up. We’ll just go back, get the kappa, and—"
-msgstr ""
+msgstr "Hadi ama unut artık. Bu seni sen hata yaptığında karşı gelmemiz gibi değil. "
+"Iyi sadece geri git, kappa yı al ve—"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:82
 msgid "Hey, um, uh, maybe you should check it out?"
@@ -680,13 +685,13 @@ msgstr "Ah, benim için korktunuzmu? Çok şirin."
 msgid ""
 "Marisa grinned and magically summoned her broom, mounting it deftly, and "
 "shooting right out of an open window in a flash.\n"
-msgstr ""
+msgstr "Marisa sırıttı ve süpürgesini çağırdı, sıkıca bağladı ve pencereden dışarı flaş attı.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:93
 msgid ""
 "Her sights were set on the Tower that loomed and rumbled on the top of Yōkai "
 "Mountain…"
-msgstr ""
+msgstr "Onun kulede, Yōkai dağının üstünde karaltı gibi göründü…"
 
 #: src/cutscenes/marisa_good_end.inc.h:2
 msgid "Marisa (Good Ending)"
@@ -726,7 +731,7 @@ msgstr "— ki yeni bir işlemci ile daha vektör işleme kapasitesine ve daha y
 
 #: src/cutscenes/marisa_good_end.inc.h:19
 msgid "Ah, I see. Fascinating. Wow. Incredible."
-msgstr ""
+msgstr "Ah, anlıyorum. Görkemli. Ne kadar güzel."
 
 #: src/cutscenes/marisa_good_end.inc.h:20
 msgid "You two having fun?"
@@ -754,12 +759,12 @@ msgid ""
 "Elly nodded and smiled politely, trying to hold back tears of boredom."
 msgstr ""
 
-
 #: src/cutscenes/marisa_good_end.inc.h:31
 msgid ""
 "In the end, the newcomers seemed to calm down once the effects of the Tower "
 "had worn off, just like everyone else in Gensōkyō.\n"
-msgstr ""
+msgstr "Sonunda yeni gelenler, kule kapatıldıktan sonra Gensōkyō'daki diğer herkez "
+"gibi sakinleştiler.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:32
 msgid ""
@@ -899,14 +904,14 @@ msgstr "Bütün ’versyonlarımı’ gördüğümü bilemden önce, yaşamları
 msgid ""
 "Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
-"Na ja, dauerte was, aber irgendwie hab ich mich an diese Vampirin Kurumi "
-"erinnert und als ich dich sah, dachte ich so, ‘Echt jetzt?! Im Ernst?!’"
 
 msgstr ""
+"Neyse, biraz sürdü, ama hatırladımki o vampir kız Kurumi, ve gördüğümde"
+"‘Amanın gerçekten?! Gerçekten?!'"
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
-msgstr ""
+msgstr "çok komik. Sen çok komiksin"
 
 #: src/cutscenes/marisa_good_end.inc.h:86
 msgid "But I suppose in a place like Gensōkyō, that’s not even that strange…"
@@ -917,6 +922,7 @@ msgid ""
 "… and you were such a child when I met you. It’s odd to see you all grown "
 "up, even if it’s another you entirely."
 msgstr ""
+"… ve seninle görüştüğümden çocuksuydun. Başka sen olsan bile hepinizin büyümüş olması garip."
 
 #: src/cutscenes/marisa_good_end.inc.h:88
 msgid "I’ll have you know that I’m not a day wiser! Gahaha!"
@@ -932,7 +938,7 @@ msgstr ""
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
-msgstr ""
+msgstr "Diğerleri gücü daha iyiye kullanılabilirmi diye düşündü.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
@@ -957,7 +963,7 @@ msgstr "Reimu (Kötü son)"
 #: src/cutscenes/reimu_bad_end.inc.h:9
 msgid ""
 "The Tower had powered down, yet the instigators were nowhere to be found.\n"
-msgstr ""
+msgstr "Kule kapandı, ve halen sorunu başlatanlar ortada yoktu.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
@@ -968,6 +974,7 @@ msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
 msgstr ""
+"Yōkai dağının mabet hakkında sessice bir nefesle karıştılar.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
@@ -1021,7 +1028,7 @@ msgid ""
 "\n"
 "Reimu was never surprised by Yukari’s sudden appearances anymore, of "
 "course.\n"
-msgstr "\n Reium Yukari'nin tepkileri süpriz olarak görmüyordu.\n"
+msgstr "\n Reimu Yukari'nin tepkileri süpriz olarak görmüyordu.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:34
 msgid "It’s unlike you to stop until everything is business as usual, Reimu."
@@ -1055,7 +1062,7 @@ msgstr "Ne çılgınlığıysa banada geliyordu. Beni korkmuş ve yanlız hisset
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
-msgstr "Neden yanlız hiddeyimki? Hiç anlam vermiyor."
+msgstr "Neden yanlız hiddeyimki? Hiç anlamlı değil."
 
 #: src/cutscenes/reimu_bad_end.inc.h:51
 msgid "So, what will you do?"
@@ -1099,28 +1106,32 @@ msgid ""
 "It was her first ‘science fiction’ series, apparently about a flat, circular "
 "world that floated through space on the backs of four turtles…"
 msgstr ""
+"Bu onun ilk ‘bilim fanatastiği’ serisiydi, kendisi dört kaplumbağanın arkasından"
+"uzayda uçtuğu bir düz, daire dünya hakkındaydı."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:17
 msgid "Suddenly, Yukari slid in through one of her gaps."
-msgstr ""
+msgstr "Bir anda, Yukari bir boşluğunda kaydı."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:18
 msgid "As usual, Reimu could feel her presence right away.\n"
-msgstr ""
+msgstr "Her zamanki gibi Reimu onun halini hemen hissdebilyordu.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:19
 msgid ""
 "Unexpectedly, Ran and Chen were also in tow, taking positions behind her "
 "with solemn, silent expressions."
 msgstr ""
+"Beklenmedik bi şekilde Ran ve Chen'de kuledeydi, onun arkasında"
+"ağır ve sessiz tepkilerle pozisyonlarını alıyordu."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr ""
+msgstr "Benim oh benim,rakip mabetlerde zaman geçiriyoruz değilmi?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
-msgstr ""
+msgstr "Koruma görevi."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:25
 msgid "Hm? Not trusting enough of Ms. Kochiya to—"
@@ -1132,7 +1143,7 @@ msgstr "Hayır."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:30
 msgid "*giggle* I see."
-msgstr ""
+msgstr "*kıkırdama* Anlıyorum."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:31
 msgid ""
@@ -1140,6 +1151,9 @@ msgid ""
 "As if on cue, Elly came running up the steps of the Moriya Shrine, "
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
+"\n"
+"İşaretten sonra, Elly Moriya mabetinin merdivenlerinde nefessiz koşuyordu"
+"kendisi bir Miko uniforması giyinmişti.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
 msgid ""
@@ -1160,7 +1174,7 @@ msgstr "Yavaşla. Ne yanlış?"
 msgid ""
 "Elly brought out some kind of small communicator device. It projected an "
 "image into the air, like an illusion.\n"
-msgstr "Elly bir iletişim cıhazı getirdi. Havaya bir resim projekte etti, ilüzyon gibi. \n"
+msgstr "Elly bir iletişim cıhazı getirdi. Havaya bir resim yansıttı, ilüzyon gibi.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:42
 msgid "It’s the Tower! It’s spinning back up!"
@@ -1206,7 +1220,8 @@ msgstr "Kurumi, kule geri açılıyor!"
 msgid ""
 "Huh?! But all I did was seal off the mansion's main doors, so the fairies "
 "would leave it alone, just like you asked!"
-msgstr ""
+msgstr "Ama tüm yaptığım malikanenin ana kapılaırı halatladım, böylece periler rahat "
+"bırakırlar, aynı sorduğun gibi!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:58
 msgid "I… what?!"
@@ -1216,7 +1231,8 @@ msgstr "Ben… ne?!"
 msgid ""
 "Y-you left me a note that said, ‘Kurumi, go close off the mansion module so "
 "the fairies stop playing inside of it'!"
-msgstr ""
+msgstr "S-sen bana şöyle yazan bir not bıraktın ‘Kurumi, malikane modüklünü kapat ki "
+"periler içinde oynamayı bıraksın'!"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:63
 msgid "So I did!!"
@@ -1281,7 +1297,7 @@ msgstr "Sen Gensōkyō'ya ve içindeki insanları çok düşünüyorsun değilmi
 msgid ""
 "Even those who fundamenally threaten us. You even give the nastiest yōkai a "
 "chance at redemption."
-msgstr ""
+msgstr "Bizi tehdit edenlere bile. En kötü yōkai ye bile şans verdin."
 
 #: src/cutscenes/reimu_extra_intro.inc.h:89
 msgid "I admire that in you."
@@ -1294,6 +1310,8 @@ msgstr "Ehhh? neden çok samimisin? Beni korkutuyor."
 #: src/cutscenes/reimu_extra_intro.inc.h:94
 msgid "Even you think I’m a huge softie, huh? How disappointing…"
 msgstr ""
+"Sendimi beni büyük ve yumuşak birisi gibi hissediyon, huh? "
+"Ne kadar hayal kırıklığına uğratıci…"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:95
 msgid ""
@@ -1307,7 +1325,8 @@ msgstr ""
 msgid ""
 "In the distance, the Tower of Babel began to emit a low, eerie rumble, as "
 "Reimu flew off to meet her next challenge…"
-msgstr ""
+msgstr "Uzaklarda Babel kulesi düşük derin bir ses çıkartmaya başladı ve, "
+"Reimu bir sonraki görevi için yerinen uçtu…"
 
 #: src/cutscenes/reimu_good_end.inc.h:2
 msgid "Reimu (Good Ending)"
@@ -1346,17 +1365,20 @@ msgstr "Kule kapanmıştı, bu çılgınlık krizinin sonlanmasına neden oldu. 
 msgid ""
 "Nearly everyone had returned to normal, although a few odd souls lamented "
 "their loss of ‘knowledge’.\n"
-msgstr ""
+msgstr "Nerdeyse herkez normale döndü, fakat birkaç garip ruh kendi hafızalarını"
+"kaybedeklerini sanıyordu.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:21
 msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
+"Kurumi ve Elly yaptıklarının bedeli olarak Moriya Mabetinin patikalrını"
+"temizlemye gönderildi.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr ""
+msgstr "Tabiikide Moriya mabet tanrılarının izniyle…"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
@@ -1366,19 +1388,22 @@ msgstr "İnanamıyorum! Nükler füzyon bu kadar basitmi?"
 msgid ""
 "Y-Yes, it’s just a matter of changing that coefficient there, and shaping "
 "the magnetic containment field using—"
-msgstr ""
+msgstr "E-evet, sadece şurdaki katsayıyı ve manyetik barınağı —"
 
 #: src/cutscenes/reimu_good_end.inc.h:28
 msgid ""
 "Of course! I was such a fool! I can’t believe I ever bothered attempting to "
 "harness the Yatagarasu!"
 msgstr ""
+"Tabiiki! Çok aptaldım! Yatagarsunun koşumunu deneyi bile göze aldığıma inanamıyorum!"
 
 #: src/cutscenes/reimu_good_end.inc.h:29
 msgid ""
 "At last, I have the final key to modernizing Gensōkyō, and preventing the "
 "energy crisis from reaching us! Fusion power is now attainable!"
 msgstr ""
+"Son olarak, Gensōkyō'yu moderleştirip enerji krizinin ulaşması için olan anahtar "
+"bende. Füzyon gücü artık alınabilir"
 
 #: src/cutscenes/reimu_good_end.inc.h:33
 msgid "O-oh dear… are you sure you’re well, ma’am?"
@@ -1546,7 +1571,7 @@ msgstr "Diğer dünyadan olan o zamanı bitmiş makine."
 
 #: src/cutscenes/youmu_bad_end.inc.h:12
 msgid "At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"
-msgstr ""
+msgstr "Gensōkyō’nun gökyüzünde kendini yürürlüğe koyan o kulenin bacağında…"
 
 #: src/cutscenes/youmu_bad_end.inc.h:13
 msgid ""
@@ -1573,7 +1598,7 @@ msgstr "Evet. Bir an ordaydı ve bir sonraki an, orda yoktu."
 msgid ""
 "The vampire girl from before also disappeared, in addition to all of the "
 "loitering fairies."
-msgstr ""
+msgstr "Bütün perilerin yanı sıra Vampir Kızda ortadan kayboldu."
 
 #: src/cutscenes/youmu_bad_end.inc.h:21
 msgid ""
@@ -1584,19 +1609,23 @@ msgstr "Sanki ben hariç var olan herşey böyle oldu."
 msgid ""
 "Thus, I must assumed I have caused their demise in some way, despite my best "
 "intentions."
-msgstr ""
+msgstr "En iyi amaçlarıma rağmen onların ölümüne sebep oldum."
 
 #: src/cutscenes/youmu_bad_end.inc.h:26
 msgid ""
 "That woman, Elly… we knew each other for such a short time, yet her passion "
 "and fury affected me so deeply."
 msgstr ""
+"O kadın, Elly… biz ikimizi kısa bir süreliğine biliyorduk, "
+"ki onun tutkusu beni çok etkiledi."
 
 #: src/cutscenes/youmu_bad_end.inc.h:27
 msgid ""
 "Hmm… I don’t sense any lost souls here, and nobody liked that passed through "
 "the Netherworld."
 msgstr ""
+"Hmm… Burda kaybedilmiş hayalet bulamıyorum, ve kimse Cehennem Dünyası'ndan"
+"geçmesini hoş bulmadı."
 
 #: src/cutscenes/youmu_bad_end.inc.h:28
 msgid ""
@@ -1609,7 +1638,7 @@ msgstr "Onun tamamıyla öldüğüne dair şüphem var, ama bütün 'parallel ev
 msgid ""
 "The Tower had ceased functioning, returning the land and yōkai around it to "
 "some semblance of status quo.\n"
-msgstr ""
+msgstr "Kule çalışmayı bıraktı, yüzeyi ve çevresindek yokai'leri normalliğe döndürdü.\n"
 
 #: src/cutscenes/youmu_bad_end.inc.h:33
 msgid ""
@@ -1621,11 +1650,11 @@ msgstr "Fakat bunun sorumluları hiçbir yerde bulunamadı. Sanki hiç yoklarmı
 msgid ""
 "Yōmu's newfound fearlessness had been tempered as well, replaced with a "
 "sense of loss."
-msgstr ""
+msgstr "Yōmu'nun kaygısızlığıda ortadan kalkmıştı, yerine kaybetme duygusuna kapılmıştı."
 
 #: src/cutscenes/youmu_bad_end.inc.h:38
 msgid "Thank you for humouring your humble servant’s odd request, Lady Yuyuko."
-msgstr ""
+msgstr "İsteği tmamladığın için teşekkürler, Bayan Yuyuko."
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
@@ -1635,7 +1664,8 @@ msgstr "Oh, düşünmene gerek yok! Çok iyi yaptın!"
 msgid ""
 "But since we’re in the neighbourhood… do you think the kappa are running one "
 "of their famous festival grill stands?"
-msgstr ""
+msgstr "Ama şu an komşusu olduğumuz için… sence kappa onların bir ünlü "
+"festivalinin mangal standınımı çalıştırıyor?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
@@ -1660,7 +1690,7 @@ msgstr "Hepsine rağmen, Yōmu kendiyle eylenmekten güçlük çekiyordu.\n"
 msgid ""
 "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was "
 "still out there, waiting for their rematch…"
-msgstr ""
+msgstr "Bir yerde, bir şekilde, hala o tırpancı yeniden maç için oradaydı…"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:2
 msgid "Yōmu (Extra Stage Intro)"
@@ -1679,28 +1709,29 @@ msgid ""
 "The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel "
 "between the sakura trees of the ethereal realm.\n"
 msgstr ""
+"Namlu ustaları Konpaku Yōmu ve Elly, sakura ağaçlarının arasındaki düello'da eyleniryordu.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:13
 msgid ""
 "The swordswoman was showing the scythe-bearer one of her favourite past-"
 "times: the mid-air bisecting sakura petals.\n"
-msgstr ""
+msgstr "Kılıç kadını geçmişte en sevdiği tırpanı gösterdi.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:14
 msgid "Yōmu was quite proud of herself, and Elly equally as impressed."
-msgstr ""
+msgstr "Yōmu kendinden çok gurur duyuordu ve Elly'de aynı şekilde etkilendi. "
 
 #: src/cutscenes/youmu_extra_intro.inc.h:18
 msgid ""
 "During their merriment, there was an interruption, as Elly fished some small "
 "device out of her dress pocket.\n"
-msgstr ""
+msgstr "O sırada, bir oyanlma vardı, ki Elly kendi cebinden bir cihaz çıkardı.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:19
 msgid ""
 "It was a communication device of some sort that seemed to be vibrating "
 "vigorously, projecting an illusion into the air…\n"
-msgstr ""
+msgstr "Titreyen bir iletişim cihazıydı, havaya bir ilüzyon yansıtıyordu…\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:20
 msgid "Elly's expression suddenly ran cold."
@@ -1708,7 +1739,7 @@ msgstr "Elly’nin düşünceleri mehen soğudu"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:24
 msgid "Hm? Is something the matter, my dear?"
-msgstr "Hm? Ist etwas los meine Liebe?"
+msgstr "Hm? Bir şeymi oldu aşkım?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:25
 msgid "The Tower…! No, it can’t be! But I…!"
@@ -1734,7 +1765,7 @@ msgstr "Bu o… sana bahsettiğim kişi."
 msgid ""
 "The one who rescued me, but also manipulated me. The one I… ‘liberated’ the "
 "Tower from."
-msgstr ""
+msgstr "Beni kurtaran, ama aynı zamanda bana saldıran.O Kişiden ’kurtardığım' o kule."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:37
 msgid "Yōmu took a deep breath, sheathed her swords, and sighed.\n"
@@ -1764,7 +1795,7 @@ msgstr ""
 
 #: src/cutscenes/youmu_extra_intro.inc.h:45
 msgid "Yōmu took Elly's hands between her own, grinning confidently.\n"
-msgstr ""
+msgstr "Yōmu Elly'nin elimi tuttu ve sırıttı.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:46
 msgid "Elly! Let’s face her now, together!"
@@ -1798,6 +1829,8 @@ msgid ""
 "Yes, of course. There’s a time and place to face one’s fears. This is not "
 "your time or place, even somewhat literally."
 msgstr ""
+"Evet tabiiki. Belli bir yerde ve zamanda brinin korktuğu zaman olabilir."
+"Bu senin o zamanın yada yerin değil."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:56
 msgid ""
@@ -1853,6 +1886,8 @@ msgid ""
 "After the incident, Elly and Kurumi agreed to surrender, and disabled the "
 "Tower's ability to ‘enlighten’.\n"
 msgstr ""
+"Kazadan sonra Elly ve Kurumi pes etmeye karar verip kulenin aydınlanma"
+"özelliğini kapattılar.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:23
 msgid ""
@@ -1865,6 +1900,8 @@ msgid ""
 "But even as everyone else returned to their usual selves, it seemed that "
 "Konpaku Yōmu had retained nearly all of the newfound confidence…"
 msgstr ""
+"Ama herkez kendilerine dönmüş olsada, görünen o ki Konpaku Yōmu bütün "
+"güveni tuttu."
 
 #: src/cutscenes/youmu_good_end.inc.h:28
 msgid "This Gensōkyō is so different compared to the one I was used to."
@@ -1879,10 +1916,12 @@ msgid ""
 "Mostly, a lot smaller. Practically barren compared to this one. It felt more "
 "like a road-side food stand."
 msgstr ""
+"Çoğunlukla, daha küçük. Buraya karşılaştırınca pratik olarak bomboş."
+"Daha çok sokak yanı yemek standı gibi"
 
 #: src/cutscenes/youmu_good_end.inc.h:31
 msgid "Hmm, fascinating…"
-msgstr ""
+msgstr "Hmm, görkemli…"
 
 #: src/cutscenes/youmu_good_end.inc.h:35
 msgid ""
@@ -1891,7 +1930,7 @@ msgstr "Biliyorum çoktan söyledim, fakat yinede her şeye rağmen aptal gibi h
 
 #: src/cutscenes/youmu_good_end.inc.h:36
 msgid "I was miserable about my home, but to go that far…"
-msgstr ""
+msgstr "Evim hakkında sefildim, fakat o kadar uzağa gitmek için…"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
@@ -1916,13 +1955,15 @@ msgstr "Bunu anladığına göre, herkez gibi hoş geldin."
 msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
-msgstr ""
+msgstr "Yarın, Bayan Yuyuko'nun bir işi olmayacakmış, sana Cehennem Dünyası ve "
+"Gensōkyō'nun ne sunabileceğini gösteririm. "
 
 #: src/cutscenes/youmu_good_end.inc.h:45
 msgid ""
 "Perhaps we could even visit a popular ramen shop nearby. I’m feeling "
 "generous, so it shall be my treat!"
-msgstr ""
+msgstr "Belki bir çerçeve dükkanına bile gidebiliriz. Cömert hissediyorum, bu benden"
+"sana olsun."
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
@@ -1930,13 +1971,15 @@ msgstr "O-oh! T-tabii bu harika olur!"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
-msgstr "MMm, Ben mabete dönmeyi tercih ederim"
+msgstr "MMm, Ben mabete dönmeyi tercih ederim."
 
 #: src/cutscenes/youmu_good_end.inc.h:51
 msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
+"Umarım yeşil saçlı olan a mabet mikosu benim kulağıma zamanı geçmiş eğlence "
+"teknolojisi hakkında konuşmaz"
 
 #: src/cutscenes/youmu_good_end.inc.h:52
 msgid ""
@@ -1962,6 +2005,8 @@ msgid ""
 "As they spent many evenings dueling, practicing, and drinking merrily, many "
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
+"Kendileri pratikle, düelloyla, ve içerek birçok gece geçirdiler, ve birçok kişi"
+"Yōmu'nun bu kadar etkileyici olmadığını yorumladı."
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
@@ -1975,6 +2020,8 @@ msgid ""
 "And with its lingering, menacing visage blighting the skyline, many wondered "
 "if the Tower was truly inert and harmless.\n"
 msgstr ""
+"Kulenin belirtileri gökyüzünde şimşeklenirken, birçok kişi kulenin gerçekten "
+"devre dışı ve zarasız olduğuyla şüphe duyuyorlardı.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:64
 msgid ""
@@ -1999,7 +2046,7 @@ msgstr "Kagiyama Hina"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:103
 msgid "Gyroscopic Pestilence God"
-msgstr "Gyroskopik Pestilent Tanrı"
+msgstr "Giroskopik Pestilent Tanrı"
 
 #: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
 msgid "Wriggle Nightbug"
@@ -4488,7 +4535,7 @@ msgstr "aslında özel bir silah, anlamalısın. Önyargından dolayı özür di
 #: src/dialog/youmu.c:513
 msgid ""
 "I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō."
-msgstr "Anlınyorum. Bu tırpanı gerçel Gensōkyō girişi korumak için kullanıyordum!"
+msgstr "Anlınyorum. Bu tırpanı gerçek Gensōkyō girişini korumak için kullanıyordum!"
 
 #: src/dialog/youmu.c:515
 msgid "Now, it will be the sigil of a new era!"
@@ -4828,7 +4875,7 @@ msgstr "İnsan"
 
 #: src/menu/charprofile.c:64
 msgid "Literature (Fiction)"
-msgstr ""
+msgstr "Fantastik"
 
 #: src/menu/charprofile.c:65
 msgid ""
@@ -5128,7 +5175,7 @@ msgstr "Başka mimiklier için [Ateş]'e bas"
 
 #: src/menu/charselect.c:166
 msgid "Intuition"
-msgstr "Intuition"
+msgstr "Inukisyon"
 
 #: src/menu/charselect.c:167
 msgid "Science"
@@ -5692,7 +5739,7 @@ msgstr "Ayarlamak için bir düğmeye basın, geri ile vazgeçın"
 
 #: src/menu/options.c:1499
 msgid "Unbound"
-msgstr ""
+msgstr "Bağımsız"
 
 #: src/menu/replayview.c:87
 msgid "Failed to load replay events"
@@ -5783,7 +5830,7 @@ msgstr "Illüsyon Lazeri"
 msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
-msgstr "Büyülü mermiler ve lazerler — basit ve noktasına. Asla seni yarı yolda bırakmadı."
+msgstr "Büyülü mermiler ve lazerler — basit ve noktasına. Asla seni yarı yolda bırakmadı. "
 "O zaman şimdi nasıl yarı yolda bıraksınlar?"
 
 #: src/plrmodes/marisa_a.c:761
@@ -5792,17 +5839,19 @@ msgstr "Sade Aşk “Galaktik Güç”"
 
 #: src/plrmodes/marisa_b.c:554
 msgid "Stellar Vortex"
-msgstr ""
+msgstr "Yıldızlar arası enerji girdabı"
 
 #: src/plrmodes/marisa_b.c:555
 msgid ""
 "As many bullets as there are stars in the sky. Some of them are bound to "
 "hit. That's called “homing”, right?"
 msgstr ""
+"Birçok mermi gibi gökyüzünde birçok yıldız var. Bazılarının vurulması gerekiyor. "
+"Buna “homing” deniyor, değilmi?"
 
 #: src/plrmodes/marisa_b.c:556
 msgid "Magic Sign “Stellar Vortex”"
-msgstr ""
+msgstr "Büyü işareti “Yıldızlar arası enerji girdabı"
 
 #: src/plrmodes/reimu_a.c:897
 msgid "Yōkai Buster"
@@ -5812,12 +5861,11 @@ msgstr "Yōkai Buster"
 msgid ""
 "The tried-and-true: homing amulets and sharp needles. You don’t have the "
 "luxury of time to think about aiming."
-msgstr ""
-
+msgstr "Denedi-ve-başardı: Tılsımlar ve sivri iğneler. Hedef almana bile gerek yok."
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr ""
+msgstr "Misafir işareti “Fantastik Halat —Burst—”"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -5827,21 +5875,23 @@ msgstr "Büyü şekillendirici"
 msgid ""
 "Turn your understanding of reality upside-down, and tie the boundaries of "
 "spacetime into knots as easily as the ribbons in your hair."
-msgstr ""
+msgstr "Gerçeği nasıl anladığını ters çevir ve uzay zamanını saçındaki kurdeleler"
+"kadar kolay bir şekilde kısa zamana eşitle."
 
 #: src/plrmodes/reimu_b.c:715
 msgid "Dream Sign “Ethereal Boundary Rupture”"
-msgstr "Büyü işareti “Ethereal Boundary Rupture”"
+msgstr "Rüya işareti “Ethereal Boundary Rupture”"
 
 #: src/plrmodes/youmu_a.c:708
 msgid "Soul Reflection"
-msgstr "Ruh refleksiyonu"
+msgstr "Ruh refleksi"
 
 #: src/plrmodes/youmu_a.c:709
 msgid ""
 "Human and phantom act together towards a singular purpose. Your inner "
 "duality shall lend you a hand… or a tail."
-msgstr "İnsan ve fantomlar beraber tek bir iş işın çalışıyorlar. Senin içindeki çiftlik"
+msgstr ""
+"İnsan ve fantomlar beraber tek bir iş işın çalışıyorlar. Senin içindeki çiftlik"
 "seni bir el yada kuyruk verecek."
 
 #: src/plrmodes/youmu_a.c:710
@@ -5850,7 +5900,7 @@ msgstr "Büyü işareti “Reality-Piercing Apparition”"
 
 #: src/plrmodes/youmu_b.c:624
 msgid "Haunting Revelation"
-msgstr ""
+msgstr "Sayılamaz Dadanma"
 
 #: src/plrmodes/youmu_b.c:625
 msgid ""
@@ -5978,7 +6028,7 @@ msgstr "Sinsi dağ yücelişi"
 
 #: src/stageinfo.c:122
 msgid "Forgotten Mansion"
-msgstr "Untulmuş malikane"
+msgstr "Untulmuş Malikane"
 
 #: src/stageinfo.c:123
 msgid "Climbing the Tower of Babel"
@@ -6044,11 +6094,11 @@ msgstr "Kar işareti “Kristal yağmur”"
 
 #: src/stages/stage1/stage1.c:43
 msgid "Winter Sign “Snow Halation”"
-msgstr ""
+msgstr "Kış işareti “Kar Aylası”"
 
 #: src/stages/stage1/stage1.c:48
 msgid "Doom Sign “Icicle Cascade”"
-msgstr ""
+msgstr "Doom işareti “Buz Şelalesi”"
 
 #: src/stages/stage1/stage1.c:55
 msgid "Frost Sign “Crystal Blizzard”"
@@ -6060,7 +6110,7 @@ msgstr "Parça “Aumlet zararı”"
 
 #: src/stages/stage2/stage2.c:30
 msgid "Lottery Sign “Bad Pick”"
-msgstr "Loto işareti “Kötüçim”"
+msgstr "Loto işareti “Kötü seçim”"
 
 #: src/stages/stage2/stage2.c:35
 msgid "Lottery Sign “Wheel of Fortune”"
@@ -6256,7 +6306,14 @@ msgid ""
 "Ultimately, I can’t decide if I did the original justice with this one or "
 "not, but I know it holds a special place in my heart."
 msgstr ""
-
+""
+""
+""
+""
+""
+""
+""
+""
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
@@ -6271,10 +6328,15 @@ msgid ""
 "One that’s a lot gentler than a thunderstorm… perhaps a bit more like a "
 "rainbow."
 msgstr ""
+""
+""
+""
+""
+""
 
 #: po/extra_strings.c:10
 msgid "Dream Cycle"
-msgstr ""
+msgstr "Rüya Döngüsü"
 
 #: po/extra_strings.c:13
 msgid ""
@@ -6284,7 +6346,7 @@ msgid ""
 "\n"
 "Knowledge is the forbidden fruit; from it stem the powers of light and "
 "darkness. But it’s about time the protagonists have had a snack."
-msgstr ""
+msgstr "Rüya Döngüsü"
 
 #: po/extra_strings.c:14
 msgid "Delta Conclusion"
@@ -6305,6 +6367,13 @@ msgid ""
 "any other PS theme.\n"
 "What else were you expecting?"
 msgstr ""
+"Gahhhh neden senin şarkını *ben* adlandırayım, Akari?!\n"
+"Her yaptığım şarkı şarkıyı alan tarafından isimlendirildi\n"
+"Bana çok baskı uyguluyorsuuuuuun."
+"\n"
+"*Eheh* Yani evet, bir oyuncunun skor temasıydı.\n"
+"Birazcık Konako'nun temasından alıyor, aynı PS temaları gibi."
+"Başka ne olmasını bekliyordun?"
 
 #: po/extra_strings.c:18
 msgid "Unsettling Knowledge"
@@ -6312,7 +6381,7 @@ msgstr "Kararlaşmayan Bilgi"
 
 #: po/extra_strings.c:19
 msgid "jneen-collective"
-msgstr ""
+msgstr "jneen-toplmumu"
 
 #: po/extra_strings.c:21
 msgid ""
@@ -6321,6 +6390,10 @@ msgid ""
 "Crackles and flashes of otherworldly knowlege. Maybe a bit sinister, unclear "
 "whether to be trusted."
 msgstr ""
+"Giriş kesme sahne teması.\n"
+"\n"
+"Diğerdünyasal bilgiden flşlar ve çatlaklar. Belki biraz uğursuz,"
+"inanılması gerektiği şüpheli."
 
 #: po/extra_strings.c:22
 msgid "Delta Concision"
@@ -6332,6 +6405,9 @@ msgid ""
 "\n"
 "Many paths branch from one. Echoes from across the sea yield a new adventure."
 msgstr ""
+"Batıya bir önanlatım.\n"
+"\n"
+"Bir patika birçok yöne ayrılıyor. Denizden gelen ekolar yeni bir macera başlatıyor."
 
 #: po/extra_strings.c:26
 msgid "Logic Bombardier"
@@ -6350,10 +6426,17 @@ msgid ""
 "Supposing she were to appear as a boss, I think it might sound different "
 "given a different role in the incident."
 msgstr ""
+"En sevilen karakter için gizli bir tema…\n"
+"Ben ışık tünelinde duyulduğu gibi Scuttle’ın motifi konusuyla ilgili oynamak"
+"istiyordum.\n"
+"\n"
+"Sonuçlar ilginçti! Onun teması hayatı gibi deneyseldi.\n"
+"\n"
+"O bir patron gibi giyinmeye çalıştığına göre bu kazada farklı bir rolü olabilir."
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
-msgstr ""
+msgstr "Sis Görülmeyeni Davet Ediyor"
 
 #: po/extra_strings.c:33
 msgid ""
@@ -6362,10 +6445,14 @@ msgid ""
 "A relaxing mist illustrated with subdued instruments. Familiar shadows stir "
 "trouble just out of view. Ripples of times past dance across Misty Lake."
 msgstr ""
+"İlk aşamanın temas.\n"
+"\n"
+"Sessiz entrümanlar ile dinlenen bir sis. Tanıdık gölgeleri sadece görmekten "
+"tuzak olduğu anlöaşılıyor. Dalgaları göldeki geçen dansları bile etkiliyor."
 
 #: po/extra_strings.c:34
 msgid "An Impish Reflection on the Water"
-msgstr ""
+msgstr "Suda refleksi"
 
 #: po/extra_strings.c:37
 msgid ""
@@ -6376,11 +6463,14 @@ msgid ""
 "\n"
 "However, she’s really just a minor annoyance, cold and brittle. The "
 "protagonists brush off her pranks and move on."
-msgstr ""
+msgstr "Cinro'nun teması.\n"
+"\n"
+"Kendisi şu an cesur devranıyor biraz güçlü davranıyor. Ama kendisi küçük bir "
+"rahatsızlık, soğuk ve ürkek. Protagonistleri kendi tuzaklarıyla silip devam et."
 
 #: po/extra_strings.c:38
 msgid "Treasure the Wager, Treasure the Odds"
-msgstr ""
+msgstr "Hazine Wager, Gariplerin Hazinesi"
 
 #: po/extra_strings.c:41
 msgid ""
@@ -6390,6 +6480,11 @@ msgid ""
 "deceptively fast-paced theme, to be sure. One excitable example makes a "
 "brief appearance. The rhythm of this theme is meant to make you feel lucky."
 msgstr ""
+"İkinci aşamanın teması.\n"
+"\n"
+"Bu kadar sakin bir patika için çok fazla düşman var — bu çok hızlı bir tema, emin ol. "
+"Görülebilir bir örnek büyük bir fark yaar. Bu temanın ritmi seni şanslı yapmaya dayalık."
+
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
@@ -6404,10 +6499,16 @@ msgid ""
 "It’s a little merciful sometimes, but you still have to do your best, no "
 "matter what. Gambling might be a poor stress-reliever…"
 msgstr ""
+"Hina Kagiyama’nın teması.\n"
+"\n"
+"Bu sefer her şey sansa bağlı.\n"
+"\n"
+"Kendisi bazen biraz sevecendir ama ona karşı ne olsa bile en iyi saldırını yapmalısın. "
+"Kumar iyi bir stress geçirici değildir."
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
-msgstr ""
+msgstr "Fizeau'nun buluşu ~ Işık Vektörü"
 
 #: po/extra_strings.c:49
 msgid ""
@@ -6418,10 +6519,15 @@ msgid ""
 "eyes. A fluttering little bug feels most at home in the dead of night, and "
 "most alive in a sea of light."
 msgstr ""
+"Üçüncü aşamanın teması.\n"
+"\n"
+"Normalde karanlıkta görmek zordur. Seni içine çeker ve bunaltır, aynı "
+"Ama bu sefer gözlerini korumak için en iyisi olabilir. Küçük, kanat çırpan bir böcek"
+""
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
-msgstr "Yıldırım böceği ~ Şimşekli Kalp"
+msgstr "yYıldırım böceği ~ Şimşekli Kalp"
 
 #: po/extra_strings.c:53
 msgid ""
@@ -6433,10 +6539,16 @@ msgid ""
 "\n"
 "Sounds a little “beach”-like in the introduction…"
 msgstr ""
+"Wriggle Nightbug'ın teması.\n"
+"\n"
+"Çok umutlu bir böcek. Kendisi dünyanın en tepesinden! — Hayır, başkası öyle, "
+"kendisi bir tünelin ortasında. Nasıl olursa olsun, o biliyorki her şeyi yapabilir "
+"\n"
+"Biraz “sahil” anlatımı gibi geldi…"
 
 #: po/extra_strings.c:54
 msgid "Evidence of Ki Domestication"
-msgstr ""
+msgstr "Ki uygarlaştırmasının kanıtı"
 
 #: po/extra_strings.c:57
 msgid ""
@@ -6449,10 +6561,17 @@ msgid ""
 "\n"
 "Smells like rust."
 msgstr ""
+"Dördüncü aşamanın teması.\n"
+"Sanki bri şey sallanıp duruyor.\n"
+"\n"
+"Bu tema müziyenden ilham alıyor, denizin diğer taraftındadan"
+"Çinlileri kendi müziği etkiliyor\n"
+"\n"
+"Pas gibi kokuyor."
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
-msgstr ""
+msgstr "Hece yanı Kırmızı ~ Kırmızı Kelime"
 
 #: po/extra_strings.c:61
 msgid ""
@@ -6462,6 +6581,11 @@ msgid ""
 "more comfortable than a Lake of Blood, but this confrontation is anything "
 "but. A mix of fears make the walls feel like they’re closing in."
 msgstr ""
+"Kurumi’nin teması.\n"
+"\n"
+"Eski yüzler ve yeni düşünceler. Kendisi yeni bir mekan aldı, "
+"kan gölünden birazcık daha rahat, Fakat bu karşılaşma herşeyden başka"
+"Korkuların birleşimi sanki duvarlar kapanacakmış gibi hisstettiriyor."
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
@@ -6480,15 +6604,18 @@ msgid ""
 "Those who climb risk a long fall, so look to the top and don’t make a single "
 "dishonest step."
 msgstr ""
-""
-""
-""
-""
-""
+"Beşinci aşamanın teması.\n"
+"\n"
+"Ve geri dönelim… o şarkı nasıl gitti? “Heyecanlanmak için bir sebep yok…”\n"
+"\n"
+"Fakat gerçekten batı ve doğunun etkilei birleşimi var. Eğer bir mekanik gibi olaydı "
+"bu tema şu anki gelip giden elektrik gibi olurdu.\n"
+"\n"
+"Çıkanların yüksek düşüş riski var, bu nedenle emin olmayan bir adım bile atma."
 
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
-msgstr ""
+msgstr "Üç yüz Coulomb'a değer bir tapıcı"
 
 #: po/extra_strings.c:69
 msgid ""
@@ -6500,11 +6627,11 @@ msgid ""
 "\n"
 "Iku provides the first tribulation."
 msgstr ""
-""
-""
-""
-""
-""
+"Iku Nagae'nin teması.\n"
+"Bu şarkı n düsükten çaldı. Belkide bu protagonistlerin yapması gereken şeye uyumludur. "
+"Hayal etki yıldırımlı fırtına olduğu sırada bir kuleye yorulmadan çıkmaya çalışıyorsun."
+"\n"
+"Iku ilk tribulasyon'unu sunuyor."
 
 #: po/extra_strings.c:70
 msgid "Summit of Revelations"
@@ -6519,20 +6646,16 @@ msgid ""
 "A grand architectural marvel may take thousands of years to complete… this "
 "song was no different! But the end result feels like a great discovery."
 msgstr ""
-""
-""
-""
-""
-""
+"Altıncı aşamanın teması.\n"
+"\n"
+"Kulenin yukarısında dünyayı görebilirsin, ve ne riskinde?\n"
+"\n"
+"Bir yapısal yenilmezi aşmak asırlar alabilir… bu şarkı ondan değişik değil! Ama "
+"sonuç büyük bir keşif gibi hissettiriyor."
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
-msgstr ""
-""
-""
-""
-""
-""
+msgstr "Komolojik Kapışma ~ Vakum felaketi"
 
 #: po/extra_strings.c:77
 msgid ""
@@ -6545,10 +6668,12 @@ msgid ""
 "She may have been a lowly gate guard the last time you saw her, but the "
 "apple’s fallen on her head. She’s a guard of a different kind of gate now."
 msgstr ""
-""
-""
-""
-""
+"Elly'nin ilk konusu."
+"Eski bir arkadaş. Her zaman tamamıya geçersiz bir karakter unutulmuş zamanlardan"
+"uzun süre bilinmemezlikten yükseklere çıkıyo olduğu gibi bir düşünceye kapılıyorum.\n"
+"\n"
+"En son onu gördüğünde giriş koruyucusu olabilirdi, fakat kafasına o elma düştü"
+"şimdi ayrı bir kapının koruyucusu gibi."
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
@@ -6566,13 +6691,10 @@ msgid ""
 msgstr ""
 "Elly'nin ikinci konusu.\n"
 "\n"
-""
-""
-""
-"…\n"
+"Böyle güçlerdenden korkutan şey dünyanın kendi düşüncelerinde olaması. "
+"Fakat baz ı akıllı insanlar kendi dünyaları ve gerçeklik ile bir köprü kurabildiler…\n"
 "\n"
-"Elly şu an yeni bir kişi, yani böyle birisi"
-"doğruyu söylemeyecektir."
+"Elly şu an yeni bir kişi, yani böyle birisi doğruyu söylemeyecektir."
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
@@ -6591,9 +6713,7 @@ msgid ""
 msgstr ""
 "Elly'nin son büyüsü.\n"
 "\n"
-"En zorlu ve önemli görevler herşeyi çözmelidir."
-"Birçok insan bilimin vücüt bilgisi gibi görür"
-""
-""
-""
-""
+"En zorlu ve önemli görevler herşeyi çözmelidir. "
+"Birçok insan bilimin bütün bilgilerin bulunduğu bir vücüt bilgisi gibi görür "
+"fakat gerçek o ki bilim aslında kara perdeleri olan bitmeyen bir seridir "
+"ve her zaman eskisinden daha harika ve düşünülemez bir buluş mümkündür."
