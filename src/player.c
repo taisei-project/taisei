@@ -1407,19 +1407,20 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 	play_sfx("graze");
 
 	Color *c = COLOR_COPY(color);
-	color_add(c, RGBA(1, 1, 1, 1));
-	color_mul_scalar(c, 0.5);
+	color_add(c, RGBA(0.1, 0.1, 0.1, 0));
 	c->a = 0;
 
 	for(int i = 0; i < effect_intensity; ++i) {
+		cmplx dir = cnormalize(pos - (plr->pos + rng_dir() * 5)) * I;
 		RNG_ARRAY(R, 4);
 		PARTICLE(
 			.sprite = "graze",
 			.color = c,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade_exp(1, 0, 1, 0, 2),
-			.move = move_asymptotic_simple(0.2 * vrng_range(R[0], 1, 6) * vrng_dir(R[1]), 16 * (1 + 0.5 * vrng_sreal(R[3]))),
-			.timeout = vrng_range(R[2], 4, 29),
+			.move = move_asymptotic_simple(
+				0.2 * vrng_range(R[0], 2, 3) * dir * vrng_sign(R[1]), 12 * (1 + 0.75 * vrng_sreal(R[3]))),
+			.timeout = vrng_range(R[2], 40, 58),
 			.flags = PFLAG_NOREFLECT,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
