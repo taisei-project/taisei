@@ -144,7 +144,7 @@ msgid ""
 "\n"
 "Reimu and Yōmu shared a knowing glance.\n"
 msgstr ""
-"\nReimu und Yōmu birbine baktılar.\n"
+"\nReimu ve Yōmu birbine baktılar.\n"
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
