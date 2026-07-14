@@ -38,7 +38,7 @@ msgstr "Hayatta Kalma Bonusu"
 
 #: src/boss.c:985
 msgid "Endurance bonus"
-msgstr "Süre Bonusu"
+msgstr "Dayanıklıklık Bonusu"
 
 #: src/boss.c:987
 msgid "Diff. multiplier"
@@ -58,7 +58,7 @@ msgstr "Hayatta Kalma"
 
 #: src/boss.c:1002
 msgid "Extra"
-msgstr "Daha"
+msgstr "Fazladan"
 
 #: src/boss.c:1003
 msgid "Move"
@@ -78,8 +78,8 @@ msgid ""
 "Taisei Project\n"
 "brought to you by…"
 msgstr ""
-"Taisei Projesi\n"
-"onlar tarafından sunuldu…"
+"Taisei Projesini\n"
+"sizlere sunarız…"
 
 #: src/credits.c:161
 msgid "Special Thanks"
@@ -94,7 +94,7 @@ msgid ""
 "And join our Discord server\n"
 "%s"
 msgstr ""
-"Bizi ziyaret et\n"
+"Bizi ziyaret edin\n"
 "%s\n"
 "\n"
 "Ve Discord sunucumuza katıl\n"
@@ -106,7 +106,7 @@ msgid ""
 "And don't forget to take it easy!"
 msgstr ""
 "*\n"
-"Ve untumaki işi kolaya al!"
+"Ve bunu kolay göremyi unutma!"
 
 #: src/cutscenes/cutscene.c:313
 #, c-format
@@ -119,17 +119,17 @@ msgstr "Önanlatım"
 
 #: src/cutscenes/intro.inc.h:7 src/cutscenes/reimu_bad_end.inc.h:7
 msgid "— The Hakurei Shrine\n"
-msgstr "— Hakurei Mabeti\n"
+msgstr "— Hakurei Tapınağı\n"
 
 #: src/cutscenes/intro.inc.h:8 src/cutscenes/reimu_bad_end.inc.h:8
 msgid "The shrine at the border of fantasy and reality.\n"
-msgstr "Fantastik ve gerçeklik arasındaki o mabet.\n"
+msgstr "Fantastik ve gerçeklik arasındaki o tapınak.\n"
 
 #: src/cutscenes/intro.inc.h:9
 msgid ""
 "Three heroines of Gensōkyō sat drinking tea on a calm day at the end of "
 "summer.\n"
-msgstr "Üç Gensōkyō kahramanı yazın sonunda bir huzurlu günde oturup çay içer.\n"
+msgstr "Gensōkyō'nun üç kahramanı yazın sonunda bir huzurlu günde oturup çay içiyordu.\n"
 
 #: src/cutscenes/intro.inc.h:10
 msgid "There was something unsettling in the air—"
@@ -143,8 +143,7 @@ msgstr "Ne sorununuz var? Çayı kötümü yapmışım?"
 msgid ""
 "\n"
 "Reimu and Yōmu shared a knowing glance.\n"
-msgstr ""
-"\nReimu ve Yōmu birbine baktılar.\n"
+msgstr "\nReimu ve Yōmu birbirlerine baktılar.\n"
 
 #: src/cutscenes/intro.inc.h:16
 msgid "The tea’s fine. I just feel weird. I can’t put my finger on it."
@@ -152,15 +151,15 @@ msgstr "Çay iyi. Sadece garip hissediyorum. Neden, bilmiyorum."
 
 #: src/cutscenes/intro.inc.h:17
 msgid "I’m feeling something similar, I’m afraid."
-msgstr "Anyısını hissediyorum, korkuyorum."
+msgstr "Aynısını hissediyorum, maalesef."
 
 #: src/cutscenes/intro.inc.h:21
 msgid "The bells of the shrine tolled outside. Someone had made a donation.\n"
-msgstr "Mabetin çanları çalıyordu. Birisi bağış verdi..\n"
+msgstr "Tapınağın çanları çaldı. Birisi bağış verdi.\n"
 
 #: src/cutscenes/intro.inc.h:22
 msgid "A minute later, there was another.\n"
-msgstr "Bir dakika sonra, birdaha oldu.\n"
+msgstr "Bir dakika sonra, bir daha oldu.\n"
 
 #: src/cutscenes/intro.inc.h:23
 msgid "And another."
@@ -168,45 +167,45 @@ msgstr "Ve bir tane daha."
 
 #: src/cutscenes/intro.inc.h:27
 msgid "Something’s definitely not right…"
-msgstr "Bir şeyler doğru değil…"
+msgstr "Bu işte bir teslik var…"
 
 #: src/cutscenes/intro.inc.h:28
 msgid "Isn’t it normally comforting for the shrine to receive donations?"
-msgstr "Normalde, mabet bağış aldığında sakin olmazmı??"
+msgstr "Normalde, tapınağın bağış alması onu sakinleştirmezmiydi?"
 
 #: src/cutscenes/intro.inc.h:29
 msgid "Normally it *would* be comforting, but…"
-msgstr "Normalde *bu* huzurlaştırıdı, ama…"
+msgstr "Elbette *bu* içimi rahatlatırdı, ama…"
 
 #: src/cutscenes/intro.inc.h:33
 msgid ""
 "Outside the shrine, nearly every resident of Yōkai Mountain was lined up one "
 "after another.\n"
-msgstr ""
-"Mabetin dışında, her kişi Yōkai Dağına birbir sıraya geçiyordu.\n"
+msgstr "Tapınağın dışında, her sakini Yōkai Dağına art arda sıraya dizilmişti.\n"
 
 #: src/cutscenes/intro.inc.h:34
 msgid "Everyone seemed vaguely fearful."
-msgstr "Herkes korkulu görünüyordu."
+msgstr "Herkes endişeliydi."
 
 #: src/cutscenes/intro.inc.h:38
 msgid "Eh? What’s all this, then?"
-msgstr "Burada ne oluyor?"
+msgstr "Ne oluyor burada böyle?"
 
 #: src/cutscenes/intro.inc.h:39
 msgid "We’ve come to ask a favour."
-msgstr "Bir şey sormaya geldik."
+msgstr "Bir şey rica etmeye geldik."
 
 #: src/cutscenes/intro.inc.h:40
 msgid "What kinda favour?"
-msgstr "Ne gibi olaylar?"
+msgstr "Nasıl bir rica?"
 
 #: src/cutscenes/intro.inc.h:44
 msgid ""
 "A mysterious force was slowly causing yōkai and humans alike to succumb to "
 "an intense feeling of “knowing everything.”\n"
 msgstr ""
-"Gizlemli bir güç yavaşça yōkai ve insanların herşeyi bilme gibi garip bir his veriyor\n"
+"Esrarengiz bir güç, yokailerin, insan ve benzerinin keskin bir "
+"“herşeyi bilme” hiisine yavaş yavaş kapılmasına sebep oluyor.\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -214,100 +213,102 @@ msgid ""
 "struggling with - a technical issue with a machine, or coming up with the "
 "perfect newspaper headline.\n"
 msgstr ""
-"Bu ilk kendi teknik sorunlarını çözmekle başlar - makinede teknik bir sorun çözmek"
-"yeva mükemmel gazete yapmak gibi.\n"
+"Bu ilk olarak kendi gündelik sorunlarını çözmekle başlıyor - bir makinenin"
+"teknik sorunu çözmek veya mükemmel gazete manşetini atmak gibi.\n"
 
 #: src/cutscenes/intro.inc.h:46
 msgid ""
 "But as it progressed, they’d become completely enthralled by it, unable to "
 "act rationally."
-msgstr ""
-"Ama ilerlediği gibi kendileri kontrolden çıkmış olup normal davrnamazlar."
+msgstr "Ama zaman geçtikçe, zıvandan çıkıp normalden ziyade aklı başında davranamazlar."
 
 #: src/cutscenes/intro.inc.h:47
 msgid ""
 "Yōkai Mountain was usually protected by the Moriya shrine maiden, but even "
 "she had been carried away into madness."
 msgstr ""
-"Yōkai Dağı genelde Moriya mabeti tarafından korunuyordu ama o bile bu çılgınlığa kaldı."
+"Yōkai Dağı genelde Moriya tapınak görevlisi tarafından korunurdu ama o bile bu deliliğe kaldı."
 
 #: src/cutscenes/intro.inc.h:51
 msgid "Sanae just keeps talking about ‘video game consoles.’"
-msgstr "Sanae sadece ‘oyun konsolları’ ile ilgili konuşuyordu."
+msgstr "Sanae sadece ‘oyun konsolları’ hakkında konuşuyordu."
 
 #: src/cutscenes/intro.inc.h:52
 msgid "Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?"
-msgstr "??? Yani TV'lere takılan oyuncaklar gibi, Kōrindō'da bulunanlardanmı?"
+msgstr "Ee? Yani TV'lere takılan oyuncaklar gibi, Kōrindō'da bulunanlardan mı?"
 
 #: src/cutscenes/intro.inc.h:53
 msgid ""
 "Right, but she just won’t stop. I’ve seen her excited, but not like this."
-msgstr "Evet ama durmuyor.. Kendisinin heyecanlandığını gördüm, ama bu kadar değil."
+msgstr "Evet ama durmuyor. Kendisinin heyecanlandığını gördüm, ama bu kadar değil."
 
 #: src/cutscenes/intro.inc.h:57
 msgid "Hmm. Quite fascinating."
-msgstr "Hmm. Çok görkemli."
+msgstr "Hmm. Pek görkemli."
 
 #: src/cutscenes/intro.inc.h:58
 msgid "Where the heck did *you* come from?!"
-msgstr "Nerden geliyorsun?!"
+msgstr "*Sen* nerden geldin böyle?!"
 
 #: src/cutscenes/intro.inc.h:59
 msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
 msgstr ""
-"Senin konuşmanı duymamana yardım edemem. Benim iyi düşünceme göre ve senin"
-"açıkladığına göre cevap çok açık"
+"Kulak misafiri olmaktan kendimi alı koyamadım. Sezgiler ve anlattıkłarınıza "
+"cevap çok açık."
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
-msgstr "Öylemi? Bizimle paylaşmaya ne dersin?"
+msgstr "Öyle mi? Bizimle paylaşmaya ne dersin?"
 
 #: src/cutscenes/intro.inc.h:64
 msgid ""
 "Some entity on Yōkai Mountain is emitting a powerful eldritch lunacy, likely "
 "in all directions from a singular point, given how indiscriminate it is."
-msgstr "Yōkai Dağında bir şey her tarafa bir noktadan güç yayıyor."
+msgstr ""
+"Yōkai dağında gelişgüzelliğe bacakcak olursak bir varlık tek bir noktadan, her "
+"yere, hem kuvvetli hem de gizemli bir delilik saçıyor."
 
 #: src/cutscenes/intro.inc.h:65
 msgid ""
 "Too much knowledge all at once… mm, mm, it can potentially be fatal, at "
 "least for those with weaker minds."
 msgstr ""
-"tek bir seferde çok fazla bilgi… mm, mm, muhtemel bir hata olabilir, en azından"
-"aklı düşük olan kişiler için."
+"Tek bir seferde çok fazla bilgi… mm, mm, ölümcül bir hata olabilir, en azından"
+"aklı zayıf olanlar için."
 
 #: src/cutscenes/intro.inc.h:66
 msgid "Heh, wanna handle it then, Sumi?"
-msgstr "??? Kendinmi başa çıkmak istiyon, Sumi?"
+msgstr "Eee, kendin mi başa çıkmak istiyon, Sumi?"
 
 #: src/cutscenes/intro.inc.h:67
 msgid ""
 "A-ah, n-no, you all know the lay of the land better, a-after all, and with "
 "it being such a dire situation—"
-msgstr "A-ah h-hayır siz yerin nasıl olduğunu daha iyi biliyorsunuz, ve böyle bir durumda-"
+msgstr ""
+"A-ah h-hayır siz yerin nasıl olduğunu, özellikle böyle vahim bir durumda daha iyi "
+"bilirsiniz—"
 
 #: src/cutscenes/intro.inc.h:71
 msgid ""
 "Yōmu became distracted at the sight of Lady Yuyuko peeking out from behind "
 "the Moriya Gods.\n"
-msgstr ""
-"Yōmu bayan Yuyuko'nun bakışı tarafından dıkkatini dağıldı\n"
+msgstr "Yōmu'nun dikkati Moriya tanrılarının ardında beliren hanım Yuyuko dağıttdı.\n"
 
 #: src/cutscenes/intro.inc.h:72
 msgid "Lady Yuyuko, why are you—?"
-msgstr "Bayan Yuyuko, neden sen—?"
+msgstr "Hanım Yuyuko, neden sen—?"
 
 #: src/cutscenes/intro.inc.h:73
 msgid ""
 "The spirits seem drawn to Yōkai Mountain as well, as if they long for "
 "something. It’s growing difficult to placate them all…"
-msgstr "Spritlerde Yōkai Dağına bağlanmış durumda."
+msgstr "Ruhlarda Yōkai dağına bağlanmış durumda."
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr "Anladım. Şimdi bendemi geleyim?"
+msgstr "Anladım. Şimdi bende mi geleyim?"
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
@@ -318,21 +319,23 @@ msgid ""
 "Elsewhere at the shrine, the kappa were all huddled into a group, talking "
 "intensely in hushed tones…\n"
 msgstr ""
-"Mabetde başka bir yerde herkez grup olarak toplanıp, özellikle tonlar ile ilgili"
-"konuşuyorlardı…\n"
+"Tapınakta başka bir yerde bütün Kappa grup olarak toplanıp, özellikle alçak "
+"sesler ile ilgili konuşuyorlardı…\n"
 
 #: src/cutscenes/intro.inc.h:80
 msgid ""
 "And the tengu were furiously scribbling on their notepads, as if they’d just "
 "gotten the scoop of their careers.\n"
 msgstr ""
-"Tengu'da sürekli not defterleri bakıyorlardı, kendileri kariyerlerine hedefliymiş gibi.\n"
+"Ve Tengu, sanki kariyerleri magazinsel habere çıkmış gibi not defterlerini karalıyorlardı.\n"
 
 #: src/cutscenes/intro.inc.h:81
 msgid ""
 "Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch "
 "lunacy’ seemed to be reaching everyone…"
-msgstr "Burdan bile, Yōkai dağından uzaklarda bile bu etki herkese ulaşıyordu…"
+msgstr ""
+"Görünen o ki bahsi geçen gizemli delilik, burada, Yōkai dağının uzaklarında bile, "
+"herkese ulaşıyordu. "
 
 #: src/cutscenes/marisa_bad_end.inc.h:2
 msgid "Marisa (Bad Ending)"
@@ -365,7 +368,7 @@ msgstr "Evet, ama çok işine yaramaz. O makine o konudan çok daha ilerde."
 
 #: src/cutscenes/marisa_bad_end.inc.h:15
 msgid "Ugh, yer probably right, as usual."
-msgstr "Ugh, muhtemelen çoğunlukla olduğun gibi haklısın."
+msgstr "Ugh, muhtemelen çoğunlukta olduğun gibi haklısın."
 
 #: src/cutscenes/marisa_bad_end.inc.h:19
 msgid "Marisa closed the book and let it slam onto the floor."
@@ -602,7 +605,7 @@ msgid ""
 "The mansion began to shake intense, as if down to its very foundation, "
 "before ceasing entirely, as quickly as it started.\n"
 msgstr ""
-"\nMalikane sallanmaya başladı, hızlı başlaması sanki tamamıyla yıkılmadan önce son "
+"\nMalikane sallanmaya başladı, hızlı başladığı gibi sanki tamamıyla yıkılmadan önce "
 "vakfına kalmış.\n"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:58
@@ -698,12 +701,12 @@ msgstr "Marisa (İyi son)"
 
 #: src/cutscenes/marisa_good_end.inc.h:7
 msgid "— The Moriya Shrine\n"
-msgstr "— Moriya Mabeti\n"
+msgstr "— Moriya Tapınağı\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:8
 #: src/cutscenes/reimu_extra_intro.inc.h:8
 msgid "A workaholic shrine at the top of Yōkai Mountain."
-msgstr "Yōkai Dağının üstünde bir Mabet."
+msgstr "Yōkai Dağının üstünde bir Tapınak."
 
 #: src/cutscenes/marisa_good_end.inc.h:12
 msgid ""
@@ -712,15 +715,15 @@ msgstr "Yıkıldığında, yeni gelenler kendi 'Babel Kulesi'ni kapatmayı kabul
 
 #: src/cutscenes/marisa_good_end.inc.h:13
 msgid "Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"
-msgstr "Elly ve Kurumi Moriya Mabetinin yerlerine geldiler…\n"
+msgstr "Elly ve Kurumi Moriya tapınağının yerlerine geldiler…\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:14
 msgid ""
 "… which had become filthy from the local fairies partying non-stop, and some "
 "‘political demonstrations’ by the newly-formed ‘Insect Party’."
 msgstr ""
-"…ki dolmuştu durmadan parti yapan yerel periler , ve ‘Böcek partisinden’ birkaç"
-"politiksel gösteri vardı"
+"…ki durmadan parti yapan yerel periler , ve ‘Böcek partisinden’ birkaç"
+"politiksel gösteri ile dolmuştu."
 
 #: src/cutscenes/marisa_good_end.inc.h:18
 msgid ""
@@ -748,7 +751,7 @@ msgid ""
 "Seems like it’s taking a bit more time for the madness to wear off for her. "
 "How’s all that ‘knowledge’ working out for you, newcomer?"
 msgstr ""
-"Onun çılgınlığının geçmesi biraz daha zaman alacak gibi görünüyor. Bütün bu ‘bilgi’ "
+"Onun deliliğinin geçmesi biraz daha zaman alacak gibi görünüyor. Bütün bu ‘bilgi’ "
 "sana nasıl yarıyor, yeni gelen?"
 
 #: src/cutscenes/marisa_good_end.inc.h:26
@@ -761,7 +764,7 @@ msgstr "Retro video oyunu konsollarını İstedığımden daha çok hatırladım
 msgid ""
 "\n"
 "Elly nodded and smiled politely, trying to hold back tears of boredom."
-msgstr "\nElly düğümledi ve kibarca gülümsedi, sıkıntının yaşlarını tutmaya çalışıyordu."
+msgstr "\nElly kafa salladı ve kibarca gülümsedi, sıkıntının yaşlarını gizlemeye çalışıyordu."
 
 #: src/cutscenes/marisa_good_end.inc.h:31
 msgid ""
@@ -973,13 +976,13 @@ msgstr "Kule kapandı, ve halen sorunu başlatanlar ortada yoktu.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:10
 msgid "Reimu returned to her shrine, unsure if she had done anything at all.\n"
-msgstr "Reimu Mabet'ine döndü, bir şey yapıp yapamadığından haberdar değildi. \n"
+msgstr "Reimu tapınağına döndü, bir şey yapıp yapamadığından haberdar değildi. \n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:11
 msgid ""
 "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with "
 "bated breath.\n"
-msgstr "Yōkai dağının mabet hakkında sessice bir nefesle karıştılar.\n"
+msgstr "Yōkai dağının tapınak hakkında sessice bir nefesle karıştılar.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:15
 msgid "Reimu sighed, and made her announcement.\n"
@@ -1014,15 +1017,15 @@ msgid ""
 "The tengu furiously scribbled down notes, once again as if they’d had the "
 "scoop of the century, before also beginning to make their own demands.\n"
 msgstr ""
-"Tengu birkaç not yazdı, sanki, kendi teşviklerini yapmadan önce yüzyılın "
-"hikayesiymiş gibi olacak.\n"
+"Tengu , sanki kendi teşviklerini yapmadan önce yüzyılın hikayesiymiş olacakmış "
+"gibi bir kaç not karaladı.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:27
 msgid ""
 "Once Reimu had managed to placate the crowd, she sat in the back of the "
 "Hakurei Shrine, bottle of sake in hand.\n"
 msgstr ""
-"Reimu kabalbılığı hallettikten sonra, Hakurei Mabeti'ne dönüp oturdu, elinde bir "
+"Reimu kabalbılığı hallettikten sonra, Hakurei tapınağına dönüp oturdu, elinde bir "
 "şişe vardı.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:28
@@ -1070,7 +1073,7 @@ msgstr "Bu benim için bile çok fazla olabilir."
 msgid ""
 "Whatever that ‘madness’ thing was, it was getting to me, too. It made me "
 "feel frustrated and… lonely?"
-msgstr "Ne çılgınlığıysa banada geliyordu. Beni korkmuş ve yanlız hissettriyordu."
+msgstr "‘Ne deliliğiyse’ banada geliyordu. Beni korkmuş ve… yanlızmı hissettriyordu?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:47
 msgid "But why would I feel lonely? It doesn’t make any sense."
@@ -1090,8 +1093,7 @@ msgstr "Bundan kurtulmanın bir yolunu bulmaya çalışacağım. Eminimki bir ye
 msgid ""
 "\n"
 "Yukari smiled.\n"
-msgstr ""
-"\nYukari gülümsedi.\n"
+msgstr "\nYukari gülümsedi.\n"
 
 #: src/cutscenes/reimu_bad_end.inc.h:54
 msgid "Glad to hear it. It’s your duty, after all."
@@ -1104,7 +1106,7 @@ msgstr "Reimu (Extra Aşama Intro)"
 #: src/cutscenes/reimu_extra_intro.inc.h:7 src/cutscenes/reimu_good_end.inc.h:7
 #: src/cutscenes/youmu_good_end.inc.h:7
 msgid "— The Moriya Shrine"
-msgstr "— Moriya Mabeti"
+msgstr "— Moriya Tapınağı"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:12
 msgid ""
@@ -1138,7 +1140,7 @@ msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr "Oh, rakip mabetlerde zaman geçiriyoruz değilmi?"
+msgstr "Oh, rakip tapınaklarda zaman geçiriyoruz değilmi?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
@@ -1162,7 +1164,7 @@ msgid ""
 "As if on cue, Elly came running up the steps of the Moriya Shrine, "
 "breathlessly, clad in a Moriya shrine maiden uniform.\n"
 msgstr ""
-"\nİşaretten sonra, Elly Moriya mabetinin merdivenlerinde nefessiz koşuyordu kendisi "
+"\nİşaretten sonra, Elly Moriya tapınağının merdivenlerinde nefessiz koşuyordu kendisi "
 "bir Miko üniforması giyinmişti.\n"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:35
@@ -1254,7 +1256,7 @@ msgstr "Yani ben yaptım!!"
 msgid ""
 "I didn’t leave you any such note! This isn’t even my handwriting! You *know* "
 "I have a hard time with stroke order—"
-msgstr "Hiç öyle bir not yazmadım! Bu benim yazım bile değil! Biliyorsunki —"
+msgstr "Hiç öyle bir not yazmadım! Bu benim yazım bile değil! Biliyorsunki—"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:65
 msgid "Okay, excuse me, but what does this have to do with anything?"
@@ -1344,7 +1346,7 @@ msgstr "Reimu (İyi son)"
 
 #: src/cutscenes/reimu_good_end.inc.h:8
 msgid "A rival shrine at the top of Yōkai Mountain."
-msgstr "Yōkai dağının üstünde rakip bir mabet."
+msgstr "Yōkai dağının üstünde rakip bir tapınak."
 
 #: src/cutscenes/reimu_good_end.inc.h:12
 msgid ""
@@ -1369,7 +1371,7 @@ msgstr "Bende 'video oyunları' hakkında hiç bir şey bilmiyorum!"
 msgid ""
 "The Tower had been shut down, ending the crisis of madness sweeping the "
 "land.\n"
-msgstr "Kule kapanmıştı, bu çılgınlık krizinin sonlanmasına neden oldu.\n"
+msgstr "Kule kapanmıştı, bu delilik krizinin sonlanmasına neden oldu.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:20
 msgid ""
@@ -1384,12 +1386,12 @@ msgid ""
 "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya "
 "Shrine as penance for their actions.\n"
 msgstr ""
-"Kurumi ve Elly yaptıklarının bedeli olarak Moriya mabetinin patikalrını"
+"Kurumi ve Elly yaptıklarının bedeli olarak Moriya tapınağının patikalarını"
 "temizlemye gönderildi.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:22
 msgid "With the occasional odd request from the Moriya Shrine Gods, of course…"
-msgstr "Tabiikide Moriya mabet tanrılarının izniyle…"
+msgstr "Tabiikide Moriya tapınağının tanrılarının izniyle…"
 
 #: src/cutscenes/reimu_good_end.inc.h:26
 msgid "I can’t believe it! Is nuclear fusion really that simple?!"
@@ -1451,7 +1453,7 @@ msgstr "Ah, evet? Benden bir şeyemi ihtiyacın var?"
 #: src/cutscenes/reimu_good_end.inc.h:46
 msgid ""
 "I’m surprised you’re not still pissed off at everyone. Not even a little bit."
-msgstr "Halen herkeze kızgın olmadığına şaşırdım. Biraz bile mi."
+msgstr "Halen herkeze kızgın olmadığına şaşırdım. Birazcık bile mi."
 
 #: src/cutscenes/reimu_good_end.inc.h:47
 msgid "You were shouting like a dictator up there."
@@ -1490,13 +1492,13 @@ msgstr "Ah, neyse. Sessiz durduğu sürece sorun yok."
 msgid ""
 "With the maddening feelings gone, everyone seemed to relax more than usual, "
 "like a burden had been lifted off of them.\n"
-msgstr "Çılgınlık hissi gittiğine göre, herkez normalden daha sakin olmaya başladı.\n"
+msgstr "Delilik hisleri gittiğine göre, herkez normalden daha sakin olmaya başladı.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:65
 msgid ""
 "But for some reason, Reimu in particular seemed to have a difficult time "
 "settling down.\n"
-msgstr "Fakat bir sebeple Reimu'nun sakinleşmekte zorluk çekiyordu.\n"
+msgstr "Ama bir nedenle, Reimu sakinleşmekte zorluk çekiyordu.\n"
 
 #: src/cutscenes/reimu_good_end.inc.h:66
 msgid ""
@@ -1507,7 +1509,7 @@ msgstr "Hatta bazıları, kuleyi yok etme planlarına rağmen, Babel kulesini ka
 #: src/cutscenes/reimu_good_end.inc.h:67
 msgid ""
 "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…"
-msgstr "Tabii şu an ‘yōkai boşluğu’ harici kimsenin bir kanıtı yok…"
+msgstr "Tabii şu an ‘Yōkai boşluğu’ harici kimsenin bir kanıtı yok…"
 
 #: src/cutscenes/scene_impl.h:60
 msgid "Reimu"
@@ -1868,7 +1870,7 @@ msgstr "Yōmu (İyi son)"
 
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
-msgstr "Yōkai dağının üstünde  bir mabet"
+msgstr "Yōkai dağının üstünde  bir tapınak"
 
 #: src/cutscenes/youmu_good_end.inc.h:12
 msgid ""
@@ -1880,7 +1882,7 @@ msgid ""
 "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging "
 "the techniques of their craft…"
 msgstr ""
-"Moriya mabetinin altında iki namlu ustası biribinin tekniksel güçlerini değişiyorlar…"
+"Moriya tapınağının altında iki namlu ustası biribinin tekniksel güçlerini değişiyorlar…"
 
 #: src/cutscenes/youmu_good_end.inc.h:17
 msgid ""
@@ -1946,7 +1948,7 @@ msgstr "Evim hakkında sefildim, fakat o kadar uzağa gitmek için…"
 
 #: src/cutscenes/youmu_good_end.inc.h:37
 msgid "It seems like the one most overcome by madness was myself."
-msgstr "Meğer en büyük çılgınlık kendimdeymiş."
+msgstr "Meğer en büyük delilik kendimdeymiş."
 
 #: src/cutscenes/youmu_good_end.inc.h:38
 msgid ""
@@ -1968,7 +1970,7 @@ msgid ""
 "Tomorrow, provided Lady Yuyuko has no business for me, I would like to show "
 "you what the Netherworld and Gensōkyō have to offer!"
 msgstr ""
-"Yarın, Bayan Yuyuko'nun bir işi olmayacakmış, sana Cehennem Dünyası ve Gensōkyō'nun "
+"Yarın, bana göre hanım Yuyuko müsaitmiş, sana Cehennem Dünyası ve Gensōkyō'nun "
 "ne sunabileceğini gösteririm."
 
 #: src/cutscenes/youmu_good_end.inc.h:45
@@ -1984,14 +1986,14 @@ msgstr "O-oh! T-tabii bu harika olur!"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
-msgstr "MMm, Mabete dönmeyi tercih ederim."
+msgstr "Mmm, tapınaktaki görevlerime dönmeyi tercih ederim."
 
 #: src/cutscenes/youmu_good_end.inc.h:51
 msgid ""
 "I hope the green-haired shrine maiden doesn’t talk my ear off about obsolete "
 "entertainment technology again…"
 msgstr ""
-"Umarım yeşil saçlı olan a mabet mikosu benim kulağıma zamanı geçmiş eğlence "
+"Umarım yeşil saçlı olan a tapınak görelisi benim kulağıma zamanı geçmiş eğlence "
 "teknolojisi hakkında konuşmaz"
 
 #: src/cutscenes/youmu_good_end.inc.h:52
@@ -2018,7 +2020,7 @@ msgid ""
 "folks commented on how they had never seen Yōmu so thrilled."
 msgstr ""
 "Kendileri pratikle, düelloyla, ve içerek birçok gece geçirdiler, ve birçok kişi"
-"Yōmu'nun bu kadar etkileyici olmadığını yorumladı."
+"Yōmu'nun hiç bu kadar etkileyici olmadığını yorumladı."
 
 #: src/cutscenes/youmu_good_end.inc.h:62
 msgid ""
@@ -2471,7 +2473,7 @@ msgstr "O zaman gidiyorum."
 
 #: src/dialog/marisa.c:313
 msgid "Oh, I’m not letting you go without a fight!"
-msgstr "Oh, seninle savaşmadan bırakmam!"
+msgstr "Oh, seni birlikte savaşmadan bırakmam!"
 
 #: src/dialog/marisa.c:315
 msgid "Let’s see who’s the most fashionable here, witch!"
@@ -2587,7 +2589,7 @@ msgid ""
 "It appeared outta nowhere. If it were real brick, the air displacement alone "
 "woulda caused a huge noise…"
 msgstr ""
-"Dışarda hiçbir şey yokken oluştu. Eğer öyle olsaydı havaya koyulması yeterince gürültülü olurdu."
+"Dışarda hiçbir şey yokken oluştu. Eğer öyle olsaydı havaya koyulması yeterince ses çıkarırdı."
 
 #: src/dialog/marisa.c:399
 msgid "And it’d take so much power, too."
@@ -2708,7 +2710,7 @@ msgstr "Anladım, anladım."
 
 #: src/dialog/marisa.c:460
 msgid "Haven’t done ‘femme fatale’ in a while, but…"
-msgstr "Uzun bir süre boyu ’femme fatale’ yapmadım fakat…"
+msgstr "Uzun bir süre boyu ’femme fatale’ yapmadım ama…"
 
 #: src/dialog/marisa.c:464
 msgid "Enough!"
@@ -2729,7 +2731,7 @@ msgstr "Yani burası elektriklen çalışıyor? Hmm…"
 
 #: src/dialog/marisa.c:493
 msgid "Oof, I hope that didn’t make my hair too frizzy."
-msgstr "Oof, Umarım saçımı çok batırmadım."
+msgstr "Of, Umarım saçımı çok batırmadım."
 
 #: src/dialog/marisa.c:495
 msgid "Y’know, for my big first impression ‘n all."
@@ -2748,7 +2750,7 @@ msgstr "Onun enerjisi teknoloji ve bilime bağlı. Bu kadar çok olduğuna emini
 #: src/dialog/marisa.c:502
 msgid ""
 "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?"
-msgstr "Sanae'nin bir gün olmadığı zaman bilimsel doğruları yitirmekmi istiyorsun?"
+msgstr "Sanae'nin bir gün olmadığı zaman bilimsel doğruları yitirmeyimi istiyorsun?"
 
 #: src/dialog/marisa.c:505
 msgid ""
@@ -2770,7 +2772,7 @@ msgstr "Evet, bana düzgün düşünmediğimi diyor."
 
 #: src/dialog/marisa.c:513
 msgid "Probably just those weird madness rays tryin’ to get me."
-msgstr "Muhtemelen o garip makineler bana ulaşmaya çalışıyor."
+msgstr "Muhtemelen o garip makineler beni etkilemeye çalışıyor."
 
 #: src/dialog/marisa.c:516
 msgid "Ugh, you fool."
@@ -2969,7 +2971,7 @@ msgstr "D-depresifleşmeylen akası yok! Evrenin kalan biligilerini çözmeklen 
 #: src/dialog/marisa.c:619
 msgid ""
 "Once you realize the true potential of reality, you’ll go mad with knowledge!"
-msgstr "Gerçekliğin gücünü anladığında, bilginle çılgılaşacaksın!"
+msgstr "Gerçekliğin gücünü anladığında, bilginle delileşiceksin!"
 
 #: src/dialog/marisa.c:620
 msgid "Don’t you see?! Nothing can stop us now! For we are—!"
@@ -2978,7 +2980,7 @@ msgstr "Görmüyormusun?! Bizi kimse durduramaz! Biz—!"
 #: src/dialog/marisa.c:623
 msgid ""
 "But I’m already mad with knowledge! Why do ya think I drink all the time?!"
-msgstr "Fakat ben bilgimlen çılgınım! Neden sürekli içiyom sanıyorsun?!"
+msgstr "Fakat ben bilgimlen deliyim! Neden sürekli içiyom sanıyorsun?!"
 
 #: src/dialog/marisa.c:624
 msgid "My mind’s always racin’ with this ‘n that…"
@@ -3014,7 +3016,7 @@ msgid ""
 "Oh c’mon, turn the madness-whatever off ‘n we’ll go out for drinks! There’s "
 "this nice new bar in town with a cute—"
 msgstr ""
-"Hadi ama çılgınlığını kapatabilirsin ve sonra içiceklere gideriz Orda yeni güzel bir alan var. Şirin—"
+"Hadi ama deliliğini yok edebilirsin ve sonra içiceklere gideriz Orda yeni güzel bir alan var. Şirin—"
 
 #: src/dialog/marisa.c:637
 msgid "There’s no force in this world that would make me turn back now!"
@@ -3030,7 +3032,7 @@ msgstr "Fakat bizim aydınlanadan Gensōkyō görüşümüze büyü için yerimi
 
 #: src/dialog/marisa.c:644
 msgid "Now, succumb to the madness!"
-msgstr "Şimdi çılgınlığa boğul!"
+msgstr "Şimdi deliliğe yenil!"
 
 #: src/dialog/marisa.c:657
 msgid "Are ya sure ya don’t got a spellbook laying around?! Nothin’ at all?!"
@@ -3166,7 +3168,7 @@ msgstr "Bilmen lazımki kendim halledebilirim, neden israr ediyorsunn?"
 msgid ""
 "Just don’t say I didn’t warn you, when you inevitably get mauled by "
 "whatever’s out there…"
-msgstr "Sadece demeki seni uyarmadım, orda hernagi kimlen karşılaşacaksan.…"
+msgstr "Sadece orda herhangi kimlen karşılaşacaksan, seni uyarmadığımı söyleme…"
 
 #: src/dialog/reimu.c:172
 msgid "(Ignored again…)"
@@ -3333,19 +3335,19 @@ msgstr "… yani sen bu işlerin arkasındasın, huh?"
 
 #: src/dialog/reimu.c:306
 msgid "Besides, haven’t you ever seen a shrine maiden before?"
-msgstr "Onu boşverde sen hiç bir mabet mikosu gördünmü?"
+msgstr "Onu boşverde sen hiç bir tapınak görevlisi gördünmü?"
 
 #: src/dialog/reimu.c:309
 msgid "You’re a shrine maiden?"
-msgstr "Sen bir mabet mikosumusun?"
+msgstr "Sen bir tapınak görevlisimisin?"
 
 #: src/dialog/reimu.c:311
 msgid "More like… BRINE maiden!"
-msgstr "Baha çok …SALAMURA mikosu!"
+msgstr "Baha çok …SALAMURA görevlisi!"
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
-msgstr "B-Bumu bir mabet miko'sun giydiği şey. Bir uniforma."
+msgstr "B-Bumu bir tapınak görevlisinin giydiği şey. Bir uniforma."
 
 #: src/dialog/reimu.c:316
 msgid "Uniform? Are you kidding me?!"
@@ -3354,7 +3356,7 @@ msgstr "Üniforma? Benlen dalgamı geçiyorsun?!"
 #: src/dialog/reimu.c:317
 msgid ""
 "I’ve seen a real shrine maiden before, and she didn’t look anything like you!"
-msgstr "Ben burda gerçek bir mabet miko'su gördüm, sana hiç benzemiyor!"
+msgstr "Ben burda gerçek bir tapınak mikosu gördüm, sana hiç benzemiyor!"
 
 #: src/dialog/reimu.c:318
 msgid ""
@@ -3678,7 +3680,7 @@ msgstr "BENİM kuleme girip BANA nasıl emir verirsin!"
 
 #: src/dialog/reimu.c:550
 msgid "I still remember what you did to Lady Kazami and I back then!"
-msgstr "Hala o zaman Bayan Kazami'ye ne yaptığını hatırlıyorum!"
+msgstr "Hala o zaman hanım Kazami'ye ne yaptığını hatırlıyorum!"
 
 #: src/dialog/reimu.c:553
 msgid "And what was that, again?"
@@ -3696,7 +3698,7 @@ msgstr "Bu şakakmı?! Benimle dalgamı geçiyorsun?!"
 msgid ""
 "I think I would’ve remembered a giant tower that makes people go mad with "
 "power!"
-msgstr "Muhtemelen insanları çılgın yapan bir kuleyi hatırlıyorum!"
+msgstr "Muhtemelen insanları deli yapan bir kuleyi hatırlıyorum!"
 
 #: src/dialog/reimu.c:561
 msgid ""
@@ -3754,7 +3756,7 @@ msgstr "Babel kulesi çevresinde olanlardan dolayı ’aydınlanmaya’ uyumlu."
 
 #: src/dialog/reimu.c:582
 msgid "Anyone unable to comprehend its brilliance will be driven to madness."
-msgstr "Onun efsaneliğini anlamayanlar çılgınlığa uğratılacaktır."
+msgstr "Onun efsaneliğini anlamayanlar deliliğe uğratılacaktır."
 
 #: src/dialog/reimu.c:584
 msgid ""
@@ -3794,7 +3796,7 @@ msgstr "Muhtemelen hemende unuttun, aynı biz kalanlar gibi!"
 msgid ""
 "Only the privileged, such as Lady Kazami, made it out! The rest of us were "
 "lost!"
-msgstr "Sadece Bayan Kazami gibi izinliler kaçabildiler! Kalan hepimiz kaybedildik!"
+msgstr "Sadece hanım Kazami gibi izinliler kaçabildiler! Kalan hepimiz kaybedildik!"
 
 #: src/dialog/reimu.c:606
 msgid "You mean Kazami Yūka? And I suppose… Alice, too?"
@@ -3841,7 +3843,7 @@ msgstr "Bunun için çok geç! Yakında bütün Gensōkyō aydınlanacak!"
 msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
-msgstr "Anlamıyonmu mabet mikosu? Bilim hiç bir şey tarafından aşılamaz!"
+msgstr "Anlamıyonmu tapınak mikosu? Bilim hiç bir şey tarafından aşılamaz!"
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
@@ -3861,7 +3863,7 @@ msgstr "Evrenin efsanevi gerçekliğine bak, ve titre!"
 
 #: src/dialog/youmu.c:24
 msgid "I suppose falling snow can be just as pretty as cherry blossoms…"
-msgstr "Bazen yağan kar kiraz yaprakları kadar güzel olabiliyor…"
+msgstr "Bazen kar yağışı kiraz yaprakları kadar güzel olabiliyor…"
 
 #: src/dialog/youmu.c:27
 msgid "Hey!"
@@ -3926,13 +3928,13 @@ msgstr "Ve sen kim olabilirsin?"
 
 #: src/dialog/youmu.c:88
 msgid "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate—"
-msgstr "Konpaku Yōmu. Şu an Bayan Yuyuko'nun verdiği bir görevdeyim—"
+msgstr "Konpaku Yōmu. Şu an hanım Yuyuko'nun verdiği bir görevdeyim—"
 
 #: src/dialog/youmu.c:91
 msgid ""
 "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this "
 "slide."
-msgstr "Dediğin ‘Bayan Yuyukoyu’ duymadım ama bunun beni oyalamasına izin veremem."
+msgstr "Dediğin ‘hanım Yuyukoyu’ duymadım ama bunun beni oyalamasına izin veremem."
 
 #: src/dialog/youmu.c:94
 msgid ""
@@ -3960,7 +3962,7 @@ msgstr "Ama sen çok güzelsin! Senin gibi birisi oraya gidemez."
 msgid ""
 "Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage "
 "phase?"
-msgstr "bu ‘usta kılıç kadınının’ sadece bir ergnlik çağı olmadığına eminmisin?"
+msgstr "Bu ‘usta kılıç kadınının’ sadece bir ergnlik çağı olmadığına eminmisin?"
 
 #: src/dialog/youmu.c:106
 msgid "It’s not a PHASE, mo—"
@@ -3980,7 +3982,7 @@ msgstr "Hayır demedim."
 
 #: src/dialog/youmu.c:127
 msgid "It must be the madness overcoming you."
-msgstr "Bu senın çılgınlığının üstüne gelmesinden kaynaklı."
+msgstr "Bu senın deliliğinin üstüne gelmesinden kaynaklı."
 
 #: src/dialog/youmu.c:128
 msgid "Yes, indeed."
@@ -4030,7 +4032,7 @@ msgstr "Özür dilerim, yani zorlama yok."
 msgid ""
 "I am on a mission from Lady Yuyuko to end whatever is causing the disturbance"
 "—"
-msgstr "Bayan Yuyuko tarafından verilen bir görevdeyim ve rahatsızlık çıkaran o şeyi bitireceğim."
+msgstr "Hanım Yuyuko tarafından verilen bir görevdeyim ve rahatsızlık çıkaran o şeyi bitireceğim."
 
 #: src/dialog/youmu.c:173
 msgid "Oh, oh, I understand now."
@@ -4113,7 +4115,7 @@ msgstr "Senin için üzücü."
 msgid ""
 "Fear not. I will end your delusional madness and restore justice and order "
 "to the—"
-msgstr "Korkma. Senin çılgınlığını sonlandırıp, adaleti geri—"
+msgstr "Korkma. Senin deliliğini sonlandırıp, adaleti geri—"
 
 #: src/dialog/youmu.c:221
 msgid "… ugh, that’s a little much, even for me, isn’t it?"
@@ -4188,7 +4190,7 @@ msgstr "Bilmiyorum, bana sorma!"
 msgid ""
 "The lady in the tower talks about it a lot, so it must be something horrible "
 "for sure."
-msgstr "Kuledeki kadın onunla ilgili çok konuşuyor, o zaman eminimki kötü bir şey."
+msgstr "Kuledeki hanım onunla ilgili çok konuşuyor, o zaman eminimki kötü bir şey."
 
 #: src/dialog/youmu.c:279
 msgid "Didn’t you just say you weren’t associated with them?"
@@ -4252,7 +4254,8 @@ msgstr "K-… korkutucu?"
 msgid ""
 "… yeah! I thought it was gonna be all ‘scientific’ or whatever, but then "
 "they made it haunted, with like, ghosts and stuff!"
-msgstr "… evet! Sanıyordumki bütün 'bilimsel' olacak yada neyse, ama sonra hayalet "
+msgstr ""
+"… evet! Sanıyordumki bütün 'bilimsel' olacak yada neyse, ama sonra hayalet "
 "gibi şeylerlen doldurdular!"
 
 #: src/dialog/youmu.c:327
@@ -4306,19 +4309,19 @@ msgstr "Stressizliğin kulenin gücü yüzünden olduğunu tahmin ediyom?"
 
 #: src/dialog/youmu.c:367
 msgid "Lady Yuyuko is in a safe, undisclosed location."
-msgstr "Bayan Yuyuko güvenli, söylenmeyen bir yerde."
+msgstr "Hanım Yuyuko güvenli ve gizli bir yerde."
 
 #: src/dialog/youmu.c:369
 msgid "The Hakurei Shrine, I presume?"
-msgstr "Hakurei Mabeti, tahminim?"
+msgstr "Hakurei tapınağı, tahminim?"
 
 #: src/dialog/youmu.c:372
 msgid "Wh-who told you?! Are you in league with them too?!"
-msgstr "K-kim sana söyledi?! Onlarla beraber ligdemisin?"
+msgstr "K-kim söyledi?! Onlarla beraber ligdemisin?"
 
 #: src/dialog/youmu.c:375
 msgid "Of course not, but where else would she be at a time like this?"
-msgstr "Tabiiki değil, fakat böyle bir zaman o başka berde olabilirdi?"
+msgstr "Tabiiki değil, ama böyle bir zaman o başka berde olabilirdi?"
 
 #: src/dialog/youmu.c:378
 msgid "Hmph. Perhaps we have become too predictable."
@@ -4453,7 +4456,7 @@ msgstr "Belkide sadece yapmak istediklerin senin ego'na gizleniyor."
 
 #: src/dialog/youmu.c:460
 msgid "And perhaps I truly have gone mad. What of it?"
-msgstr "Ve belkide gerçekten çılgınlaştım. Nesi bu?"
+msgstr "Belkide gerçekten delileştim. Nesi bu?"
 
 #: src/dialog/youmu.c:461
 msgid "My mission is crystal clear:"
@@ -4463,7 +4466,7 @@ msgstr "Benim görevim kristal gibi açık."
 msgid ""
 "… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all "
 "connected realms!"
-msgstr "Bayan Yuyuko’nun görevini tamamlayıp Gensōkyō'ya ve bağlı yerlere barış getireceğim!"
+msgstr "Hanım Yuyuko’nun görevini tamamlayıp Gensōkyō'ya ve bağlı yerlere barış getireceğim!"
 
 #: src/dialog/youmu.c:464
 msgid "I will not fail!"
@@ -4621,7 +4624,7 @@ msgid ""
 "Soon, the residents of this land will be driven mad beyond comprehension, "
 "and be ripe to conquer!"
 msgstr ""
-"Yakında, buraki sakinlerin mantıklı olandan daha çılgın olacak ve işgal etmek için olgunlaşacaklar!"
+"Yakında, buraki sakinlerin mantıklı olandan daha delirecek ve işgal etmek için olgunlaşacaklar!"
 
 #: src/dialog/youmu.c:548
 msgid "So you wish to avenge your fallen compatriots… how noble…"
@@ -4636,13 +4639,13 @@ msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
 msgstr ""
-"Benim, Cehennem Dünyası’nın Bayan Yuyuko tarafından verilen görevim, direkten "
+"Ne yazıkki, Cehennem Dünyası’nın hanım Yuyuko'su tarafından verilen görevim, direkten "
 "seninkiylen çakışıyor!"
 
 #: src/dialog/youmu.c:552
 msgid ""
 "I cannot allow you to drive my compatriots mad, or to subjugate my home!"
-msgstr "Benim memleketimi çılgınlığıma sürükleme veya benim evime zorlamana izin vermeyeceğim!"
+msgstr "Benim memleketimi deliliğe sürükleme veya benim evime zorlamana izin vermeyeceğim!"
 
 #: src/dialog/youmu.c:554
 msgid "Perhaps, in another time and place, we could have been friends!"
@@ -4977,7 +4980,7 @@ msgstr ""
 "\n"
 "Tamamıyla her şey için çok ciddi, ve kendi varlığından yarı korkmuş.\n"
 "\n"
-"Buna rağmen, Bayan Yuyuko tarafından önemli bir görevi vardı. Umarim aklına "
+"Buna rağmen, hanım Yuyuko tarafından önemli bir görevi vardı. Umarim aklına "
 "gelmesine izin vermez."
 
 #: src/menu/charprofile.c:93
@@ -5161,7 +5164,7 @@ msgstr "Kilitli"
 
 #: src/menu/charprofile.c:172
 msgid "You have not unlocked this character yet!"
-msgstr "Bu karakter henüz açılmadı!"
+msgstr "Bu karakterin kilidi henüz açılmadı!"
 
 #: src/menu/charprofile.c:192
 msgid "Species"
@@ -5369,7 +5372,7 @@ msgid ""
 "\n"
 "If you wish to hear it anyway, please select it again to confirm."
 msgstr ""
-"\nBunun henüz kilidini açmadın.\n\nYinede dinlemek istiyorsan, lütfen tekrar seç."
+"\nBu müziğin henüz kilidini açmadın.\n\nYinede dinlemek istiyorsan, lütfen tekrar seç."
 
 #: src/menu/musicroom.c:178
 msgid ""
@@ -5833,8 +5836,8 @@ msgid ""
 "Magic missiles and lasers — simple and to the point. They’ve never let you "
 "down before, so why stop now?"
 msgstr ""
-"Büyülü mermiler ve lazerler — basit ve noktasına. Asla seni yarı yolda bırakmadılar. "
-"O zaman şimdi nasıl yarı yolda bıraksınlar?"
+"Büyülü mermiler ve lazerler — basit ve anlamına. Asla seni yarı yolda bırakmadılar. "
+"O zaman şimdi neden yarı yolda bıraksınlar?"
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
@@ -5911,7 +5914,7 @@ msgid ""
 "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you "
 "happen to stand in the way of a determined sword-wielding lady…"
 msgstr ""
-"Hayaletler gerçek, ama korkmaya gerek yok… tabii, kılıç kadının önünde durmuyorsan…"
+"Hayaletler gerçek, ama korkmaya gerek yok… tabii, kılıç hanımının önünde durmuyorsan…"
 
 #: src/plrmodes/youmu_b.c:626
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
@@ -6047,7 +6050,7 @@ msgstr "Extra Aşama"
 
 #: src/stageinfo.c:125
 msgid "Descent into Madness"
-msgstr "Çılğınlığa iniş"
+msgstr "Deliliğe iniş"
 
 #: src/stageinfo.c:248
 #, c-format
@@ -6137,7 +6140,7 @@ msgstr "Ateş böceği işareti “Ay Işığı Roketi”"
 
 #: src/stages/stage3/stage3.c:45
 msgid "Attractor “Moths to a Flame”"
-msgstr "Atraktör “Güveleri Ateşe”"
+msgstr "Atraktör “Güveyi Ateşe”"
 
 #: src/stages/stage3/stage3.c:50
 msgid "Bug Sign “Firefly Storm”"
