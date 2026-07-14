@@ -354,7 +354,7 @@ msgstr "Doğu büyü topraklarında batılık bir malikane.\n"
 msgid ""
 "A nervous witch sat flipping through endless stacks of books, drinking tea "
 "instead of her usual sake…\n"
-msgstr "Bir cadı normalde yaptıgının aksine oturup birsürü kitap çevirip çay içiyordu!\n"
+msgstr "Sinirli bir cadı normalde yaptıgının aksine oturup, birsürü kitap çevirip, çay içiyordu…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:13
 msgid "Hey Patchy, do ya got any more books on Magitech?"
@@ -392,7 +392,7 @@ msgstr "Biliyormuydun? Böyle bir şey bende yok."
 
 #: src/cutscenes/marisa_bad_end.inc.h:26
 msgid "I could destroy it! Make it go BOOM!"
-msgstr "Onu yok edebilirim!"
+msgstr "Onu yok edebilirdim! Onu BOM yaptırabildim!"
 
 #: src/cutscenes/marisa_bad_end.inc.h:27
 msgid "Gah! … now what did I say about sneakin’ up on people, Flan?"
@@ -420,23 +420,23 @@ msgstr "Marisa ikisiyle beraber çay içtikten sonra ilham için kitap yığına
 msgid ""
 "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling "
 "flat on her face.\n"
-msgstr "Bir anda, bir çukurun içine düştüğünü hissediyordu, triplenip yüzüne düz düşüyordu.\n"
+msgstr "Bir anda, bir çukurun içine düşmüş gibi hissediyordu, triplenip yüzüne düz düşüyordu.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:36
 msgid ""
 "When she looked back at the floor, she didn’t see anything except the "
 "expertly-organized rows of immaculate bookshelves.\n"
-msgstr "Arkasına yere baktıktan sonra ustaca düzenlenmiş kitaplıktan başka bir şey görmedi.\n"
+msgstr "Arkasına yere baktıktan sonra, ustaca düzenlenmiş kitaplıktan başka bir şey görmedi.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:37
 msgid "Then, she noticed something cold and thin underneath her hand."
-msgstr "Sonra eninin altında soğuk ve ince bir şey hissetti."
+msgstr "Sonra elinin altında soğuk ve ince bir şey hissetti."
 
 #: src/cutscenes/marisa_bad_end.inc.h:41
 msgid ""
 "After some time, she realized it was a ‘Smart Device’ of some kind, like a "
 "handheld computer.\n"
-msgstr "Bir süre sonra o anladıki o bir ‘akıllı cihazdı’, örneğin bir bilgisayar. \n"
+msgstr "Bir süre sonra anladıki o bir ‘akıllı cihazdı’, örneğin elde bir bilgisayar.\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:42
 msgid ""
@@ -450,8 +450,8 @@ msgid ""
 "applying pressure to certain sides, into different form factors: a phone, a "
 "book, a digital typewriter with a keyboard…\n"
 msgstr ""
-"Hem sıvı hemde katı gibiydi, şeklini belli yerlere baskı uygulayarak değiştirip "
-"farkı hallere çevrilebiliyor: bir telefon, bir kitap, bir klavyeli dijital yazıcı…\n"
+"Hem sıvı hem de katı gibiydi, şeklini belli yerlere baskı uygulayarak değiştirip "
+"farkı hallere çevrilebiliyor: bir telefon, bir kitap, klavyeli bir dijital yazıcı…\n"
 
 #: src/cutscenes/marisa_bad_end.inc.h:44
 msgid ""
@@ -859,7 +859,7 @@ msgstr "*Bu* biraz komik, gerçekten. Hiç onun o kitaplarına bakmadım…"
 #: src/cutscenes/marisa_good_end.inc.h:64
 msgid ""
 "Oh, cheer up, will ya? Y’all’ll get to chill out here for a long as ya like."
-msgstr "Ah, sorgulama. İstediğiniz kadar dinlenebilirsiniz."
+msgstr "Ah, sorgulamayın. İstediğiniz kadar dinlenebilirsiniz."
 
 #: src/cutscenes/marisa_good_end.inc.h:65
 msgid "But what if this Gensōkyō collapses, too…?"
@@ -901,7 +901,7 @@ msgstr ""
 
 #: src/cutscenes/marisa_good_end.inc.h:79
 msgid "And then, BOOM, there was a small explosion!"
-msgstr "Ve BOM , küçük bir patlama yaşandı!"
+msgstr "Ve BOM, küçük bir patlama yaşandı!"
 
 #: src/cutscenes/marisa_good_end.inc.h:80
 msgid ""
@@ -1870,7 +1870,7 @@ msgstr "Yōmu (İyi son)"
 
 #: src/cutscenes/youmu_good_end.inc.h:8
 msgid "A dignified shrine at the top of Yōkai Mountain."
-msgstr "Yōkai dağının üstünde  bir tapınak"
+msgstr "Yōkai dağının üstünde şerefli bir tapınak"
 
 #: src/cutscenes/youmu_good_end.inc.h:12
 msgid ""
@@ -2005,8 +2005,7 @@ msgstr "Her ne kadar kötü ilişkimiz olsada, cezana uymak için saygım var."
 msgid ""
 "\n"
 "The pair of them laughed.\n"
-msgstr ""
-"\nIkiside güldü.\n"
+msgstr "\nIkiside güldü.\n"
 
 #: src/cutscenes/youmu_good_end.inc.h:57
 msgid ""
@@ -2412,7 +2411,7 @@ msgstr "Bence sade hayali şeyler yazsalar daha iyi olur."
 
 #: src/dialog/marisa.c:276
 msgid "Yeah, duh?"
-msgstr "Evet, heh?"
+msgstr "Evet, eh?"
 
 #: src/dialog/marisa.c:277
 msgid "Of course, most of it is garbage that only weirdos like!"
@@ -5463,7 +5462,7 @@ msgstr "Arkaplan görünüm kalitesi"
 
 #: src/menu/options.c:840
 msgid "Anti-aliasing"
-msgstr ""
+msgstr "Kenar-Yumuşatma"
 
 #: src/menu/options.c:842
 msgid "none"
