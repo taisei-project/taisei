@@ -63,14 +63,9 @@ static void print_help(struct TsOption* opts) {
 }
 
 int cli_args(int argc, char **argv, CLIAction *a) {
-	const char *const _renderer_list =
 	#define R(r) ","#r
-	TAISEI_BUILDCONF_RENDERER_BACKENDS
+	const char *const renderer_list = "{default" TAISEI_BUILDCONF_RENDERER_BACKENDS "}";
 	#undef R
-	;
-
-	char renderer_list[strlen(_renderer_list) + 2];
-	snprintf(renderer_list, sizeof(renderer_list), "{%s}", _renderer_list+1);
 
 	struct TsOption taisei_opts[] = {
 		{{"replay",             required_argument,  0, 'r'},            "Play a replay from FILE", "FILE"},
