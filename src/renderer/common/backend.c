@@ -8,6 +8,7 @@
 
 #include "backend.h"
 
+#include "config.h"
 #include "memory/scratch.h"
 #include "util.h"
 #include "util/env.h"
@@ -41,6 +42,10 @@ static void _r_set_backend(RendererBackend *backend) {
 }
 
 static RendererBackend *_r_find_backend(const char *name) {
+	if(!name || !*name || !strcmp(name, "default")) {
+		return &R_BACKEND(TAISEI_BUILDCONF_RENDERER_DEFAULT);
+	}
+
 	for(RendererBackend **b = _r_backends; *b; ++b) {
 		if(!strcmp((*b)->name, name)) {
 			return *b;
@@ -72,6 +77,23 @@ static bool _r_backend_try_init(RendererBackend *backend, char *opts) {
 	return true;
 }
 
+static char *parse_renderer_string(MemArena *arena, const char *s, char **out_opts) {
+	if(!s || !*s) {
+		return NULL;
+	}
+
+	char *name = marena_strdup(arena, s);
+	char *sep = strchr(name, ':');
+	*out_opts = NULL;
+
+	if(sep) {
+		*sep = '\0';
+		*out_opts = sep + 1;
+	}
+
+	return name;
+}
+
 void _r_backend_init(void) {
 	static bool initialized;
 
@@ -82,28 +104,28 @@ void _r_backend_init(void) {
 	auto scratch = acquire_scratch_arena();
 
 	RendererBackend *backend;
-	char *name = marena_strdup(scratch, env_get("TAISEI_RENDERER", ""));
 	char *opts = NULL;
+	const char *name = parse_renderer_string(scratch, env_get("TAISEI_RENDERER", ""), &opts);
 	bool try_fallbacks = true;
 
-	if(*name) {
-		char *sep = strchr(name, ':');
-		if(sep) {
-			*sep = '\0';
-			opts = sep + 1;
-		}
+	if(name) {
+		try_fallbacks = !strcmp(name, "default");
+	} else {
+		name = parse_renderer_string(scratch, config_get_str(CONFIG_RENDERER), &opts);
+	}
 
-		try_fallbacks = false;
-		backend = _r_find_backend(name);
-		if(!backend) {
+	backend = _r_find_backend(name);
+
+	if(!backend) {
+		if(try_fallbacks) {
+			log_warn("Unknown renderer backend '%s'", name);
+		} else {
 			log_fatal("Unknown renderer backend '%s'", name);
 		}
 	} else {
-		backend = &R_BACKEND(TAISEI_BUILDCONF_RENDERER_DEFAULT);
-	}
-
-	if(_r_backend_try_init(backend, opts)) {
-		goto done;
+		if(_r_backend_try_init(backend, opts)) {
+			goto done;
+		}
 	}
 
 	if(try_fallbacks) {
