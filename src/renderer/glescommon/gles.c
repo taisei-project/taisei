@@ -11,6 +11,7 @@
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
 #include "../glcommon/vtable.h"
+#include "memory/scratch.h"
 #include "util/env.h"
 
 #define SDL_USE_BUILTIN_OPENGL_DEFINITIONS
@@ -52,6 +53,26 @@ bool gles_init(RendererBackend *backend, int major, int minor) {
 	// These are not overwritten if they are already set in the environment, so
 	// you can still override this behavior as usual.
 
+	auto scratch = acquire_scratch_arena();
+
+	#define SAVE_HINT(h) auto _saved_hint_##h = ({ \
+		auto _hint_val = SDL_GetHint(h); \
+		_hint_val ? marena_strdup(scratch, _hint_val) : NULL; \
+	});
+
+	#define RESTORE_HINT(h) do { \
+		if(_saved_hint_##h) { \
+			SDL_SetHint(h, _saved_hint_##h); \
+		} else { \
+			SDL_ResetHint(h); \
+		} \
+	} while(0)
+
+	// Save and restore these for an edge case where we try to load another non-ANGLE GL backend if ANGLE fails.
+	SAVE_HINT(SDL_HINT_OPENGL_LIBRARY);
+	SAVE_HINT(SDL_HINT_EGL_LIBRARY);
+	SAVE_HINT(SDL_HINT_OPENGL_ES_DRIVER);
+
 	#ifdef TAISEI_BUILDCONF_RELOCATABLE_INSTALL
 	// In a relocatable build, paths are relative to SDL_GetBasePath
 	const char *basepath = SDL_GetBasePath();
@@ -79,7 +100,16 @@ bool gles_init(RendererBackend *backend, int major, int minor) {
 	}
 #endif
 
-	return glcommon_init(backend);
+	bool result = glcommon_init(backend);
+
+#ifdef TAISEI_BUILDCONF_HAVE_ANGLE
+	RESTORE_HINT(SDL_HINT_OPENGL_LIBRARY);
+	RESTORE_HINT(SDL_HINT_EGL_LIBRARY);
+	RESTORE_HINT(SDL_HINT_OPENGL_ES_DRIVER);
+	release_scratch_arena(scratch);
+#endif
+
+	return result;
 }
 
 bool gles_init_context(RendererBackend *backend, SDL_Window *w) {
