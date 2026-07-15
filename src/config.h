@@ -92,6 +92,7 @@
 	\
 	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "Player") \
 	CONFIGDEF_STRING    (LOCALE,                    "locale",                               "system") \
+	CONFIGDEF_STRING    (RENDERER,                  "renderer",                             "default") \
 	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           1) \
 	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
