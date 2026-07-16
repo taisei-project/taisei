@@ -6318,7 +6318,7 @@ msgstr ""
 
 #: po/extra_strings.c:14
 msgid "Delta Conclusion"
-msgstr "Delta Sonlaması"
+msgstr "Delta Sonuçlaması"
 
 #: po/extra_strings.c:15
 msgid "RickyRister"
