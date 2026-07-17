@@ -123,7 +123,7 @@ msgstr "— Hakurei Mabeti\n"
 
 #: src/cutscenes/intro.inc.h:8 src/cutscenes/reimu_bad_end.inc.h:8
 msgid "The shrine at the border of fantasy and reality.\n"
-msgstr "Fantastik ve gerçeklik arasındaki o mabet.\n"
+msgstr "Hayal ve gerçeklik arasındaki o mabet.\n"
 
 #: src/cutscenes/intro.inc.h:9
 msgid ""
@@ -6117,7 +6117,7 @@ msgstr "Kansız “Walachei Kapısı”"
 
 #: src/stages/stage4/stage4.c:35
 msgid "Bloodless “Dry Fountain”"
-msgstr "Kansız “Trockener Brunnen”"
+msgstr "Kansız “Kuru Çeşme”"
 
 #: src/stages/stage4/stage4.c:40
 msgid "Bloodless “Red Spike”"
