@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 20:11+0200\n"
+"POT-Creation-Date: 2026-07-18 20:23+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: onihilist <onihilist@proton.me>\n"
 "Language-Team: \n"
@@ -64,8 +64,8 @@ msgstr "Extra"
 msgid "Move"
 msgstr "Monter"
 
-#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:968 src/gamepad.c:979
-#: src/menu/options.c:1403
+#: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:973 src/gamepad.c:984
+#: src/menu/options.c:1405
 msgid "Unknown"
 msgstr "Inconnu"
 
@@ -73,7 +73,7 @@ msgstr "Inconnu"
 msgid "Mouse input disabled "
 msgstr "Intéractions souris désactivée "
 
-#: src/credits.c:71
+#: src/credits.c:73
 msgid ""
 "Taisei Project\n"
 "brought to you by…"
@@ -81,11 +81,11 @@ msgstr ""
 "Taisei Project\n"
 "présenté par…"
 
-#: src/credits.c:161
+#: src/credits.c:163
 msgid "Special Thanks"
 msgstr "Remerciements"
 
-#: src/credits.c:205
+#: src/credits.c:210
 #, c-format
 msgid ""
 "Visit Us\n"
@@ -100,7 +100,7 @@ msgstr ""
 "Et rejoignez notre serveur Discord\n"
 "%s"
 
-#: src/credits.c:215
+#: src/credits.c:222
 msgid ""
 "*\n"
 "And don't forget to take it easy!"
@@ -108,7 +108,7 @@ msgstr ""
 "*\n"
 "Et n'oubliez pas de vous détendre!"
 
-#: src/cutscenes/cutscene.c:313
+#: src/cutscenes/cutscene.c:375
 #, c-format
 msgid "“%s”"
 msgstr "“%s”"
@@ -1746,12 +1746,12 @@ msgid "Yuyuko"
 msgstr "Yuyuko"
 
 #: src/cutscenes/scene_impl.h:69 src/dialog/dialog_macros.h:76
-#: src/menu/charprofile.c:157 src/stages/stage6/elly.c:29
+#: src/menu/charprofile.c:159 src/stages/stage6/elly.c:29
 msgid "Elly"
 msgstr "Elly"
 
 #: src/cutscenes/scene_impl.h:70 src/dialog/dialog_macros.h:74
-#: src/menu/charprofile.c:135 src/stages/stage4/kurumi.c:57
+#: src/menu/charprofile.c:137 src/stages/stage4/kurumi.c:57
 msgid "Kurumi"
 msgstr "Kurumi"
 
@@ -2308,46 +2308,46 @@ msgstr ""
 "son compagnon fantomatique discutaient des détails d’un passé d’un futur "
 "ancien…"
 
-#: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:91
+#: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:93
 #: src/stages/stage1/cirno.c:27
 msgid "Cirno"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:92
+#: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:94
 msgid "Thermodynamic Ice Fairy"
 msgstr "Fée Glacial Thermodynamique"
 
-#: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:102
+#: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:104
 #: src/stages/stage2/hina.c:41
 msgid "Kagiyama Hina"
 msgstr ""
 
-#: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:103
+#: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:105
 msgid "Gyroscopic Pestilence God"
 msgstr "Dieu Gyroscopique de la Peste"
 
-#: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:124
+#: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:126
 msgid "Wriggle Nightbug"
 msgstr "Insecte nocturne frétillant"
 
-#: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:125
+#: src/dialog/dialog_macros.h:73 src/menu/charprofile.c:127
 msgid "Insect Rights Activist"
 msgstr "Militant pour les droits des insectes"
 
-#: src/dialog/dialog_macros.h:74 src/menu/charprofile.c:136
+#: src/dialog/dialog_macros.h:74 src/menu/charprofile.c:138
 msgid "High-Society Phlebotomist"
 msgstr "Phlébotomiste de la haute société"
 
-#: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
+#: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:148
 #: src/stages/stage5/iku.c:108
 msgid "Nagae Iku"
 msgstr "Nagae Iku"
 
-#: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:147
+#: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:149
 msgid "Fulminologist of the Heavens"
 msgstr "Fulminologue des cieux"
 
-#: src/dialog/dialog_macros.h:76 src/menu/charprofile.c:158
+#: src/dialog/dialog_macros.h:76 src/menu/charprofile.c:160
 msgid "The Theoretical Reaper"
 msgstr "La Faucheuse Théorique"
 
@@ -5251,177 +5251,177 @@ msgstr "Difficile"
 msgid "Lunatic"
 msgstr "Lunatique"
 
-#: src/gamepad.c:111
+#: src/gamepad.c:116
 msgid "Unknown device"
 msgstr "Appareil inconnu"
 
-#: src/gamepad.c:900
+#: src/gamepad.c:905
 msgid "A"
 msgstr "A"
 
-#: src/gamepad.c:901
+#: src/gamepad.c:906
 msgid "B"
 msgstr "B"
 
-#: src/gamepad.c:902
+#: src/gamepad.c:907
 msgid "X"
 msgstr "X"
 
-#: src/gamepad.c:903
+#: src/gamepad.c:908
 msgid "Y"
 msgstr "Y"
 
-#: src/gamepad.c:904 src/menu/cutsceneview.c:54 src/menu/media.c:60
-#: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
-#: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
+#: src/gamepad.c:909 src/menu/cutsceneview.c:54 src/menu/media.c:60
+#: src/menu/options.c:859 src/menu/options.c:923 src/menu/options.c:1067
+#: src/menu/options.c:1176 src/menu/options.c:1267 src/menu/replayview.c:488
 msgid "Back"
 msgstr "Retour"
 
-#: src/gamepad.c:905
+#: src/gamepad.c:910
 msgid "Guide"
 msgstr "Guide"
 
-#: src/gamepad.c:906
+#: src/gamepad.c:911
 msgid "Start"
 msgstr "Start"
 
-#: src/gamepad.c:907
+#: src/gamepad.c:912
 msgid "Left Stick"
 msgstr "Joystick Gauche"
 
-#: src/gamepad.c:908
+#: src/gamepad.c:913
 msgid "Right Stick"
 msgstr "Joystick Droite"
 
-#: src/gamepad.c:909
+#: src/gamepad.c:914
 msgid "Left Bumper"
 msgstr "Gâchette Haute Gauche"
 
-#: src/gamepad.c:910
+#: src/gamepad.c:915
 msgid "Right Bumper"
 msgstr "Gâchette Haute Droite"
 
-#: src/gamepad.c:911
+#: src/gamepad.c:916
 msgid "Up"
 msgstr "Haut"
 
-#: src/gamepad.c:912
+#: src/gamepad.c:917
 msgid "Down"
 msgstr "Bas"
 
-#: src/gamepad.c:913
+#: src/gamepad.c:918
 msgid "Left"
 msgstr "Gauche"
 
-#: src/gamepad.c:914
+#: src/gamepad.c:919
 msgid "Right"
 msgstr "Droite"
 
-#: src/gamepad.c:915
+#: src/gamepad.c:920
 msgid "Misc"
 msgstr "Misc"
 
-#: src/gamepad.c:916
+#: src/gamepad.c:921
 msgid "P1"
 msgstr "J1"
 
-#: src/gamepad.c:917
+#: src/gamepad.c:922
 msgid "P2"
 msgstr "J2"
 
-#: src/gamepad.c:918
+#: src/gamepad.c:923
 msgid "P3"
 msgstr "J3"
 
-#: src/gamepad.c:919
+#: src/gamepad.c:924
 msgid "P4"
 msgstr "J4"
 
-#: src/gamepad.c:920
+#: src/gamepad.c:925
 msgid "Touchpad"
 msgstr "Pavé tactile"
 
-#: src/gamepad.c:921
+#: src/gamepad.c:926
 msgid "Misc 2"
 msgstr "Divers 2"
 
-#: src/gamepad.c:922
+#: src/gamepad.c:927
 msgid "Misc 3"
 msgstr "Divers 3"
 
-#: src/gamepad.c:923
+#: src/gamepad.c:928
 msgid "Misc 4"
 msgstr "Divers 4"
 
-#: src/gamepad.c:924
+#: src/gamepad.c:929
 msgid "Misc 5"
 msgstr "Divers 5"
 
-#: src/gamepad.c:925
+#: src/gamepad.c:930
 msgid "Misc 6"
 msgstr "Divers 6"
 
-#: src/gamepad.c:931 src/gamepad.c:946
+#: src/gamepad.c:936 src/gamepad.c:951
 msgid "Left Trigger"
 msgstr "Gâchette Gauche"
 
-#: src/gamepad.c:932 src/gamepad.c:947
+#: src/gamepad.c:937 src/gamepad.c:952
 msgid "Right Trigger"
 msgstr "Gâchette Droite"
 
-#: src/gamepad.c:933
+#: src/gamepad.c:938
 msgid "Stick Up"
 msgstr "Joystick Haut"
 
-#: src/gamepad.c:934
+#: src/gamepad.c:939
 msgid "Stick Down"
 msgstr "Joystick Bas"
 
-#: src/gamepad.c:935
+#: src/gamepad.c:940
 msgid "Stick Left"
 msgstr "Joystick Gauche"
 
-#: src/gamepad.c:936
+#: src/gamepad.c:941
 msgid "Stick Right"
 msgstr "Joystick Droite"
 
-#: src/gamepad.c:942
+#: src/gamepad.c:947
 msgid "Left X"
 msgstr "Gauche X"
 
-#: src/gamepad.c:943
+#: src/gamepad.c:948
 msgid "Left Y"
 msgstr "Gauche Y"
 
-#: src/gamepad.c:944
+#: src/gamepad.c:949
 msgid "Right X"
 msgstr "Droite X"
 
-#: src/gamepad.c:945
+#: src/gamepad.c:950
 msgid "Right Y"
 msgstr "Droite Y"
 
-#: src/i18n/i18n.c:189
+#: src/i18n/i18n.c:191
 msgid "__NAME__"
 msgstr "Français"
 
-#: src/menu/charprofile.c:61
+#: src/menu/charprofile.c:63
 msgid "Hakurei Reimu"
 msgstr "Hakurei Reimu"
 
-#: src/menu/charprofile.c:62
+#: src/menu/charprofile.c:64
 msgid "Shrine Maiden of Fantasy"
 msgstr "Prêtresse du sanctuaire fantastique"
 
-#: src/menu/charprofile.c:63 src/menu/charprofile.c:73
+#: src/menu/charprofile.c:65 src/menu/charprofile.c:75
 msgid "Human"
 msgstr "Humain"
 
-#: src/menu/charprofile.c:64
+#: src/menu/charprofile.c:66
 msgid "Literature (Fiction)"
 msgstr "Littérature (fiction)"
 
-#: src/menu/charprofile.c:65
+#: src/menu/charprofile.c:67
 msgid ""
 "The incredibly particular shrine maiden.\n"
 "\n"
@@ -5445,19 +5445,19 @@ msgstr ""
 "en sanglotant à sa porte, elle n'a d'autre choix que de poser son livre et "
 "de passer à l'action."
 
-#: src/menu/charprofile.c:71
+#: src/menu/charprofile.c:73
 msgid "Kirisame Marisa"
 msgstr "Kirisame Marisa"
 
-#: src/menu/charprofile.c:72
+#: src/menu/charprofile.c:74
 msgid "Unbelievably Ordinary Magician"
 msgstr "Un magicien incroyablement ordinaire"
 
-#: src/menu/charprofile.c:74
+#: src/menu/charprofile.c:76
 msgid "Eclecticism"
 msgstr "Éclectisme"
 
-#: src/menu/charprofile.c:75
+#: src/menu/charprofile.c:77
 msgid ""
 "The confident, hyperactive witch.\n"
 "\n"
@@ -5480,23 +5480,23 @@ msgstr ""
 "Ce n'est pas qu'un avertissement comme celui-là l'arrêterait de toute façon. "
 "Alors, elle s'en va."
 
-#: src/menu/charprofile.c:81
+#: src/menu/charprofile.c:83
 msgid "Konpaku Yōmu"
 msgstr "Konpaku Yōmu"
 
-#: src/menu/charprofile.c:82
+#: src/menu/charprofile.c:84
 msgid "Swordswoman Between Worlds"
 msgstr "La guerrière entre deux mondes"
 
-#: src/menu/charprofile.c:83
+#: src/menu/charprofile.c:85
 msgid "Half-Human, Half-Phantom"
 msgstr "Mi-humain, mi-fantôme"
 
-#: src/menu/charprofile.c:84
+#: src/menu/charprofile.c:86
 msgid "Fencing"
 msgstr "Escrime"
 
-#: src/menu/charprofile.c:85
+#: src/menu/charprofile.c:87
 msgid ""
 "The swordswoman of the somewhat-dead.\n"
 "\n"
@@ -5522,15 +5522,15 @@ msgstr ""
 "Elle s'est tout de même vu confier une mission importante par Dame Yuyuko. "
 "Espérons qu'elle ne se laissera pas griser par le succès."
 
-#: src/menu/charprofile.c:93
+#: src/menu/charprofile.c:95
 msgid "Fairy"
 msgstr "Fée"
 
-#: src/menu/charprofile.c:94
+#: src/menu/charprofile.c:96
 msgid "Thermodynamics"
 msgstr "Thermodynamiques"
 
-#: src/menu/charprofile.c:95
+#: src/menu/charprofile.c:97
 msgid ""
 "The lovably-foolish ice fairy.\n"
 "\n"
@@ -5546,15 +5546,15 @@ msgstr ""
 "\n"
 "Envisagez de la ménager."
 
-#: src/menu/charprofile.c:104
+#: src/menu/charprofile.c:106
 msgid "Pestilence God"
 msgstr "Dieu de la Peste"
 
-#: src/menu/charprofile.c:105
+#: src/menu/charprofile.c:107
 msgid "Gyroscopic Stabilization"
 msgstr "Stabilisation Gyroscopique"
 
-#: src/menu/charprofile.c:106
+#: src/menu/charprofile.c:108
 msgid ""
 "Guardian of Yōkai Mountain. Her angular momentum is out of this world!\n"
 "\n"
@@ -5570,23 +5570,23 @@ msgstr ""
 "\n"
 "Tu es cependant assez grand·e pour décider de ton propre chemin dans la vie."
 
-#: src/menu/charprofile.c:113 src/stages/stage3/scuttle.c:37
+#: src/menu/charprofile.c:115 src/stages/stage3/scuttle.c:37
 msgid "Scuttle"
 msgstr "Scuttle"
 
-#: src/menu/charprofile.c:114
+#: src/menu/charprofile.c:116
 msgid "Agile Insect Engineer"
 msgstr "Ingénieur Insecte Agile"
 
-#: src/menu/charprofile.c:115
+#: src/menu/charprofile.c:117
 msgid "Bombardier Beetle"
 msgstr "Coléoptère Bombardier"
 
-#: src/menu/charprofile.c:116
+#: src/menu/charprofile.c:118
 msgid "Full Stack 'Web' Development"
 msgstr "Développement Full Stack ‘Web’"
 
-#: src/menu/charprofile.c:117
+#: src/menu/charprofile.c:119
 msgid ""
 "Not all things are computable, and this bug seems to sneak in at a decisive "
 "fork in your commute to the true culprit.\n"
@@ -5600,15 +5600,15 @@ msgstr ""
 "La majorité des insectes ne fomentent pas de grandes révolutions, mais leur "
 "simple présence suffit à perturber le cours des événements."
 
-#: src/menu/charprofile.c:126
+#: src/menu/charprofile.c:128
 msgid "Insect"
 msgstr "Insecte"
 
-#: src/menu/charprofile.c:127
+#: src/menu/charprofile.c:129
 msgid "Evolutionary Socio-Entomology"
 msgstr "Socio-entomologie Évolutive"
 
-#: src/menu/charprofile.c:128
+#: src/menu/charprofile.c:130
 msgid ""
 "A bright bug - or was it insect? - far from her usual stomping grounds.\n"
 "\n"
@@ -5627,15 +5627,15 @@ msgstr ""
 "Si elle pense avoir été lésée dans l’évolution, quelqu’un devrait lui parler "
 "des trilobites…"
 
-#: src/menu/charprofile.c:137
+#: src/menu/charprofile.c:139
 msgid "Vampire"
 msgstr "Vampire"
 
-#: src/menu/charprofile.c:138
+#: src/menu/charprofile.c:140
 msgid "Hematology"
 msgstr "Hématologie"
 
-#: src/menu/charprofile.c:139
+#: src/menu/charprofile.c:141
 msgid ""
 "Vampiric blast from the past. Doesn’t she know Gensōkyō already has new "
 "bloodsuckers in town?\n"
@@ -5653,15 +5653,15 @@ msgstr ""
 "\n"
 "Aujourd’hui, tout le monde a plusieurs activités annexes…"
 
-#: src/menu/charprofile.c:148
+#: src/menu/charprofile.c:150
 msgid "Oarfish"
 msgstr "Poisson-ruban"
 
-#: src/menu/charprofile.c:149
+#: src/menu/charprofile.c:151
 msgid "Meteorology (Fulminology)"
 msgstr "Météorologie (Fulminologie)"
 
-#: src/menu/charprofile.c:150
+#: src/menu/charprofile.c:152
 msgid ""
 "Messenger from the clouds, and an amateur meteorologist.\n"
 "\n"
@@ -5678,15 +5678,15 @@ msgstr ""
 "Bien qu’elle soit si formelle et guindée, elle semble être la seule à savoir "
 "ce qui se passe."
 
-#: src/menu/charprofile.c:159
+#: src/menu/charprofile.c:161
 msgid "Shinigami(?)"
 msgstr "Shinigami(?)"
 
-#: src/menu/charprofile.c:160
+#: src/menu/charprofile.c:162
 msgid "Theoretical Physics / Forensic Pathology (dual-major)"
 msgstr "Physique théorique / Médecine légale (double spécialité)"
 
-#: src/menu/charprofile.c:161
+#: src/menu/charprofile.c:163
 msgid ""
 "Slightly upset over being forgotten.\n"
 "\n"
@@ -5706,39 +5706,39 @@ msgstr ""
 "dessous. Essaie de ne pas laisser trop de pierres écraser les yōkai "
 "innocents en bas quand sa Tour de Babel commence à s’effondrer."
 
-#: src/menu/charprofile.c:168
+#: src/menu/charprofile.c:170
 msgid "Locked"
 msgstr "Verrouillé"
 
-#: src/menu/charprofile.c:172
+#: src/menu/charprofile.c:174
 msgid "You have not unlocked this character yet!"
 msgstr "Vous n’avez pas encore débloqué ce personnage !"
 
-#: src/menu/charprofile.c:192
+#: src/menu/charprofile.c:194
 msgid "Species"
 msgstr "Espèce"
 
-#: src/menu/charprofile.c:193
+#: src/menu/charprofile.c:195
 msgid "Area of Study"
 msgstr "Domaine d’étude"
 
-#: src/menu/charprofile.c:223 src/menu/media.c:56
+#: src/menu/charprofile.c:226 src/menu/media.c:56
 msgid "Character Profiles"
 msgstr "Profils des personnages"
 
-#: src/menu/charprofile.c:269
+#: src/menu/charprofile.c:272
 msgid "Press [Fire] for alternate expressions"
 msgstr "Appuyez sur [Fire] pour expressions alternatives"
 
-#: src/menu/charselect.c:166
+#: src/menu/charselect.c:170
 msgid "Intuition"
 msgstr "Intuition"
 
-#: src/menu/charselect.c:167
+#: src/menu/charselect.c:171
 msgid "Science"
 msgstr "Science"
 
-#: src/menu/charselect.c:174
+#: src/menu/charselect.c:178
 msgid "Select Character"
 msgstr "Sélectionner un personnage"
 
@@ -5830,7 +5830,7 @@ msgid "Game Paused"
 msgstr "Jeu En Pause"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1180
+#: src/menu/options.c:1182
 msgid "Options"
 msgstr "Options"
 
@@ -5882,7 +5882,7 @@ msgstr "Entraînement de sorts"
 msgid "Select Stage"
 msgstr "Sélectionner un stage"
 
-#: src/menu/mainmenu.c:128 src/menu/replayview.c:376
+#: src/menu/mainmenu.c:128 src/menu/replayview.c:375
 msgid "Replays"
 msgstr "Replays"
 
@@ -5903,7 +5903,7 @@ msgstr ""
 "Fangame dérivé non officiel du Projet Tōhō\n"
 "Non affilié à ZUN ou Team Shanghai Alice"
 
-#: src/menu/media.c:57 src/menu/musicroom.c:136
+#: src/menu/media.c:57 src/menu/musicroom.c:138
 msgid "Music Room"
 msgstr "Salle de musique"
 
@@ -5911,11 +5911,11 @@ msgstr "Salle de musique"
 msgid "Replay Cutscenes"
 msgstr "Revoir les cutscenes"
 
-#: src/menu/musicroom.c:124
+#: src/menu/musicroom.c:126
 msgid "Now playing"
 msgstr "Lecture en cours"
 
-#: src/menu/musicroom.c:170
+#: src/menu/musicroom.c:174
 msgid ""
 "\n"
 "You have not unlocked this track yet!\n"
@@ -5928,7 +5928,7 @@ msgstr ""
 "Si vous voulez l’écouter malgré tout, sélectionnez-le de nouveau pour "
 "confirmer."
 
-#: src/menu/musicroom.c:178
+#: src/menu/musicroom.c:182
 msgid ""
 "\n"
 "No comment available"
@@ -5936,369 +5936,369 @@ msgstr ""
 "\n"
 "Aucun commentaire disponible"
 
-#: src/menu/musicroom.c:234
+#: src/menu/musicroom.c:240
 msgid "Unknown track"
 msgstr "Morceau inconnu"
 
-#: src/menu/options.c:536
+#: src/menu/options.c:538
 msgid "Reset all settings to defaults?"
 msgstr "Réinitialiser tous les paramètres par défaut ?"
 
-#: src/menu/options.c:542
+#: src/menu/options.c:544
 msgid "Reset all settings to the last saved values?"
 msgstr "Réinitialiser tous les paramètres aux dernières valeurs sauvegardées ?"
 
-#: src/menu/options.c:619 src/menu/options.c:810
+#: src/menu/options.c:621 src/menu/options.c:812
 msgid "on"
 msgstr "activé"
 
-#: src/menu/options.c:620 src/menu/options.c:811
+#: src/menu/options.c:622 src/menu/options.c:813
 msgid "off"
 msgstr "désactivé"
 
-#: src/menu/options.c:746 src/menu/savereplay.c:134
+#: src/menu/options.c:748 src/menu/savereplay.c:140
 msgid "Yes"
 msgstr "Oui"
 
-#: src/menu/options.c:747 src/menu/savereplay.c:135
+#: src/menu/options.c:749 src/menu/savereplay.c:141
 msgid "No"
 msgstr "Non"
 
-#: src/menu/options.c:775
+#: src/menu/options.c:777
 msgid "Video Options"
 msgstr "Options vidéo"
 
-#: src/menu/options.c:778
+#: src/menu/options.c:780
 msgid "Fullscreen"
 msgstr "Plein écran"
 
-#: src/menu/options.c:783
+#: src/menu/options.c:785
 msgid "Display"
 msgstr "Affichage"
 
-#: src/menu/options.c:787
+#: src/menu/options.c:789
 msgid "Window size"
 msgstr "Taille de la fenêtre"
 
-#: src/menu/options.c:792
+#: src/menu/options.c:794
 msgid "Renderer resolution"
 msgstr "Résolution du rendu"
 
-#: src/menu/options.c:797
+#: src/menu/options.c:799
 msgid "Resizable window"
 msgstr "Fenêtre redimensionnable"
 
-#: src/menu/options.c:804
+#: src/menu/options.c:806
 msgid "Pause the game when not focused"
 msgstr "Mettre le jeu en pause lorsqu’il n’est pas actif"
 
-#: src/menu/options.c:808
+#: src/menu/options.c:810
 msgid "Vertical synchronization"
 msgstr "Synchronisation verticale"
 
-#: src/menu/options.c:814
+#: src/menu/options.c:816
 msgid "adaptive"
 msgstr "adaptive"
 
-#: src/menu/options.c:817
+#: src/menu/options.c:819
 msgid "Skip frames"
 msgstr "Ignorer des images"
 
-#: src/menu/options.c:825
+#: src/menu/options.c:827
 msgid "Overall rendering quality"
 msgstr "Qualité globale du rendu"
 
-#: src/menu/options.c:829
+#: src/menu/options.c:831
 msgid "Draw background"
 msgstr "Afficher le fond"
 
-#: src/menu/options.c:833
+#: src/menu/options.c:835
 msgid "Background rendering quality"
 msgstr "Qualité du rendu du fond"
 
-#: src/menu/options.c:840
+#: src/menu/options.c:842
 msgid "Anti-aliasing"
 msgstr "Anti-crénelage"
 
-#: src/menu/options.c:842
+#: src/menu/options.c:844
 msgid "none"
 msgstr "aucun"
 
-#: src/menu/options.c:843
+#: src/menu/options.c:845
 msgid "fxaa"
 msgstr "fxaa"
 
-#: src/menu/options.c:845
+#: src/menu/options.c:847
 msgid "Particle effects"
 msgstr "Effets de particules"
 
-#: src/menu/options.c:847 src/menu/options.c:852
+#: src/menu/options.c:849 src/menu/options.c:854
 msgid "minimal"
 msgstr "minimal"
 
-#: src/menu/options.c:848 src/menu/options.c:854
+#: src/menu/options.c:850 src/menu/options.c:856
 msgid "full"
 msgstr "complet"
 
-#: src/menu/options.c:850
+#: src/menu/options.c:852
 msgid "Postprocessing effects"
 msgstr "Effets de post-traitement"
 
-#: src/menu/options.c:853
+#: src/menu/options.c:855
 msgid "fast"
 msgstr "rapide"
 
-#: src/menu/options.c:878
+#: src/menu/options.c:880
 msgid "Gamepad Controls"
 msgstr "Contrôles du gamepad"
 
-#: src/menu/options.c:880 src/menu/options.c:1073
+#: src/menu/options.c:882 src/menu/options.c:1075
 msgid "Move up"
 msgstr "Monter"
 
-#: src/menu/options.c:884 src/menu/options.c:1077
+#: src/menu/options.c:886 src/menu/options.c:1079
 msgid "Move down"
 msgstr "Descendre"
 
-#: src/menu/options.c:888 src/menu/options.c:1081
+#: src/menu/options.c:890 src/menu/options.c:1083
 msgid "Move left"
 msgstr "Gauche"
 
-#: src/menu/options.c:892 src/menu/options.c:1085
+#: src/menu/options.c:894 src/menu/options.c:1087
 msgid "Move right"
 msgstr "Droite"
 
-#: src/menu/options.c:898 src/menu/options.c:1091
+#: src/menu/options.c:900 src/menu/options.c:1093
 msgid "Shoot"
 msgstr "Tirer"
 
-#: src/menu/options.c:902 src/menu/options.c:1095
+#: src/menu/options.c:904 src/menu/options.c:1097
 msgid "Focus"
 msgstr "Concentration"
 
-#: src/menu/options.c:906 src/menu/options.c:1099
+#: src/menu/options.c:908 src/menu/options.c:1101
 msgid "Use Spell Card"
 msgstr "Utiliser une Carte Magique"
 
-#: src/menu/options.c:910 src/menu/options.c:1103
+#: src/menu/options.c:912 src/menu/options.c:1105
 msgid "Power Surge / Discharge"
 msgstr "Surge / Décharge de puissance"
 
-#: src/menu/options.c:916 src/menu/options.c:1117
+#: src/menu/options.c:918 src/menu/options.c:1119
 msgid "Skip dialog"
 msgstr "Passer le dialogue"
 
-#: src/menu/options.c:994
+#: src/menu/options.c:996
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr ""
 "Appuyez sur un bouton de votre manette pour quitter le mode test du joystick"
 
-#: src/menu/options.c:997
+#: src/menu/options.c:999
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "Appuyez sur %s de votre manette pour entrer en mode test du joystick"
 
-#: src/menu/options.c:1010
+#: src/menu/options.c:1012
 msgid "Gamepad Options"
 msgstr "Options du gamepad"
 
-#: src/menu/options.c:1021
+#: src/menu/options.c:1023
 msgid "Enable Gamepad/Joystick support"
 msgstr "Activer la prise en charge du gamepad/joystick"
 
-#: src/menu/options.c:1025
+#: src/menu/options.c:1027
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/menu/options.c:1031 src/menu/options.c:1253
+#: src/menu/options.c:1033 src/menu/options.c:1255
 msgid "Customize controls…"
 msgstr "Personnaliser les contrôles…"
 
-#: src/menu/options.c:1035
+#: src/menu/options.c:1037
 msgid "Remap square input into circular"
 msgstr "Convertir l’entrée carrée en circulaire"
 
-#: src/menu/options.c:1041
+#: src/menu/options.c:1043
 msgid "Direction snap factor"
 msgstr "Facteur de verrouillage directionnel"
 
-#: src/menu/options.c:1045
+#: src/menu/options.c:1047
 msgid "Diagonal bias"
 msgstr "Biais diagonal"
 
-#: src/menu/options.c:1052
+#: src/menu/options.c:1054
 msgid "Dead zone"
 msgstr "Zone morte"
 
-#: src/menu/options.c:1056
+#: src/menu/options.c:1058
 msgid "Maximum zone"
 msgstr "Zone maximale"
 
-#: src/menu/options.c:1060
+#: src/menu/options.c:1062
 msgid "Sensitivity"
 msgstr "Sensibilité"
 
-#: src/menu/options.c:1071
+#: src/menu/options.c:1073
 msgid "Controls"
 msgstr "Contrôles"
 
-#: src/menu/options.c:1109
+#: src/menu/options.c:1111
 msgid "Toggle fullscreen"
 msgstr "Basculer en plein écran"
 
-#: src/menu/options.c:1113
+#: src/menu/options.c:1115
 msgid "Take a screenshot"
 msgstr "Prendre une capture d’écran"
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1125
 msgid "Toggle audio"
 msgstr "Basculer audio"
 
-#: src/menu/options.c:1129
+#: src/menu/options.c:1131
 msgid "Stop the game immediately"
 msgstr "Arrêter le jeu immédiatement"
 
-#: src/menu/options.c:1133
+#: src/menu/options.c:1135
 msgid "Restart the game immediately"
 msgstr "Redémarrer le jeu immédiatement"
 
-#: src/menu/options.c:1137
+#: src/menu/options.c:1139
 msgid "Quick save"
 msgstr "Sauvegarde rapide"
 
-#: src/menu/options.c:1141
+#: src/menu/options.c:1143
 msgid "Quick load"
 msgstr "Chargement rapide"
 
-#: src/menu/options.c:1148
+#: src/menu/options.c:1150
 msgid "Toggle God mode"
 msgstr "Basculer le mode Dieu"
 
-#: src/menu/options.c:1152
+#: src/menu/options.c:1154
 msgid "Skip stage"
 msgstr "Passer le stage"
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1158
 msgid "Power up"
 msgstr "Augmenter la puissance"
 
-#: src/menu/options.c:1160
+#: src/menu/options.c:1162
 msgid "Power down"
 msgstr "Réduire la puissance"
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1166
 msgid "Disable background rendering (HoM effect)"
 msgstr "Désactiver le rendu du fond (effet HoM)"
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1170
 msgid "Toggle collision areas overlay"
 msgstr "Basculer l’affichage des zones de collision"
 
-#: src/menu/options.c:1184
+#: src/menu/options.c:1186
 msgid "Player name"
 msgstr "Nom du joueur"
 
-#: src/menu/options.c:1193
+#: src/menu/options.c:1195
 msgid "Language"
 msgstr "Langue"
 
-#: src/menu/options.c:1202
+#: src/menu/options.c:1204
 msgid "Save replays"
 msgstr "Sauvegarder les replays"
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1206
 msgid "always"
 msgstr "toujours"
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1207
 msgid "never"
 msgstr "jamais"
 
-#: src/menu/options.c:1206
+#: src/menu/options.c:1208
 msgid "ask"
 msgstr "demander"
 
-#: src/menu/options.c:1208
+#: src/menu/options.c:1210
 msgid "Auto-restart in Spell Practice"
 msgstr "Redémarrage automatique en Spell-Training"
 
-#: src/menu/options.c:1212
+#: src/menu/options.c:1214
 msgid "Power in Spell and Stage Practice"
 msgstr "Puissance en Spell- et Stage-Training"
 
-#: src/menu/options.c:1220
+#: src/menu/options.c:1222
 msgid "Shoot by default"
 msgstr "Tirer par défaut"
 
-#: src/menu/options.c:1224
+#: src/menu/options.c:1226
 msgid "Automatic Power Surge activation"
 msgstr "Activation automatique de Power Surge"
 
-#: src/menu/options.c:1228
+#: src/menu/options.c:1230
 msgid "Boss healthbar style"
 msgstr "Style de barre de vie du boss"
 
-#: src/menu/options.c:1230
+#: src/menu/options.c:1232
 msgid "classic"
 msgstr "classique"
 
-#: src/menu/options.c:1231
+#: src/menu/options.c:1233
 msgid "modern"
 msgstr "moderne"
 
-#: src/menu/options.c:1233
+#: src/menu/options.c:1235
 msgid "Floating score text visibility"
 msgstr "Visibilité du texte de score flottant"
 
-#: src/menu/options.c:1239
+#: src/menu/options.c:1241
 msgid "SFX Volume"
 msgstr "Volume des effets sonores"
 
-#: src/menu/options.c:1243
+#: src/menu/options.c:1245
 msgid "BGM Volume"
 msgstr "Volume de la musique"
 
-#: src/menu/options.c:1247
+#: src/menu/options.c:1249
 msgid "Mute audio"
 msgstr "Couper le son"
 
-#: src/menu/options.c:1252
+#: src/menu/options.c:1254
 msgid "Video options…"
 msgstr "Options vidéo…"
 
-#: src/menu/options.c:1254
+#: src/menu/options.c:1256
 msgid "Gamepad & Joystick options…"
 msgstr "Options du gamepad et du joystick…"
 
-#: src/menu/options.c:1258
+#: src/menu/options.c:1260
 msgid "Reload from last saved"
 msgstr "Recharger depuis la dernière sauvegarde"
 
-#: src/menu/options.c:1261
+#: src/menu/options.c:1263
 msgid "Reset to defaults"
 msgstr "Réinitialiser par défaut"
 
-#: src/menu/options.c:1394
+#: src/menu/options.c:1396
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Appuyez sur une touche pour assigner, ESC pour annuler"
 
-#: src/menu/options.c:1434
+#: src/menu/options.c:1436
 msgid "All devices"
 msgstr "Tous les périphériques"
 
-#: src/menu/options.c:1440
+#: src/menu/options.c:1442
 msgid "No devices available"
 msgstr "Aucun périphérique disponible"
 
-#: src/menu/options.c:1482
+#: src/menu/options.c:1484
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Bougez un axe pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1483
+#: src/menu/options.c:1485
 msgid "Press a button to assign, Back to cancel"
 msgstr "Appuyez sur un bouton pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1499
+#: src/menu/options.c:1501
 msgid "Unbound"
 msgstr "Non assigné"
 
@@ -6321,15 +6321,15 @@ msgstr "Impossible de rejouer ce stage: personnage/joueur inconnu %X/%X"
 msgid "Unknown stage %X"
 msgstr "Stage inconnu %X"
 
-#: src/menu/replayview.c:484
+#: src/menu/replayview.c:483
 msgid "No replays available. Play the game and record some!"
 msgstr "Aucun replay disponible. Jouez au jeu et enregistrez-en !"
 
-#: src/menu/replayview.c:486
+#: src/menu/replayview.c:485
 msgid "There was a problem getting the replay list :("
 msgstr "Problème lors de la récupération de la liste des replays :("
 
-#: src/menu/savereplay.c:67
+#: src/menu/savereplay.c:73
 msgid "Save Replay?"
 msgstr "Sauvegarder les replays?"
 
@@ -6371,15 +6371,15 @@ msgstr "Complétées/Tentatives"
 msgid "??????"
 msgstr ""
 
-#: src/player.c:114
+#: src/player.c:116
 msgid "Full Power!"
 msgstr "Puissance maximale!"
 
-#: src/player.c:732
+#: src/player.c:734
 msgid "Power Surge!"
 msgstr "Surge de puissance!"
 
-#: src/player.c:1582
+#: src/player.c:1586
 msgid " PIV"
 msgstr " PIV"
 
@@ -6478,6 +6478,26 @@ msgstr ""
 #: src/plrmodes/youmu_b.c:626
 msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr "Épée Égide “Tranche Omnidirectionnelle Saigyō”"
+
+#: src/renderer/common/backend.c:118
+#, fuzzy
+msgid "Automatic"
+msgstr "Lunatique"
+
+#: src/renderer/common/backend.c:143
+msgid "Cancel"
+msgstr ""
+
+#: src/renderer/common/backend.c:144
+msgid "Run"
+msgstr ""
+
+#: src/renderer/common/backend.c:147
+msgid ""
+"Select the rendering API.\n"
+"\n"
+"Change this if the game crashes or displays incorrectly.\n"
+msgstr ""
 
 #: src/stage.c:622
 #, c-format

@@ -576,6 +576,9 @@ src/util.h
 src/util/assert.c
 src/util/assert.h
 src/util/callchain.h
+src/util/choice_dialog.h
+src/util/choice_dialog_stub.c
+src/util/choice_dialog_win32.c
 src/util/compat.h
 src/util/compat_cmplx.h
 src/util/consideredharmful.h
