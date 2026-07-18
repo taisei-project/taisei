@@ -64,8 +64,10 @@ uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);
 
 size_t utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
-
 int ucs4_to_utf8(size_t ucs4_len, const uint32_t *ucs4, StringBuffer *buf) attr_nonnull(2, 3);
+
+size_t utf8_to_utf16(const char *utf8, size_t bufsize, uint16_t buf[bufsize]) attr_nonnull(1, 3);
+int utf16_to_utf8(size_t utf16_len, const uint16_t *utf16, StringBuffer *buf) attr_nonnull(2, 3);
 
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]);
 void hexdigest(const uint8_t *input, size_t input_size, char *output, size_t output_size);

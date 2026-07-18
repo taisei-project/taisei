@@ -112,6 +112,59 @@ int ucs4_to_utf8(size_t ucs4_len, const uint32_t *ucs4, StringBuffer *buf) {
 	return len;
 }
 
+size_t utf8_to_utf16(const char *utf8, size_t bufsize, uint16_t buf[bufsize]) {
+	uint16_t *bufptr = buf;
+	assert(bufsize > 0);
+
+	while(*utf8) {
+		uint32_t cp = SDL_StepUTF8(&utf8, NULL);
+
+		if(cp <= 0xffff) {
+			*bufptr++ = (uint16_t)cp;
+			assert(bufptr < buf + bufsize);
+		} else {
+			cp -= 0x10000;
+			*bufptr++ = (uint16_t)(0xd800 + (cp >> 10));
+			assert(bufptr < buf + bufsize);
+			*bufptr++ = (uint16_t)(0xdc00 + (cp & 0x3ff));
+			assert(bufptr < buf + bufsize);
+		}
+	}
+
+	*bufptr++ = 0;
+	return bufptr - buf - 1;
+}
+
+int utf16_to_utf8(size_t utf16_len, const uint16_t *utf16, StringBuffer *buf) {
+	int len = 0;
+
+	// optimistic guess: best-case encoding (1 byte per code unit) + final null
+	strbuf_reserve(buf, utf16_len + 1);
+
+	for(uint i = 0; i < utf16_len; ++i) {
+		uint32_t cp = utf16[i];
+
+		if(cp >= 0xd800 && cp <= 0xdbff && i + 1 < utf16_len) {
+			uint32_t low = utf16[i + 1];
+
+			if(low >= 0xdc00 && low <= 0xdfff) {
+				cp = 0x10000 + ((cp - 0xd800) << 10) + (low - 0xdc00);
+				++i;
+			}
+		}
+
+		// enough for worst-case encoding (4 bytes) + final null
+		strbuf_reserve(buf, 5);
+		const char *oldpos = buf->pos;
+		buf->pos = SDL_UCS4ToUTF8(cp, buf->pos);
+		len += buf->pos - oldpos;
+	}
+
+	*buf->pos = 0;
+	assert(len == strlen(buf->start));
+	return len;
+}
+
 #ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 /*
  * public domain strtok_r() by Charlie Gordon
