@@ -13,6 +13,10 @@
 #include "portrait.h"
 #include "resource/font.h"
 
+enum {
+	DIALOG_TITLE_TIMEOUT = 720,
+};
+
 void dialog_init(Dialog *d) {
 	*d = (typeof(*d)) {};
 	d->state = DIALOG_STATE_IDLE;
@@ -100,6 +104,26 @@ void dialog_update(Dialog *d) {
 
 		fapproach_asymptotic_p(&a->focus, a->target_focus, 0.12, 1e-3);
 	}
+
+	if(d->title.activated_time > 0) {
+		int timeout = d->title.activated_time - global.frames + DIALOG_TITLE_TIMEOUT;
+
+		if(timeout > 0 && d->state != DIALOG_STATE_FADEOUT) {
+			fapproach_asymptotic_p(&d->title.main_alpha, 1.0f, 0.02f, 1e-3f);
+			if(d->title.main_alpha >= 0.6f ) {
+				fapproach_asymptotic_p(&d->title.sub_alpha, 1.0f, 0.015f, 1e-3f);
+			}
+		} else {
+			if(d->title.sub_alpha <= 0.8f) {
+				fapproach_asymptotic_p(&d->title.main_alpha, 0.0f, 0.01f, 1e-3f);
+			}
+			fapproach_asymptotic_p(&d->title.sub_alpha, 0.0f, 0.01f, 1e-3f);
+
+			if(d->title.main_alpha == 0.0f && d->title.sub_alpha == 0.0f) {
+				d->title.activated_time = 0;
+			}
+		}
+	}
 }
 
 void dialog_skippable_wait(Dialog *d, int timeout) {
@@ -157,7 +181,6 @@ void dialog_message_ex(Dialog *d, const DialogMessageParams *params) {
 	assume(params->actor != NULL);
 	assume(params->text != NULL);
 
-	log_debug("%s: %s", params->actor->name, params->text);
 
 	dialog_set_text(d, params->text, &params->actor->speech_color);
 	dialog_focus_actor(d, params->actor);
@@ -237,12 +260,72 @@ static void dialog_actor_update_composite(DialogActor *a) {
 	a->composite_dirty = false;
 }
 
+void dialog_show_title(Dialog *dialog, DialogActor *actor, char *name, char *title) {
+	dialog->title.name = name;
+	dialog->title.text = title;
+	dialog->title.activated_time = global.frames;
+}
+
+static void dialog_title_draw(Dialog *dialog) {
+	auto main_font = res_font("big");
+	auto sub_font = res_font("standard");
+	float main_width = text_width(main_font, dialog->title.name, 0);
+	float sub_width = text_width(sub_font, dialog->title.text, 0);
+
+	float a = (global.frames - dialog->title.activated_time) / (float)DIALOG_TITLE_TIMEOUT;
+	a = tanhf(2.0f * a);
+
+	FloatRect title_bg_rect = {
+		.extent = { max(main_width, sub_width) * 1.5f, VIEWPORT_H / 8 },
+		.offset = { VIEWPORT_W / 2 + 200 - 50 * a, VIEWPORT_H / 2 + 150 - 25 * a },
+	};
+
+	Sprite *bg = res_sprite("part/smoke");
+	float bg_opacity = 0.2f * dialog->opacity * dialog->title.main_alpha;
+	Color bg_color = *RGB(1, 1, 1);
+	color_mul_scalar(&bg_color, bg_opacity);
+
+	r_mat_mv_push();
+	r_mat_mv_translate(title_bg_rect.x, title_bg_rect.y, 0);
+	r_mat_mv_scale(1.5 * title_bg_rect.w / bg->w, 1.5 * title_bg_rect.h / bg->h, 1);
+	r_mat_mv_push();
+	r_mat_mv_rotate(global.frames * 1 * DEG2RAD, 0, 0, 1);
+	SpriteParams bgsp = {
+		.sprite_ptr = bg,
+		.color = &bg_color,
+		.shader_ptr = res_shader("sprite_default"),
+	};
+	r_draw_sprite(&bgsp);
+	r_mat_mv_pop();
+	r_mat_mv_rotate(global.frames * 0.5 * -1.133 * DEG2RAD, 0, 0, 1);
+	r_draw_sprite(&bgsp);
+	r_mat_mv_pop();
+
+	Color clr = *RGB(1, 1, 1);
+	ShaderCustomParams sp = {{ dialog->opacity * dialog->title.main_alpha, 0 }};
+
+	TextParams p = {
+		.shader_ptr = res_shader("text_stagetext"),
+		.shader_params = &sp,
+		.aux_textures = { res_texture("titletransition") },
+		.color = &clr,
+		.pos = { title_bg_rect.x, title_bg_rect.y - title_bg_rect.h * 0.2 },
+		.align = ALIGN_CENTER,
+		.font_ptr = main_font,
+		.overlay_projection = &title_bg_rect,
+	};
+
+	text_draw(dialog->title.name, &p);
+	p.pos.y += font_get_lineskip(main_font) * 0.75;
+	p.font_ptr = sub_font;
+	sp.vector[0] = dialog->opacity * dialog->title.sub_alpha;
+	text_draw(dialog->title.text, &p);
+}
+
 void dialog_draw(Dialog *dialog) {
 	if(dialog == NULL) {
 		return;
 	}
-
-	float o = dialog->opacity;
 
 	for(DialogActor *a = dialog->actors.first; a; a = a->next) {
 		dialog_actor_update_composite(a);
@@ -313,16 +396,18 @@ void dialog_draw(Dialog *dialog) {
 	};
 
 	r_mat_mv_push();
-	if(o < 1) {
-		r_mat_mv_translate(0, 100 * (1 - o), 0);
+
+	if(dialog->opacity < 1) {
+		r_mat_mv_translate(0, 100 * (1 - dialog->opacity), 0);
 	}
-	r_color4(0, 0, 0, 0.8 * o);
+	r_color4(0, 0, 0, 0.8 * dialog->opacity);
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_bg_rect.x, dialog_bg_rect.y, 0);
 	r_mat_mv_scale(dialog_bg_rect.w, dialog_bg_rect.h, 1);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_mat_mv_pop();
+
 
 	Font *font = res_font("standard");
 
@@ -332,14 +417,15 @@ void dialog_draw(Dialog *dialog) {
 	dialog_bg_rect.x -= dialog_bg_rect.w * 0.5;
 	dialog_bg_rect.y -= dialog_bg_rect.h * 0.5;
 
+
 	if(dialog->text.fading_out->opacity > 0) {
 		clr = dialog->text.fading_out->color;
-		color_mul_scalar(&clr, o);
+		color_mul_scalar(&clr, dialog->opacity);
 
 		text_draw_wrapped(_(dialog->text.fading_out->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
-			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
+			.shader_params = &(ShaderCustomParams) {{ dialog->opacity * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
@@ -350,18 +436,22 @@ void dialog_draw(Dialog *dialog) {
 
 	if(dialog->text.current->opacity > 0) {
 		clr = dialog->text.current->color;
-		color_mul_scalar(&clr, o);
+		color_mul_scalar(&clr, dialog->opacity);
 
 		text_draw_wrapped(_(dialog->text.current->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
-			.shader_params = &(ShaderCustomParams) {{ o * dialog->text.current->opacity, 0 }},
+			.shader_params = &(ShaderCustomParams) {{ dialog->opacity * dialog->text.current->opacity, 0 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
 			.overlay_projection = &dialog_bg_rect,
 		});
+	}
+
+	if(dialog->title.activated_time > 0) {
+		dialog_title_draw(dialog);
 	}
 
 	r_mat_tex_pop();
