@@ -61,10 +61,21 @@
 	// Ask windows.h to include a little bit less of the stupid crap we'll never use.
 	// Some of it actually clashes with our names.
 	#define WIN32_LEAN_AND_MEAN
-	#define NOGDI
+	// #define NOGDI   /* Unfortunately we can no longer define this because of choice_dialog_win32.c */
 	#define NOMINMAX
 
+	#ifndef _WIN32_WINNT
+	#define _WIN32_WINNT 0x0A00 /* Windows 10 */
+	#endif
+	#ifndef WINVER
+	#define WINVER 0x0A00
+	#endif
+
+	// Try to deal with GDI namespace pollution
+	#define Ellipse _FUCK_MICROSOFT_Ellipse
 	#include <windows.h>
+	#undef Ellipse
+	#undef RGB
 
 	// far/near pointers are obviously very relevant for modern CPUs and totally deserve their very own, unprefixed keywords!
 	#undef near
