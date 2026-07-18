@@ -499,14 +499,17 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 		video.window = NULL;
 	}
 
-	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
-	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_printf(&buf, "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
+
 	video.window = r_create_window(
-		title,
+		buf.start,
 		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
 		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
 		w, h, flags | SDL_WINDOW_HIDDEN
 	);
+
+	release_scratch_arena(buf.arena);
 
 	if(video.window) {
 		SDL_ShowWindow(video.window);
