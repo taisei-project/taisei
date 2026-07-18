@@ -9,9 +9,13 @@
 #include "backend.h"
 
 #include "config.h"
+#include "i18n/i18n.h"
 #include "memory/scratch.h"
 #include "util.h"
+#include "util/choice_dialog.h"
 #include "util/env.h"
+#include "version.h"
+#include "video.h"
 
 #define R_BACKEND_(x) (_r_backend_##x)
 #define R_BACKEND(x) MACROHAX_EXPAND(MACROHAX_DEFER(R_BACKEND_)(x))
@@ -94,6 +98,69 @@ static char *parse_renderer_string(MemArena *arena, const char *s, char **out_op
 	return name;
 }
 
+static const char *get_config_renderer(MemArena *arena) {
+	auto cfg_val = config_get_str(CONFIG_RENDERER);
+
+#ifndef _WIN32
+	return cfg_val;
+#else
+	// We only really need this for Windows, and show_choice_dialog() is currently only implemented for win32
+
+	if(!env_get("TAISEI_RENDERER_NAG", true)) {
+		return cfg_val;
+	}
+
+	struct {
+		const char *label;
+		const char *value;
+	} choices[] = {
+		// TODO determine which ones are actually available
+		{ _("Automatic"), "default" },
+		{ "Vulkan",       "sdlgpu:vulkan" },
+		{ "Direct3D 12",  "sdlgpu:direct3d12" },
+		{ "OpenGL 3.3",   "gl33" },
+	};
+
+	int selection = 0;
+	const char *labels[countof(choices)];
+
+	for(int i = 0; i < countof(choices); ++i) {
+		if(!strcmp(cfg_val, choices[i].value)) {
+			selection = i;
+		}
+
+		labels[i] = choices[i].label;
+	}
+
+	StringBuffer buf = { arena };
+	strbuf_printf(&buf, "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
+	char *title = strbuf_commit(&buf);
+
+	int idx = show_choice_dialog(arena, &(ChoiceDialogParams) {
+		.choices = labels,
+		.num_choices = countof(labels),
+		.initial_selection = selection,
+		.cancel_label = _("Cancel"),
+		.ok_label = _("Run"),
+		.window_title = title,
+		.text = _(
+			"Select the rendering API.\n\n"
+			"Change this if the game crashes or displays incorrectly.\n"),
+	});
+
+	if(idx < 0) {
+		exit(0);
+	}
+
+	assume(idx < countof(choices));
+
+	auto val = choices[idx].value;
+	config_set_str(CONFIG_RENDERER, val);
+
+	return val;
+#endif
+}
+
 void _r_backend_init(void) {
 	static bool initialized;
 
@@ -111,7 +178,7 @@ void _r_backend_init(void) {
 	if(name) {
 		try_fallbacks = !strcmp(name, "default");
 	} else {
-		name = parse_renderer_string(scratch, config_get_str(CONFIG_RENDERER), &opts);
+		name = parse_renderer_string(scratch, get_config_renderer(scratch), &opts);
 	}
 
 	backend = _r_find_backend(name);

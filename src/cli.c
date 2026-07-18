@@ -217,7 +217,11 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			a->type = CLI_Credits;
 			break;
 		case OPT_RENDERER:
-			env_set("TAISEI_RENDERER", optarg, true);
+			if(!SDL_strcasecmp(optarg, "stfu")) {
+				env_set("TAISEI_RENDERER_NAG", "0", true);
+			} else {
+				env_set("TAISEI_RENDERER", optarg, true);
+			}
 			break;
 		case OPT_CUTSCENE:
 			a->type = CLI_Cutscene;
