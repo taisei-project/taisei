@@ -788,7 +788,12 @@ bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 }
 
 bool sdlgpu_texture_transfer(Texture *dst, Texture *src) {
-	UNREACHABLE;
+	SDL_ReleaseGPUTexture(sdlgpu.device, dst->gpu_texture);
+	SDL_ReleaseGPUSampler(sdlgpu.device, dst->sampler);
+	src->refs = dst->refs;
+	*dst = *src;
+	mem_free(src);
+	return true;
 }
 
 static SDL_GPUCopyPass *sdlgpu_texture_copy_blit(
