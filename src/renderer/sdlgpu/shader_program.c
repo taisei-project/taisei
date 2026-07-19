@@ -147,14 +147,6 @@ void sdlgpu_uniform(Uniform *uni, uint offset, uint count, const void *data) {
 	sdlgpu_shader_object_uniform_set_data(uni->shader->stages.fragment, stg.frag, offset, count, data);
 }
 
-void sdlgpu_unref_texture_from_samplers(Texture *tex) {
-	UNREACHABLE;
-}
-
-void sdlgpu_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew) {
-	UNREACHABLE;
-}
-
 bool sdlgpu_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 	sdlgpu_shader_program_teardown(dst);
 	*dst = *src;
