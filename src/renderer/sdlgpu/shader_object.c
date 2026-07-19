@@ -365,6 +365,7 @@ bool sdlgpu_shader_object_transfer(ShaderObject *dst, ShaderObject *src) {
 
 	SDL_ReleaseGPUShader(sdlgpu.device, dst->shader);
 	*dst = *src;
+	mem_free(src);
 
 	return true;
 }

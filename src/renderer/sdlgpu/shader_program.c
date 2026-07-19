@@ -53,12 +53,16 @@ ShaderProgram *sdlgpu_shader_program_link(uint num_objects, ShaderObject *shobjs
 	return prog;
 }
 
-void sdlgpu_shader_program_destroy(ShaderProgram *prog) {
+static void sdlgpu_shader_program_teardown(ShaderProgram *prog) {
 	sdlgpu_pipecache_unref_shader_program(prog->id);
 	sdlgpu_shader_object_destroy(prog->stages.fragment);
 	sdlgpu_shader_object_destroy(prog->stages.vertex);
 	marena_deinit(&prog->arena);
 	ht_destroy(&prog->uniforms);
+}
+
+void sdlgpu_shader_program_destroy(ShaderProgram *prog) {
+	sdlgpu_shader_program_teardown(prog);
 	mem_free(prog);
 }
 
@@ -152,7 +156,8 @@ void sdlgpu_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew
 }
 
 bool sdlgpu_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
-	// *dst = *src;
-	log_error("FIXME FIXME FIXME");
-	return false;
+	sdlgpu_shader_program_teardown(dst);
+	*dst = *src;
+	mem_free(src);
+	return true;
 }
