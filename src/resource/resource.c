@@ -1355,6 +1355,11 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 	load_resource(transient, flags, async);
 	ires_unlock(transient);
 
+	if(!ires->dependents.num_elements_occupied) {
+		ires_unlock(ires);
+		return true;
+	}
+
 	InternalResource *dependents[ires->dependents.num_elements_occupied];
 
 	ht_ires_counted_set_iter_t iter;
