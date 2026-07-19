@@ -24,7 +24,6 @@ struct MemArena {
 
 struct MemArenaPage {
 	LIST_INTERFACE(MemArenaPage);
-	MemArena *arena;
 	size_t size;
 	alignas(alignof(max_align_t)) char data[];
 };

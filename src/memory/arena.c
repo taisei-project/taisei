@@ -33,7 +33,6 @@ static MemArenaPage *_arena_new_page(MemArena *arena, size_t min_size) {
 	auto page_size = alloc_size - sizeof(MemArenaPage);
 	MemArenaPage *p = _arena_alloc_page(alloc_size);
 	p->size = page_size;
-	p->arena = arena;
 	alist_append(&arena->pages, p);
 	arena->page_offset = 0;
 	arena->total_allocated += page_size;
@@ -41,7 +40,6 @@ static MemArenaPage *_arena_new_page(MemArena *arena, size_t min_size) {
 }
 
 static void _arena_delete_page(MemArena *arena, MemArenaPage *page) {
-	assume(page->arena == arena);
 	_arena_dealloc_page(page);
 }
 
@@ -49,7 +47,6 @@ INLINE MemArenaPage *_arena_active_page(MemArena *arena) {
 	auto page = arena->pages.last;
 
 	if(page) {
-		assume(page->arena == arena);
 		assume(page->next == NULL);
 	}
 
