@@ -48,6 +48,4 @@ const char *sdlgpu_shader_program_get_debug_label(ShaderProgram *prog);
 Uniform *sdlgpu_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash);
 UniformType sdlgpu_uniform_type(Uniform *uniform);
 void sdlgpu_uniform(Uniform *uniform, uint offset, uint count, const void *data);
-void sdlgpu_unref_texture_from_samplers(Texture *tex);
-void sdlgpu_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew);
 bool sdlgpu_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src);
