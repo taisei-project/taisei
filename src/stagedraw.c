@@ -1077,7 +1077,7 @@ void stage_draw_scene(StageInfo *stage) {
 #define HUD_X_PADDING 16
 #define HUD_X_OFFSET (VIEWPORT_W + VIEWPORT_X)
 #define HUD_WIDTH (SCREEN_W - HUD_X_OFFSET)
-#define HUD_EFFECTIVE_WIDTH (HUD_WIDTH - HUD_X_PADDING * 2)
+#define HUD_EFFECTIVE_WIDTH (HUD_WIDTH - HUD_X_PADDING * 1.5)
 #define HUD_X_SECONDARY_OFS_ICON 18
 #define HUD_X_SECONDARY_OFS_LABEL (HUD_X_SECONDARY_OFS_ICON + 12)
 #define HUD_X_SECONDARY_OFS_VALUE (HUD_X_SECONDARY_OFS_LABEL + 60)
@@ -1271,8 +1271,8 @@ static void draw_graph(float x, float y, float w, float h) {
 	r_mat_mv_pop();
 }
 
-static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
-	text_draw(label_str, &(TextParams) {
+static float draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
+	return text_draw(label_str, &(TextParams) {
 		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
 		.pos = { 0, y_ofs },
@@ -1295,13 +1295,23 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label(_("Lives:"),       labels->y.lives,   labels, lb_label_clr);
 	draw_label(_("Spell Cards:"), labels->y.bombs,   labels, lb_label_clr);
 
+	float secondary_label_w = 0;
+
 	r_mat_mv_push();
 	r_mat_mv_translate(HUD_X_SECONDARY_OFS_LABEL, 0, 0);
-	draw_label(_("Power:"),       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
-	draw_label(_("Value:"),       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
-	draw_label(_("Volts:"),       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
-	draw_label(_("Graze:"),       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
+	secondary_label_w = max(secondary_label_w,
+		draw_label(_("Power:"),       labels->y.power,   labels, &stagedraw.hud_text.color.label_power));
+	secondary_label_w = max(secondary_label_w,
+		draw_label(_("Value:"),       labels->y.value,   labels, &stagedraw.hud_text.color.label_value));
+	secondary_label_w = max(secondary_label_w,
+		draw_label(_("Volts:"),       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage));
+	secondary_label_w = max(secondary_label_w,
+		draw_label(_("Graze:"),       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze));
 	r_mat_mv_pop();
+
+	float secondary_value_ofs = max(
+		HUD_X_SECONDARY_OFS_VALUE,
+		HUD_X_SECONDARY_OFS_LABEL + secondary_label_w + 6);
 
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
@@ -1369,7 +1379,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	}
 
 	r_mat_mv_push();
-	r_mat_mv_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
+	r_mat_mv_translate(secondary_value_ofs, 0, 0);
 
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
