@@ -91,7 +91,7 @@ static void iku_nonspell_spawn_cloud(void) {
 	RNG_ARRAY(rand, 4);
 	float v = (vrng_sreal(rand[2]) + vrng_sreal(rand[3])) * 0.5 + 1.0;
 
-	PROJECTILE(
+	auto p = PROJECTILE(
 		.proto = pp_bigball,
 		.size = 48 * (1 + I),
 		.collision_size = 21.6 * (1 + I),
@@ -99,7 +99,11 @@ static void iku_nonspell_spawn_cloud(void) {
 		.pos = VIEWPORT_W * vrng_sreal(rand[0]) - 15.0 * I,
 		.color = RGBA_MUL_ALPHA(0.2, 0.0, 0.4, 0.6),
 		.move = move_accelerated(1 - 2 * vrng_sreal(rand[1]) + v * I, -0.01 * I),
+		.shader = "sprite_default",
 	);
+	// FIXME: prototypes currently overwrite these
+	p->size = 48 * (1 + I);
+	p->collision_size = 21.6 * (1 + I);
 }
 
 Boss *stage5_spawn_iku(cmplx pos) {
