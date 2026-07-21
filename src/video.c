@@ -584,27 +584,6 @@ static void video_set_fullscreen_internal(bool fullscreen) {
 	SDL_RaiseWindow(video.window);
 }
 
-INLINE bool should_recreate_on_size_change(void) {
-	bool defaultval = (
-		/* Resize failures are impossible to detect under some WMs */
-		video.backend == VIDEO_BACKEND_X11 ||
-		/* Needed to work around various SDL bugs and/or HTML/DOM quirks */
-		// video.backend == VIDEO_BACKEND_EMSCRIPTEN ||
-	0);
-
-	return env_get("TAISEI_VIDEO_RECREATE_ON_RESIZE", defaultval);
-}
-
-INLINE bool should_recreate_on_fullscreen_change(void) {
-	bool defaultval = (
-		/* FIXME Do we need this? */
-		video.backend == VIDEO_BACKEND_X11 ||
-	0);
-
-	return env_get("TAISEI_VIDEO_RECREATE_ON_FULLSCREEN", defaultval);
-}
-
-
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
 	resizable = restrict_to_capability(resizable, VIDEO_CAP_EXTERNAL_RESIZE);
@@ -632,24 +611,13 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 
 	bool display_changed = display != video_current_display();
 	bool size_changed = w != video.current.width || h != video.current.height;
-	bool fullscreen_changed = video_is_fullscreen() != fs;
 
 	if(display_changed) {
 		video_new_window(display, w, h, fs, resizable);
 		return;
 	}
 
-	if(fullscreen_changed && should_recreate_on_fullscreen_change()) {
-		video_new_window(display, w, h, fs, resizable);
-		return;
-	}
-
 	if(size_changed && !fs) {
-		if(!fullscreen_changed && should_recreate_on_size_change()) {
-			video_new_window(display, w, h, fs, resizable);
-			return;
-		}
-
 		SDL_SetWindowSize(video.window, w, h);
 		SDL_SetWindowPosition(
 			video.window,

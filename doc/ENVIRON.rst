@@ -125,18 +125,6 @@ Resources
 Display and rendering
 ~~~~~~~~~~~~~~~~~~~~~
 
-``TAISEI_VIDEO_RECREATE_ON_FULLSCREEN``
-   | Default: ``0``; ``1`` on X11
-
-   If ``1``, Taisei will re-create the window when switching between fullscreen and windowed modes. Can be useful to
-   work around some window manager bugs.
-
-``TAISEI_VIDEO_RECREATE_ON_RESIZE``
-   | Default: ``0``; ``1`` on X11 and Emscripten
-
-   If ``1``, Taisei will re-create the window when the window size is changed in the settings. Can be useful to work
-   around some window manager bugs.
-
 ``TAISEI_RENDERER``
    | Default: ``gl33`` (but see below)
 
