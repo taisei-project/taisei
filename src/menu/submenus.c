@@ -46,7 +46,24 @@ void menu_action_enter_spellpractice(MenuData *menu, void *arg) {
 static void stgpract_do_choose_stage(CallChainResult ccr);
 
 void menu_action_enter_stagepractice(MenuData *menu, void *arg) {
-	enter_menu(create_difficulty_menu(), CALLCHAIN(stgpract_do_choose_stage, NULL));
+	uint32_t mask = 0;
+	int n = stageinfo_get_num_stages();
+	for(Difficulty d = D_Easy; d <= D_Lunatic; ++d) {
+		for(int i = 0; i < n; ++i) {
+			StageInfo *stg = stageinfo_get_by_index(i);
+			if(stg->type != STAGE_STORY) {
+				break;
+			}
+			StageProgress *p = stageinfo_get_progress(stg, d, false);
+
+			if(p && p->unlocked) {
+				mask |= 1 << d;
+				break;
+			}
+		}
+	}
+
+	enter_menu(create_difficulty_menu(mask), CALLCHAIN(stgpract_do_choose_stage, NULL));
 }
 
 static void stgpract_do_choose_stage(CallChainResult ccr) {

@@ -33,7 +33,7 @@ static void update_difficulty_menu(MenuData *menu) {
 	color_approach(&diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
 }
 
-MenuData* create_difficulty_menu(void) {
+MenuData* create_difficulty_menu(uint32_t mask) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_difficulty_menu;
@@ -41,15 +41,25 @@ MenuData* create_difficulty_menu(void) {
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
-	add_menu_entry(m, _("For those just beginning\ntheir academic careers"), set_difficulty, (void *)D_Easy);
-	add_menu_entry(m, _("All those years of study\nhave finally paid off"), set_difficulty, (void *)D_Normal);
-	add_menu_entry(m, _("You must really\nlove books"), set_difficulty, (void *)D_Hard);
-	add_menu_entry(m, _("You either die a student,\nor live long enough to\nbecome a professor"), set_difficulty, (void *)D_Lunatic);
+	add_menu_entry(m, _("For those just beginning\ntheir academic careers"),
+		 (mask & (1<<D_Easy)) ? set_difficulty : NULL, (void *)D_Easy);
+	add_menu_entry(m, _("All those years of study\nhave finally paid off"),
+		 (mask & (1<<D_Normal)) ? set_difficulty : NULL, (void *)D_Normal);
+	add_menu_entry(m, _("You must really\nlove books"),
+		 (mask & (1<<D_Hard)) ? set_difficulty : NULL, (void *)D_Hard);
+	add_menu_entry(m, _("You either die a student,\nor live long enough to\nbecome a professor"),
+		 (mask & (1<<D_Lunatic)) ? set_difficulty : NULL, (void *)D_Lunatic);
+
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+		if(e->action) {
+			m->cursor = i;
+			break;
+		}
+	});
 
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		Difficulty d = (Difficulty)(uintptr_t)e->arg;
-
-		if(d == progress.game_settings.difficulty) {
+		if(d == progress.game_settings.difficulty && e->action) {
 			m->cursor = i;
 			break;
 		}
@@ -88,7 +98,7 @@ void draw_difficulty_menu(MenuData *menu) {
 	r_shader("sprite_default");
 
 	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
-		float scale = 0.5 + e->drawdata;
+		float scale = 0.5 + e->drawdata - 0.2 * (e->action == NULL);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = res_sprite(difficulty_sprite_name(D_Easy + i)),
 			.pos = { 0, 240 * tanh(0.7 * (i - menu->drawdata[0])) },

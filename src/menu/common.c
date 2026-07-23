@@ -61,7 +61,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
 	if(stagediff == D_Any) {
 		if(difficulty_menu) {
-			ctx->diff_menu = create_difficulty_menu();
+			ctx->diff_menu = create_difficulty_menu(~0);
 			enter_menu(ctx->diff_menu, cc_pick_character);
 		} else {
 			ctx->difficulty = progress.game_settings.difficulty;
