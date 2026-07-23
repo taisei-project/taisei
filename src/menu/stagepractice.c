@@ -128,9 +128,12 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 		}
 	}
 
-	while(!dynarray_get(&m->entries, m->cursor).action) {
-		++m->cursor;
-	}
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+		if(e->action) {
+			m->cursor = i;
+			break;
+		}
+	});
 
 	return m;
 }
