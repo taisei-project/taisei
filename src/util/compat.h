@@ -9,13 +9,21 @@
 #pragma once
 #include "taisei.h"
 
+#ifdef TAISEI_BUILDCONF_USE_OPENLIBM
+	#undef __BSD_VISIBLE
+	#define __BSD_VISIBLE 1
+
+	#include <openlibm.h>
+#else
+	#include <complex.h>       // IWYU pragma: export
+	#include <math.h>          // IWYU pragma: export
+#endif
+
 // Common standard library headers
-#include <complex.h>       // IWYU pragma: export
 #include <ctype.h>         // IWYU pragma: export
 #include <float.h>         // IWYU pragma: export
 #include <inttypes.h>      // IWYU pragma: export
 #include <limits.h>        // IWYU pragma: export
-#include <math.h>          // IWYU pragma: export
 #include <stdalign.h>      // IWYU pragma: export
 #include <stdbool.h>       // IWYU pragma: export
 #include <stddef.h>        // IWYU pragma: export

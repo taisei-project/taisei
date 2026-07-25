@@ -9,3 +9,7 @@
 	path = external/basis_universal
 	url = https://github.com/taisei-project/basis_universal.git
 	branch = taisei
+[submodule "external/openlibm"]
+	path = external/openlibm
+	url = https://github.com/taisei-project/openlibm
+	branch = taisei-v1.5
