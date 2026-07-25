@@ -126,8 +126,11 @@ taisei_c_args = [
     '-Wunreachable-code-loop-increment',
 
     '-fexcess-precision=standard',
+    '-ffp-contract=off',
     '-fmerge-all-constants',
+    '-fno-fp-int-builtin-inexact',
     '-fno-math-errno',
+    '-fno-rounding-math',
     '-fno-signaling-nans',
     '-fno-trapping-math',
     '-fzero-init-padding-bits=all',
