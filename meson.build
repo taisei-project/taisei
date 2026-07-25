@@ -125,14 +125,16 @@ taisei_c_args = [
     '-Wunreachable-code',
     '-Wunreachable-code-loop-increment',
 
+    # NOTE: These are important for replay consistency
     '-fexcess-precision=standard',
     '-ffp-contract=off',
-    '-fmerge-all-constants',
     '-fno-fp-int-builtin-inexact',
     '-fno-math-errno',
     '-fno-rounding-math',
     '-fno-signaling-nans',
     '-fno-trapping-math',
+
+    '-fmerge-all-constants',
     '-fzero-init-padding-bits=all',
 ]
 
@@ -205,9 +207,14 @@ dep_crypto      = dependency('libcrypto',                           required : g
 dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
 dep_libunibreak = dependency('libunibreak',                         required : true)
 
+# Vendoring our own, version-pinned openlibm is important for replay consistency.
+# Please don't patch this out. Otherwise some replays will not be portable across systems.
 use_openlibm = true
 
 if use_openlibm
+    # Our openlibm dependency links a static library as --whole-archive
+    # This is the only reliable way I've found to make it actually intercept the math calls
+    # It's important to only specify it once per target, otherwise you get duplicate symbol conflicts
     dep_m_linkwhole = subproject('openlibm').get_variable('openlibm_dep')
     dep_m = dep_m_linkwhole.partial_dependency(
         compile_args : true,
