@@ -99,8 +99,8 @@ static void iku_nonspell_spawn_cloud(void) {
 		.pos = VIEWPORT_W * vrng_sreal(rand[0]) - 15.0 * I,
 		.color = RGBA_MUL_ALPHA(0.2, 0.0, 0.4, 0.6),
 		.move = move_accelerated(1 - 2 * vrng_sreal(rand[1]) + v * I, -0.01 * I),
-		.shader = "sprite_default",
 	);
+
 	// FIXME: prototypes currently overwrite these
 	p->size = 48 * (1 + I);
 	p->collision_size = 21.6 * (1 + I);
