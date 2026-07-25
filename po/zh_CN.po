@@ -5971,15 +5971,15 @@ msgstr "神盾剑「西行无向斩」"
 
 #: src/renderer/common/backend.c:118
 msgid "Automatic"
-msgstr ""
+msgstr "自动"
 
 #: src/renderer/common/backend.c:143
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/renderer/common/backend.c:144
 msgid "Run"
-msgstr ""
+msgstr "泰西?启动!"
 
 #: src/renderer/common/backend.c:147
 msgid ""
@@ -5987,6 +5987,9 @@ msgid ""
 "\n"
 "Change this if the game crashes or displays incorrectly.\n"
 msgstr ""
+"选择君の渲染后端は。\n"
+"\n"
+"如果游戏崩了或者显示不正常就换一个。\n"
 
 #: src/stage.c:622
 #, c-format
