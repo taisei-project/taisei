@@ -84,6 +84,7 @@ static int fuzzy_match_locales(
 	size_t num_preferred_locales, const SDL_Locale *preferred_locales[num_preferred_locales]
 ) {
 	int chosen = -1;
+	int known_locales = (int)(i18n.num_known_locales);
 
 	for(int i = 0; i < num_preferred_locales; i++) {
 		const SDL_Locale *preferred_locale = preferred_locales[i];
@@ -97,7 +98,7 @@ static int fuzzy_match_locales(
 			strlcpy(locale_str, preferred_locale->language, sizeof(locale_str));
 		}
 
-		for(int j = -1; j < i18n.num_known_locales; j++) {
+		for(int j = -1; j < known_locales; j++) {
 			const char *candidate = j >= 0 ? i18n.known_locales[j] : I18N_LOCALEID_BUILTIN;
 
 			// complete match: good to go
