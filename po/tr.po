@@ -205,7 +205,7 @@ msgid ""
 "an intense feeling of “knowing everything.”\n"
 msgstr ""
 "Esrarengiz bir güç, Yōkai'lerin, insan ve benzerinin keskin bir "
-"“herşeyi bilme” hiisine yavaş yavaş kapılmasına sebep oluyor.\n"
+"“her şeyi bilme” hiisine yavaş yavaş kapılmasına sebep oluyor.\n"
 
 #: src/cutscenes/intro.inc.h:45
 msgid ""
@@ -307,7 +307,7 @@ msgstr "Ruhlarda Yōkai dağına bağlanmış durumda."
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr "Anladım. Şimdi ben demi geleyim?"
+msgstr "Anladım. Şimdi bende mi geleyim?"
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
@@ -554,7 +554,7 @@ msgstr "Tabii! İyi yer biliyor musun? Şey için, Biliyorsun…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:39
 msgid "Oh yes, a few, but you must keep it down for now…"
-msgstr "Oh evet, birkaç tane, ama sen onları kapalı tutmalısın…"
+msgstr "Ah evet, birkaç tane, ama sen onları kapalı tutmalısın…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:40
 msgid "Oi, I’m right here! No conspiring to eat humans, got it?!"
@@ -645,7 +645,7 @@ msgstr "Kurumi bir vampir için bile çok soldu."
 
 #: src/cutscenes/marisa_extra_intro.inc.h:80
 msgid "Oh no…"
-msgstr "Oh hayır…"
+msgstr "Ah hayır…"
 
 #: src/cutscenes/marisa_extra_intro.inc.h:81
 msgid ""
@@ -711,8 +711,7 @@ msgstr "Elly ve Kurumi Moriya Mabeti'nin yerlerine geldiler…\n"
 msgid ""
 "… which had become filthy from the local fairies partying non-stop, and some "
 "‘political demonstrations’ by the newly-formed ‘Insect Party’."
-msgstr ""
-"… ki durmadan parti yapan yerel periler ve yeni oluşan ‘Böcek Partisi’nden birkaç siyasi gösteri ile dolmuştu."
+msgstr "… ki durmadan parti yapan yerel periler ve yeni oluşan ‘Böcek Partisi’nden birkaç siyasi gösteri ile dolmuştu."
 
 #: src/cutscenes/marisa_good_end.inc.h:18
 msgid ""
@@ -897,8 +896,7 @@ msgid ""
 "Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and "
 "when I saw ya, and I was like, ‘Whoa, really?! For real?!’"
 msgstr ""
-"Neyse, biraz sürdü, ama o vampir kız Kurumi'yi, gördüğümü hatırladım ve gördüğümde"
-"‘Amanın gerçekten?! Gerçekten?!' gibi oldum."
+"Neyse, biraz sürdü, ama o vampir kız Kurumi'yi, gördüğümü hatırladım ve gördüğümde ‘Amanın gerçekten?! Gerçekten?!' gibi oldum."
 
 #: src/cutscenes/marisa_good_end.inc.h:85
 msgid "That’s ridiculous. You’re ridiculous."
@@ -928,7 +926,7 @@ msgstr "Birçok Gensōkyō sakini kulenin gökyüzü sonsuza kadar kötü hava o
 msgid ""
 "Others questioned if its power could be harnessed to serve the greater "
 "good.\n"
-msgstr "Diğerleri, gücü daha iyiye kullanılabilir mi diye düşündü.\n"
+msgstr "Diğerleri, kulenin gücünü daha iyiye kullanılabilir mi diye düşündü.\n"
 
 #: src/cutscenes/marisa_good_end.inc.h:94
 msgid ""
@@ -1009,7 +1007,7 @@ msgstr "Kendisi içiyor gibi hissetmiyordu. Şişeyi tıkamadan tuttu ve ahladı
 
 #: src/cutscenes/reimu_bad_end.inc.h:32
 msgid "Oh my, a little dissatisfied, aren’t we?"
-msgstr "Oh, biraz hayal kırıklığına uğradık, değil mi?"
+msgstr "Ah, biraz hayal kırıklığına uğradık, değil mi?"
 
 #: src/cutscenes/reimu_bad_end.inc.h:33
 msgid ""
@@ -1113,7 +1111,7 @@ msgstr ""
 
 #: src/cutscenes/reimu_extra_intro.inc.h:23
 msgid "My oh my, passing the time at rival shrines, are we?"
-msgstr "Oh, rakip mabetlerde zaman geçiriyoruz değil mi?"
+msgstr "Ah, rakip mabetlerde zaman geçiriyoruz değil mi?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:24
 msgid "Guard duty."
@@ -1144,7 +1142,7 @@ msgstr ""
 msgid ""
 "Ms. Hakurei! There’s been- Oh, my apologies, we have a guest. How nice to "
 "meet—"
-msgstr "Bayan Hakurei! Burada- oh özür dilerim, misafirimiz var. Görüşmek ne güzel-"
+msgstr "Bayan Hakurei! Burada- ah, özür dilerim, misafirimiz var. Görüşmek ne güzel-"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:36
 msgid "Wait, no, there’s no time for that!"
@@ -1194,7 +1192,7 @@ msgstr "Ee? Neden?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:55
 msgid "Hm? What’s all this, then?"
-msgstr "Hm? Burda ne oluyor?"
+msgstr "Hm? O zaman bütün bu olanlar ne?"
 
 #: src/cutscenes/reimu_extra_intro.inc.h:56
 msgid "Kurumi, the Tower's turning back on!"
@@ -1326,7 +1324,7 @@ msgstr "Dinle, Sanae, 'hızlıkoş' un ne olduğunu bilmiyorum ve umrumda değil
 msgid ""
 "You’re such a stick in the mud, Reimu! Listen, you like resolving incidents "
 "as quickly as possible, right?"
-msgstr "Çamura saplanmış bir çubuk gibisin Reimu! Dinle, vakaları çözmeyi seversin."
+msgstr "Çamura saplanmış bir çubuk gibisin, Reimu! Dinle, vakaları çözmeyi seversin."
 
 #: src/cutscenes/reimu_good_end.inc.h:14
 msgid "It’s like that, except with video games!"
@@ -1334,7 +1332,7 @@ msgstr "Onun gibi, video oyunları hariç!"
 
 #: src/cutscenes/reimu_good_end.inc.h:15
 msgid "I don’t know anything about ‘video games’, either!"
-msgstr "Bende 'video oyunları' hakkında hiç bir şey bilmiyorum!"
+msgstr "Bende 'video oyunları' hakkında hiçbir şey bilmiyorum!"
 
 #: src/cutscenes/reimu_good_end.inc.h:19
 msgid ""
@@ -1592,7 +1590,7 @@ msgstr "En iyi amaçlarıma rağmen ölümlerine sebep oldum."
 msgid ""
 "That woman, Elly… we knew each other for such a short time, yet her passion "
 "and fury affected me so deeply."
-msgstr "O kadın, Elly… biz ikimizi kısa bir süreliğine biliyorduk, ki onun tutkusu beni çok etkiledi."
+msgstr "O kadın, Elly… biz ikimizi kısa bir süreliğine biliyorduk ki, onun tutkusu beni çok etkiledi."
 
 #: src/cutscenes/youmu_bad_end.inc.h:27
 msgid ""
@@ -1604,7 +1602,7 @@ msgstr "Hmm… Burda kaybedilmiş hayalet bulamıyorum, ve kimse Cehennem Dünya
 msgid ""
 "I doubt she has truly died, then… ah, but all this ‘parallel universes’ "
 "stuff is beyond me, hehehe."
-msgstr "Onun tamamıyla öldüğüne dair şüpheliyim, ama bütün ‘parallel evrenler’ işi ötemde, hehehe."
+msgstr "Onun tamamıyla öldüğüne dair şüphem var, ama bütün ‘parallel evrenler’ işi ötemde, hehehe."
 
 #: src/cutscenes/youmu_bad_end.inc.h:32
 msgid ""
@@ -1630,13 +1628,15 @@ msgstr "İsteği tmamladığın için teşekkürler, Hanım Yuyuko."
 
 #: src/cutscenes/youmu_bad_end.inc.h:39
 msgid "Oh my, think nothing of it! You did great!"
-msgstr "Oh, düşünmene gerek yok! Çok iyi yaptın!"
+msgstr "Ah, düşünmene gerek yok! Çok iyi yaptın!"
 
 #: src/cutscenes/youmu_bad_end.inc.h:40
 msgid ""
 "But since we’re in the neighbourhood… do you think the kappa are running one "
 "of their famous festival grill stands?"
-msgstr "Ama şu an komşusu olduğumuz için… sence Kappa onların ünlü bir festivalinin mangal tutacağını mı çalıştırıyor?"
+msgstr ""
+"Ama şu an komşusu olduğumuz için… sence Kappa onların ünlü bir festivalinin "
+"mangal tutacağını mı çalıştırıyor?"
 
 #: src/cutscenes/youmu_bad_end.inc.h:41
 msgid "As a celebration for the incident being resolved, perhaps…?"
@@ -1711,7 +1711,7 @@ msgstr "Elly’nin düşünceleri hemen soğudu."
 
 #: src/cutscenes/youmu_extra_intro.inc.h:24
 msgid "Hm? Is something the matter, my dear?"
-msgstr "Hm? Bir şeymi oldu aşkım?"
+msgstr "Hm? Bir şey mi oldu aşkım?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:25
 msgid "The Tower…! No, it can’t be! But I…!"
@@ -1719,7 +1719,7 @@ msgstr "Kule! Hayır, olamaz! Ama ben…!"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:26
 msgid "Has something changed?"
-msgstr "Bir şey değiştimi?"
+msgstr "Bir şey değişti mi?"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:27
 msgid "It’s turning back on! In fact, at its current rate of power, it could—"
@@ -1809,7 +1809,7 @@ msgstr "Ama, kolayca kurtulacağını düşünme. Geldiğimde akşam yemeği iç
 
 #: src/cutscenes/youmu_extra_intro.inc.h:60
 msgid "Elly couldn’t help but laugh, despite her fears.\n"
-msgstr "Elly korkularına rağmen, gülmekten başka yardım edemiyordu.\n"
+msgstr "Elly korkularına rağmen, gülmekten başka yardımda bulunamıyordu.\n"
 
 #: src/cutscenes/youmu_extra_intro.inc.h:61
 msgid ""
@@ -1817,7 +1817,7 @@ msgid ""
 "headed towards the infernal Tower, as it began to shake and groan with "
 "impending doom…"
 msgstr ""
-"Elly ve hanım Yuyuko'yu ayırt ettikten sonra, Gensōkyō'ya geri döndü ve kuleye titremeye"
+"Elly ve hanım Yuyuko'yu ayırt ettikten sonra, Gensōkyō'ya geri döndü ve kule titremeye"
 "başladıktan sonra kuleye gitti."
 
 #: src/cutscenes/youmu_good_end.inc.h:2
@@ -1908,7 +1908,7 @@ msgstr "Biliyorum herkez özrümü kabullendi, ama yinede yaptığım için öz�
 
 #: src/cutscenes/youmu_good_end.inc.h:42
 msgid "Your pain was legitimate, even if your expression of it was not."
-msgstr "Her ne kadar anlatımın anlamlı olmasada telaşın anlamlı."
+msgstr "Her ne kadar anlatımın anlamsız olmasada telaşın anlamlı."
 
 #: src/cutscenes/youmu_good_end.inc.h:43
 msgid ""
@@ -1929,7 +1929,7 @@ msgstr "Belki bir çerçeve dükkanına bile gidebiliriz. Cömert hissediyorum, 
 
 #: src/cutscenes/youmu_good_end.inc.h:49
 msgid "O-oh! S-sure, that would be wonderful!"
-msgstr "O-oh! T-tabii bu harika olur!"
+msgstr "A-ah! T-tabii bu harika olur!"
 
 #: src/cutscenes/youmu_good_end.inc.h:50
 msgid "W-Well, I ought to return to my duties at the shrine."
@@ -2033,7 +2033,7 @@ msgstr "Teorik biçici"
 
 #: src/dialog/marisa.c:23
 msgid "Snow again? But I just put away my winter coat."
-msgstr "Yinemi kar? Ama ben kışlık kıyafetleri mi yeni kaldırdım."
+msgstr "Yine mi kar? Ama ben kışlık kıyafetleri mi yeni kaldırdım."
 
 #: src/dialog/marisa.c:25
 msgid "…even though it’s half-way through summer already."
@@ -2061,11 +2061,11 @@ msgstr "Neden böyle bir şey yapayım ki?! Bana asla geri ödemeyeceksin!"
 
 #: src/dialog/marisa.c:43
 msgid "I’m gonna turn you into an ice cube!"
-msgstr "Seni buz küpüne dönüştürecem."
+msgstr "Seni buz küpüne dönüştüreceğim."
 
 #: src/dialog/marisa.c:46
 msgid "Really? I prefer shaved ice, myself."
-msgstr "Gerçektenmi? Onun yerine kendime ufalanmış buz isterim."
+msgstr "Gerçekten mi? Onun yerine kendime ufalanmış buz isterim."
 
 #: src/dialog/marisa.c:60
 msgid "Why don’t you go play with your new friend, the one from Hell?"
@@ -2081,7 +2081,7 @@ msgstr "Aah…"
 
 #: src/dialog/marisa.c:64
 msgid "I-I mean, last time she lost! And next time, you will too!"
-msgstr "D-diyorumki, en son kaybetmişti! Bir sonraki sefer sende kaybedeceksin!"
+msgstr "D-diyorum ki, en son kaybetmişti! Bir sonraki sefer sende kaybedeceksin!"
 
 #: src/dialog/marisa.c:66
 msgid "Sure, sure."
@@ -2113,7 +2113,7 @@ msgstr "Hadi görüşürüz."
 
 #: src/dialog/marisa.c:97
 msgid "Oh my… you’re quite the rebellious one, aren’t you?"
-msgstr "Oh… sen biraz isyancı gibi görünüyorsun değil mi?"
+msgstr "Ah… sen biraz isyancı gibi görünüyorsun değil mi?"
 
 #: src/dialog/marisa.c:98
 msgid "Such confidence, ignoring my warning like that."
@@ -2176,7 +2176,7 @@ msgstr "Nasıl istersen sorabilirsin. Dinliyorum."
 
 #: src/dialog/marisa.c:153
 msgid "Oh, you’re the messenger?"
-msgstr "Oh sen elçi'misin?"
+msgstr "Ah, sen elçi misin?"
 
 #: src/dialog/marisa.c:155
 msgid "Mind passin’ a message along?"
@@ -2188,11 +2188,11 @@ msgstr "Um, TABiKDE elçi falan değilim!"
 
 #: src/dialog/marisa.c:161
 msgid "Yeah, I’m the great leader of Insectkind!"
-msgstr "Evet, ben böceklerin ve böcek gibilerin lideriyim!"
+msgstr "Evet, ben böcekler ve böcek gibilerin lideriyim!"
 
 #: src/dialog/marisa.c:164
 msgid "Great leader? What, did the insects unionize or somethin’?"
-msgstr "Büyük lider? Ne? Böcekler birlikmi kuruyo?"
+msgstr "Büyük lider? Ne? Böcekler birlik mi kuruyor?"
 
 #: src/dialog/marisa.c:167
 msgid "No! I told you, I’m the leader! The mastermind!"
@@ -2200,7 +2200,7 @@ msgstr "Hayır! Dediğim gibi ben liderim!"
 
 #: src/dialog/marisa.c:169
 msgid "So, what’s your question?"
-msgstr "Şimdi, sorun neydi?"
+msgstr "Şimdi, sorun nedir?"
 
 #: src/dialog/marisa.c:172
 msgid "Hmm, guess I forgot."
@@ -2212,7 +2212,7 @@ msgstr "Sorunun nedir?"
 
 #: src/dialog/marisa.c:176
 msgid "We insects have three demands:"
-msgstr "Biz böceklerin 3 derdi vardır"
+msgstr "Biz böceklerin 3 derdi vardır:"
 
 #: src/dialog/marisa.c:177
 msgid "First: say nay to insect spray!"
@@ -2258,7 +2258,7 @@ msgstr "Bu yeni hareketleri nerden aldın, her neyse?"
 
 #: src/dialog/marisa.c:208
 msgid "Aw! It was, um… the great vision of our glorious Insect past!"
-msgstr "Oh! O, um… bizim böcek geçmişmizin muhteşem görüşü! "
+msgstr "Aa! O, hm… bizim böcek geçmişmizin muhteşem görüşü! "
 
 #: src/dialog/marisa.c:209
 msgid "It was in the age of Car—… Carb—… the age of Carbs!"
@@ -2300,7 +2300,7 @@ msgstr "Muhtemelen asla."
 
 #: src/dialog/marisa.c:243
 msgid "Oh wow, a mysterious, magical mansion!"
-msgstr "Oh amanın, gizemli, büyülü bir malikane!"
+msgstr "Ah amanın, gizemli, büyülü bir malikane!"
 
 #: src/dialog/marisa.c:245
 msgid "… how generic can you get?"
@@ -2329,11 +2329,11 @@ msgstr "Sırada ne var? Hizmetçi?"
 #: src/dialog/marisa.c:260
 msgid ""
 "A little girl with almost no dialogue who becomes a fan-favourite anyways?"
-msgstr "Dialogsuz küçük bir kız nasıl bir fan-favori olabilirmiki?"
+msgstr "Dialogsuz küçük bir kız nasıl bir hayran-favori olabilir ki?"
 
 #: src/dialog/marisa.c:261
 msgid "One that’ll have her personality massacred by the fans?"
-msgstr "Hayranları tarafındanmı kişiselliği bozuluyor?"
+msgstr "Hayranları tarafından kişiselliği mi bozuluyor?"
 
 #: src/dialog/marisa.c:264
 msgid ""
@@ -2374,7 +2374,7 @@ msgstr "O ben olurdum!"
 
 #: src/dialog/marisa.c:286
 msgid "My ideas would surely make a splash, if they’d recognize my talent!"
-msgstr "Eğer talenti mi tanısalardı fikirleri mi kesinlikle daha iyi görünürdü!"
+msgstr "Eğer talenti mi tanısalardı fikirlerim kesinlikle daha iyi görünürdü!"
 
 #: src/dialog/marisa.c:289
 msgid "Eh? Maybe…"
@@ -2386,11 +2386,11 @@ msgstr "Hee?!"
 
 #: src/dialog/marisa.c:295
 msgid "Your outfit’s missin’ somethin'…"
-msgstr "Dış görünümün de bir şey eksik…"
+msgstr "Dış görünümünde bir şey eksik…"
 
 #: src/dialog/marisa.c:298
 msgid "H-Hmph! I could say the same about you!"
-msgstr "P-pff! Sana aynısını bende söyleyebilirim!"
+msgstr "P-pff! Sana aynısını söyleyebilirim!"
 
 #: src/dialog/marisa.c:300
 msgid "Seriously, it’s just a plain generic witch outfit!"
@@ -2415,7 +2415,7 @@ msgstr "O zaman gidiyorum."
 
 #: src/dialog/marisa.c:313
 msgid "Oh, I’m not letting you go without a fight!"
-msgstr "Oh, seni birlikte savaşmadan bırakmam!"
+msgstr "Ah, seni birlikte savaşmadan bırakmam!"
 
 #: src/dialog/marisa.c:315
 msgid "Let’s see who’s the most fashionable here, witch!"
@@ -2443,7 +2443,7 @@ msgstr "(Fakat, hmm… böyle akkılı duran bir kız görmemiştim…?)"
 
 #: src/dialog/marisa.c:336
 msgid "Uuu, I don’t remember anything at all!!"
-msgstr "Uuu, ben hiçbir şey hatırlamıyorum!!!"
+msgstr "Uuu, hiçbir şey hatırlamıyorum!!!"
 
 #: src/dialog/marisa.c:339
 msgid "Ah, sorry, sorry. I think ya slipped ‘n hit your head."
@@ -2512,7 +2512,7 @@ msgstr "Bu tuğlaları ağırlıksız yapmaktan kolay, ve çok iyi bir gizem olu
 
 #: src/dialog/marisa.c:389
 msgid "… pardon me, are you conversing with yourself?"
-msgstr "…pardon, kendinlenmi konuşuyorsun?"
+msgstr "… kusura bakma, kendinlen mi konuşuyorsun?"
 
 #: src/dialog/marisa.c:392
 msgid "Huh? No, I was askin’ ya a question."
@@ -2550,7 +2550,7 @@ msgstr "Burada ki teknoloji düşünebileceğinden daha ötede."
 
 #: src/dialog/marisa.c:408
 msgid "Technology? Whoa, so yer sayin’ this is REAL brick?!"
-msgstr "Teknoloji? Oooh, yani GERÇEKTEN bu tuğlamı?"
+msgstr "Teknoloji? Oooo, yani diyorsun ki GERÇEKTEN bu tuğlamı?"
 
 #: src/dialog/marisa.c:410
 msgid "*tap tap*"
@@ -2564,7 +2564,7 @@ msgstr "Çok korkutucu, sanki parmaklarına büyü çekmek gibi."
 
 #: src/dialog/marisa.c:414
 msgid "But that means the tower… has corporeal form?!"
-msgstr "Ama bu demek oluyor ki kule… fiziksel haldemi?!"
+msgstr "Ama bu demek oluyor ki kule… fiziksel halde mi?!"
 
 #: src/dialog/marisa.c:415
 msgid "Dang! Now I GOTTA meet the owner!"
@@ -2581,7 +2581,7 @@ msgstr "B-ben düşünüyorum ki, o büyü kitabı ve/veya büyü kullanmıyor."
 #: src/dialog/marisa.c:421
 msgid ""
 "This is highly complex machinery, likely relying on advanced computational—"
-msgstr "Bu zorlu yapılmış makine, muthemelen gelişmiş bir bilgi sayıcı—"
+msgstr "Bu zorlu yapılmış makine, muthemelen gelişmiş bir bilgisayan—"
 
 #: src/dialog/marisa.c:423
 msgid "But then, what’s the power source?"
@@ -2593,7 +2593,7 @@ msgstr "Nükler güç bile bu kadar güç uygulayamaz!"
 
 #: src/dialog/marisa.c:427
 msgid "I-I am not sure of its exact mechanics—"
-msgstr "B-ben mekaniklerinen emin değilim-"
+msgstr "B-ben tam mekaniklerinen emin değilim-"
 
 #: src/dialog/marisa.c:430
 msgid "Where’d y’say she was?"
@@ -2676,7 +2676,7 @@ msgstr "Of, Umarım saçımı çok batırmadım."
 
 #: src/dialog/marisa.c:495
 msgid "Y’know, for my big first impression ‘n all."
-msgstr "İlk tepkimi biliyorsun."
+msgstr "İlk tepki mi biliyorsun."
 
 #: src/dialog/marisa.c:498
 msgid "F-For the last time, she’ll have nothing to teach you…"
@@ -2781,7 +2781,7 @@ msgstr "Gerçekten bu en hayal kırıklığına uğratan kaza olabilir."
 
 #: src/dialog/marisa.c:566
 msgid "You’re after… magic?"
-msgstr "Sen, büyü…, öylemi…?"
+msgstr "Sen, büyü…, öyle mi…?"
 
 #: src/dialog/marisa.c:568
 msgid "Hah! You’ll regret wasting your time on such nonsense."
@@ -2805,7 +2805,7 @@ msgstr "Gerçekten! Daha demin 'Tanrı bu' ve ’Diğer Dünya' bu oldu."
 
 #: src/dialog/marisa.c:577
 msgid "Reimu’s been pickin’ up some sweet skills, but me? Nothin’!"
-msgstr "Reimu güzel yetekler kazanıyor, ama ben? Hiçbir şey!"
+msgstr "Reimu güzel yetenekler kazanıyor, ama ben? Hiçbir şey!"
 
 #: src/dialog/marisa.c:578
 msgid "Gods use magic too, but they’re like her! They don’t need books!"
@@ -2822,7 +2822,7 @@ msgstr "Senin küçük aptal büyün UMRUMDA DEĞIL—"
 #: src/dialog/marisa.c:584
 msgid ""
 "I saw this place ‘n I was all, ‘Whoa! Is this all enchantments ‘n stuff?!’"
-msgstr "Burası ve ben, Ooh! Bütün büyüler nedir?!"
+msgstr "Burası ve ben, Oooo! Bütün büyüler nedir?!"
 
 #: src/dialog/marisa.c:586
 msgid "I got really excited!"
@@ -2854,11 +2854,11 @@ msgstr "*ahlamak*"
 
 #: src/dialog/marisa.c:596
 msgid "Are you finally done?"
-msgstr "Sonunda bitirdinmi?"
+msgstr "Sonunda bitirdin mi?"
 
 #: src/dialog/marisa.c:598
 msgid "Is this some kind of joke?!"
-msgstr "Bu şakamı?!"
+msgstr "Bu şaka mı?!"
 
 #: src/dialog/marisa.c:600
 msgid "How does every version of you just keep mocking me?!"
@@ -2897,7 +2897,7 @@ msgstr "Boşver! Bütün kulenin gücünü istesen de anlayamazsın."
 #: src/dialog/marisa.c:612
 msgid ""
 "After all, I can already sense your feeble mind succumbing to its might!"
-msgstr "Bütün olanlardan sonra senin gibi zayıf misafirler kendi hükümünden atılır!"
+msgstr "Bütün olanlardan sonra senin gibi zayıf misafirler kendi hükmünden atılır!"
 
 #: src/dialog/marisa.c:615
 msgid "Eh? I’m not depressed or anythin’. I’m just disappointed."
@@ -2976,7 +2976,7 @@ msgstr "Şimdi deliliğe yenil!"
 
 #: src/dialog/marisa.c:657
 msgid "Are ya sure ya don’t got a spellbook laying around?! Nothin’ at all?!"
-msgstr "Emin misin senin büyü kitabın bilemi yok? Hiçbir şey mi?!"
+msgstr "Emin misin senin büyü kitabın bile mi yok? Hiçbir şey mi?!"
 
 #: src/dialog/marisa.c:659
 msgid "Are you still on about that?! Fine, see what good it does you!"
@@ -2985,11 +2985,11 @@ msgstr "Hala onun peşindemisin?! Iyi, sana ne iyilik yapacak görelim!"
 #: src/dialog/marisa.c:661
 msgid ""
 "Your pitiful magic amounts to nothing against the true nature of reality!"
-msgstr "Senin büyün gerçekliğe karşı hiç bir şey yapamaz."
+msgstr "Senin büyün gerçekliğe karşı hiçbir şey yapamaz."
 
 #: src/dialog/reimu.c:46
 msgid "Snow during summer? This is certainly familiar…"
-msgstr "Yazın karmı? Bu tanıdık geliyor…"
+msgstr "Yazın kar mı? Bu tanıdık geliyor…"
 
 #: src/dialog/reimu.c:52
 msgid "Nobody can stop me now!"
@@ -3005,7 +3005,7 @@ msgstr "Sana ne oluyor?"
 
 #: src/dialog/reimu.c:63
 msgid "Gah! Y-you again?! Are you here to get in the way of my plans?!"
-msgstr "Aah! S-sen genemi sen?! Buraya planlarımı mafhetmek içinmi geldin?!"
+msgstr "Aah! S-sen genemi sen?! Buraya planlarımı mafhetmek için mi geldin?!"
 
 #: src/dialog/reimu.c:65
 msgid "What ‘plans'? Freezing frogs?"
@@ -3112,13 +3112,13 @@ msgstr "Sadece orda herhangi kimlen karşılaşacaksan, seni uyarmadığı mı s
 
 #: src/dialog/reimu.c:172
 msgid "(Ignored again…)"
-msgstr "(Yine sorumu görmezden geldi…)"
+msgstr "(Yine görmezden geldi…)"
 
 #: src/dialog/reimu.c:188
 msgid ""
 "Aside from everyone being whipped up into a frenzy, I can’t see anything "
 "abnormal yet."
-msgstr "Herkezin çıldırması dışında normal olmayan birşey görünmüyor."
+msgstr "Herkezin çıldırması dışında normal olmayan bir şey görünmüyor."
 
 #: src/dialog/reimu.c:191
 msgid "Well, to your human eyes, insects may seem ‘normal’…"
@@ -3181,7 +3181,7 @@ msgstr "Ve hala ‘eski günlerinizdeki muhteşemlik’ ne demek anlamadım."
 
 #: src/dialog/reimu.c:225
 msgid "You don’t seem very educated about our history."
-msgstr "Bizim tarihimiz ile ilgili çok şey bilmiyorsun."
+msgstr "Tarihimiz ile ilgili çok şey bilmiyorsun."
 
 #: src/dialog/reimu.c:226
 msgid "Allow me to be your teacher!"
@@ -3201,7 +3201,7 @@ msgstr "A-ama eminim ki gördüm… böceklerin muhteşem geçmişi…"
 
 #: src/dialog/reimu.c:246
 msgid "Don’t you have a pretty sweet deal as it is, though?"
-msgstr "Şu an ki gibi güzel bir teklifin yokmu?"
+msgstr "Şu an ki gibi güzel bir teklifin yok mu?"
 
 #: src/dialog/reimu.c:247
 msgid "You practically own Gensōkyō’s forests."
@@ -3275,7 +3275,7 @@ msgstr "… yani bütün bu işlerin *arkasındasın*, hem?"
 
 #: src/dialog/reimu.c:306
 msgid "Besides, haven’t you ever seen a shrine maiden before?"
-msgstr "Onu boşverde sen hiç bir mabet rahibe gördün mü?"
+msgstr "Onu boşverde sen hiçbir mabet rahibesi gördün mü?"
 
 #: src/dialog/reimu.c:309
 msgid "You’re a shrine maiden?"
@@ -3287,11 +3287,11 @@ msgstr "Daha çok …SALAMURA rahibesi!"
 
 #: src/dialog/reimu.c:314
 msgid "T-this is what a shrine maiden wears. It’s a uniform."
-msgstr "B-Bumu bir mabet rahibesinin giydiği şey. Bir uniforma."
+msgstr "B-Bumu bir mabet rahibesinin giydiği şey. Bu bir ¨üniforma."
 
 #: src/dialog/reimu.c:316
 msgid "Uniform? Are you kidding me?!"
-msgstr "Üniforma? Benlen dalgamı geçiyorsun?!"
+msgstr "Üniforma? Benlen dalga mı geçiyorsun?!"
 
 #: src/dialog/reimu.c:317
 msgid ""
@@ -3334,7 +3334,7 @@ msgstr "Başka hiçbir şey vücuma uyuşmyuor—"
 
 #: src/dialog/reimu.c:332
 msgid "Whoa, hey, sorry, didn’t mean to make you all—"
-msgstr "Oh, hey, kusura bakma, kızdırmak istememiştim—"
+msgstr "Ah, hey, kusura bakma, kızdırmak istememiştim—"
 
 #: src/dialog/reimu.c:336
 msgid "I *hate* prissy mansion dwellers!"
@@ -3392,7 +3392,7 @@ msgstr "Hmm? B-bilmiyorum! Bir şeyler hatırlamakta zorlanıyorum!"
 
 #: src/dialog/reimu.c:373
 msgid "(Ugh, her outfit really does suck though…)"
-msgstr "(Of, onun dış görünümü hakkat çok kötü görünüyor…)"
+msgstr "(Of, onun dış görünümü hakkat çok kötü…)"
 
 #: src/dialog/reimu.c:375
 msgid "(Just another victim…?)"
@@ -3412,11 +3412,11 @@ msgstr "Yada kulenin dönmesi yüzünden birazcık başım dönüyor."
 
 #: src/dialog/reimu.c:402
 msgid "Or perchance it a side effect of the tower’s mere presence?"
-msgstr "Yada kulenin yan etkisimi?"
+msgstr "Yada kulenin yan etkisi mi?"
 
 #: src/dialog/reimu.c:404
 msgid "Oh, it’s you. Why did you attack me earlier, anyway?"
-msgstr "Oh, sen. Bana önceden neden saldırdın?"
+msgstr "Ah, sen. Bana önceden neden saldırdın?"
 
 #: src/dialog/reimu.c:408
 msgid "Ah, apologies. It must have been friendly fire."
@@ -3447,7 +3447,7 @@ msgstr "Bulutta ki harfler ile öğrendimki sorunun ‘parallel evrenler’ ile 
 #: src/dialog/reimu.c:421
 msgid ""
 "You mean like Otherworlds? That’s not too out of the ordinary these days."
-msgstr "Yani diğer dünyalardan'mı bahsediyorsun? Buralarda çok sıra dışı değil."
+msgstr "Yani diğer dünyalardan mı bahsediyorsun? Buralarda çok sıra dışı değil."
 
 #: src/dialog/reimu.c:423
 msgid ""
@@ -3475,7 +3475,7 @@ msgstr "Bahava-agra’da en büyük kız çocuğunun kişiselliği de değişikl
 
 #: src/dialog/reimu.c:434
 msgid "It’s spreading that fast?!"
-msgstr "Bu kadar hızlımı yayılıyor?"
+msgstr "Bu kadar hızlı mı yayılıyor?"
 
 #: src/dialog/reimu.c:437
 msgid "Initially, I had no plans towards interfering."
@@ -3485,7 +3485,7 @@ msgstr "İlk başta harekete geçmeyi planlamıyordum."
 msgid ""
 "However, the tower’s psychological effects began to intensify, and I began "
 "to fear that nobody would take charge."
-msgstr "Ama kulenin piskolojik effektleri hissedilmeye başladı ve kimse bununla ilgilenmeyecek diye endişelendim."
+msgstr "Ama kulenin piskolojik etkileri hissedilmeye başladı ve kimse bununla ilgilenmeyecek diye endişelendim."
 
 #: src/dialog/reimu.c:443
 msgid "(Do people have this little faith in me…?)"
@@ -3497,7 +3497,7 @@ msgstr "Daha fazla akıl zayıflamaya başlayınca, bunu bir teori olarak sandı
 
 #: src/dialog/reimu.c:448
 msgid "Is this machine incompatible with the existence of fantasy?"
-msgstr "Bu makine fantasikle uyumsuz olabilirmi?"
+msgstr "Bu makine hayal ile uyumsuz olabilirmi?"
 
 #: src/dialog/reimu.c:450
 msgid "That may be why you feel a sense of dread about the place."
@@ -3505,7 +3505,7 @@ msgstr "Belki bu senin endişeli olmanın kaynağıdır."
 
 #: src/dialog/reimu.c:453
 msgid "Well, that settles it. Where’s the owner, then?"
-msgstr "İyi, bu herşeyi açıklar. O zaman sahibi nerde?"
+msgstr "İyi, bu her şeyi açıklar. O zaman sahibi nerde?"
 
 #: src/dialog/reimu.c:456
 msgid "To be frank, I am not sure whether you are up to the task."
@@ -3630,7 +3630,7 @@ msgstr "Sadece sana bakmak tanıdık bir his veriyor, ama…"
 
 #: src/dialog/reimu.c:557
 msgid "Is this a joke?! Are you trying to mock me?!"
-msgstr "Bu şakakmı?! Benimle dalgamı geçiyorsun?!"
+msgstr "Bu şaka mı?! Benimle dalga mı geçiyorsun?!"
 
 #: src/dialog/reimu.c:560
 msgid ""
@@ -3642,7 +3642,7 @@ msgstr "Muhtemelen insanları deli yapan bir kuleyi hatırlıyorum!"
 msgid ""
 "The least you can do when accusing someone is to tell them what they’ve "
 "supposedly done!"
-msgstr "En azında beni suçlu gösterdiğinde ne yaptığımı söyle!"
+msgstr "En azından beni suçlu gösterdiğinde ne yaptığımı söyle!"
 
 #: src/dialog/reimu.c:564
 msgid "Ah. I see."
@@ -3666,7 +3666,7 @@ msgstr "Bu Gensōkyō'nun yaşayanları, bilimsel bilgi için teşekkürlü olma
 
 #: src/dialog/reimu.c:570
 msgid "But alas, we have other plans."
-msgstr "Fakat ne yazıkkı, şu an başka planlarımız var."
+msgstr "Fakat ne yazık kı, şu an başka planlarımız var."
 
 #: src/dialog/reimu.c:573
 msgid "‘This’ Gensōkyō…?"
@@ -3708,7 +3708,7 @@ msgstr "‘Parallel evrenler’, bu kadar mı?"
 
 #: src/dialog/reimu.c:590
 msgid "Hmm? Is that what you think this Gensōkyō is?"
-msgstr "Hmm? Bu senin Gensōkyō'yu ne sandığınmı."
+msgstr "Hmm? Bu senin Gensōkyō'yu ne sandığın mı?"
 
 #: src/dialog/reimu.c:593
 msgid "You tell me! You’re the megalomaniac!"
@@ -3716,7 +3716,7 @@ msgstr "Sen anlat! Megalomania!"
 
 #: src/dialog/reimu.c:595
 msgid "Do you hate me because some other Reimu did something? Is that it?"
-msgstr "Başka Reimu kötü bir şey yaptığı içinmi benden nefret ediyorsun? Bu kadarmı?"
+msgstr "Başka Reimu kötü bir şey yaptığı için mi benden nefret ediyorsun? Bu kadar mı?"
 
 #: src/dialog/reimu.c:596
 msgid "But then what does that have to do with any of us?!"
@@ -3781,7 +3781,7 @@ msgstr "Bunun için çok geç! Yakında bütün Gensōkyō aydınlanacak!"
 msgid ""
 "Don’t you understand, pitiful shrine maiden? Science is an unfathomable "
 "power, surpassed by nothing!"
-msgstr "Anlamıyonmu mabet rahibesi? Bilim hiç bir şey tarafından aşılamaz!"
+msgstr "Anlamıyor musun mabet rahibesi? Bilim hiçbir şey tarafından aşılamaz!"
 
 #: src/dialog/reimu.c:626
 msgid "We won’t be forgotten again!"
@@ -3858,7 +3858,7 @@ msgstr "Ne kötü, buranın aslında harika bir yer olduğunu duymuştum."
 
 #: src/dialog/youmu.c:84
 msgid "Oh my, what’s this? A new face?"
-msgstr "Oh, bu ne? Yeni bir surat?"
+msgstr "Ah, bu ne? Yeni bir surat?"
 
 #: src/dialog/youmu.c:86
 msgid "And who might you be, dear?"
@@ -3940,11 +3940,11 @@ msgstr "Bu ormanda gittikçe daha çok yoruluyorum."
 
 #: src/dialog/youmu.c:152
 msgid "Something is definitely amiss."
-msgstr "Birşeyler fena."
+msgstr "Bir şeyler fena."
 
 #: src/dialog/youmu.c:155
 msgid "Amiss?"
-msgstr "Fenamı?"
+msgstr "Fena mı?"
 
 #: src/dialog/youmu.c:157
 msgid "Perhaps you’re frightened by our growing, overwhelming influence?"
@@ -3956,7 +3956,7 @@ msgstr "Böcekler şu an beni endişelendirmiyor."
 
 #: src/dialog/youmu.c:163
 msgid "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!"
-msgstr "Oh, yani tüm böcekler ‘böcek’ öylemi, hmm? Nasıl olduğunu görüyorum"
+msgstr "Ah, yani tüm böcekler ‘böcek’ öyle mi, hmm? Nasıl olduğunu görüyorum!"
 
 #: src/dialog/youmu.c:165
 msgid "Ever heard of beetles? Flies? Show us some respect!"
@@ -3974,7 +3974,7 @@ msgstr "Hanım Yuyuko tarafından verilen bir görevdeyim ve rahatsızlık çık
 
 #: src/dialog/youmu.c:173
 msgid "Oh, oh, I understand now."
-msgstr "Oh, oh, şimdi anlıyorum"
+msgstr "Aa, aah, şimdi anlıyorum"
 
 #: src/dialog/youmu.c:175
 msgid ""
@@ -4028,7 +4028,7 @@ msgstr "Böylece biz yeşil parmaklarının ötesinde yaşabiliriz!"
 
 #: src/dialog/youmu.c:210
 msgid "Are you aware of the legend of the Tonbokiri?"
-msgstr "Tonbokiri'nin efsanesinden haberin varmı?"
+msgstr "Tonbokiri'nin efsanesinden haberin var mı?"
 
 #: src/dialog/youmu.c:211
 msgid ""
@@ -4071,7 +4071,7 @@ msgstr "Bu kule… Çoktan hissedebiliyorum…"
 
 #: src/dialog/youmu.c:246
 msgid "Could this be a challenge worthy of my skills…?!"
-msgstr "Bu benim yeteklenirme uygun bir meydan okuma olabilirmi…?!"
+msgstr "Bu benim yeteklenirme uygun bir meydan okuma olabilir mi…?!"
 
 #: src/dialog/youmu.c:250
 msgid "Really? This mansion is actually pretty trashy, though."
@@ -4095,7 +4095,7 @@ msgstr "Belki hatırlarım."
 
 #: src/dialog/youmu.c:262
 msgid "Are you an associate of this… mansion-tower’s denizens, then?"
-msgstr "O zaman malikane kulesi sakinlerinin bir çağrısı mısın…?"
+msgstr "O zaman malikane kulesi sakinlerinin çağrısı mısın…?"
 
 #: src/dialog/youmu.c:265
 msgid "Of course not! Who do you take me for?!"
@@ -4176,7 +4176,7 @@ msgstr "(O gerçekten manga anti-kahramanı gibi konuşuyor…)"
 
 #: src/dialog/youmu.c:314
 msgid "O-Oh, okay then!"
-msgstr "O-oh tamam o zaman!"
+msgstr "A-ah tamam o zaman!"
 
 #: src/dialog/youmu.c:316
 msgid "I’m sick of guarding this creepy, spooky mansion anyways."
@@ -4210,7 +4210,7 @@ msgstr "Ama senin gibi güçlü bir kılıç kadını bu işi halledebilir."
 
 #: src/dialog/youmu.c:334
 msgid "B-Bring it on! Nothing will stand in my way!"
-msgstr "G-getirin! Önümde hiç bir şey duramaz!"
+msgstr "G-getirin! Önümde hiçbir şey duramaz!"
 
 #: src/dialog/youmu.c:337
 msgid "(Teehee, so gullible.)"
@@ -4227,11 +4227,11 @@ msgstr "Evet, son savaş yaklaşıyor. HIssedebiliyorum."
 #: src/dialog/youmu.c:358
 msgid ""
 "Will it be a legendary duel? One to go down in the history of Gensōkyō?!"
-msgstr "Efsanevi bir düellomu olacak? Gensōkyō'nun tarihine geçecek bir düello?!"
+msgstr "Efsanevi bir düello olacak mı? Gensōkyō'nun tarihine geçecek bir düello?!"
 
 #: src/dialog/youmu.c:361
 msgid "Oh, the gardener from the Netherworld?"
-msgstr "Cehennem dünyasının bahçıvanı?"
+msgstr "Ah, Cehennem Dünyası'nın bahçıvanı?"
 
 #: src/dialog/youmu.c:363
 msgid "It’s no surprise to see you here."
@@ -4239,7 +4239,7 @@ msgstr "Seni görmek beni şaşırtmadı."
 
 #: src/dialog/youmu.c:364
 msgid "Your mistress has been taken by the Tower’s presence, I assume?"
-msgstr "Stressizliğin kulenin gücü yüzünden olduğunu tahmin ediyom?"
+msgstr "Sahibeliğinin kulenin gücü yüzünden olduğunu tahmin ediyom?"
 
 #: src/dialog/youmu.c:367
 msgid "Lady Yuyuko is in a safe, undisclosed location."
@@ -4288,14 +4288,13 @@ msgstr "Cennet dahil, tahminim? Anlıyorum."
 
 #: src/dialog/youmu.c:393
 msgid "Fear not. I will allow nothing to stand in my way."
-msgstr "Korkma. Hiç bir şeyin yolumda durmasına izin vermeyeceğim."
+msgstr "Korkma. Hiçbir şeyin yolumda durmasına izin vermeyeceğim."
 
 #: src/dialog/youmu.c:395
 msgid ""
 "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this "
 "incident once and—"
-msgstr ""
-"Konpaku Yōmu, gelmiş geçmiş en iyi kılıç kadını yaşayacak, ölecek ve bu sorunu bir kez—"
+msgstr "Konpaku Yōmu, gelmiş geçmiş en iyi kılıç kadını yaşayacak, ölecek ve bu sorunu bir kez—"
 
 #: src/dialog/youmu.c:398
 msgid ""
@@ -4305,7 +4304,7 @@ msgstr "Görünen o ki makine senin ego'nu şişirdi, kılıç kadını Hakugyku
 
 #: src/dialog/youmu.c:400
 msgid "Would caution not be prudent in this situation?"
-msgstr "Dikkat etmek sence bu olay için daha mantıklı değilmi?"
+msgstr "Dikkat etmek sence bu olay için daha mantıklı değil mi?"
 
 #: src/dialog/youmu.c:403
 msgid "Overinflated ego? Nonsense."
@@ -4326,7 +4325,7 @@ msgstr "Onun sırasında daha önce bitmemiş yōkai-yoketme tekniğimim gerçek
 
 #: src/dialog/youmu.c:409
 msgid "Is that so?"
-msgstr "Öylemi?"
+msgstr "Öyle mi?"
 
 #: src/dialog/youmu.c:412
 msgid "More doubt from ignorant skeptics, I see."
@@ -4334,7 +4333,7 @@ msgstr "Daha fazla esgeçilen şüphe, anlıyorum."
 
 #: src/dialog/youmu.c:414
 msgid "Shall we duel so that I may demonstrate to your satisfaction?!"
-msgstr "Nedemek istediğimi göstermem için düello yapalımmı?!"
+msgstr "Ne demek istediğimi göstermem için düello yapalım mı?!"
 
 #: src/dialog/youmu.c:417
 msgid "W-wait, that is not what I meant, I simply—"
@@ -4454,7 +4453,7 @@ msgstr "Bir kahramansal kapışma için ne kadar güzel bir yer!!"
 
 #: src/dialog/youmu.c:498
 msgid "Nothing seems to slow you down, hmm?"
-msgstr "Hiç bir şey seni yavaşlatmıyor, hmm?"
+msgstr "Hiçbir şey seni yavaşlatmıyor, hmm?"
 
 #: src/dialog/youmu.c:501
 msgid ""
@@ -4463,7 +4462,7 @@ msgstr "Ne kadar rahatsız edici. Ama bu Gensōkyō'nun halkından beklenir."
 
 #: src/dialog/youmu.c:503
 msgid "And I see that you’re a master of the blade, a shinigami no less!"
-msgstr "Ve ben senin namlu ustası olduğunu görüyorum, bir shinigami'den başka bir şey değil!"
+msgstr "Ve senin namlu ustası olduğunu görüyorum, bir shinigami'den başka bir şey değil!"
 
 #: src/dialog/youmu.c:505
 msgid "Absolutely splendid!"
@@ -4514,7 +4513,7 @@ msgstr "Tekniksel? Hah!"
 
 #: src/dialog/youmu.c:527
 msgid "I’m sure our existence means nothing to you! And the feeling is mutual!"
-msgstr "Eminim ki varlık sana hiç bir şey anlam etmiyor!"
+msgstr "Eminim ki varlık sana hiçbir şey anlam etmiyor!"
 
 #: src/dialog/youmu.c:530
 msgid "On the contrary, scythe-bearer!"
@@ -4522,7 +4521,7 @@ msgstr "Ona karşıt, tırpancı!"
 
 #: src/dialog/youmu.c:531
 msgid "You’ve created an impeccable stage for our final confrontation."
-msgstr "Son buluşmammız için oluşturdun."
+msgstr "Son buluşmammız için imkansız bir aşama oluşturdun."
 
 #: src/dialog/youmu.c:533
 msgid ""
@@ -4532,7 +4531,7 @@ msgstr "Ama önce şunu söyle, görevin ne? Neye ulaşmak istiyorsun?"
 #: src/dialog/youmu.c:535
 msgid ""
 "For us to share this… intimate moment, I desire to know everything about you."
-msgstr "Bunu söylemek için biz… seninle ilgili herşeyi bilmek istiyorum."
+msgstr "Bunu söylemek için biz… seninle ilgili her şeyi bilmek istiyorum."
 
 #: src/dialog/youmu.c:538
 msgid "…!"
@@ -4573,13 +4572,12 @@ msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
 msgstr ""
-"Ne yazıkki, Cehennem Dünyası’nın hanım Yuyuko'su tarafından verilen görevim, direkten "
-"seninkiylen çakışıyor!"
+"Ne yazıkki, Cehennem Dünyası’nın hanım Yuyuko'su tarafından verilen görevim, direk seninkiylen çakışıyor!"
 
 #: src/dialog/youmu.c:552
 msgid ""
 "I cannot allow you to drive my compatriots mad, or to subjugate my home!"
-msgstr "Benim memleketimi deliliğe sürükleme veya benim evime zorlamana izin vermeyeceğim!"
+msgstr "Benim memleketi mi deliliğe sürükleme veya benim evime zorlamana izin vermeyeceğim!"
 
 #: src/dialog/youmu.c:554
 msgid "Perhaps, in another time and place, we could have been friends!"
@@ -4596,7 +4594,7 @@ msgstr "Ne bir trajedi!"
 
 #: src/dialog/youmu.c:563
 msgid "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?!"
-msgstr "Sen Gensōkyō'nun kaharmanı olmaya çalışıyorsun değilmi?"
+msgstr "Gensōkyō'nun kahramanı olmaya çalışıyorsun değil mi?"
 
 #: src/dialog/youmu.c:565
 msgid ""
@@ -4613,11 +4611,11 @@ msgstr "Cesaretin çok ilgi çekici, bunu söyleyeyim."
 
 #: src/dialog/youmu.c:572
 msgid "But there’s an enormous difference between us, swordswoman."
-msgstr "Ama bizim aramıza önemli bir fark var kılıç kadını."
+msgstr "Ama aramıza önemli bir fark var kılıç kadını."
 
 #: src/dialog/youmu.c:578
 msgid "For I possess the knowledge of science and rationality!"
-msgstr "Ben bilimi ve oranının bilgisine sahibim!"
+msgstr "Bilimin ve oranının bilgisine sahibim!"
 
 #: src/dialog/youmu.c:579
 msgid ""
@@ -4815,7 +4813,7 @@ msgstr "Hakurei Reimu"
 
 #: src/menu/charprofile.c:62
 msgid "Shrine Maiden of Fantasy"
-msgstr "Fantastik Mabet Rahibesi"
+msgstr "Hayali Mabet Rahibesi"
 
 #: src/menu/charprofile.c:63 src/menu/charprofile.c:73
 msgid "Human"
@@ -4823,7 +4821,7 @@ msgstr "İnsan"
 
 #: src/menu/charprofile.c:64
 msgid "Literature (Fiction)"
-msgstr "Fantastik"
+msgstr "Edebiyat (Hayali)"
 
 #: src/menu/charprofile.c:65
 msgid ""
@@ -4988,7 +4986,7 @@ msgid ""
 msgstr ""
 "Her şeyin bilgisi sayılamaz, ve bu böcek seçimli çatal yapacak \n"
 "\n"
-"Çoğu böcek büyük gelişim yapmayı planlamıyor, fakat kendi halleri etkilikleri üzmeye yeter."
+"Çoğu böcek büyük gelişim yapmayı planlamıyor, fakat kendi halleri etkinlikleri üzmeye yeter."
 
 #: src/menu/charprofile.c:126
 msgid "Insect"
@@ -5083,7 +5081,7 @@ msgid ""
 msgstr ""
 "Unutulmaktan dolayı biraz üzgün.\n"
 "\n"
-"Kendisi “kara resim” denen bir fizik yapımında. Onu yan işi megalomania.\n"
+"Kendisi “kara resim” denen bir fizik yapımında. Onun yan işi megalomania.\n"
 "\n"
 "Kendisi gerçekten tam dünyanın çatısında, aşağı geri inmek için yardım "
 "edecek bir şeyı olmadan yaşıyor. Babel kulesi yıkılırken masum yōkai'nin "
@@ -5406,7 +5404,7 @@ msgstr ""
 
 #: src/menu/options.c:845
 msgid "Particle effects"
-msgstr "Parçacık ffektleri "
+msgstr "Parçacık etkileri"
 
 #: src/menu/options.c:847 src/menu/options.c:852
 msgid "minimal"
@@ -5418,7 +5416,7 @@ msgstr "tam"
 
 #: src/menu/options.c:850
 msgid "Postprocessing effects"
-msgstr "Sonraişleme-Effektleri"
+msgstr "Sonraişleme-Etkilerileri"
 
 #: src/menu/options.c:853
 msgid "fast"
@@ -5802,7 +5800,7 @@ msgstr "Denedi-ve-başardı: Tılsımlar ve sivri iğneler. Hedef almana bile ge
 
 #: src/plrmodes/reimu_a.c:899
 msgid "Spirit Sign “Fantasy Seal —Burst—”"
-msgstr "Misafir işareti “Fantastik Halat —Burst—”"
+msgstr "Misafir işareti “Hayali Halat —Burst—”"
 
 #: src/plrmodes/reimu_b.c:713
 msgid "Dream Shaper"
@@ -5897,7 +5895,7 @@ msgstr "Sonraki:"
 
 #: src/stagedraw.c:1351
 msgid "Fragments:"
-msgstr "Fragmanlar:"
+msgstr "Parçalar:"
 
 #: src/stagedraw.c:1464
 msgid "God Mode is enabled!"
@@ -5907,7 +5905,7 @@ msgstr "Tanrı-Modu etkinleştirildi!"
 msgid ""
 "Voltage        \n"
 "    Overdrive!"
-msgstr "Elektrik        \n yükselişi!"
+msgstr "Elektrik\n yükselişi!"
 
 #: src/stagedraw.c:1878
 msgid "Demo"
@@ -5915,11 +5913,11 @@ msgstr "Öngösterim"
 
 #: src/stagedraw.c:1892
 msgid "All Clear!"
-msgstr "Hepsi tamamlandı!"
+msgstr "Hepsi Tamamlandı!"
 
 #: src/stagedraw.c:1892
 msgid "Stage Clear!"
-msgstr "Aşama tamamlandı!"
+msgstr "Aşama Tamamlandı!"
 
 #: src/stagedraw.c:1896
 msgid "Stage Clear bonus"
@@ -5939,7 +5937,7 @@ msgstr "Graze bonusu"
 
 #: src/stagedraw.c:1903
 msgid "All Clear bonus"
-msgstr "Hepsini tamamlama bonusu"
+msgstr "Hepsini Tamamlama Bonusu"
 
 #: src/stagedraw.c:1908
 #, c-format
@@ -5952,7 +5950,7 @@ msgstr "Devam etmek için [Ateş]'e basın"
 
 #: src/stageinfo.c:119
 msgid "Misty Lake Encounter"
-msgstr "Bulanık Göl karşılaşması"
+msgstr "Bulanık Göl Karşılaşması"
 
 #: src/stageinfo.c:120
 msgid "Riverside Hina-Nagashi"
@@ -5968,11 +5966,11 @@ msgstr "Untulmuş Malikane"
 
 #: src/stageinfo.c:123
 msgid "Climbing the Tower of Babel"
-msgstr "Babel kulesne çıkış"
+msgstr "Babel Kulesi'ne çıkış"
 
 #: src/stageinfo.c:124
 msgid "Roof of the World"
-msgstr "Dünyanın çatısı"
+msgstr "Dünya'nın çatısı"
 
 #: src/stageinfo.c:125
 msgid "Extra Stage"
@@ -6014,7 +6012,7 @@ msgstr "Belki bu orta okullular için akıllıcadır!"
 
 #: src/stages/stage1/spells/snow_halation.c:192
 msgid "I think you don’t even understand the timer!"
-msgstr "Bence sen zamanlayıcı anlayamıyorsun!"
+msgstr "Bence zamanlayıcıyı anlayamıyorsun!"
 
 #: src/stages/stage1/spells/snow_halation.c:193
 msgid "You- You Idiootttt!"
@@ -6243,12 +6241,12 @@ msgid ""
 "not, but I know it holds a special place in my heart."
 msgstr ""
 "Karakterin var olan temasını değiştirmek veya yeni bir tema bulmak ZUN'un kendisi "
-"için bile zorkuç çekeceği birşeydir.\n"
+"için bile zorkuç çekeceği bir şeydir.\n"
 "\n"
 "Biliyoum ki güçlerim bana yalan söylyor, ki kulede duyduğum yıldırımsal kompozisyona "
 "sebep oldu, ama Iku'nun o kadar orjinal bir konusu varki meydan okumayı kabul etmem lazımdı.\n"
 "\n"
-"Hepsinin sonucu olarak orjinal adaleti yaptımmı bilmiyorum ama kalbimde özel alanı var."
+"Hepsinin sonucu olarak orjinal adaleti yaptım mı bilmiyorum ama kalbimde özel bir alanı var."
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
@@ -6649,7 +6647,7 @@ msgid ""
 msgstr ""
 "Elly'nin son büyüsü.\n"
 "\n"
-"En zorlu ve önemli görevler herşeyi çözmelidir. "
+"En zorlu ve önemli görevler her şeyi çözmelidir. "
 "Birçok insan bilimin bütün bilgilerin çoktan tüm keşiflerin bulunmuş olduğu bir vücüt bilgisi gibi görür, "
 "amma gerçekte bilim aslında çekilecek kara perdeleri bitmeyen bir seridir, ve her zaman eskisinden daha harika ve "
 "düşünülemez bir buluş mümkündür."
