@@ -17,10 +17,13 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#ifndef __SWITCH__
+#include <sys/mman.h>
+#endif
 
 VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;
@@ -152,6 +155,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
+#ifndef __SWITCH__
 static const void *vfs_syspath_mmap(VFSNode *node, size_t *size) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	struct stat statbuf;
@@ -189,6 +193,7 @@ static bool vfs_syspath_munmap(VFSNode *node, const void *addr, size_t size) {
 
 	return true;
 }
+#endif
 
 VFS_NODE_FUNCS(VFSSysPathNode, {
 	.repr = vfs_syspath_repr,
@@ -200,8 +205,10 @@ VFS_NODE_FUNCS(VFSSysPathNode, {
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
 	.open = vfs_syspath_open,
+#ifndef __SWITCH__
 	.mmap = vfs_syspath_mmap,
 	.munmap = vfs_syspath_munmap,
+#endif
 });
 
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {

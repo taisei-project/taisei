@@ -46,4 +46,10 @@ system = 'nx'
 cpu_family = 'aarch64'
 cpu = 'cortex-a57'
 endian = 'little'
+
+[properties]
+cmake_toolchain_file = '$DEVKITPRO/cmake/Switch.cmake'
+
+[cmake]
+CMAKE_SYSTEM_NAME = 'NintendoSwitch'
 DOCEND
