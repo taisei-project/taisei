@@ -22,15 +22,14 @@ For building, you need the devkitA64 from devkitPro setup, along with switch por
 Documentation to setup that can be found [here](https://switchbrew.org/wiki/Setting_up_Development_Environment).
 
 You will need the following packages/group installed from devkitPro pacman: 
-`switch-dev switch-portlibs devkitpro-pkgbuild-helpers switch-pkg-config`
+`switch-dev switch-portlibs dkp-toolchain-vars switch-pkg-config`
 
 Other dependencies common to the main targets include:
 
-    * meson >= 0.45.0 (build system; >=0.48.0 recommended)
-    * Python >= 3.5
+    * meson >= 1.8.0
+    * Python >= 3.14 (or with zstd api backported)
     * ninja
-    * glslc
-    * spirv-cross
+    * gettext
 
 ### Compiling from source
 
@@ -38,8 +37,8 @@ Run one of the following commands from the project root:
 
 ```
 mkdir -p ./build/nx
-./switch/crossfile.sh > ./build/nx/crossfile.txt
-meson --cross-file="./build/nx/crossfile.txt" . ./build/nx
+./switch/crossfile.sh > ./build/nx/crossfile.ini
+meson setup --cross-file="./build/nx/crossfile.ini" . ./build/nx
 ninja -C ./build/nx
 ```
 
