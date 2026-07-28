@@ -837,6 +837,21 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	);	b->dependence = bind_bgquality_dependence;
 		b->pad++;
 
+	add_menu_entry(m, N_("Background brightness"), do_nothing,
+		b = bind_scale(CONFIG_BG_BRIGHTNESS, -1.0, 1.0, 0.05)
+	);	b->dependence = bind_bgquality_dependence;
+		b->pad++;
+
+	add_menu_entry(m, N_("Background contrast"), do_nothing,
+		b = bind_scale(CONFIG_BG_CONTRAST, 0.5, 1.5, 0.05)
+	);	b->dependence = bind_bgquality_dependence;
+		b->pad++;
+
+	add_menu_entry(m, N_("Background saturation"), do_nothing,
+		b = bind_scale(CONFIG_BG_SATURATION, 0.0, 2.0, 0.05)
+	);	b->dependence = bind_bgquality_dependence;
+		b->pad++;
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, N_("Anti-aliasing"), do_nothing,
