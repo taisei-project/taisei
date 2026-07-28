@@ -5953,18 +5953,16 @@ msgid "Background rendering quality"
 msgstr "Hintergrundqualität"
 
 #: src/menu/options.c:840
-#, fuzzy
 msgid "Background brightness"
-msgstr "Hintergrundqualität"
+msgstr "Hintergrundhelligkeit"
 
 #: src/menu/options.c:845
-#, fuzzy
 msgid "Background contrast"
-msgstr "Hintergrundqualität"
+msgstr "Hintergrundkontrast"
 
 #: src/menu/options.c:850
 msgid "Background saturation"
-msgstr ""
+msgstr "Hintergrundsättigung"
 
 #: src/menu/options.c:857
 msgid "Anti-aliasing"
@@ -6429,17 +6427,16 @@ msgid "Aegis Sword “Saigyō Omnidirectional Slash”"
 msgstr "Aegis-Schwert “Saigy­ō rundstrahlender Schnitt”"
 
 #: src/renderer/common/backend.c:118
-#, fuzzy
 msgid "Automatic"
-msgstr "Lunatic"
+msgstr "Automatisch"
 
 #: src/renderer/common/backend.c:143
 msgid "Cancel"
-msgstr ""
+msgstr "Zurück"
 
 #: src/renderer/common/backend.c:144
 msgid "Run"
-msgstr ""
+msgstr "Start"
 
 #: src/renderer/common/backend.c:147
 msgid ""
@@ -6447,6 +6444,9 @@ msgid ""
 "\n"
 "Change this if the game crashes or displays incorrectly.\n"
 msgstr ""
+"Wähle die Grafik-API.\n"
+"\n"
+"Ändern, wenn das Spiel abstürzt oder falsch aussieht.\n"
 
 #: src/stage.c:622
 #, c-format
@@ -6574,7 +6574,7 @@ msgstr "Dach der Welt"
 
 #: src/stageinfo.c:125
 msgid "Extra Stage"
-msgstr ""
+msgstr "Extra Stage"
 
 #: src/stageinfo.c:125
 msgid "Descent into Madness"
@@ -6583,12 +6583,12 @@ msgstr "Abstieg in den Wahnsinn"
 #: src/stageinfo.c:248
 #, c-format
 msgid "Spell %d"
-msgstr ""
+msgstr "Spell %d"
 
 #: src/stageinfo.c:251
 #, c-format
 msgid "Stage %d"
-msgstr ""
+msgstr "Stage %d"
 
 #: src/stages/stage1/spells/snow_halation.c:187
 msgid "What are you doing??"
@@ -6815,7 +6815,7 @@ msgstr "Taisei-Projekt"
 
 #: po/extra_strings.c:2
 msgid "Divine Correction for Outliers"
-msgstr ""
+msgstr "Divine Correction for Outliers"
 
 #: po/extra_strings.c:3 po/extra_strings.c:7 po/extra_strings.c:11
 #: po/extra_strings.c:23 po/extra_strings.c:27 po/extra_strings.c:31
@@ -6825,7 +6825,7 @@ msgstr ""
 #: po/extra_strings.c:71 po/extra_strings.c:75 po/extra_strings.c:79
 #: po/extra_strings.c:83
 msgid "Tuck V"
-msgstr ""
+msgstr "Tuck V"
 
 #: po/extra_strings.c:5
 msgid ""
@@ -6854,7 +6854,7 @@ msgstr ""
 
 #: po/extra_strings.c:6
 msgid "Existential Field"
-msgstr ""
+msgstr "Existential Field"
 
 #: po/extra_strings.c:9
 msgid ""
@@ -6874,7 +6874,7 @@ msgstr ""
 
 #: po/extra_strings.c:10
 msgid "Dream Cycle"
-msgstr ""
+msgstr "Dream Cycle"
 
 #: po/extra_strings.c:13
 msgid ""
@@ -6894,11 +6894,11 @@ msgstr ""
 
 #: po/extra_strings.c:14
 msgid "Delta Conclusion"
-msgstr ""
+msgstr "Delta Conclusion"
 
 #: po/extra_strings.c:15
 msgid "RickyRister"
-msgstr ""
+msgstr "RickyRister"
 
 #: po/extra_strings.c:17
 msgid ""
@@ -6923,11 +6923,11 @@ msgstr ""
 
 #: po/extra_strings.c:18
 msgid "Unsettling Knowledge"
-msgstr ""
+msgstr "Unsettling Knowledge"
 
 #: po/extra_strings.c:19
 msgid "jneen-collective"
-msgstr ""
+msgstr "jneen-collective"
 
 #: po/extra_strings.c:21
 msgid ""
@@ -6943,7 +6943,7 @@ msgstr ""
 
 #: po/extra_strings.c:22
 msgid "Delta Concision"
-msgstr ""
+msgstr "Delta Concision"
 
 #: po/extra_strings.c:25
 msgid ""
@@ -6957,7 +6957,7 @@ msgstr ""
 
 #: po/extra_strings.c:26
 msgid "Logic Bombardier"
-msgstr ""
+msgstr "Logic Bombardier"
 
 #: po/extra_strings.c:29
 msgid ""
@@ -6984,7 +6984,7 @@ msgstr ""
 
 #: po/extra_strings.c:30
 msgid "The Fog Invites Unseen Mischief"
-msgstr ""
+msgstr "The Fog Invites Unseen Mischief"
 
 #: po/extra_strings.c:33
 msgid ""
@@ -7001,7 +7001,7 @@ msgstr ""
 
 #: po/extra_strings.c:34
 msgid "An Impish Reflection on the Water"
-msgstr ""
+msgstr "An Impish Reflection on the Water"
 
 #: po/extra_strings.c:37
 msgid ""
@@ -7022,7 +7022,7 @@ msgstr ""
 
 #: po/extra_strings.c:38
 msgid "Treasure the Wager, Treasure the Odds"
-msgstr ""
+msgstr "Treasure the Wager, Treasure the Odds"
 
 #: po/extra_strings.c:41
 msgid ""
@@ -7041,7 +7041,7 @@ msgstr ""
 
 #: po/extra_strings.c:42
 msgid "The Cheerful Presence of a Dark God"
-msgstr ""
+msgstr "The Cheerful Presence of a Dark God"
 
 #: po/extra_strings.c:45
 msgid ""
@@ -7062,7 +7062,7 @@ msgstr ""
 
 #: po/extra_strings.c:46
 msgid "Fizeau’s Finding ~ Lightray Vector"
-msgstr ""
+msgstr "Fizeau’s Finding ~ Lightray Vector"
 
 #: po/extra_strings.c:49
 msgid ""
@@ -7083,7 +7083,7 @@ msgstr ""
 
 #: po/extra_strings.c:50
 msgid "Lightningbug ~ Lightning Heart"
-msgstr ""
+msgstr "Lightningbug ~ Lightning Heart"
 
 #: po/extra_strings.c:53
 msgid ""
@@ -7105,7 +7105,7 @@ msgstr ""
 
 #: po/extra_strings.c:54
 msgid "Evidence of Ki Domestication"
-msgstr ""
+msgstr "Evidence of Ki Domestication"
 
 #: po/extra_strings.c:57
 msgid ""
@@ -7131,7 +7131,7 @@ msgstr ""
 
 #: po/extra_strings.c:58
 msgid "Marginal Red ~ The Red Word"
-msgstr ""
+msgstr "Marginal Red ~ The Red Word"
 
 #: po/extra_strings.c:61
 msgid ""
@@ -7150,7 +7150,7 @@ msgstr ""
 
 #: po/extra_strings.c:62
 msgid "Speak Not Falsely ~ Excitation Field"
-msgstr ""
+msgstr "Speak Not Falsely ~ Excitation Field"
 
 #: po/extra_strings.c:65
 msgid ""
@@ -7178,7 +7178,7 @@ msgstr ""
 
 #: po/extra_strings.c:66
 msgid "A Prayer Worth Three Hundred Coulombs"
-msgstr ""
+msgstr "A Prayer Worth Three Hundred Coulombs"
 
 #: po/extra_strings.c:69
 msgid ""
@@ -7200,7 +7200,7 @@ msgstr ""
 
 #: po/extra_strings.c:70
 msgid "Summit of Revelations"
-msgstr ""
+msgstr "Summit of Revelations"
 
 #: po/extra_strings.c:73
 msgid ""
@@ -7221,7 +7221,7 @@ msgstr ""
 
 #: po/extra_strings.c:74
 msgid "Cosmological Battle ~ The Vacuum Catastrophe"
-msgstr ""
+msgstr "Cosmological Battle ~ The Vacuum Catastrophe"
 
 #: po/extra_strings.c:77
 msgid ""
@@ -7245,7 +7245,7 @@ msgstr ""
 
 #: po/extra_strings.c:78
 msgid "Deified Emergent Property ~ Ambivalent Soul"
-msgstr ""
+msgstr "Deified Emergent Property ~ Ambivalent Soul"
 
 #: po/extra_strings.c:81
 msgid ""
@@ -7269,7 +7269,7 @@ msgstr ""
 
 #: po/extra_strings.c:82
 msgid "Immutable Truth"
-msgstr ""
+msgstr "Immutable Truth"
 
 #: po/extra_strings.c:85
 msgid ""
