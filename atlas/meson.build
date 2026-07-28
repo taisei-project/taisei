@@ -46,6 +46,7 @@ atlases = [
     ['common_ui',   []],
     ['huge',        []],
     ['portraits',   ['--tsatlas-sort=perimeter']],
+    ['temp_stagex', []],
 ]
 
 atlas_profiles = [
