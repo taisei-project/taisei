@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 20:23+0200\n"
+"POT-Creation-Date: 2026-07-28 02:07+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: onihilist <onihilist@proton.me>\n"
 "Language-Team: \n"
@@ -44,7 +44,7 @@ msgstr "Bonus d'endurance"
 msgid "Diff. multiplier"
 msgstr "Diff. multiplicateur"
 
-#: src/boss.c:988 src/stagedraw.c:1914
+#: src/boss.c:988 src/stagedraw.c:1959
 msgid "Total"
 msgstr "Total"
 
@@ -65,7 +65,7 @@ msgid "Move"
 msgstr "Monter"
 
 #: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:973 src/gamepad.c:984
-#: src/menu/options.c:1405
+#: src/menu/options.c:1420
 msgid "Unknown"
 msgstr "Inconnu"
 
@@ -2339,7 +2339,7 @@ msgid "High-Society Phlebotomist"
 msgstr "Phlébotomiste de la haute société"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:148
-#: src/stages/stage5/iku.c:108
+#: src/stages/stage5/iku.c:110
 msgid "Nagae Iku"
 msgstr "Nagae Iku"
 
@@ -5272,8 +5272,8 @@ msgid "Y"
 msgstr "Y"
 
 #: src/gamepad.c:909 src/menu/cutsceneview.c:54 src/menu/media.c:60
-#: src/menu/options.c:859 src/menu/options.c:923 src/menu/options.c:1067
-#: src/menu/options.c:1176 src/menu/options.c:1267 src/menu/replayview.c:488
+#: src/menu/options.c:874 src/menu/options.c:938 src/menu/options.c:1082
+#: src/menu/options.c:1191 src/menu/options.c:1282 src/menu/replayview.c:488
 msgid "Back"
 msgstr "Retour"
 
@@ -5401,7 +5401,7 @@ msgstr "Droite X"
 msgid "Right Y"
 msgstr "Droite Y"
 
-#: src/i18n/i18n.c:191
+#: src/i18n/i18n.c:192
 msgid "__NAME__"
 msgstr "Français"
 
@@ -5758,7 +5758,7 @@ msgstr ""
 "Pour ceux qui commencent\n"
 "leur parcours académique"
 
-#: src/menu/difficultyselect.c:45
+#: src/menu/difficultyselect.c:46
 msgid ""
 "All those years of study\n"
 "have finally paid off"
@@ -5766,7 +5766,7 @@ msgstr ""
 "Toutes ces années d’études\n"
 "ont enfin porté leurs fruits"
 
-#: src/menu/difficultyselect.c:46
+#: src/menu/difficultyselect.c:48
 msgid ""
 "You must really\n"
 "love books"
@@ -5774,7 +5774,7 @@ msgstr ""
 "Tu dois vraiment\n"
 "aimer les livres"
 
-#: src/menu/difficultyselect.c:47
+#: src/menu/difficultyselect.c:50
 msgid ""
 "You either die a student,\n"
 "or live long enough to\n"
@@ -5784,7 +5784,7 @@ msgstr ""
 "ou tu vis assez longtemps\n"
 "pour devenir professeur"
 
-#: src/menu/difficultyselect.c:65
+#: src/menu/difficultyselect.c:75
 msgid "Select Difficulty"
 msgstr "Sélectionner la difficulté"
 
@@ -5830,7 +5830,7 @@ msgid "Game Paused"
 msgstr "Jeu En Pause"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1182
+#: src/menu/options.c:1197
 msgid "Options"
 msgstr "Options"
 
@@ -6016,289 +6016,303 @@ msgstr "Afficher le fond"
 msgid "Background rendering quality"
 msgstr "Qualité du rendu du fond"
 
-#: src/menu/options.c:842
+#: src/menu/options.c:840
+#, fuzzy
+msgid "Background brightness"
+msgstr "Qualité du rendu du fond"
+
+#: src/menu/options.c:845
+#, fuzzy
+msgid "Background contrast"
+msgstr "Qualité du rendu du fond"
+
+#: src/menu/options.c:850
+msgid "Background saturation"
+msgstr ""
+
+#: src/menu/options.c:857
 msgid "Anti-aliasing"
 msgstr "Anti-crénelage"
 
-#: src/menu/options.c:844
+#: src/menu/options.c:859
 msgid "none"
 msgstr "aucun"
 
-#: src/menu/options.c:845
+#: src/menu/options.c:860
 msgid "fxaa"
 msgstr "fxaa"
 
-#: src/menu/options.c:847
+#: src/menu/options.c:862
 msgid "Particle effects"
 msgstr "Effets de particules"
 
-#: src/menu/options.c:849 src/menu/options.c:854
+#: src/menu/options.c:864 src/menu/options.c:869
 msgid "minimal"
 msgstr "minimal"
 
-#: src/menu/options.c:850 src/menu/options.c:856
+#: src/menu/options.c:865 src/menu/options.c:871
 msgid "full"
 msgstr "complet"
 
-#: src/menu/options.c:852
+#: src/menu/options.c:867
 msgid "Postprocessing effects"
 msgstr "Effets de post-traitement"
 
-#: src/menu/options.c:855
+#: src/menu/options.c:870
 msgid "fast"
 msgstr "rapide"
 
-#: src/menu/options.c:880
+#: src/menu/options.c:895
 msgid "Gamepad Controls"
 msgstr "Contrôles du gamepad"
 
-#: src/menu/options.c:882 src/menu/options.c:1075
+#: src/menu/options.c:897 src/menu/options.c:1090
 msgid "Move up"
 msgstr "Monter"
 
-#: src/menu/options.c:886 src/menu/options.c:1079
+#: src/menu/options.c:901 src/menu/options.c:1094
 msgid "Move down"
 msgstr "Descendre"
 
-#: src/menu/options.c:890 src/menu/options.c:1083
+#: src/menu/options.c:905 src/menu/options.c:1098
 msgid "Move left"
 msgstr "Gauche"
 
-#: src/menu/options.c:894 src/menu/options.c:1087
+#: src/menu/options.c:909 src/menu/options.c:1102
 msgid "Move right"
 msgstr "Droite"
 
-#: src/menu/options.c:900 src/menu/options.c:1093
+#: src/menu/options.c:915 src/menu/options.c:1108
 msgid "Shoot"
 msgstr "Tirer"
 
-#: src/menu/options.c:904 src/menu/options.c:1097
+#: src/menu/options.c:919 src/menu/options.c:1112
 msgid "Focus"
 msgstr "Concentration"
 
-#: src/menu/options.c:908 src/menu/options.c:1101
+#: src/menu/options.c:923 src/menu/options.c:1116
 msgid "Use Spell Card"
 msgstr "Utiliser une Carte Magique"
 
-#: src/menu/options.c:912 src/menu/options.c:1105
+#: src/menu/options.c:927 src/menu/options.c:1120
 msgid "Power Surge / Discharge"
 msgstr "Surge / Décharge de puissance"
 
-#: src/menu/options.c:918 src/menu/options.c:1119
+#: src/menu/options.c:933 src/menu/options.c:1134
 msgid "Skip dialog"
 msgstr "Passer le dialogue"
 
-#: src/menu/options.c:996
+#: src/menu/options.c:1011
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr ""
 "Appuyez sur un bouton de votre manette pour quitter le mode test du joystick"
 
-#: src/menu/options.c:999
+#: src/menu/options.c:1014
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "Appuyez sur %s de votre manette pour entrer en mode test du joystick"
 
-#: src/menu/options.c:1012
+#: src/menu/options.c:1027
 msgid "Gamepad Options"
 msgstr "Options du gamepad"
 
-#: src/menu/options.c:1023
+#: src/menu/options.c:1038
 msgid "Enable Gamepad/Joystick support"
 msgstr "Activer la prise en charge du gamepad/joystick"
 
-#: src/menu/options.c:1027
+#: src/menu/options.c:1042
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/menu/options.c:1033 src/menu/options.c:1255
+#: src/menu/options.c:1048 src/menu/options.c:1270
 msgid "Customize controls…"
 msgstr "Personnaliser les contrôles…"
 
-#: src/menu/options.c:1037
+#: src/menu/options.c:1052
 msgid "Remap square input into circular"
 msgstr "Convertir l’entrée carrée en circulaire"
 
-#: src/menu/options.c:1043
+#: src/menu/options.c:1058
 msgid "Direction snap factor"
 msgstr "Facteur de verrouillage directionnel"
 
-#: src/menu/options.c:1047
+#: src/menu/options.c:1062
 msgid "Diagonal bias"
 msgstr "Biais diagonal"
 
-#: src/menu/options.c:1054
+#: src/menu/options.c:1069
 msgid "Dead zone"
 msgstr "Zone morte"
 
-#: src/menu/options.c:1058
+#: src/menu/options.c:1073
 msgid "Maximum zone"
 msgstr "Zone maximale"
 
-#: src/menu/options.c:1062
+#: src/menu/options.c:1077
 msgid "Sensitivity"
 msgstr "Sensibilité"
 
-#: src/menu/options.c:1073
+#: src/menu/options.c:1088
 msgid "Controls"
 msgstr "Contrôles"
 
-#: src/menu/options.c:1111
+#: src/menu/options.c:1126
 msgid "Toggle fullscreen"
 msgstr "Basculer en plein écran"
 
-#: src/menu/options.c:1115
+#: src/menu/options.c:1130
 msgid "Take a screenshot"
 msgstr "Prendre une capture d’écran"
 
-#: src/menu/options.c:1125
+#: src/menu/options.c:1140
 msgid "Toggle audio"
 msgstr "Basculer audio"
 
-#: src/menu/options.c:1131
+#: src/menu/options.c:1146
 msgid "Stop the game immediately"
 msgstr "Arrêter le jeu immédiatement"
 
-#: src/menu/options.c:1135
+#: src/menu/options.c:1150
 msgid "Restart the game immediately"
 msgstr "Redémarrer le jeu immédiatement"
 
-#: src/menu/options.c:1139
+#: src/menu/options.c:1154
 msgid "Quick save"
 msgstr "Sauvegarde rapide"
 
-#: src/menu/options.c:1143
+#: src/menu/options.c:1158
 msgid "Quick load"
 msgstr "Chargement rapide"
 
-#: src/menu/options.c:1150
+#: src/menu/options.c:1165
 msgid "Toggle God mode"
 msgstr "Basculer le mode Dieu"
 
-#: src/menu/options.c:1154
+#: src/menu/options.c:1169
 msgid "Skip stage"
 msgstr "Passer le stage"
 
-#: src/menu/options.c:1158
+#: src/menu/options.c:1173
 msgid "Power up"
 msgstr "Augmenter la puissance"
 
-#: src/menu/options.c:1162
+#: src/menu/options.c:1177
 msgid "Power down"
 msgstr "Réduire la puissance"
 
-#: src/menu/options.c:1166
+#: src/menu/options.c:1181
 msgid "Disable background rendering (HoM effect)"
 msgstr "Désactiver le rendu du fond (effet HoM)"
 
-#: src/menu/options.c:1170
+#: src/menu/options.c:1185
 msgid "Toggle collision areas overlay"
 msgstr "Basculer l’affichage des zones de collision"
 
-#: src/menu/options.c:1186
+#: src/menu/options.c:1201
 msgid "Player name"
 msgstr "Nom du joueur"
 
-#: src/menu/options.c:1195
+#: src/menu/options.c:1210
 msgid "Language"
 msgstr "Langue"
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1219
 msgid "Save replays"
 msgstr "Sauvegarder les replays"
 
-#: src/menu/options.c:1206
+#: src/menu/options.c:1221
 msgid "always"
 msgstr "toujours"
 
-#: src/menu/options.c:1207
+#: src/menu/options.c:1222
 msgid "never"
 msgstr "jamais"
 
-#: src/menu/options.c:1208
+#: src/menu/options.c:1223
 msgid "ask"
 msgstr "demander"
 
-#: src/menu/options.c:1210
+#: src/menu/options.c:1225
 msgid "Auto-restart in Spell Practice"
 msgstr "Redémarrage automatique en Spell-Training"
 
-#: src/menu/options.c:1214
+#: src/menu/options.c:1229
 msgid "Power in Spell and Stage Practice"
 msgstr "Puissance en Spell- et Stage-Training"
 
-#: src/menu/options.c:1222
+#: src/menu/options.c:1237
 msgid "Shoot by default"
 msgstr "Tirer par défaut"
 
-#: src/menu/options.c:1226
+#: src/menu/options.c:1241
 msgid "Automatic Power Surge activation"
 msgstr "Activation automatique de Power Surge"
 
-#: src/menu/options.c:1230
+#: src/menu/options.c:1245
 msgid "Boss healthbar style"
 msgstr "Style de barre de vie du boss"
 
-#: src/menu/options.c:1232
+#: src/menu/options.c:1247
 msgid "classic"
 msgstr "classique"
 
-#: src/menu/options.c:1233
+#: src/menu/options.c:1248
 msgid "modern"
 msgstr "moderne"
 
-#: src/menu/options.c:1235
+#: src/menu/options.c:1250
 msgid "Floating score text visibility"
 msgstr "Visibilité du texte de score flottant"
 
-#: src/menu/options.c:1241
+#: src/menu/options.c:1256
 msgid "SFX Volume"
 msgstr "Volume des effets sonores"
 
-#: src/menu/options.c:1245
+#: src/menu/options.c:1260
 msgid "BGM Volume"
 msgstr "Volume de la musique"
 
-#: src/menu/options.c:1249
+#: src/menu/options.c:1264
 msgid "Mute audio"
 msgstr "Couper le son"
 
-#: src/menu/options.c:1254
+#: src/menu/options.c:1269
 msgid "Video options…"
 msgstr "Options vidéo…"
 
-#: src/menu/options.c:1256
+#: src/menu/options.c:1271
 msgid "Gamepad & Joystick options…"
 msgstr "Options du gamepad et du joystick…"
 
-#: src/menu/options.c:1260
+#: src/menu/options.c:1275
 msgid "Reload from last saved"
 msgstr "Recharger depuis la dernière sauvegarde"
 
-#: src/menu/options.c:1263
+#: src/menu/options.c:1278
 msgid "Reset to defaults"
 msgstr "Réinitialiser par défaut"
 
-#: src/menu/options.c:1396
+#: src/menu/options.c:1411
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Appuyez sur une touche pour assigner, ESC pour annuler"
 
-#: src/menu/options.c:1436
+#: src/menu/options.c:1451
 msgid "All devices"
 msgstr "Tous les périphériques"
 
-#: src/menu/options.c:1442
+#: src/menu/options.c:1457
 msgid "No devices available"
 msgstr "Aucun périphérique disponible"
 
-#: src/menu/options.c:1484
+#: src/menu/options.c:1499
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Bougez un axe pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1485
+#: src/menu/options.c:1500
 msgid "Press a button to assign, Back to cancel"
 msgstr "Appuyez sur un bouton pour assigner, Retour pour annuler"
 
-#: src/menu/options.c:1501
+#: src/menu/options.c:1516
 msgid "Unbound"
 msgstr "Non assigné"
 
@@ -6504,55 +6518,55 @@ msgstr ""
 msgid "BGM: %s"
 msgstr "BGM: %s"
 
-#: src/stagedraw.c:1293
+#: src/stagedraw.c:1328
 msgid "Hi-Score:"
 msgstr "Meilleur score:"
 
-#: src/stagedraw.c:1294
+#: src/stagedraw.c:1329
 msgid "Score:"
 msgstr "Score:"
 
-#: src/stagedraw.c:1295
+#: src/stagedraw.c:1330
 msgid "Lives:"
 msgstr "Vies:"
 
-#: src/stagedraw.c:1296
+#: src/stagedraw.c:1331
 msgid "Spell Cards:"
 msgstr "Cartes Magiques:"
 
-#: src/stagedraw.c:1300
+#: src/stagedraw.c:1338
 msgid "Power:"
 msgstr "Puissance:"
 
-#: src/stagedraw.c:1301
+#: src/stagedraw.c:1340
 msgid "Value:"
 msgstr "Valeur:"
 
-#: src/stagedraw.c:1302
+#: src/stagedraw.c:1342
 msgid "Volts:"
 msgstr "Volts:"
 
-#: src/stagedraw.c:1303
+#: src/stagedraw.c:1344
 msgid "Graze:"
 msgstr "Frôlements:"
 
-#: src/stagedraw.c:1312 src/stagedraw.c:1313
+#: src/stagedraw.c:1357 src/stagedraw.c:1358
 msgid "N/A"
 msgstr "N/A"
 
-#: src/stagedraw.c:1325
+#: src/stagedraw.c:1370
 msgid "Next:"
 msgstr "Suivant:"
 
-#: src/stagedraw.c:1351
+#: src/stagedraw.c:1396
 msgid "Fragments:"
 msgstr "Fragments:"
 
-#: src/stagedraw.c:1464
+#: src/stagedraw.c:1509
 msgid "God Mode is enabled!"
 msgstr "Mode Dieu activé!"
 
-#: src/stagedraw.c:1813 src/stagedraw.c:1814 src/stagedraw.c:1816
+#: src/stagedraw.c:1858 src/stagedraw.c:1859 src/stagedraw.c:1861
 msgid ""
 "Voltage        \n"
 "    Overdrive!"
@@ -6560,44 +6574,44 @@ msgstr ""
 "Tension        \n"
 "    Suralimentation!"
 
-#: src/stagedraw.c:1878
+#: src/stagedraw.c:1923
 msgid "Demo"
 msgstr "Démo"
 
-#: src/stagedraw.c:1892
+#: src/stagedraw.c:1937
 msgid "All Clear!"
 msgstr "All Clear!"
 
-#: src/stagedraw.c:1892
+#: src/stagedraw.c:1937
 msgid "Stage Clear!"
 msgstr "Stage réussi!"
 
-#: src/stagedraw.c:1896
+#: src/stagedraw.c:1941
 msgid "Stage Clear bonus"
 msgstr "Stage Clear bonus"
 
-#: src/stagedraw.c:1897
+#: src/stagedraw.c:1942
 msgid "Life bonus"
 msgstr "Bonus de vie"
 
-#: src/stagedraw.c:1898
+#: src/stagedraw.c:1943
 msgid "Voltage bonus"
 msgstr "Bonus de tension"
 
-#: src/stagedraw.c:1899
+#: src/stagedraw.c:1944
 msgid "Graze bonus"
 msgstr "Bonus de frôlement"
 
-#: src/stagedraw.c:1903
+#: src/stagedraw.c:1948
 msgid "All Clear bonus"
 msgstr "All Clear bonus"
 
-#: src/stagedraw.c:1908
+#: src/stagedraw.c:1953
 #, c-format
 msgid "Difficulty bonus (+%i%%)"
 msgstr "Bonus de difficulté (+%i%%)"
 
-#: src/stagedraw.c:1918
+#: src/stagedraw.c:1963
 msgid "Press Fire to continue"
 msgstr "Appuyez sur Feu pour continuer"
 
