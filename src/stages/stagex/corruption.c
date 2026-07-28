@@ -161,7 +161,7 @@ StageXCorruption *stagex_corruption_create(void) {
 		.pos = CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5,
 		.size = 1+I,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
-		.layer = LAYER_BACKGROUND,
+		.layer = LAYER_PARTICLE_MID,
 		.shader = "stagex_corruption_sdf_apply",
 		.draw_rule = {
 			.func = corruption_draw,
