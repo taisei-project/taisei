@@ -8,18 +8,22 @@
 
 #include "timeline.h"   // IWYU pragma: keep
 #include "background_anim.h"
-#include "common_tasks.h"
-#include "coroutine/taskdsl.h"
-#include "enemy_classes.h"
-#include "global.h"
-#include "move.h"
+#include "corruption.h"
 #include "nonspells/nonspells.h"
+#include "spells/spells.h"
 #include "stagex.h"
-#include "yumemi.h"
 
 #include "stages/common_imports.h"
 
 #define BEATS 86
+
+#define FAIRY_ENTER_DELAY 400
+
+static void stagex_fairy_enter(FairyHandle fairy, StageXCorruption *corruption) {
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam,
+		(vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, FAIRY_ENTER_DELAY);
+	stagex_corrupt_enemy(corruption, NOT_NULL(ENT_UNBOX(fairy.entity)));
+}
 
 static void stagex_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -72,38 +76,39 @@ TASK(glider_bullet, {
 }
 
 TASK(glider_fairy, {
-	cmplx pos; cmplx dir;
+	StageXCorruption *corruption;
+	cmplx pos;
 }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(VIEWPORT_W/2-10*I, ITEMS(
+	auto fairy = ecls_spawn_fairy_red(ARGS.pos, ITEMS(
 		.power = 3,
 		.points = 5,
-	)));
+	));
+	auto e = TASK_BIND(fairy.entity);
+	stagex_fairy_enter(fairy, ARGS.corruption);
 
 	YIELD;
-
-	for(int i = 0; i < 80; ++i) {
-		e->pos += cnormalize(ARGS.pos-e->pos)*2;
-		YIELD;
-	}
 
 	for(int i = 0; i < 3; i++) {
 		real aim = carg(global.plr.pos - e->pos);
 		INVOKE_TASK(glider_bullet, e->pos, aim-0.7, 20, 6);
 		INVOKE_TASK(glider_bullet, e->pos, aim, 25, 3);
 		INVOKE_TASK(glider_bullet, e->pos, aim+0.7, 20, 6);
-		WAIT(80-20*i);
+		play_sfx("shot_special1");
+		// WAIT(80-20*i);
+		WAIT(3*BEATS/2);
 	}
 
-	for(;;) {
-		e->pos += 2*(re(e->pos)-VIEWPORT_W/2 > 0)-1;
-		YIELD;
-	}
+	e->move = move_accelerated(0, -0.02*I);
 }
 
 TASK(aimgrind_fairy, {
+	StageXCorruption *corruption;
 	cmplx pos;
 }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, NULL));
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1));
+	auto e = TASK_BIND(fairy.entity);
+	stagex_fairy_enter(fairy, ARGS.corruption);
+
 	cmplx v = CMPLX(1-2*(re(ARGS.pos)<VIEWPORT_W/2), 1);
 
 	for(int i = 0; i < 30; i++) {
@@ -155,7 +160,6 @@ TASK(rocket_proj, { cmplx pos; cmplx dir; }) {
 		YIELD;
 	}
 }
-
 
 TASK(rocket_fairy, { cmplx pos; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, NULL));
@@ -257,7 +261,7 @@ TASK(scuttleproj_appear) {
 		.pos = VIEWPORT_W/2,
 		.proto = pp_soul,
 		.color = RGBA(0,0.2,1,0),
-		.move = move_towards(0, global.plr.pos, 0.01),
+		.move = move_towards(0, global.plr.pos, 0.005),
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION | PFLAG_NOAUTOREMOVE,
 	));
 
@@ -396,33 +400,97 @@ static void set_turning_motion(Enemy *e, cmplx v, real turn_angle, int turn_dela
   	);
 }
 
+TASK(midswirl_proj, { cmplx pos; real boost; }) {
+	cmplx aim = cnormalize(global.plr.pos - ARGS.pos);
+	auto p = PROJECTILE(
+		.pos = ARGS.pos,
+		.proto = pp_plainball,
+		.color = RGB(0.2, 0.2, 1),
+		.move = move_asymptotic_simple(-aim * 2, 12),
+		.max_viewport_dist = 100,
+	);
+
+	WAIT(30);
+
+	// real a = M_PI/6;
+	// cmplx r = I;//cdir(a * 0.5);
+	// cmplx d = -aim / r;
+	// for(int i = 0; i < 2; ++i) {
+	// 	PROJECTILE(
+	// 		.pos = p->pos,
+	// 		.proto = pp_rice,
+	// 		.color = RGB(1, 1, 0),
+	// 		.move = move_asymptotic_simple(d, ARGS.boost),
+	// 	);
+	// 	d *= r * r;
+	// }
+
+
+	// aim = cnormalize(global.plr.pos - ARGS.pos);
+	p->move = move_accelerated(p->move.velocity, aim * 0.06);
+}
+
+TASK(midswirl_burst, { cmplx pos; }) {
+	cmplx aim = cnormalize(global.plr.pos - ARGS.pos);
+
+	cmplx spread = cdir(M_PI/10);
+
+	PROJECTILE(
+		.proto = pp_bigball,
+		.color = RGBA(0.1, 0.6, 0.1, 1),
+		.pos = ARGS.pos,
+		.move = move_asymptotic_simple(aim * 6, 4),
+	);
+
+	int cnt = 12;
+	for(int i = 0; i < cnt; ++i) {
+		float c = i / (cnt - 1.0f);
+
+		cmplx v = aim * 16;
+
+		PROJECTILE(
+			.proto = pp_bullet,
+			.color = RGBA(1, 0.5 * c, 0, 1),
+			.pos = ARGS.pos,
+			.move = move_asymptotic_halflife(v*spread, -0.1*v*spread*cdir(0.15 * rng_sreal()), 30),
+			.max_viewport_dist = 256,
+		);
+
+		PROJECTILE(
+			.proto = pp_bullet,
+			.color = RGBA(1, 0.5 * c, 0, 1),
+			.pos = ARGS.pos,
+			.move = move_asymptotic_halflife(v/spread, -0.1*v/spread*cdir(0.15 * rng_sreal()), 30),
+			.max_viewport_dist = 256,
+		);
+
+		WAIT(2);
+	}
+}
+
 TASK(midswirl, {
+	StageXCorruption *corruption;
 	cmplx pos;
 	cmplx vel;
 	real turn_angle;
 	int turn_delay;
 	int turn_duration;
 }) {
-	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1)));
+	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1, .power = 1)));
+	stagex_corrupt_enemy(ARGS.corruption, e);
 	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
 
-	for(;;WAIT(6)) {
-// 		play_sfx("shot1");
+	int period = BEATS/2;
+	WAIT(period - (global.frames) % period);
 
-		cmplx aim = cnormalize(global.plr.pos - e->pos);
-
-		PROJECTILE(
-			.pos = e->pos,
-			.proto = pp_ball,
-			.color = RGB(0, 0, 1),
-			.move = move_asymptotic_simple(aim * 5, 6),
-		);
+	for(;;WAIT(period)) {
+		play_sfx("shot2");
+		INVOKE_TASK(midswirl_burst, e->pos);
 	}
-
-	STALL;
 }
 
 TASK(midswirls, {
+	StageXCorruption *corruption;
 	int count;
 	cmplx pos;
 	cmplx vel;
@@ -431,7 +499,7 @@ TASK(midswirls, {
 	int turn_duration;
 }) {
 	for(int i = 0; i < ARGS.count; ++i, WAIT(12)) {
-		INVOKE_TASK(midswirl,
+		INVOKE_TASK(midswirl, ARGS.corruption,
 			.pos = ARGS.pos,
 			.vel = ARGS.vel,
 			.turn_angle = ARGS.turn_angle,
@@ -441,15 +509,15 @@ TASK(midswirls, {
 	}
 }
 
-static int midboss_section(void) {
+static int midboss_section(StageXCorruption *C) {
 	int t = 0;
 
 	stagex_bg_trigger_next_phase();
 	t += WAIT(BEATS * 1.25);
 	play_sfx("shot_special1");
 
-	INVOKE_TASK(midswirls,
-		.count = 8,
+	INVOKE_TASK(midswirls, C,
+		.count = 16,
 		.pos = 0 + 64*I,
 		.vel = 8,
 		.turn_angle = M_PI,
@@ -459,8 +527,8 @@ static int midboss_section(void) {
 
 	t += WAIT(BEATS);
 
-	INVOKE_TASK(midswirls,
-		.count = 8,
+	INVOKE_TASK(midswirls, C,
+		.count = 16,
 		.pos = VIEWPORT_W + 64*I,
 		.vel = -8,
 		.turn_angle = -M_PI,
@@ -470,18 +538,18 @@ static int midboss_section(void) {
 
 	t += WAIT(BEATS);
 
-	INVOKE_TASK(midswirls,
-		.count = 8,
-		.pos = 0 + 260*I,
+	INVOKE_TASK(midswirls, C,
+		.count = 16,
+		.pos = 0 + 128*I,
 		.vel = 8,
 		.turn_angle = 3*M_PI/2,
 		.turn_delay = 20,
 		.turn_duration = 30
 	);
 
-	INVOKE_TASK(midswirls,
-		.count = 8,
-		.pos = VIEWPORT_W + 260*I,
+	INVOKE_TASK(midswirls, C,
+		.count = 16,
+		.pos = VIEWPORT_W + 128*I,
 		.vel = -8,
 		.turn_angle = -3*M_PI/2,
 		.turn_delay = 20,
@@ -551,59 +619,159 @@ TASK(laser45_big_fairy, { cmplx origin; }) {
 	enemy_kill(e);
 }
 
-TASK(intro_swirl, { cmplx origin; cmplx dir; }) {
-	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.points = 0));
+TASK(inert_swirl, { StageXCorruption *corruption; cmplx origin; cmplx dir; }) {
+	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.power_mini = 1, .points = 1));
 	auto e = TASK_BIND(swirl.entity);
 	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, 180);
-	e->move = move_accelerated(0, ARGS.dir * -0.05);
-	WAIT(5);
-	PROJECTILE(
-		.proto = pp_bullet,
-		.pos = e->pos,
-		.move = move_asymptotic_simple(2 * cnormalize(global.plr.pos - e->pos), 2),
-		.color = RGB(0, 0, 1),
-	);
-	// enemy_kill(e);
+	stagex_corrupt_enemy(ARGS.corruption, e);
+	e->move = move_accelerated(0, ARGS.dir * 0.02);
 }
 
-TASK(intro_fairy, { cmplx origin; }) {
+TASK(intro_swirls, { StageXCorruption *corruption; }) {
+	int t = BEATS * 4;
+	int interval = 8;
+	cmplx r = cdir(0.3);
+	cmplx dir = -I;
+
+	real w = 0;
+	real dw = 0.05;
+
+	for(;t - interval > 0; t -= interval, w += dw) {
+		real o = 10;
+		cmplx p0 = o + o*I;
+		cmplx p1 = p0 + VIEWPORT_W - 2*o;
+		cmplx p = clerp(p0, p1, 0.5 + 0.5 * triangle(w));
+		dir = cnormalize(VIEWPORT_W/2 + VIEWPORT_H*5*I - p);
+
+		INVOKE_TASK(inert_swirl, ARGS.corruption, p, dir);
+		dir *= r;
+		WAIT(interval);
+	}
+
+	// WAIT(BEATS * 2);
+	t = BEATS * 4;
+	w = 0;
+
+	for(;t - interval > 0; t -= interval, w += dw) {
+		real o = 30;
+		cmplx p0 = o + (VIEWPORT_H-o) *I;
+		cmplx p1 = p0 + VIEWPORT_W - 2*o;
+		cmplx p = clerp(p1, p0, 0.5 + 0.5 * triangle(w));
+		dir = cnormalize(VIEWPORT_W/2 - VIEWPORT_H*4*I - p);
+
+		INVOKE_TASK(inert_swirl, ARGS.corruption, p, dir);
+		dir *= r;
+		WAIT(interval);
+	}
+}
+
+TASK(intro_fairy, { StageXCorruption *corruption; cmplx origin; }) {
 	auto fairy = ecls_spawn_big_fairy(ARGS.origin, ITEMS(.power = 2, .points = 2));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	// ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam,
+		(vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, FAIRY_ENTER_DELAY);
+	// ecls_fairy_summon(fairy, 120);
+	stagex_corrupt_enemy(ARGS.corruption, e);
 
-	int duration = BEATS;
-	for(int t = 0; t < duration; t++) {
-		real f = t/(real)duration;
-		real range = 1+4 * pcos(M_PI+2*M_PI*f);
-		int x, y;
-		do {
-			x = rng_range(-range, range);
-			y = rng_range(-range, range);
-		} while(x*x + y*y > range*range);
+	int burst = 3;
 
-		cmplx aim = cnormalize(global.plr.pos-e->pos);
-		cmplx ppos = e->pos + 20 * (x + I * y);
-		cmplx paim = cnormalize(global.plr.pos - ppos);
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = ppos,
-			.color = RGB(2*f,1*f,1),
-			.move = move_accelerated((2+f)*aim, 0.02*paim)
-		);
+	cmplx dir1 = I;
+	cmplx dir2 = -I;
+	cmplx r1 = cdir(2*0.15);
+	cmplx r2 = cdir(2*0.15);
 
-		play_sfx_loop("shot1_loop");
+	real s = 3;
+	real boost = 5;
 
-		WAIT(4);
+	for(int i = 0; i < 3; ++i) {
+		for(int t = 0; t < burst; t++) {
+			#if 0
+			cmplx aim, pos;
+			real ofs = 40;
+
+			pos = e->pos + ofs * dir1;
+			aim = cnormalize(global.plr.pos - e->pos);
+
+			RADIAL_LOOP(l, 1, aim) {
+				PROJECTILE(
+					.proto = pp_thickrice,
+					.pos = pos,
+					.color = RGB(1, 0.2, 0.2),
+					.move = move_asymptotic_simple(l.dir * s, boost),
+				);
+			}
+
+			WAIT(2);
+
+			pos = e->pos + ofs * dir2;
+			aim = cnormalize(global.plr.pos - e->pos);
+
+			RADIAL_LOOP(l, 1, aim) {
+				PROJECTILE(
+					.proto = pp_thickrice,
+					.pos = pos,
+					.color = RGB(0.2, 0.2, 1),
+					.move = move_asymptotic_simple(l.dir * s, boost),
+				);
+			}
+
+			dir1 *= r1;
+			dir2 *= r2;
+
+			play_sfx_loop("shot1_loop");
+			#endif
+
+			int cnt = 13;
+			real spread = M_PI;
+			cmplx aim = cnormalize(global.plr.pos - e->pos);
+			cmplx dir = aim * cdir(-spread/2);
+			cmplx r = cdir(spread/(cnt-1));
+
+			for(int i = 0; i < cnt; ++i) {
+				PROJECTILE(
+					.proto = pp_bullet,
+					.pos = e->pos - dir * 42,
+					.color = RGB(1, 0.8, 0.2),
+					// .move = move_asymptotic_simple(dir * 3, 10),
+					.move = move_asymptotic(aim * 5, dir * (3 + 2 * fabs(0.5 - i/(cnt-1.0) )), 0.99),
+					// .move = move_asymptotic(aim * 5, dir * 0.1, 0.95),
+				);
+				PROJECTILE(
+					.proto = pp_bullet,
+					.pos = e->pos + dir * 42,
+					.color = RGB(1, 0.2, 0.8),
+					// .move = move_asymptotic_simple(dir * 3, 10),
+					.move = move_asymptotic(aim * 5, -dir * (3 + 2 * fabs(0.5 - i/(cnt-1.0) )), 0.99),
+					// .move = move_asymptotic(aim * 5, dir * 0.1, 0.95),
+				);
+				dir *= r;
+			}
+
+			play_sfx("shot_special1");
+			WAIT(12);
+		}
+
+		WAIT(BEATS*2 - 12 * burst);
 	}
+
 	e->move = move_linear(2*I);
 }
 
-TASK(square_fairy, { cmplx origin; int corruption; }) {
+TASK(square_fairy, { StageXCorruption *corruption; cmplx origin; int distort; }) {
 	auto fairy = ecls_spawn_fairy_red(ARGS.origin, ITEMS(.power = 1));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
-	e->move = move_linear(I*cnormalize(0.5*(VIEWPORT_W+I*VIEWPORT_H)-e->pos));
+	cmplx center = 0.5*(VIEWPORT_W+I*VIEWPORT_H);
+
+	e->move = move_linear(-0.5 * cnormalize(center-e->pos));
+	e->move.retention = cdir(0.01);
+
+	stagex_fairy_enter(fairy, ARGS.corruption);
+
+	// e->move = move_linear(I*cnormalize(center-e->pos));
+	e->move.acceleration = e->move.velocity * -I * 0.01;
+	e->move.retention = 1;
 
 	for(;;) {
 		INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
@@ -611,7 +779,7 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 
 		int num = 5;
 		for(int side = 0; side < 4; side++) {
-			cmplx aim = cdir(M_PI/2*side + 0.1*ARGS.corruption);
+			cmplx aim = cdir(M_PI/2*side + 0.1*ARGS.distort);
 
 			for(int n = -num/2; n <= num/2; n++) {
 				cmplx dir = aim * (2+1*I*n);
@@ -625,12 +793,89 @@ TASK(square_fairy, { cmplx origin; int corruption; }) {
 					.proto = pp_ball,
 					.pos = e->pos,
 					.color = RGBA(1,0.2,0,0.5),
-					.move = move_linear((1.2+0.1*ARGS.corruption*I*sin(n))*dir)
+					.move = move_linear((1.2+0.1*ARGS.distort*I*sin(n))*dir)
 				);
 			}
 		}
-		play_sfx("special_shot1");
+		play_sfx("shot_special1");
 		WAIT(BEATS*4.5);
+	}
+}
+
+TASK(stream_fairy_motion, { BoxedEnemy e; real move_dist; real turn_angle; }) {
+	auto e = TASK_BIND(ARGS.e);
+
+	real speed = cabs(e->move.velocity);
+	real move_dist = VIEWPORT_W * 0.75;
+	int move_duration = round(move_dist / speed);
+	int turn_duration = 60;
+	real turn_angle = ARGS.turn_angle;
+
+	for(;;) {
+		WAIT(move_duration);
+		common_rotate_velocity(&e->move, turn_angle, turn_duration);
+		turn_angle = -turn_angle;
+	}
+}
+
+TASK(stream_bullet, { BoxedProjectile p; }) {
+	auto p = TASK_BIND(ARGS.p);
+
+	WAIT(30);
+	p->color.r = p->color.g;
+	spawn_projectile_highlight_effect(p);
+
+	cmplx aim = cnormalize(global.plr.pos - p->pos + rng_dir());
+	p->move = move_accelerated(p->move.velocity * 0.0, 0.04 * aim);
+}
+
+TASK(stream_fairy, { StageXCorruption *corruption; cmplx origin; cmplx dir; real move_dist; real turn_angle; }) {
+	auto fairy = ecls_spawn_fairy_blue(ARGS.origin, ITEMS(.points = 2));
+	auto e = TASK_BIND(fairy.entity);
+
+	stagex_fairy_enter(fairy, ARGS.corruption);
+	e->move = move_linear(ARGS.dir);
+
+	INVOKE_SUBTASK(stream_fairy_motion, ENT_BOX(e), ARGS.move_dist, ARGS.turn_angle);
+
+	cmplx ofs = -16*I;
+	cmplx r = cdir(1);
+
+	for(;;) {
+		int cnt = 15;
+
+		for(int i = 0; i < cnt; ++i) {
+			if(cabs(global.plr.pos - e->pos) > 128) {
+				cmplx aim = cnormalize(global.plr.pos - e->pos);
+				auto p = PROJECTILE(
+					.proto = pp_rice,
+					.color = RGB(0, 0.5, 0),
+					.pos = e->pos + ofs,
+					.move = move_asymptotic_simple(aim * 2, 20),
+				);
+				INVOKE_TASK(stream_bullet, ENT_BOX(p));
+				play_sfx_loop("shot1_loop");
+			}
+
+			WAIT(4);
+			ofs *= r;
+		}
+
+		WAIT(120);
+	}
+}
+
+TASK(stream_fairies, { StageXCorruption *corruption; }) {
+	int cnt = 16;
+
+	real dist = VIEWPORT_W * 0.75;
+	real ofs = (VIEWPORT_W - dist) * 0.5;
+	cmplx orig = 64*I + ofs;
+
+	for(int i = 0; i < cnt; ++i) {
+		INVOKE_TASK(stream_fairy, ARGS.corruption,
+			orig, 1.5, dist, M_PI);
+		WAIT(BEATS/2);
 	}
 }
 
@@ -656,20 +901,6 @@ TASK(transition_swirl, { cmplx origin; cmplx dir; int corruption; }) {
 	}
 }
 
-
-TASK(intro_swirls) {
-	int t = BEATS * 10;
-	int interval = 8;
-	cmplx r = cdir(0.3);
-	cmplx dir = -I;
-	for(;t - interval > 0; t -= interval) {
-		INVOKE_SUBTASK(intro_swirl, 0.5*(VIEWPORT_W+VIEWPORT_H*I) + 80 * dir, dir);
-		dir *= r;
-		WAIT(interval);
-	}
-	AWAIT_SUBTASKS;
-}
-
 TASK(transition_swirls) {
 	for(int t = 0; t < 1.5*BEATS; t++) {
 		cmplx pos = 50*I*cos(t) + 50*sin(sin(sin(t)));
@@ -687,50 +918,85 @@ TASK(transition_swirls) {
 	AWAIT_SUBTASKS;
 }
 
-TASK(wheat_laser_proj, { cmplx pos; cmplx dir; int delay; }) {
-	auto p = TASK_BIND(PROJECTILE(pp_rice, RGBA(0,0.3,1,0.5), .pos = ARGS.pos, .angle = carg(ARGS.dir), .flags = PFLAG_MANUALANGLE));
+TASK(wheat_laser_proj, { cmplx pos; cmplx dir; cmplx turn; int delay; }) {
+	auto p = TASK_BIND(PROJECTILE(
+		.proto = pp_rice,
+		.color = RGBA(0, 0.3, 1, 0.5),
+		.pos = ARGS.pos,
+		.angle = carg(ARGS.dir),
+		.flags = PFLAG_MANUALANGLE,
+		.max_viewport_dist = 64,
+	));
+
 	play_sfx("shot2");
 
-	WAIT(2*ARGS.delay);
+	WAIT(ARGS.delay);
 	play_sfx("redirect");
 	p->flags &= ~PFLAG_MANUALANGLE;
-	p->move = (MoveParams){ .velocity = 3*cnormalize(ARGS.dir), .retention = 0.9, .attraction_point = global.plr.pos, .attraction = 0.1, .attraction_exponent = 0.2 };
-	WAIT(2*BEATS);
+	p->move = (MoveParams){
+		.velocity = 3*cnormalize(ARGS.dir),
+		.retention = ARGS.turn,
+		.attraction_point = global.plr.pos,
+		.attraction = 0.0,
+		.attraction_exponent = 0.2
+	};
+
+	for(int t = 0; t < 2*BEATS; ++t, YIELD) {
+		capproach_asymptotic_p(&p->move.attraction, 0.1, 0.1, 1e-5);
+	}
+
+	// WAIT(2*BEATS);
+
 	play_sfx("redirect");
 	p->color = *RGBA(1, 0.3, 0,0.5);
+	spawn_projectile_highlight_effect(p);
 	p->move.attraction = 0;
-	p->move.retention = 1;
-	p->move.acceleration = 0.1*cdir(p->angle);
+	// p->move.retention = 1;
+	p->move.acceleration = 0.1 * cdir(p->angle);
 
+	WAIT(120);
+	p->move.acceleration *= 0.5;
+	p->move.retention = 1;
 }
 
-
-TASK(wheat_fairy, { cmplx pos; MoveParams move; }) {
+TASK(wheat_fairy, { StageXCorruption *corruption; cmplx pos; MoveParams move; }) {
 	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 2));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam,
+		(vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, FAIRY_ENTER_DELAY);
+	stagex_corrupt_enemy(ARGS.corruption, e);
 	e->move = ARGS.move;
+
+	struct {
+		cmplx dir;
+		cmplx turn;
+	} leaf_params[2] = {
+		{ cdir( 1), 0.9 * cdir(-0.1) },
+		{ cdir(-1), 0.9 * cdir( 0.1) },
+	};
 
 	for(int t = 0; t < 2; t++) {
 		INVOKE_SUBTASK(common_charge, .anchor = &e->pos, .color = *RGBA(1.0,0.1,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
-		int points = 10;
+		int points = 8;
 		real length = 100;
 
 		MoveParams move = e->move;
 		e->move.retention = 0.9;
-		for(int i = 0; i < points; i++) {
-			cmplx dir = cdir(M_TAU/points * i)/I;
+
+		RADIAL_LOOP(l, points, I) {
 			int count = 10;
 			int interval = BEATS/count;
 			for(int j = 0; j < count; j++) {
-				for(int d = -1; d <= 1; d += 2) {
-					cmplx turn = cdir(1 * d);
-					cmplx pos = e->pos + dir * length/count * j + 5*dir * turn;
-					INVOKE_TASK_DELAYED(interval*j, wheat_laser_proj, pos,  dir * turn, (count-j)*interval);
+				for(int d = 0; d < 2; d++) {
+					cmplx v = l.dir * leaf_params[d].dir;
+					cmplx pos = e->pos + l.dir * length/count * j + 5 * v;
+					INVOKE_TASK_DELAYED(interval*j, wheat_laser_proj,
+						pos, v, leaf_params[d].turn, (count - j) * interval + 4 * j);
 				}
 			}
 		}
+
 		WAIT(BEATS);
 		e->move = move;
 		WAIT(2*BEATS);
@@ -751,21 +1017,30 @@ TASK(amaranth_proj, { cmplx pos; MoveParams move; }) {
 			} while(x*x + y*y > 1);
 
 			cmplx pos = p->pos + radius*(x + I*y);
-			cmplx dir = cpow(cnormalize(x + I*y),3);
-			PROJECTILE(pp_flea, .color = RGBA(1.0,0.3,0,0), .pos = pos, .move = (MoveParams){.velocity = 0.01*dir, .retention = 1.03});
+			cmplx dir = cpow(cnormalize(x + I*y), 3);
+			PROJECTILE(
+				.proto = pp_flea,
+				.color = RGBA(1.0,0.3,0,0),
+				.pos = pos,
+				.move = (MoveParams){.velocity = 0.02*dir, .retention = 1.01}
+				// .move = move_asymptotic_halflife(0.01*dir, 3*dir, 160),
+			);
 		}
 		play_sfx_loop("shot1_loop");
 		YIELD;
 	}
 }
 
-TASK(amaranth_fairy, { cmplx pos; MoveParams move; }) {
-	auto fairy = ecls_spawn_fairy_blue(ARGS.pos, ITEMS(.points = 2));
+TASK(amaranth_fairy, { StageXCorruption *corruption; cmplx pos; MoveParams move; }) {
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 10));
 	auto e = TASK_BIND(fairy.entity);
-	INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	stagex_fairy_enter(fairy, ARGS.corruption);
 
+	// INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	//
 	e->move = ARGS.move;
+	common_charge(120, &e->pos, 0, *RGBA(0.0, 0.0, 1.0, 0.0));
+
 
 	WAIT(5);
 	for(int t = 0; t < 3; t++) {
@@ -833,10 +1108,13 @@ TASK(octahedron, { cmplx pos; MoveParams move; vec3 axis; real final_size; real 
 	}
 }
 
-TASK(octahedron_fairy, { cmplx origin; }) {
-	auto fairy = ecls_spawn_super_fairy(ARGS.origin, ITEMS(.power = 3, .bomb_fragment = 1));
+TASK(octahedron_fairy, { StageXCorruption *corruption; cmplx origin; }) {
+	auto fairy = ecls_spawn_super_fairy(ARGS.origin, ITEMS(.points = 30, .power = 10, .life = 1));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	stagex_fairy_enter(fairy, ARGS.corruption);
+
+	common_charge(120, &e->pos, 0, *RGB(2.0, 1.0, 0.0));
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 	for(int t = 0; t < 600; t += WAIT(BEATS/8)) {
 		cmplx aim = cdir(t*0.1);
@@ -844,7 +1122,8 @@ TASK(octahedron_fairy, { cmplx origin; }) {
 		INVOKE_TASK(octahedron, .pos = e->pos, .move = move_linear(2*aim), .final_size = 100, .size_timescale = 3*BEATS, .axis={axis[0], axis[1],axis[2]});
 		play_sfx("shot3");
 	}
-	e->move = move_linear(-I);
+
+	e->move = move_linear(-I*0.5);
 }
 
 TASK(assist_laser, { cmplx pos; cmplx accel; }) {
@@ -855,24 +1134,24 @@ TASK(assist_laser, { cmplx pos; cmplx accel; }) {
 	PROJECTILE(pp_ball, .max_viewport_dist=100, .pos = ARGS.pos, .color = RGBA(0.0,0.0,1.0,0.0), .move = move_accelerated(0,ARGS.accel));
 }
 
-TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
+TASK(assist_fairy, { StageXCorruption *corruption; cmplx origin; MoveParams move; }) {
 	auto fairy = ecls_spawn_fairy_blue(ARGS.origin, ITEMS(.points = 1));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
+	ecls_fairy_3d_move_in(fairy,
+		&stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, FAIRY_ENTER_DELAY);
+	stagex_corrupt_enemy(ARGS.corruption, e);
 
 	e->move = ARGS.move;
 	WAIT(5);
 
 	for(;;) {
-		int count = 10;
 		play_sfx("laser1");
-		for(int i = 0; i < count; i++) {
-			cmplx aim = cdir(M_TAU/count*i);
-			aim *= cnormalize(global.plr.pos-e->pos)*cdir(2*M_PI/4);
 
-			INVOKE_TASK(assist_laser, e->pos, 0.07*aim);
-			WAIT(1);
+		RADIAL_LOOP(l, 10, cnormalize(global.plr.pos-e->pos)) { // * cdir(2*M_PI/4)
+			INVOKE_TASK(assist_laser, e->pos, 0.07 * l.dir);
+			// WAIT(1);
 		}
+
 		WAIT(2*BEATS);
 	}
 }
@@ -880,7 +1159,8 @@ TASK(assist_fairy, { cmplx origin; MoveParams move; }) {
 TASK(transition_swirl2, { cmplx origin; cmplx dir; }) {
 	auto swirl = ecls_spawn_swirl(ARGS.origin, ITEMS(.power = 0));
 	auto e = TASK_BIND(swirl.entity);
-	ecls_swirl_3d_move_in(swirl, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
+	ecls_swirl_3d_move_in(swirl,
+		&stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, 2.5 * BEATS);
 	e->move = move_linear(ARGS.dir);
 
 	WAIT(5);
@@ -888,7 +1168,7 @@ TASK(transition_swirl2, { cmplx origin; cmplx dir; }) {
 		cmplx aim = cnormalize(global.plr.pos - e->pos) * cdir(M_TAU/3*i);
 		PROJECTILE(pp_wave, .color = RGBA(0,0.2,1.0,1), .pos = e->pos, .move = move_accelerated(3*aim, 0.01*aim));
 	}
-		play_sfx_loop("shot1_loop");
+	play_sfx_loop("shot1_loop");
 }
 
 TASK(transition_swirls2) {
@@ -897,26 +1177,36 @@ TASK(transition_swirls2) {
 		for(int t = 0; t < BEATS/2; t++) {
 			cmplx pos = 50*(1-2*(t&1))*cdir(M_TAU/sections * sec + t);
 			cmplx dir = 6*cnormalize(pos);
-			INVOKE_SUBTASK(transition_swirl2, VIEWPORT_W/2 + 300*I + pos, dir);
+			INVOKE_SUBTASK(transition_swirl2, VIEWPORT_W/2 + 200*I + pos, dir);
 			WAIT(1);
 		}
 	}
 	AWAIT_SUBTASKS;
 }
 
-TASK(scissor_fairy, { cmplx origin; MoveParams move; int dir;}) {
-	auto fairy = ecls_spawn_fairy_red(ARGS.origin, ITEMS(.power = 1));
+TASK(scissor_fairy, { StageXCorruption *corruption; cmplx origin; MoveParams move; int dir; }) {
+	auto fairy = ecls_spawn_huge_fairy(ARGS.origin, ITEMS(.power = 1));
 	auto e = TASK_BIND(fairy.entity);
-	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
+	stagex_fairy_enter(fairy, ARGS.corruption);
+	// ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
 
-	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	// INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
 	real scissor = 0;
 	for(int t = 0; t < BEATS; t++) {
 		real spread = -0.5+0.04*t;
 		scissor += 0.003;
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
-		PROJECTILE(pp_ball, RGBA(1, 0.3, 0, 0.5), .pos = e->pos, .move = move_accelerated(4*aim*cdir(spread*ARGS.dir), scissor * I * aim * ARGS.dir));
+
+		RADIAL_LOOP(l, 2, aim) {
+			PROJECTILE(
+				.proto = pp_ball,
+				.color = RGBA(1, 0.3, 0, 0.5),
+				.pos = e->pos,
+				.move = move_accelerated(4*l.dir*cdir(spread*ARGS.dir), scissor * I * l.dir * ARGS.dir)
+			);
+		}
+
 		play_sfx_loop("shot1_loop");
 		WAIT(3);
 	}
@@ -1123,8 +1413,6 @@ TASK(aimed_laser45, { cmplx origin; cmplx dir; int delay; int warpid; const Colo
 	*move = move_linear(ARGS.dir * speed);
 	INVOKE_SUBTASK(common_move_ext, .pos = &pos, .move_params = move);
 
-
-
 	for(int i = 0; i < 4; i++) {
 		WAIT(ARGS.delay/(1+(i&1)));
 		cmplx dir = cnormalize(move->velocity);
@@ -1172,31 +1460,138 @@ TASK(laser45_warp_fairy, { cmplx origin; cmplx final_pos; }) {
 	e->move = move_towards(ARGS.final_pos, 0.03);
 }
 
-DEFINE_EXTERN_TASK(stagex_timeline) {
-	WAIT(BEATS);
+TASK(corrupted_fairy_test, { cmplx pos; StageXCorruption *corruption; }) {
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.power = 2, .points = 3));
+	auto e = TASK_BIND(fairy.entity);
+	stagex_corrupt_enemy(ARGS.corruption, e);
+	ecls_fairy_summon(fairy, 120);
+}
 
-	INVOKE_SUBTASK(intro_swirls);
-	INVOKE_SUBTASK_DELAYED(2*BEATS, intro_fairy, 100 + 200*I);
-	INVOKE_SUBTASK_DELAYED(4*BEATS, intro_fairy, VIEWPORT_W-100 + 200*I);
-	INVOKE_SUBTASK_DELAYED(6*BEATS, intro_fairy, VIEWPORT_W/2 + 200*I);
+DEFINE_EXTERN_TASK(stagex_timeline) {
+	// TEMPORARY TESTING HACK
+	global.plr.lives = 2;
+	global.plr.power_stored = 0;
+
+	StageXCorruption *C = stagex_corruption_create();
+
+	#if 0
+	// INVOKE_SUBTASK(transition_swirls);
+
+
+	// INVOKE_SUBTASK(stream_fairy, C, 64*I, 1.5, M_PI);
+	INVOKE_SUBTASK(stream_fairies, C);
+
+	// INVOKE_SUBTASK_DELAYED(0*BEATS, wheat_fairy, C, 200+100*I, move_accelerated(-1 + I, 0.01));
+	// INVOKE_SUBTASK_DELAYED(3*BEATS, wheat_fairy, C, 100+200*I, move_accelerated(1 + I, 0.01));
+	// INVOKE_SUBTASK_DELAYED(5*BEATS, wheat_fairy, C, 300+200*I, move_accelerated(1 + I, -0.01));
+	STALL;
+	#endif
+
+	INVOKE_SUBTASK(intro_swirls, C);
+
+	// INVOKE_TASK(corrupted_fairy_test,
+	// 	.pos = VIEWPORT_W/2 + VIEWPORT_H/2*I,
+	// 	.corruption = corruption,
+	// );
+	//
+	// WAIT(600);
+	// stage_load_quicksave();
+
+	int ofs = BEATS*8 - FAIRY_ENTER_DELAY;
+
+	INVOKE_SUBTASK_DELAYED(ofs +  2*BEATS, glider_fairy, C, VIEWPORT_W-100 + 400*I);
+	INVOKE_SUBTASK_DELAYED(ofs +  4*BEATS, glider_fairy, C, 100 + 400*I);
+	INVOKE_SUBTASK_DELAYED(ofs +  6*BEATS, glider_fairy, C, VIEWPORT_W/2 + 340*I);
+
+	INVOKE_SUBTASK_DELAYED(ofs +  8*BEATS, wheat_fairy, C, 130 + 200*I);
+	INVOKE_SUBTASK_DELAYED(ofs + 10*BEATS, wheat_fairy, C, VIEWPORT_W-130 + 200*I);
+	INVOKE_SUBTASK_DELAYED(ofs + 12*BEATS, wheat_fairy, C, VIEWPORT_W/2 + 240*I);
+	// INVOKE_SUBTASK_DELAYED(ofs + 11*BEATS, wheat_fairy, C, 90 + 260*I);
+	// INVOKE_SUBTASK_DELAYED(ofs + 12*BEATS, wheat_fairy, C, VIEWPORT_W-90 + 260*I);
+
+	WAIT(ofs + 8*BEATS);
+
+	// for(int i = 0; i < 5; i++) {
+	RADIAL_LOOP(l, 5, -I) {
+		INVOKE_SUBTASK_DELAYED(14*BEATS+BEATS*l.i - 120, amaranth_fairy, C,
+			0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150 * l.dir, move_accelerated(1 + I, -0.01));
+	}
+	// }
+
+	// INVOKE_SUBTASK_DELAYED(12*BEATS, stream_fairies, C);
 
 	real delay = 2;
 	for(int repeat = 0; repeat < 5; repeat++) {
-		for(int n = 0; n < 7; n++) {
-			INVOKE_SUBTASK_DELAYED((8+delay*repeat)*BEATS, square_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 100*cos(repeat)*I*cexp(-I*n), repeat);
+		RADIAL_LOOP(l, 7, -I) {
+			INVOKE_SUBTASK_DELAYED((8+delay*repeat)*BEATS, square_fairy, C,
+				0.5*(VIEWPORT_W + VIEWPORT_H*I) + 3 * cos(repeat) * l.dir, repeat);
 		}
 		delay -= 0.2;
 	}
 
+	WAIT(21*BEATS - 120);
+	cmplx octahedron_pos = 0.5*VIEWPORT_W + I*0.4*VIEWPORT_H;
+	INVOKE_SUBTASK_DELAYED(0, octahedron_fairy, C, .origin = octahedron_pos);
+	WAIT(120);
+
+	RADIAL_LOOP(l, 6, -I * cdir(0.023)) {
+		cmplx aim = l.dir * 100;
+		for(int i = -1; i < 2; i+=2) {
+			cmplx pos = aim*i + octahedron_pos;
+			INVOKE_SUBTASK_DELAYED(BEATS+l.i*BEATS, assist_fairy, C,
+					.origin = pos, .move = move_linear(cnormalize(aim)*i));
+		}
+	}
+
+	// INVOKE_SUBTASK_DELAYED(6*BEATS + FAIRY_ENTER_DELAY, transition_swirls2);
+
+	// WAIT(14 * BEATS);
+
+	if(0){
+		int count = 7;
+		for(int i = 0; i < count; i++) {
+			cmplx dir = cdir(-M_PI/count * i);
+			cmplx pos = VIEWPORT_W*0.5 + 300*I + 200*dir;
+			INVOKE_SUBTASK_DELAYED((11+i*0.5)*BEATS, scissor_fairy, C, .origin = pos, .move = move_linear(-2*I), .dir = rng_sign());
+
+		}
+	}
+
+	WAIT(12* BEATS);
+	int midboss_time = midboss_section(C);
+	stagex_bg_trigger_next_phase();
+
+	STALL;
+
+	delay = 2;
+	for(int repeat = 0; repeat < 5; repeat++) {
+		RADIAL_LOOP(l, 7, -I) {
+			INVOKE_SUBTASK_DELAYED((8+delay*repeat)*BEATS, square_fairy, C,
+				0.5*(VIEWPORT_W + VIEWPORT_H*I) + 3 * cos(repeat) * l.dir, repeat);
+		}
+		delay -= 0.2;
+	}
+
+	STALL;
+
+	/*
+	 * OLD STUFF FOR REFERENCE
+	 */
+
+	INVOKE_SUBTASK(intro_swirls, C);
+	// INVOKE_SUBTASK_DELAYED(2*BEATS, intro_fairy, 100 + 200*I);
+	// INVOKE_SUBTASK_DELAYED(4*BEATS, intro_fairy, VIEWPORT_W-100 + 200*I);
+	// INVOKE_SUBTASK_DELAYED(6*BEATS, intro_fairy, VIEWPORT_W/2 + 200*I);
+
 	INVOKE_SUBTASK_DELAYED(16*BEATS, transition_swirls);
 	STAGE_BOOKMARK_DELAYED(16*BEATS, transition1);
 
-	INVOKE_SUBTASK_DELAYED(20*BEATS, wheat_fairy, 200+100*I, move_accelerated(-1 + I, 0.01));
-	INVOKE_SUBTASK_DELAYED(23*BEATS, wheat_fairy, 100+200*I, move_accelerated(1 + I, 0.01));
-	INVOKE_SUBTASK_DELAYED(25*BEATS, wheat_fairy, 300+200*I, move_accelerated(1 + I, -0.01));
+	INVOKE_SUBTASK_DELAYED(20*BEATS, wheat_fairy, C, 200+100*I, move_accelerated(-1 + I, 0.01));
+	INVOKE_SUBTASK_DELAYED(23*BEATS, wheat_fairy, C, 100+200*I, move_accelerated(1 + I, 0.01));
+	INVOKE_SUBTASK_DELAYED(25*BEATS, wheat_fairy, C, 300+200*I, move_accelerated(1 + I, -0.01));
 
 	for(int i = 0; i < 5; i++) {
-		INVOKE_SUBTASK_DELAYED(28*BEATS+BEATS*i, amaranth_fairy, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150*cdir(M_TAU/4*i), move_accelerated(1 + I, -0.01));
+		INVOKE_SUBTASK_DELAYED(28*BEATS+BEATS*i, amaranth_fairy, C, 0.5*(VIEWPORT_W + VIEWPORT_H*I) + 150*cdir(M_TAU/4*i), move_accelerated(1 + I, -0.01));
 	}
 	// WAIT(400);
 
@@ -1204,12 +1599,12 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(36*BEATS);
 	STAGE_BOOKMARK(octahedron-fairy);
 
-	INVOKE_SUBTASK_DELAYED(0, octahedron_fairy, .origin = 0.5*(VIEWPORT_W + I * VIEWPORT_H));
+	INVOKE_SUBTASK_DELAYED(0, octahedron_fairy, C, .origin = 0.5*(VIEWPORT_W + I * VIEWPORT_H));
 	for(int t = 0; t < 6; t++) {
 		cmplx aim = cdir(M_TAU/6*t)*100;
 		for(int i = -1; i < 2; i+=2) {
 			cmplx pos = aim*i + 0.5*(VIEWPORT_W + I * VIEWPORT_H);
-			INVOKE_SUBTASK_DELAYED(BEATS+t*BEATS, assist_fairy, .origin = pos, .move = move_linear(cnormalize(aim)*i));
+			INVOKE_SUBTASK_DELAYED(BEATS+t*BEATS, assist_fairy, C, .origin = pos, .move = move_linear(cnormalize(aim)*i));
 		}
 	}
 	INVOKE_SUBTASK_DELAYED(8*BEATS, transition_swirls2);
@@ -1232,7 +1627,7 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	INVOKE_SUBTASK_DELAYED(27*BEATS, staircase_swirls, .cross=true);
 
 	WAIT(5762-36*BEATS);
-	int midboss_time = midboss_section();
+	midboss_time = midboss_section(C);
 	stagex_bg_trigger_next_phase();
 	WAIT(4140 - midboss_time);
 	stagex_bg_trigger_tower_dissolve();
