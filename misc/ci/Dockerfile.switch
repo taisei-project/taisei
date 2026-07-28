@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 LABEL maintainer="Alice D. <alice@starwitch.productions>"
 
@@ -19,26 +19,27 @@ RUN apt update && \
 		git \
 		libarchive-tools \
 		doxygen \
+		docutils-common \
+		gettext \
 		gnupg \
 		build-essential \
 		python3-docutils \
 		python3-pip \
+		python3-gnupg \
 		gdebi-core \
 		apt-transport-https \
-		cmake
+		cmake \
+		ninja-build
 
-RUN pip3 install \
-		meson==0.63.3 \
-		ninja \
-		zstandard \
-		python-gnupg
+RUN pip3 install --break-system-packages meson backports.zstd 
 
 ENV DEVKITPRO=/opt/devkitpro
 ENV PATH=${DEVKITPRO}/tools/bin:$PATH
+ENV CMAKE=/usr/bin/cmake
 
-RUN mkdir -p /usr/local/share/keyring/ && \
-	curl https://apt.devkitpro.org/devkitpro-pub.gpg -o /usr/local/share/keyring/devkitpro-pub.gpg && \
-	echo "deb [signed-by=/usr/local/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
+RUN mkdir -p /usr/share/keyring/ && \
+	wget -U "dkp apt" -O /usr/share/keyring/devkitpro-pub.gpg https://apt.devkitpro.org/devkitpro-pub.gpg && \
+	echo "deb [signed-by=/usr/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
 	apt update && \
 	apt install devkitpro-pacman -yqq && \
 	apt-get clean && \
@@ -58,8 +59,7 @@ RUN apt-get install -y --no-install-recommends gh
 
 RUN apt-get clean -y
 
-# required so that dkp-pacman works, otherwise it exits with an error because /etc/mtab doesn't exist
-RUN ln -s /proc/self/mounts /etc/mtab
+RUN [ -e /etc/mtab ] || ln -s /proc/self/mounts /etc/mtab
 
 RUN dkp-pacman -Syyu --noconfirm \
 		switch-dev \

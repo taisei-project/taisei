@@ -18,6 +18,7 @@
 #include "stagetext.h"
 #include "util/env.h"
 #include "util/fbmgr.h"
+#include "util/glm.h"
 #include "util/graphics.h"
 #include "video.h"
 
@@ -51,6 +52,7 @@ static struct {
 
 	struct {
 		ShaderProgram *fxaa;
+		ShaderProgram *bg_filter;
 	} shaders;
 
 	PostprocessShader *viewport_pp;
@@ -305,6 +307,7 @@ void stage_draw_preload(ResourceGroup *rg) {
 		// TODO: Maybe don't preload this if FXAA is disabled.
 		// But then we also have to handle the edge case of it being enabled later mid-game.
 		"fxaa",
+		"bg_filter",
 
 		#ifdef DEBUG
 		"sprite_filled_circle",
@@ -346,6 +349,7 @@ void stage_draw_init(void) {
 	stagedraw.hud_text.shader = res_shader("text_hud");
 	stagedraw.hud_text.font = res_font("standard");
 	stagedraw.shaders.fxaa = res_shader("fxaa");
+	stagedraw.shaders.bg_filter = res_shader("bg_filter");
 
 	r_shader_standard();
 
@@ -984,6 +988,35 @@ void stage_draw_viewport(void) {
 	r_mat_mv_pop();
 }
 
+static void compute_bg_color_filter(mat3 matrix, vec3 offset) {
+	float brigthness = config_get_float(CONFIG_BG_BRIGHTNESS) * 2.0f;
+	float saturation = config_get_float(CONFIG_BG_SATURATION);
+	float contrast = config_get_float(CONFIG_BG_CONTRAST);
+
+	vec3 w = { 0.2126f, 0.7152f, 0.0722f };
+	float exposure = exp2f(brigthness);
+	float k = contrast * exposure;
+
+	for(int row = 0; row < 3; ++row) {
+		for(int col = 0; col < 3; ++col) {
+			float ofs = row == col ? saturation : 0.0f;
+			matrix[col][row] = k * ((1.0f - saturation) * w[col] + ofs);
+		}
+	}
+
+	float pivot = 0.5f;
+	float ofs = exposure * pivot * (1.0f - contrast);
+	glm_vec3_broadcast(ofs, offset);
+}
+
+static void set_bg_color_filter_uniforms(void) {
+	mat3 matrix;
+	vec3 offset;
+	compute_bg_color_filter(matrix, offset);
+	r_uniform_mat3("filter_matrix", matrix);
+	r_uniform_vec3_vec("filter_offset", offset);
+}
+
 void stage_draw_scene(StageInfo *stage) {
 #ifdef DEBUG
 	bool key_nobg = gamekeypressed(KEY_NOBACKGROUND);
@@ -1014,6 +1047,8 @@ void stage_draw_scene(StageInfo *stage) {
 		// blit the background
 		r_state_push();
 		r_blend(BLEND_NONE);
+		r_shader_ptr(stagedraw.shaders.bg_filter);
+		set_bg_color_filter_uniforms();
 		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
 		r_state_pop();
 

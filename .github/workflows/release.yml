@@ -580,9 +580,9 @@ jobs:
 
   switch-release-build:
     name: Switch (ARM64)
-    if: ${{ (github.event.inputs.switch || 'false') == 'true' }}
+    if: ${{ (github.event.inputs.switch || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/switch-toolkit:20240305
+    container: taiseiproject/switch-toolkit:20260727
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v6

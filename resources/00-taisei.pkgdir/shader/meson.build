@@ -11,6 +11,7 @@ glsl_files = [
     'alpha_depth.frag.glsl',
     'alpha_discard.frag.glsl',
     'baryon_feedback.frag.glsl',
+    'bg_filter.frag.glsl',
     'bloom.frag.glsl',
     'blur13.frag.glsl',
     'blur25.frag.glsl',

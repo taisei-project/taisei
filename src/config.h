@@ -120,6 +120,9 @@
 	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \
 	CONFIGDEF_FLOAT     (SCORETEXT_ALPHA,           "scoretext_alpha",                      1) \
 	CONFIGDEF_INT       (AUTO_SURGE,                "auto_surge",                           1) \
+	CONFIGDEF_FLOAT     (BG_BRIGHTNESS,             "bg_brightness",                        0.0) \
+	CONFIGDEF_FLOAT     (BG_CONTRAST,               "bg_contrast",                          1.0) \
+	CONFIGDEF_FLOAT     (BG_SATURATION,             "bg_saturation",                        1.0) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      1) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "any") \
