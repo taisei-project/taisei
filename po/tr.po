@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 20:11+0200\n"
+"POT-Creation-Date: 2026-07-29 20:11+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: OSVidYapan\n"
 "Language-Team: \n"
@@ -44,7 +44,7 @@ msgstr "Dayanıklıklık Bonusu"
 msgid "Diff. multiplier"
 msgstr "Zorluk çarpanı"
 
-#: src/boss.c:988 src/stagedraw.c:1914
+#: src/boss.c:988 src/stagedraw.c:1959
 msgid "Total"
 msgstr "Toplam"
 
@@ -65,7 +65,7 @@ msgid "Move"
 msgstr "Hareket"
 
 #: src/boss.c:1004 src/difficulty.c:41 src/gamepad.c:968 src/gamepad.c:979
-#: src/menu/options.c:1403
+#: src/menu/options.c:1420
 msgid "Unknown"
 msgstr "Bilinmeyen"
 
@@ -254,8 +254,7 @@ msgid ""
 "I couldn’t help overhearing your conversation. Based on my gut feeling, and "
 "what you’ve described, the answer is obvious."
 msgstr ""
-"Kulak misafiri olmaktan kendimi alı koyamadım. Sezgiler ve anlattıkłarınıza "
-"cevap çok açık."
+"Kulak misafiri olmaktan kendimi alı koyamadım. Sezgilerim ve anlattıklarınıza göre cevap çok açık."
 
 #: src/cutscenes/intro.inc.h:60
 msgid "Is that so? Care to share it with us?"
@@ -2019,7 +2018,7 @@ msgid "High-Society Phlebotomist"
 msgstr "Kan Çekme Gücü"
 
 #: src/dialog/dialog_macros.h:75 src/menu/charprofile.c:146
-#: src/stages/stage5/iku.c:108
+#: src/stages/stage5/iku.c:110
 msgid "Nagae Iku"
 msgstr ""
 
@@ -4549,15 +4548,13 @@ msgstr "… unutulan a-arkadaşlarımızın intikamını almak!"
 msgid ""
 "We will create a new era of Gensōkyō, where the truly forgotten can live "
 "another day!"
-msgstr ""
-"Biz yeni bir Gensōkyō çağı oluşturacağız, bu çağda unutulanlar bir gün daha yaşayabilecekler."
+msgstr "Biz yeni bir Gensōkyō çağı oluşturacağız, bu çağda unutulanlar bir gün daha yaşayabilecekler."
 
 #: src/dialog/youmu.c:546
 msgid ""
 "Soon, the residents of this land will be driven mad beyond comprehension, "
 "and be ripe to conquer!"
-msgstr ""
-"Yakında, burada ki sakinlerin mantıklı olandan daha delirecek ve işgal etmek için olgunlaşacaklar!"
+msgstr "Yakında, burada ki sakinlerin mantıklı olandan daha delirecek ve işgal etmek için olgunlaşacaklar!"
 
 #: src/dialog/youmu.c:548
 msgid "So you wish to avenge your fallen compatriots… how noble…"
@@ -4571,8 +4568,7 @@ msgstr "Yaşlarıma kadar hissedebiliyorum…"
 msgid ""
 "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly "
 "conflicts with yours!"
-msgstr ""
-"Ne yazıkki, Cehennem Dünyası’nın hanım Yuyuko'su tarafından verilen görevim, direk seninkiylen çakışıyor!"
+msgstr "Ne yazık ki, Cehennem Dünyası’nın hanım Yuyuko'su tarafından verilen görevim, direk seninkiyle çakışıyor!"
 
 #: src/dialog/youmu.c:552
 msgid ""
@@ -4674,8 +4670,8 @@ msgid "Y"
 msgstr ""
 
 #: src/gamepad.c:904 src/menu/cutsceneview.c:54 src/menu/media.c:60
-#: src/menu/options.c:857 src/menu/options.c:921 src/menu/options.c:1065
-#: src/menu/options.c:1174 src/menu/options.c:1265 src/menu/replayview.c:489
+#: src/menu/options.c:859 src/menu/options.c:923 src/menu/options.c:1067
+#: src/menu/options.c:1191 src/menu/options.c:1282 src/menu/replayview.c:488
 msgid "Back"
 msgstr "Geri"
 
@@ -4803,7 +4799,7 @@ msgstr "Sağ X"
 msgid "Right Y"
 msgstr "Sağ Y"
 
-#: src/i18n/i18n.c:189
+#: src/i18n/i18n.c:192
 msgid "__NAME__"
 msgstr "Türkçe (beta)"
 
@@ -4943,7 +4939,7 @@ msgstr "Sayılabir ve Sayılamazlık Tanrısı"
 
 #: src/menu/charprofile.c:105
 msgid "Gyroscopic Stabilization"
-msgstr "Gyroskopik Karallaştırma"
+msgstr "Gyroskopik Kararlaştırma"
 
 #: src/menu/charprofile.c:106
 msgid ""
@@ -5139,7 +5135,7 @@ msgstr ""
 "Akademik kariyeine\n"
 "başlayanlar için"
 
-#: src/menu/difficultyselect.c:45
+#: src/menu/difficultyselect.c:46
 msgid ""
 "All those years of study\n"
 "have finally paid off"
@@ -5147,7 +5143,7 @@ msgstr ""
 "Bütün yılların sonunda\n"
 "karşılık alınacak"
 
-#: src/menu/difficultyselect.c:46
+#: src/menu/difficultyselect.c:48
 msgid ""
 "You must really\n"
 "love books"
@@ -5155,7 +5151,7 @@ msgstr ""
 "Kitapları çok\n"
 "seviyor olmalısın"
 
-#: src/menu/difficultyselect.c:47
+#: src/menu/difficultyselect.c:50
 msgid ""
 "You either die a student,\n"
 "or live long enough to\n"
@@ -5164,17 +5160,17 @@ msgstr ""
 "Ya öğrenci olarak öl yada\n"
 "uzun yaşayan bir professör ol"
 
-#: src/menu/difficultyselect.c:65
+#: src/menu/difficultyselect.c:75
 msgid "Select Difficulty"
-msgstr "Zorluk seç"
+msgstr "Zorluk Seç"
 
 #: src/menu/gameovermenu.c:36
 msgid "Load Quicksave"
-msgstr "Hızlı yükle"
+msgstr "Hızlı kayıt Yükle"
 
 #: src/menu/gameovermenu.c:62
 msgid "Spell Failed"
-msgstr "Büyü kaybedildi"
+msgstr "Büyü Kaybedildi"
 
 #: src/menu/gameovermenu.c:64
 msgid "Restart"
@@ -5186,7 +5182,7 @@ msgstr "Pes et"
 
 #: src/menu/gameovermenu.c:69
 msgid "Game Over"
-msgstr "Oyun bitti"
+msgstr "Oyun Bitti"
 
 #: src/menu/gameovermenu.c:76
 #, c-format
@@ -5210,7 +5206,7 @@ msgid "Game Paused"
 msgstr "Oyuna Ara Verildi"
 
 #: src/menu/ingamemenu.c:135 src/menu/ingamemenu.c:161 src/menu/mainmenu.c:130
-#: src/menu/options.c:1180
+#: src/menu/options.c:1197
 msgid "Options"
 msgstr "Seçenekler"
 
@@ -5224,7 +5220,7 @@ msgstr "Oyunu Durdur"
 
 #: src/menu/ingamemenu.c:159
 msgid "Replay Paused"
-msgstr "Yeniden Oynatma Durduruldu"
+msgstr "Yeniden Oynatmım Durduruldu"
 
 #: src/menu/ingamemenu.c:162
 msgid "Continue Watching"
@@ -5232,15 +5228,15 @@ msgstr "Izlemeye Devam Et"
 
 #: src/menu/ingamemenu.c:163
 msgid "Restart the Stage"
-msgstr "Bölümü yeniden başlat"
+msgstr "Bölümü Yeniden başlat"
 
 #: src/menu/ingamemenu.c:164
 msgid "Skip the Stage"
-msgstr "Bölümü atla"
+msgstr "Bölümü Atla"
 
 #: src/menu/ingamemenu.c:165
 msgid "Stop Watching"
-msgstr "Izlemeyi bırak"
+msgstr "İzlemeyi Bırak"
 
 #: src/menu/mainmenu.c:119
 msgid "Start Story"
@@ -5248,7 +5244,7 @@ msgstr "Hikayeye başla"
 
 #: src/menu/mainmenu.c:120
 msgid "Start Extra"
-msgstr "Extra başlat"
+msgstr "Fazladan Bölüm Başlat"
 
 #: src/menu/mainmenu.c:121 src/menu/stagepractice.c:35
 msgid "Stage Practice"
@@ -5256,15 +5252,15 @@ msgstr "Bölüm Alıştırması"
 
 #: src/menu/mainmenu.c:123 src/menu/spellpractice.c:219
 msgid "Spell Practice"
-msgstr "Büyü alıştırması"
+msgstr "Büyü Alıştırması"
 
 #: src/menu/mainmenu.c:126
 msgid "Select Stage"
-msgstr "Bölüm seç"
+msgstr "Bölüm Seç"
 
 #: src/menu/mainmenu.c:128 src/menu/replayview.c:376
 msgid "Replays"
-msgstr "Yeniden oynatmalar"
+msgstr "Yeniden Oynatımlar"
 
 #: src/menu/mainmenu.c:129 src/menu/media.c:34
 msgid "Media Room"
@@ -5312,11 +5308,11 @@ msgstr ""
 
 #: src/menu/musicroom.c:234
 msgid "Unknown track"
-msgstr "Bilinmeyen müzik"
+msgstr "Bilinmeyen Müzik"
 
 #: src/menu/options.c:536
 msgid "Reset all settings to defaults?"
-msgstr "Ayarları Sıfırla?"
+msgstr "Ayarları sıfırla?"
 
 #: src/menu/options.c:542
 msgid "Reset all settings to the last saved values?"
@@ -5340,7 +5336,7 @@ msgstr "Hayır"
 
 #: src/menu/options.c:775
 msgid "Video Options"
-msgstr "Video seçnekleri"
+msgstr "Video Seçnekleri"
 
 #: src/menu/options.c:778
 msgid "Fullscreen"
@@ -5378,7 +5374,7 @@ msgstr "adaptif"
 msgid "Skip frames"
 msgstr "Kareleri Atla"
 
-#: src/menu/options.c:825
+#: src/menu/options.c:827
 msgid "Overall rendering quality"
 msgstr "Toplam görünüm kalitesi"
 
@@ -5386,292 +5382,304 @@ msgstr "Toplam görünüm kalitesi"
 msgid "Draw background"
 msgstr "Arkaplanı görüntüle"
 
-#: src/menu/options.c:833
+#: src/menu/options.c:835
 msgid "Background rendering quality"
 msgstr "Arkaplan görünüm kalitesi"
 
 #: src/menu/options.c:840
+msgid "Background brightness"
+msgstr "Arkaplan parlaklığı"
+
+#: src/menu/options.c:845
+msgid "Background contrast"
+msgstr "Arkaplan kontrastı"
+
+#: src/menu/options.c:850
+msgid "Background saturation"
+msgstr "Arkaplan doyukluğu"
+
+#: src/menu/options.c:857
 msgid "Anti-aliasing"
 msgstr "Kenar-Yumuşatma"
 
-#: src/menu/options.c:842
+#: src/menu/options.c:859
 msgid "none"
 msgstr "hiç"
 
-#: src/menu/options.c:843
+#: src/menu/options.c:860
 msgid "fxaa"
 msgstr ""
 
-#: src/menu/options.c:845
+#: src/menu/options.c:862
 msgid "Particle effects"
 msgstr "Parçacık etkileri"
 
-#: src/menu/options.c:847 src/menu/options.c:852
+#: src/menu/options.c:864 src/menu/options.c:869
 msgid "minimal"
 msgstr "en düşük"
 
-#: src/menu/options.c:848 src/menu/options.c:854
+#: src/menu/options.c:865 src/menu/options.c:871
 msgid "full"
 msgstr "tam"
 
-#: src/menu/options.c:850
+#: src/menu/options.c:867
 msgid "Postprocessing effects"
 msgstr "Sonraişleme-Etkilerileri"
 
-#: src/menu/options.c:853
+#: src/menu/options.c:870
 msgid "fast"
 msgstr "hızlı"
 
-#: src/menu/options.c:878
+#: src/menu/options.c:895
 msgid "Gamepad Controls"
 msgstr "Oyun Konsolu Kontrolleri"
 
-#: src/menu/options.c:880 src/menu/options.c:1073
+#: src/menu/options.c:897 src/menu/options.c:1090
 msgid "Move up"
 msgstr "Yukarı"
 
-#: src/menu/options.c:884 src/menu/options.c:1077
+#: src/menu/options.c:901 src/menu/options.c:1094
 msgid "Move down"
 msgstr "Aşağı"
 
-#: src/menu/options.c:888 src/menu/options.c:1081
+#: src/menu/options.c:905 src/menu/options.c:1098
 msgid "Move left"
 msgstr "Sola git"
 
-#: src/menu/options.c:892 src/menu/options.c:1085
+#: src/menu/options.c:915 src/menu/options.c:1102
 msgid "Move right"
 msgstr "Sağa git"
 
-#: src/menu/options.c:898 src/menu/options.c:1091
+#: src/menu/options.c:919 src/menu/options.c:1112
 msgid "Shoot"
 msgstr "Ateş et"
 
-#: src/menu/options.c:902 src/menu/options.c:1095
+#: src/menu/options.c:923 src/menu/options.c:1116
 msgid "Focus"
 msgstr "Dikkat moduna geç"
 
-#: src/menu/options.c:906 src/menu/options.c:1099
+#: src/menu/options.c:927 src/menu/options.c:1120
 msgid "Use Spell Card"
 msgstr "Büyü Kartı Kullan"
 
-#: src/menu/options.c:910 src/menu/options.c:1103
+#: src/menu/options.c:927 src/menu/options.c:1120
 msgid "Power Surge / Discharge"
-msgstr "Güç Toplaması / Sarj ver"
+msgstr "Güç Toplaması / Şarj ver"
 
-#: src/menu/options.c:916 src/menu/options.c:1117
+#: src/menu/options.c:933 src/menu/options.c:1134
 msgid "Skip dialog"
 msgstr "Dialog atla"
 
-#: src/menu/options.c:994
+#: src/menu/options.c:1011
 msgid "Press any button on your gamepad to exit joystick testing mode"
 msgstr "Oyun kolu deneme modu için herhang bir düğmeye basın."
 
-#: src/menu/options.c:997
+#: src/menu/options.c:1014
 #, c-format
 msgid "Press %s on your gamepad to enter joystick testing mode"
 msgstr "Joystick testmodunu aktifleştirmek için, Oyun konsolunda %s'e basın."
 
-#: src/menu/options.c:1010
+#: src/menu/options.c:1027
 msgid "Gamepad Options"
 msgstr "Oyun Konsolu Seçenekleri"
 
-#: src/menu/options.c:1021
+#: src/menu/options.c:1038
 msgid "Enable Gamepad/Joystick support"
-msgstr "Oyun Konsolu/Joystick etkinleştir"
+msgstr "Oyun Konsolu/Kolu etkinleştir"
 
-#: src/menu/options.c:1025
+#: src/menu/options.c:1042
 msgid "Device"
 msgstr "Cihaz"
 
-#: src/menu/options.c:1031 src/menu/options.c:1253
+#: src/menu/options.c:1048 src/menu/options.c:1270
 msgid "Customize controls…"
 msgstr "Kontrolleri özelleştir…"
 
-#: src/menu/options.c:1035
+#: src/menu/options.c:1052
 msgid "Remap square input into circular"
 msgstr "Kareyi daireye değiştir"
 
-#: src/menu/options.c:1041
+#: src/menu/options.c:1058
 msgid "Direction snap factor"
 msgstr "Yönerge katlanı"
 
-#: src/menu/options.c:1045
+#: src/menu/options.c:1062
 msgid "Diagonal bias"
 msgstr "Çapraz bias"
 
-#: src/menu/options.c:1052
+#: src/menu/options.c:1069
 msgid "Dead zone"
 msgstr "Ölüm alanı"
 
-#: src/menu/options.c:1056
+#: src/menu/options.c:1073
 msgid "Maximum zone"
 msgstr "En yüksek alan"
 
-#: src/menu/options.c:1060
+#: src/menu/options.c:1077
 msgid "Sensitivity"
 msgstr "Çeviklik"
 
-#: src/menu/options.c:1071
+#: src/menu/options.c:1088
 msgid "Controls"
 msgstr "Kontroller"
 
-#: src/menu/options.c:1109
+#: src/menu/options.c:1111
 msgid "Toggle fullscreen"
 msgstr "Tam ekranı aç/kapa"
 
-#: src/menu/options.c:1113
+#: src/menu/options.c:1130
 msgid "Take a screenshot"
 msgstr "Ekran görüntüsü al"
 
-#: src/menu/options.c:1123
+#: src/menu/options.c:1140
 msgid "Toggle audio"
 msgstr "Sesi aç/kapa"
 
-#: src/menu/options.c:1129
+#: src/menu/options.c:1146
 msgid "Stop the game immediately"
 msgstr "Oyunu hemen durdur"
 
-#: src/menu/options.c:1133
+#: src/menu/options.c:1150
 msgid "Restart the game immediately"
 msgstr "Oyunu hemen yeniden başlat"
 
-#: src/menu/options.c:1137
+#: src/menu/options.c:1154
 msgid "Quick save"
 msgstr "Hızlı kayıŧ"
 
-#: src/menu/options.c:1141
+#: src/menu/options.c:1158
 msgid "Quick load"
 msgstr "Hızlı yükle"
 
-#: src/menu/options.c:1148
+#: src/menu/options.c:1165
 msgid "Toggle God mode"
 msgstr "Tanrı modunu etkinleştir"
 
-#: src/menu/options.c:1152
+#: src/menu/options.c:1169
 msgid "Skip stage"
-msgstr "Bölümü atla"
+msgstr "Bölüm atla"
 
-#: src/menu/options.c:1156
+#: src/menu/options.c:1173
 msgid "Power up"
-msgstr "Gücü yükselt"
+msgstr "Güç yükselt"
 
-#: src/menu/options.c:1160
+#: src/menu/options.c:1177
 msgid "Power down"
-msgstr "Gücü düşür"
+msgstr "Güç düşür"
 
-#: src/menu/options.c:1164
+#: src/menu/options.c:1181
 msgid "Disable background rendering (HoM effect)"
 msgstr "Arkaplanı devre dışı bırak (HoM etkisi)"
 
-#: src/menu/options.c:1168
+#: src/menu/options.c:1185
 msgid "Toggle collision areas overlay"
 msgstr "Çarpışma alanlarının üst üste gelmesini aç/kapa"
 
-#: src/menu/options.c:1184
+#: src/menu/options.c:1201
 msgid "Player name"
 msgstr "Oyuncu adı"
 
-#: src/menu/options.c:1193
+#: src/menu/options.c:1210
 msgid "Language"
 msgstr "Dil"
 
-#: src/menu/options.c:1202
+#: src/menu/options.c:1219
 msgid "Save replays"
 msgstr "Yeniden oynatmaları kaydet"
 
-#: src/menu/options.c:1204
+#: src/menu/options.c:1221
 msgid "always"
 msgstr "hep"
 
-#: src/menu/options.c:1205
+#: src/menu/options.c:1222
 msgid "never"
 msgstr "hiç"
 
-#: src/menu/options.c:1206
+#: src/menu/options.c:1223
 msgid "ask"
 msgstr "sor"
 
-#: src/menu/options.c:1208
+#: src/menu/options.c:1225
 msgid "Auto-restart in Spell Practice"
 msgstr "Büyü alıştırmasında otomatik yeniden başlat"
 
-#: src/menu/options.c:1212
+#: src/menu/options.c:1229
 msgid "Power in Spell and Stage Practice"
 msgstr "Büyü ve aşama alıştırmasında güç"
 
-#: src/menu/options.c:1220
+#: src/menu/options.c:1237
 msgid "Shoot by default"
 msgstr "Varsayılan ateş et"
 
-#: src/menu/options.c:1224
+#: src/menu/options.c:1241
 msgid "Automatic Power Surge activation"
 msgstr "Güç toplama otomatik etkin"
 
-#: src/menu/options.c:1228
+#: src/menu/options.c:1245
 msgid "Boss healthbar style"
 msgstr "Patron sağlık görünümü"
 
-#: src/menu/options.c:1230
+#: src/menu/options.c:1247
 msgid "classic"
 msgstr "klasik"
 
-#: src/menu/options.c:1231
+#: src/menu/options.c:1248
 msgid "modern"
 msgstr "modern"
 
-#: src/menu/options.c:1233
+#: src/menu/options.c:1250
 msgid "Floating score text visibility"
 msgstr "Skor metin görünümü"
 
-#: src/menu/options.c:1239
+#: src/menu/options.c:1256
 msgid "SFX Volume"
 msgstr "Ses efektlerinin ses yüksekliği"
 
-#: src/menu/options.c:1243
+#: src/menu/options.c:1260
 msgid "BGM Volume"
 msgstr "Arkaplan müziğinin ses yüksekliği"
 
-#: src/menu/options.c:1247
+#: src/menu/options.c:1264
 msgid "Mute audio"
 msgstr "Sesi kapat"
 
-#: src/menu/options.c:1252
+#: src/menu/options.c:1269
 msgid "Video options…"
 msgstr "Video seçenekleri…"
 
-#: src/menu/options.c:1254
+#: src/menu/options.c:1271
 msgid "Gamepad & Joystick options…"
 msgstr "Oyun Konsolu & Joystick-Seçenekleri…"
 
-#: src/menu/options.c:1258
+#: src/menu/options.c:1275
 msgid "Reload from last saved"
 msgstr "Son kaydelidenden yükle"
 
-#: src/menu/options.c:1261
+#: src/menu/options.c:1278
 msgid "Reset to defaults"
 msgstr "Tüm ayarları sıfırla"
 
-#: src/menu/options.c:1394
+#: src/menu/options.c:1411
 msgid "Press a key to assign, ESC to cancel"
 msgstr "Ayarlamak için herkangi bir tuşa basın, ESC ile vazgeçin."
 
-#: src/menu/options.c:1434
+#: src/menu/options.c:1451
 msgid "All devices"
 msgstr "Tüm cihazlar"
 
-#: src/menu/options.c:1440
+#: src/menu/options.c:1457
 msgid "No devices available"
 msgstr "Hir bir cihaz bulunamadı"
 
-#: src/menu/options.c:1482
+#: src/menu/options.c:1499
 msgid "Move an axis to assign, Back to cancel"
 msgstr "Ayarlamak için yönergeyi hareket ettirin, geri ile vazgeçin"
 
-#: src/menu/options.c:1483
+#: src/menu/options.c:1500
 msgid "Press a button to assign, Back to cancel"
 msgstr "Ayarlamak için bir düğmeye basın, geri ile vazgeçın"
 
-#: src/menu/options.c:1499
+#: src/menu/options.c:1516
 msgid "Unbound"
 msgstr "Bağımsız"
 
@@ -5853,98 +5861,98 @@ msgstr "Aegis Kılıcı “Saigyō Çokyönlü Kesiş”"
 msgid "BGM: %s"
 msgstr "BGM: %s"
 
-#: src/stagedraw.c:1293
+#: src/stagedraw.c:1328
 msgid "Hi-Score:"
 msgstr "Rekor:"
 
-#: src/stagedraw.c:1294
+#: src/stagedraw.c:1329
 msgid "Score:"
 msgstr "Skor:"
 
-#: src/stagedraw.c:1295
+#: src/stagedraw.c:1330
 msgid "Lives:"
 msgstr "Kalpler:"
 
-#: src/stagedraw.c:1296
+#: src/stagedraw.c:1331
 msgid "Spell Cards:"
 msgstr "Büyü Kartları:"
 
-#: src/stagedraw.c:1300
+#: src/stagedraw.c:1338
 msgid "Power:"
 msgstr "Güç:"
 
-#: src/stagedraw.c:1301
+#: src/stagedraw.c:1340
 msgid "Value:"
 msgstr "Değer:"
 
-#: src/stagedraw.c:1302
+#: src/stagedraw.c:1342
 msgid "Volts:"
 msgstr "Volt:"
 
-#: src/stagedraw.c:1303
+#: src/stagedraw.c:1344
 msgid "Graze:"
 msgstr ""
 
-#: src/stagedraw.c:1312 src/stagedraw.c:1313
+#: src/stagedraw.c:1357 src/stagedraw.c:1358
 msgid "N/A"
 msgstr "Uyarlanamaz"
 
-#: src/stagedraw.c:1325
+#: src/stagedraw.c:1370
 msgid "Next:"
 msgstr "Sonraki:"
 
-#: src/stagedraw.c:1351
+#: src/stagedraw.c:1396
 msgid "Fragments:"
 msgstr "Parçalar:"
 
-#: src/stagedraw.c:1464
+#: src/stagedraw.c:1509
 msgid "God Mode is enabled!"
-msgstr "Tanrı-Modu etkinleştirildi!"
+msgstr "Tanrı Modu etkinleştirildi!"
 
-#: src/stagedraw.c:1813 src/stagedraw.c:1814 src/stagedraw.c:1816
+#: src/stagedraw.c:1858 src/stagedraw.c:1859 src/stagedraw.c:1861
 msgid ""
 "Voltage        \n"
 "    Overdrive!"
 msgstr "Elektrik\n yükselişi!"
 
-#: src/stagedraw.c:1878
+#: src/stagedraw.c:1923
 msgid "Demo"
 msgstr "Öngösterim"
 
-#: src/stagedraw.c:1892
+#: src/stagedraw.c:1937
 msgid "All Clear!"
 msgstr "Hepsi Tamamlandı!"
 
-#: src/stagedraw.c:1892
+#: src/stagedraw.c:1937
 msgid "Stage Clear!"
 msgstr "Aşama Tamamlandı!"
 
-#: src/stagedraw.c:1896
+#: src/stagedraw.c:1941
 msgid "Stage Clear bonus"
 msgstr "Aşama tamamlama bonusu"
 
-#: src/stagedraw.c:1897
+#: src/stagedraw.c:1942
 msgid "Life bonus"
 msgstr "Hayat bonusu"
 
-#: src/stagedraw.c:1898
+#: src/stagedraw.c:1943
 msgid "Voltage bonus"
 msgstr "Volt bonusu"
 
-#: src/stagedraw.c:1899
+#: src/stagedraw.c:1944
 msgid "Graze bonus"
 msgstr "Graze bonusu"
 
-#: src/stagedraw.c:1903
+#: src/stagedraw.c:1948
 msgid "All Clear bonus"
 msgstr "Hepsini Tamamlama Bonusu"
 
-#: src/stagedraw.c:1908
+#: src/stagedraw.c:1953
 #, c-format
 msgid "Difficulty bonus (+%i%%)"
 msgstr "Zorluk bonusu (+%i%%)"
 
-#: src/stagedraw.c:1918
+#: src/stagedraw.c:19632
 msgid "Press Fire to continue"
 msgstr "Devam etmek için [Ateş]'e basın"
 
@@ -6288,8 +6296,8 @@ msgstr ""
 "pratogonistlerin ara öğün vakti."
 
 #: po/extra_strings.c:14
-msgid "Delta Conclusion"
-msgstr "Delta Sonuçlaması"
+msgid "Delta Concision"
+msgstr ""
 
 #: po/extra_strings.c:15
 msgid "RickyRister"
@@ -6334,8 +6342,8 @@ msgstr ""
 "Diğer dünyasal bilgiden flşlar ve çatlaklar. Belki biraz uğursuz, inanılması gerektiği şüpheli."
 
 #: po/extra_strings.c:22
-msgid "Delta Concision"
-msgstr "Delta Sonlaması"
+msgid "Delta Conclusion"
+msgstr "Delta Sonuçlaması"
 
 #: po/extra_strings.c:25
 msgid ""
@@ -6365,10 +6373,9 @@ msgid ""
 "given a different role in the incident."
 msgstr ""
 "En sevilen karakter için gizli bir tema…\n"
-"Ben ışık tünelinde duyulduğu gibi Scuttle’ın motifi konusuyla ilgili oynamak "
-"istiyordum.\n"
+"Işık tünelinde duyulduğu gibi Scuttle’ın motifi konusuyla ilgili oynamak istiyordum.\n"
 "\n"
-"Sonuçlar ilginçti! Onun teması hayatı gibi deneyseldi.\n"
+"Sonuçlar ilginçti! Onun teması, hayatı gibi deneyseldi.\n"
 "\n"
 "O bir patron gibi giyinmeye çalıştığına göre bu kazada farklı bir rolü olabilir."
 
