@@ -93,10 +93,9 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 			cnt = 0;
 		}
 
-		while(evloop.stack_ptr != *pframe) {
+		if(evloop.stack_ptr != *pframe) {
 			*pframe = evloop.stack_ptr;
-			lframe_action = run_logic_frame(*pframe);
-			cnt = UINT_MAX - 1; // break out of the outer loop
+			return lframe_action;
 		}
 	} while(
 		lframe_action == LFRAME_SKIP &&
