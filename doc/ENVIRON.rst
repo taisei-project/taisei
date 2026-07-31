@@ -245,13 +245,6 @@ Audio
 Timing
 ~~~~~~
 
-``TAISEI_HIRES_TIMER``
-   | Default: ``1``
-
-   If ``1``, tries to use the system’s high resolution timer to limit the game’s framerate. Disabling this is not
-   recommended; it will likely make Taisei run slower or faster than intended and the reported FPS will be less
-   accurate.
-
 ``TAISEI_FRAMELIMITER_SLEEP``
    | Default: ``1``
 
