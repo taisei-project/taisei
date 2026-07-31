@@ -5513,7 +5513,6 @@ msgid "Background brightness"
 msgstr "背景亮度"
 
 #: src/menu/options.c:845
-#, fuzzy
 msgid "Background contrast"
 msgstr "背景对比度"
 
