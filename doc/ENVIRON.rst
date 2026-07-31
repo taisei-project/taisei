@@ -253,11 +253,10 @@ Timing
    accurate.
 
 ``TAISEI_FRAMELIMITER_SLEEP``
-   | Default: ``3``
+   | Default: ``1``
 
-   If over ``0``, tries to give up processing time to other applications while waiting for the next frame, if at least
-   ``frame_time / this_value`` amount of time is remaining. Increasing this value reduces CPU usage, but may harm
-   performance. Set to ``0`` for the v1.2 default behaviour.
+   If ``1``, tries to give up processing time to other applications while waiting for the next frame. Will try to
+   measure and compensate for the inaccuracy of the sleep function to maximize framerate stability.
 
 ``TAISEI_FRAMELIMITER_COMPENSATE``
    | Default: ``1``
