@@ -8,6 +8,7 @@
 
 #include "global.h"
 
+#include "taskmanager.h"
 #include "util/env.h"
 #include "gamepad.h"
 
@@ -77,8 +78,29 @@ bool taisei_quit_requested(void) {
 	return SDL_GetAtomicInt(&quitting);
 }
 
-void taisei_commit_persistent_data(void) {
+static SDL_AtomicInt syncing_data;
+
+static void sync_finished(CallChainResult ccr) {
+	SDL_SetAtomicInt(&syncing_data, 0);
+	log_debug("Finished committing persistent data");
+}
+
+static void *sync_task(void *arg) {
 	config_save();
 	progress_save();
-	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
+	vfs_sync(VFS_SYNC_STORE, CALLCHAIN(sync_finished, NULL));
+	return NULL;
+}
+
+void taisei_commit_persistent_data(void) {
+	if(!SDL_CompareAndSwapAtomicInt(&syncing_data, 0, 1)) {
+		log_warn("Commit already in progress");
+		return;
+	}
+
+	log_debug("Begin committing persistent data");
+
+	task_detach(taskmgr_global_submit((TaskParams) {
+		.callback = sync_task,
+	}));
 }
