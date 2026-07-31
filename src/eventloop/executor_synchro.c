@@ -11,6 +11,16 @@
 #include "global.h"
 #include "util/env.h"
 
+#define SLEEP_DEBUG 0
+
+#if SLEEP_DEBUG
+	#undef SLEEP_DEBUG
+	#define SLEEP_DEBUG(...) log_debug(__VA_ARGS__)
+#else
+	#undef SLEEP_DEBUG
+	#define SLEEP_DEBUG(...) (void)0
+#endif
+
 void eventloop_run(void) {
 	assert(thread_current_is_main());
 
@@ -22,15 +32,16 @@ void eventloop_run(void) {
 	evloop.frame_times.target = frame->frametime;
 	evloop.frame_times.start = time_get();
 	evloop.frame_times.next = evloop.frame_times.start + evloop.frame_times.target;
-	shrtime_t sleep_divisor = env_get("TAISEI_FRAMELIMITER_SLEEP", 1);
-	shrtime_t max_sleep = sleep_divisor > 0 ? (shrtime_t)evloop.frame_times.target / sleep_divisor : 0;
-	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", 1);
+
+	bool sleep_enabled = env_get("TAISEI_FRAMELIMITER_SLEEP", true);
+	bool compensate = env_get("TAISEI_FRAMELIMITER_COMPENSATE", true);
 	bool uncapped_rendering_env, uncapped_rendering;
+	shrtime_t sleep_margin = 0;
 
 	if(global.is_replay_verification) {
 		uncapped_rendering_env = false;
 	} else {
-		uncapped_rendering_env = env_get("TAISEI_FRAMELIMITER_LOGIC_ONLY", 0);
+		uncapped_rendering_env = env_get("TAISEI_FRAMELIMITER_LOGIC_ONLY", false);
 	}
 
 	uncapped_rendering = uncapped_rendering_env;
@@ -46,6 +57,9 @@ begin_main_loop:
 #endif
 
 		evloop.frame_times.start = time_get();
+
+		attr_unused shrtime_t error = (shrtime_t)evloop.frame_times.start - (shrtime_t)evloop.frame_times.next;
+		SLEEP_DEBUG("Error: %lli", (long long)error);
 
 begin_frame:
 		global.fps.busy.last_update_time = time_get();
@@ -115,12 +129,43 @@ begin_frame:
 			if(rt > evloop.frame_times.next) {
 				// frame took too long...
 				// try to compensate in the next frame to avoid slowdown
-				evloop.frame_times.start = rt - min(rt - evloop.frame_times.next, evloop.frame_times.target);
+				hrtime_t adjustment = min(rt - evloop.frame_times.next, evloop.frame_times.target);
+				log_debug("Frame took too long, next target adjusted by %lluns (~%llums)",
+					(unsigned long long)adjustment, (unsigned long long)SDL_NS_TO_MS(adjustment));
+				evloop.frame_times.start = rt - adjustment;
 				goto begin_frame;
 			}
 		}
 
-		SDL_DelayPrecise(clamp((shrtime_t)evloop.frame_times.next - (shrtime_t)time_get(), 0, max_sleep));
+		if(sleep_enabled) {
+			shrtime_t remaining_time = (shrtime_t)evloop.frame_times.next - (shrtime_t)time_get();
+			shrtime_t sleep = max(remaining_time - sleep_margin, 0);
+
+			if(sleep > 0) {
+				SDL_DelayNS(sleep);
+
+				shrtime_t old_remaining_time = remaining_time;
+				remaining_time = (shrtime_t)evloop.frame_times.next - (shrtime_t)time_get();
+				shrtime_t slept = old_remaining_time - remaining_time;
+				shrtime_t overshoot = slept - sleep;
+				shrtime_t min_margin = overshoot * 2;
+
+				SLEEP_DEBUG("Sleep: %lli intended  /  %lli actual", (long long)sleep, (long long)slept);
+
+				if(min_margin > sleep_margin) {
+					SLEEP_DEBUG("Adjusting minimum sleep margin: %lli --> %lli",
+						(long long)sleep_margin, (long long)min_margin
+					);
+					sleep_margin = min_margin;
+				}
+
+				SLEEP_DEBUG("margin: %ld", sleep_margin);
+				SLEEP_DEBUG("overshoot: %ld", overshoot);
+			}
+
+			sleep_margin -= (sleep_margin >> 10);
+		}
+
 		while(time_get() < evloop.frame_times.next);
 	}
 }
