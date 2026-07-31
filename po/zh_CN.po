@@ -5509,18 +5509,17 @@ msgid "Background rendering quality"
 msgstr "背景渲染质量"
 
 #: src/menu/options.c:840
-#, fuzzy
 msgid "Background brightness"
-msgstr "背景渲染质量"
+msgstr "背景亮度"
 
 #: src/menu/options.c:845
 #, fuzzy
 msgid "Background contrast"
-msgstr "背景渲染质量"
+msgstr "背景对比度"
 
 #: src/menu/options.c:850
 msgid "Background saturation"
-msgstr ""
+msgstr "背景饱和度"
 
 #: src/menu/options.c:857
 msgid "Anti-aliasing"
