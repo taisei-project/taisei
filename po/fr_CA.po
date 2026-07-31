@@ -2311,7 +2311,7 @@ msgstr ""
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:93
 #: src/stages/stage1/cirno.c:27
 msgid "Cirno"
-msgstr ""
+msgstr "Cirno"
 
 #: src/dialog/dialog_macros.h:71 src/menu/charprofile.c:94
 msgid "Thermodynamic Ice Fairy"
@@ -2320,7 +2320,7 @@ msgstr "Fée Glacial Thermodynamique"
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:104
 #: src/stages/stage2/hina.c:41
 msgid "Kagiyama Hina"
-msgstr ""
+msgstr "Kagiyama Hina"
 
 #: src/dialog/dialog_macros.h:72 src/menu/charprofile.c:105
 msgid "Gyroscopic Pestilence God"
@@ -6028,7 +6028,7 @@ msgstr "Qualité du rendu du fond"
 
 #: src/menu/options.c:850
 msgid "Background saturation"
-msgstr ""
+msgstr "Saturation de l'arrière-plan"
 
 #: src/menu/options.c:857
 msgid "Anti-aliasing"
@@ -6350,7 +6350,7 @@ msgstr "Sauvegarder les replays?"
 #: src/menu/spellpractice.c:64
 #, c-format
 msgid "№ %d"
-msgstr ""
+msgstr "№ %d"
 
 #: src/menu/spellpractice.c:133
 msgid "Spell Information"
@@ -6375,7 +6375,7 @@ msgstr "Bonus"
 #: src/menu/spellpractice.c:153
 #, c-format
 msgid "%g s"
-msgstr ""
+msgstr "%g s"
 
 #: src/menu/spellpractice.c:181
 msgid "Clears/Attempts"
@@ -6383,7 +6383,7 @@ msgstr "Complétées/Tentatives"
 
 #: src/menu/stagepractice.c:85
 msgid "??????"
-msgstr ""
+msgstr "??????"
 
 #: src/player.c:116
 msgid "Full Power!"
@@ -6407,7 +6407,7 @@ msgid ""
 "down before, so why stop now?"
 msgstr ""
 "Missiles magiques et lasers — simples et efficaces. Ils ne vous ont jamais "
-"déçu, pourquoi arrêter maintenant ?"
+"déçu, pourquoi arrêter maintenant?"
 
 #: src/plrmodes/marisa_a.c:761
 msgid "Pure Love “Galactic Spark”"
@@ -6423,7 +6423,7 @@ msgid ""
 "hit. That's called “homing”, right?"
 msgstr ""
 "Autant de projectiles qu’il y a d’étoiles dans le ciel. Certains toucheront "
-"forcément leur cible. On appelle ça du “guidage”, non?"
+"forcément leur cible. On appelle ça du «guidage», non?"
 
 #: src/plrmodes/marisa_b.c:556
 msgid "Magic Sign “Stellar Vortex”"
@@ -6500,11 +6500,11 @@ msgstr "Lunatique"
 
 #: src/renderer/common/backend.c:143
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
 #: src/renderer/common/backend.c:144
 msgid "Run"
-msgstr ""
+msgstr "Exécuter"
 
 #: src/renderer/common/backend.c:147
 msgid ""
@@ -6512,6 +6512,9 @@ msgid ""
 "\n"
 "Change this if the game crashes or displays incorrectly.\n"
 msgstr ""
+"Choisir l'API de rendu."
+"\n"
+"À changer si le jeu plante ou s'il s'affiche incorrectement\n"
 
 #: src/stage.c:622
 #, c-format
