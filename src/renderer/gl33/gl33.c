@@ -507,24 +507,33 @@ static void gl33_sync_magic_uniforms(void) {
 	Uniform **u = shader->magic_uniforms;
 
 	mat4 proj;
-	mat4 clip_conversion = {
-		{ 1.0f, 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f, 1.0f },
-	};
 
 	if(R.framebuffer.active == NULL) {
-		clip_conversion[1][1] = -1.0f;
+		mat4 clip_conversion = {
+			{ 1.0f,  0.0f, 0.0f, 0.0f },
+			{ 0.0f, -1.0f, 0.0f, 0.0f },
+			{ 0.0f,  0.0f, 1.0f, 0.0f },
+			{ 0.0f,  0.0f, 0.0f, 1.0f },
+		};
+		glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
 		glFrontFace(GL_CW);
 	} else {
+		glm_mat4_copy(*_r_matrices.projection.head, proj);
 		glFrontFace(GL_CCW);
 	}
 
-	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
+	mat4 ss_proj;
+	mat4 ss_proj_bias = {
+		{ 0.5f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.5f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.5f, 0.0f },
+		{ 0.5f, 0.5f, 0.5f, 1.0f },
+	};
+	glm_mat4_mul(ss_proj_bias, proj, ss_proj);
 
 	r_uniform_mat4(u[UMAGIC_MATRIX_MV], *_r_matrices.modelview.head);
 	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], proj);
+	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ_SS], ss_proj);
 	r_uniform_mat4(u[UMAGIC_MATRIX_TEX], *_r_matrices.texture.head);
 	r_uniform_vec4_rgba(u[UMAGIC_COLOR], &R.color);
 	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], (float*)&R.viewport.active);
