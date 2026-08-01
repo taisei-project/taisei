@@ -199,7 +199,7 @@ bool vfs_node_copy(VFSNode *src, VFSNode *dst) {
 		goto fail;
 	}
 
-	if(!(dst_stream = vfs_node_open(src, VFS_MODE_WRITE))) {
+	if(!(dst_stream = vfs_node_open(dst, VFS_MODE_WRITE))) {
 		goto fail;
 	}
 
@@ -247,7 +247,7 @@ fail:
 bool vfs_node_delete(VFSNode *node) {
 	assert(node->funcs != NULL);
 
-	if(node->funcs->mkdir == NULL) {
+	if(node->funcs->delete == NULL) {
 		vfs_set_error("Node doesn't support deletion");
 		return false;
 	}
