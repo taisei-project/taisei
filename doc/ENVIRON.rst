@@ -237,10 +237,49 @@ Audio
 
    Selects the audio playback backend to use. Currently available options are:
 
-   - ``sdl``: the SDL2 audio subsystem, with a custom mixer
+   - ``sdl``: the SDL3 audio subsystem, with a custom mixer
    - ``null``: no audio playback
 
    Note that the actual subset of usable backends, as well as the default choice, can be controlled by build options.
+
+``TAISEI_AUDIO_SYNC``
+    | Default: ``0``
+    | **Experimental**
+
+    If ``1``, synchronize audio playback with the game clock. Keeps the audio in perfect sync, but prone to glitches and
+    dropouts if the framerate is unstable. With this option, audio will speed up when fast-forwarding replays.
+
+``TAISEI_AUDIO_DUMP_FILE``
+    | Default: unset
+
+    If set, dumps raw PCM audio into the specified file. Implies ``TAISEI_AUDIO_SYNC=1``. Can be used together with
+    ``TAISEI_FRAMEDUMP`` to render replay videos with sound (see below). The sample format is 32-bit floating point in
+    the native byte order, 48kHz, interleaved stereo.
+
+    This is fundamentally different from ``SDL_AUDIO_DRIVER=disk``. This option records perfect audio for each game
+    frame, as if each frame took exactly 1/60th of a second, even if the game is sped up or is lagging. This is what
+    makes it useful for replay rendering.
+
+``TAISEI_AUDIO_SYNC_MIN_FRAME_LATENCY``
+    | Default: ``2``
+
+    Has no effect when ``TAISEI_AUDIO_SYNC=0``.
+
+    Specifies the minimum amount of audio to keep queued for playback, in units of game-time frames (1 frame = 1/60 of a
+    second). Larger values increase latency, but reduce the hiccups caused by framerate skipes. Note that this may cause
+    the music to desync slightly. For that reason, it is recommnded to set this to 0 when using
+    ``TAISEI_AUDIO_DUMP_FILE`` to render replays; the dump output will not be affected by hiccups.
+
+``TAISEI_AUDIO_SYNC_MAX_FRAME_LATENCY``
+    | Default: ``4``
+
+    Has no effect when ``TAISEI_AUDIO_SYNC=0``.
+
+    Maximum amount of audio to keep queued for playback. When attempting to queue more than this much, the frame will be
+    dropped. This can happen when a frame completes faster than normal, e.g. when fast-forwarding replays.
+
+    Takes the same units as ``TAISEI_AUDIO_SYNC_MIN_FRAME_LATENCY``, and can't be lower than that value + 1. Note that
+    this only affects playback, not dumps, as dumps never drop frames.
 
 Timing
 ~~~~~~

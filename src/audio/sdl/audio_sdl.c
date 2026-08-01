@@ -9,12 +9,18 @@
 #include "../backend.h"
 #include "../stream/mixer.h"
 
+#include "eventloop/eventloop.h"
+#include "events.h"
+#include "global.h"
 #include "memory/scratch.h"
 #include "config.h"
+#include "util/env.h"
 
 #define AUDIO_FREQ 48000
 #define AUDIO_FORMAT SDL_AUDIO_F32
 #define AUDIO_CHANNELS 2
+
+#define SAMPLES_PER_FRAME (AUDIO_FREQ / FPS)
 
 struct SFXImpl {
 	MixerSFXImpl msfx;
@@ -28,9 +34,28 @@ static struct {
 	Mixer *mixer;
 	SDL_AudioStream *sink;
 	uint8_t silence;
+	SDL_IOStream *dump_dest;
+	SDL_Semaphore *sem;
+	Thread *mixer_thread;
+	bool shutting_down;
 } audio;
 
 // BEGIN MISC
+
+INLINE void lock_audio(void) {
+	SDL_LockAudioStream(audio.sink);
+}
+
+INLINE void unlock_audio(void) {
+	SDL_UnlockAudioStream(audio.sink);
+}
+
+#define WITH_AUDIO_LOCK(...) ({ \
+	lock_audio(); \
+	auto _result = __VA_ARGS__; \
+	unlock_audio(); \
+	_result; \
+})
 
 static void SDLCALL mixer_callback(
 	void *ignore, SDL_AudioStream *sink, int additional_amount, int total_amount
@@ -38,9 +63,77 @@ static void SDLCALL mixer_callback(
 	if(additional_amount > 0) {
 		uint8_t data[additional_amount];
 		memset(data, audio.silence, additional_amount);
-		mixer_process(audio.mixer, additional_amount, data);
+		mixer_process(audio.mixer, additional_amount, data, INT_MAX);
 		SDL_PutAudioStreamData(sink, data, additional_amount);
 	}
+}
+
+static void *mixer_thread(void *arg) {
+	float mix_buffer[SAMPLES_PER_FRAME * AUDIO_CHANNELS];
+
+	const int bytes_per_frame = sizeof(float) * SAMPLES_PER_FRAME * AUDIO_CHANNELS;
+	int min_frame_latency = env_get("TAISEI_AUDIO_SYNC_MIN_FRAME_LATENCY", 2);
+	int max_frame_latency = env_get("TAISEI_AUDIO_SYNC_MAX_FRAME_LATENCY", 4);
+
+	min_frame_latency = max(min_frame_latency, 0);
+	max_frame_latency = max(max_frame_latency, min_frame_latency + 1);
+
+	const int max_queued_bytes = sizeof(mix_buffer) * max_frame_latency;
+	const int min_queued_bytes = sizeof(mix_buffer) * min_frame_latency;
+
+	// Mixer is not yet initialized
+	SDL_WaitSemaphore(audio.sem);
+
+	int clock = 0;
+
+	RandomState fuck;
+	rng_init(&fuck, 0);
+
+	while(true) {
+		if(global.frames < clock) {
+			clock = global.frames;
+		}
+
+		memset(mix_buffer, audio.silence, sizeof(mix_buffer));
+		(void)WITH_AUDIO_LOCK((mixer_process(audio.mixer, sizeof(mix_buffer), mix_buffer, clock - 1), 0));
+
+		++clock;
+
+		if(audio.dump_dest) {
+			auto written = SDL_WriteIO(audio.dump_dest, mix_buffer, sizeof(mix_buffer));
+			if(written != sizeof(mix_buffer)) {
+				log_sdl_error(LOG_ERROR, "SDL_WriteIO");
+			}
+		}
+
+		int queued_bytes = SDL_GetAudioStreamQueued(audio.sink);
+		if(queued_bytes <= max_queued_bytes) {
+			SDL_PutAudioStreamData(audio.sink, mix_buffer, sizeof(mix_buffer));
+		} else {
+			log_warn("Dropped audio frame, queued bytes %i > %i", queued_bytes, max_queued_bytes);
+		}
+
+		queued_bytes = SDL_GetAudioStreamQueued(audio.sink);
+		if(queued_bytes < min_queued_bytes) {
+			attr_unused double num_frames = (double)(queued_bytes - min_queued_bytes) / bytes_per_frame;
+			log_debug("Buffer fill level too low, catching up (approx. %f frames)", num_frames);
+			SDL_TryWaitSemaphore(audio.sem);
+			continue;
+		}
+
+		if(audio.shutting_down) {
+			if(clock < global.frames) {
+				// Don't want to lose any frames in case we're dumping and running behind
+				continue;
+			} else {
+				break;
+			}
+		}
+
+		SDL_WaitSemaphore(audio.sem);
+	}
+
+	return NULL;
 }
 
 static bool init_sdl_audio(void) {
@@ -66,7 +159,12 @@ static bool init_sdl_audio(void) {
 	return true;
 }
 
-static bool init_audio_device(SDL_AudioSpec *spec) {
+static bool audio_frame_event_handler(SDL_Event *event, void *arg) {
+	SDL_SignalSemaphore(audio.sem);
+	return false;
+}
+
+static bool init_audio_device(SDL_AudioSpec *spec, SDL_AudioStreamCallback callback) {
 	SDL_AudioSpec want = {
 		.channels = AUDIO_CHANNELS,
 		.format = AUDIO_FORMAT,
@@ -79,8 +177,7 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 	snprintf(buf, sizeof(buf), "%d", want_bufsize);
 	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, buf);
 
-	audio.sink = SDL_OpenAudioDeviceStream(
-		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, mixer_callback, NULL);
+	audio.sink = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, callback, NULL);
 
 	if(!audio.sink) {
 		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDeviceStream");
@@ -93,42 +190,120 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 	return true;
 }
 
+static bool audio_sdl_init_sync(void) {
+	audio.sem = SDL_CreateSemaphore(0);
+
+	if(!audio.sem) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateSemaphore");
+		return false;
+	}
+
+	audio.mixer_thread = thread_create("mixer", mixer_thread, NULL, THREAD_PRIO_NORMAL);
+
+	if(!audio.mixer_thread) {
+		SDL_DestroySemaphore(audio.sem);
+		return false;
+	}
+
+	events_register_handler(&(EventHandler) {
+		.proc = audio_frame_event_handler,
+		.event_type = MAKE_TAISEI_EVENT(TE_FRAME),
+		.priority = EPRIO_SYSTEM,
+	});
+
+	return true;
+}
+
+static bool audio_sdl_shutdown(void);
+
 static bool audio_sdl_init(void) {
+	audio = (typeof(audio)) {};
+
 	if(!init_sdl_audio()) {
 		return false;
 	}
 
+	bool syncronous = env_get("TAISEI_AUDIO_SYNC", false);
+	const char *dump_filename = env_get("TAISEI_AUDIO_DUMP_FILE", "");
+
+	if(*dump_filename) {
+		audio.dump_dest = SDL_IOFromFile(dump_filename, "wb");
+
+		if(audio.dump_dest) {
+			syncronous = true;
+		} else {
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
+		}
+	}
+
+	if(syncronous) {
+		syncronous = audio_sdl_init_sync();
+	}
+
 	SDL_AudioSpec aspec;
 
-	if(!init_audio_device(&aspec)) {
-		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+	if(!init_audio_device(&aspec, syncronous ? NULL : mixer_callback)) {
+		audio_sdl_shutdown();
 		return false;
 	}
 
 	AudioStreamSpec mspec = astream_spec(aspec.format, aspec.channels, aspec.freq);
-
 	audio.mixer = ALLOC(typeof(*audio.mixer));
 
 	if(!mixer_init(audio.mixer, &mspec)) {
-		mixer_shutdown(audio.mixer);
-		mem_free(audio.mixer);
-		SDL_DestroyAudioStream(audio.sink);
-		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+		audio_sdl_shutdown();
 		return false;
 	}
 
 	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio.sink));
-	log_info("Audio subsystem initialized (SDL)");
+
+	if(syncronous) {
+		log_info("Audio subsystem initialized (SDL), synchronous mode");
+	} else {
+		log_info("Audio subsystem initialized (SDL)");
+	}
+
+	if(audio.dump_dest) {
+		log_info("Dumping raw PCM into %s", dump_filename);
+	}
 
 	return true;
 }
 
 static bool audio_sdl_shutdown(void) {
-	SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(audio.sink));
-	SDL_DestroyAudioStream(audio.sink);
+	audio.shutting_down = true;
+	events_unregister_handler(audio_frame_event_handler);
+
+	if(audio.mixer_thread) {
+		SDL_SignalSemaphore(audio.sem);
+		thread_wait(audio.mixer_thread);
+		audio.mixer_thread = NULL;
+	}
+
+	if(audio.dump_dest) {
+		SDL_FlushIO(audio.dump_dest);
+		SDL_CloseIO(audio.dump_dest);
+		audio.dump_dest = NULL;
+	}
+
+	if(audio.sink) {
+		SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(audio.sink));
+		SDL_DestroyAudioStream(audio.sink);
+		audio.sink = NULL;
+	}
+
+	if(audio.sem) {
+		SDL_DestroySemaphore(audio.sem);
+		audio.sem = NULL;
+	}
+
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-	mixer_shutdown(audio.mixer);
-	mem_free(audio.mixer);
+
+	if(audio.mixer) {
+		mixer_shutdown(audio.mixer);
+		mem_free(audio.mixer);
+		audio.mixer = NULL;
+	}
 
 	log_info("Audio subsystem deinitialized (SDL)");
 	return true;
@@ -151,21 +326,6 @@ static bool audio_sdl_output_works(void) {
 static const char *const *audio_sdl_get_supported_exts(uint *numexts) {
 	return mixer_get_supported_exts(numexts);
 }
-
-INLINE void lock_audio(void) {
-	SDL_LockAudioStream(audio.sink);
-}
-
-INLINE void unlock_audio(void) {
-	SDL_UnlockAudioStream(audio.sink);
-}
-
-#define WITH_AUDIO_LOCK(...) ({ \
-	lock_audio(); \
-	auto _result = __VA_ARGS__; \
-	unlock_audio(); \
-	_result; \
-})
 
 // END MISC
 
@@ -264,8 +424,16 @@ static double audio_sdl_obj_bgm_get_loop_start(BGM *bgm) {
 static AudioBackendChannel audio_sdl_sfx_play(
 	SFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel chan, bool loop
 ) {
+	int scheduled_frame;
+
+	if(group == CHANGROUP_SFX_GAME)  {
+		scheduled_frame = global.frames;
+	} else {
+		scheduled_frame = -1;
+	}
+
 	return WITH_AUDIO_LOCK(mixer_sfx_play(
-		audio.mixer, &sfx->msfx, group, chan, loop
+		audio.mixer, &sfx->msfx, group, chan, loop, scheduled_frame
 	));
 }
 

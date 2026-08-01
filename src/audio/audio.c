@@ -165,7 +165,7 @@ void audio_sfx_destroy(SFX *sfx) {
 }
 
 static bool is_skip_mode(void) {
-	return global.frameskip || stage_is_skip_mode();
+	return stage_is_skip_mode();
 }
 
 INLINE SFXPlayID pack_playid(AudioChannelGroup chan, uint32_t play_id) {
