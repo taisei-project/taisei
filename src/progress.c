@@ -91,6 +91,7 @@ typedef enum ProgfileCommand {
 
 #define PROGRESS_FILE_OLD "storage/progress.dat"
 #define PROGRESS_FILE "storage/progress.zst"
+#define PROGRESS_FILE_TMP PROGRESS_FILE "~"
 #define PROGRESS_MAXFILESIZE (1 << 15)
 
 GlobalProgress progress;
@@ -885,10 +886,14 @@ attr_unused static void progress_write_cmd_test(SDL_IOStream *vfile, void **arg)
 	SDL_WriteU32LE(vfile, 0xdeadbeef);
 }
 
-static void progress_write(SDL_IOStream *file) {
+static bool progress_write(SDL_IOStream *file) {
 	size_t bufsize = 0;
-	SDL_WriteIO(file, progress_magic_bytes,
-		    sizeof(progress_magic_bytes));
+	bool ok = false;
+
+	if(SDL_WriteIO(file, progress_magic_bytes, sizeof(progress_magic_bytes)) != sizeof(progress_magic_bytes)) {
+		log_sdl_error(LOG_ERROR, "SDL_WriteIO");
+		return false;
+	}
 
 	cmd_writer_t cmdtable[] = {
 		{progress_prepare_cmd_game_version, progress_write_cmd_game_version, NULL},
@@ -912,7 +917,8 @@ static void progress_write(SDL_IOStream *file) {
 	}
 
 	if(!bufsize) {
-		return;
+		log_error("Empty file");
+		return false;
 	}
 
 	auto buf = ALLOC_ARRAY(bufsize, uint8_t);
@@ -922,27 +928,28 @@ static void progress_write(SDL_IOStream *file) {
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
 		attr_unused size_t oldpos = SDL_TellIO(vfile);
 		w->write(vfile, &w->data);
-		log_debug("write %i: %i", (int)(w - cmdtable),
-			  (int)(SDL_TellIO(vfile) - oldpos));
+		log_debug("write %i: %i", (int)(w - cmdtable), (int)(SDL_TellIO(vfile) - oldpos));
 	}
 
 	if(SDL_TellIO(vfile) != bufsize) {
-		mem_free(buf);
-		log_fatal("Buffer is inconsistent");
-		return;
+		log_error("Buffer is inconsistent");
+		goto fail;
 	}
 
 	uint32_t cs = progress_checksum(buf, bufsize);
 	// no byteswapping here
 	SDL_WriteIO(file, &cs, 4);
 
-	if(!SDL_WriteIO(file, buf, bufsize)) {
-		log_error("SDL_WriteIO() failed: %s", SDL_GetError());
-		return;
+	if(SDL_WriteIO(file, buf, bufsize) != bufsize) {
+		log_sdl_error(LOG_ERROR, "SDL_WriteIO");
+		goto fail;
 	}
 
+	ok = true;
+fail:
 	mem_free(buf);
 	SDL_CloseIO(vfile);
+	return ok;
 }
 
 void progress_unlock_all(void) {
@@ -973,8 +980,8 @@ static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
 	}
 }
 
-static SDL_IOStream *progress_open_file_read(void) {
-	SDL_IOStream *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+static SDL_IOStream *progress_open_file_read(const char *path) {
+	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ);
 
 	if(file) {
 		return SDL_RWWrapZstdReader(file, -1, true);
@@ -992,8 +999,8 @@ static SDL_IOStream *progress_open_file_read(void) {
 	return NULL;
 }
 
-static SDL_IOStream *progress_open_file_write(void) {
-	SDL_IOStream *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
+static SDL_IOStream *progress_open_file_write(const char *path) {
+	SDL_IOStream *file = vfs_open(path, VFS_MODE_WRITE);
 
 	if(file) {
 		return SDL_RWWrapZstdWriter(file, 20, true);
@@ -1011,7 +1018,7 @@ void progress_load(void) {
 	progress_save();
 #endif
 
-	SDL_IOStream *file = progress_open_file_read();
+	SDL_IOStream *file = progress_open_file_read(PROGRESS_FILE);
 
 	if(!file) {
 		return;
@@ -1030,10 +1037,35 @@ void progress_load(void) {
 }
 
 void progress_save(void) {
-	SDL_IOStream *file = progress_open_file_write();
+	SDL_IOStream *file = progress_open_file_write(PROGRESS_FILE_TMP);
 
-	progress_write(file);
-	SDL_CloseIO(file);
+	if(!file) {
+		return;
+	}
+
+	if(!progress_write(file)) {
+		SDL_CloseIO(file);
+		return;
+	}
+
+	if(!SDL_FlushIO(file)) {
+		log_sdl_error(LOG_ERROR, "SDL_FlushIO");
+		SDL_CloseIO(file);
+		return;
+	}
+
+	if(!SDL_CloseIO(file)) {
+		log_sdl_error(LOG_ERROR, "SDL_CloseIO");
+		return;
+	}
+
+	if(!vfs_rename(PROGRESS_FILE_TMP, PROGRESS_FILE)) {
+		log_error("Rename failed: VFS error: %s", vfs_get_error());
+	} else {
+		char *sp = vfs_repr(PROGRESS_FILE, true);
+		log_info("Saved progress to %s", sp);
+		mem_free(sp);
+	}
 }
 
 static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
