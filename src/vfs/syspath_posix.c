@@ -155,6 +155,57 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
+static bool vfs_syspath_rename(VFSNode *node, VFSNode *target) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	bool ok = false;
+
+	if(!vfs_node_syspath(target, &buf)) {
+		strbuf_clear(&buf);
+		vfs_node_repr(target, true, &buf);
+		vfs_set_error("Target node %s doesn't represent a system path", strbuf_commit(&buf));
+		goto end;
+	}
+
+	const char *src_path = pnode->path;
+	const char *dest_path = strbuf_commit(&buf);
+
+	if(rename(src_path, dest_path)) {
+		vfs_set_error("rename() failed: %s", strerror(errno));
+	} else {
+		ok = true;
+	}
+
+end:
+	release_scratch_arena(buf.arena);
+	return ok;
+}
+
+static bool vfs_syspath_delete(VFSNode *node) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+
+	// unlink() may or may not work on directories
+	if(unlink(pnode->path)) {
+		if(errno == EISDIR || errno == EPERM) {
+			// directory case: EISDIR is non-standard but common, EPERM is mandated by POSIX
+			if(rmdir(pnode->path)) {
+				vfs_set_error("rmdir() failed: %s", strerror(errno));
+				return false;
+			} else {
+				return true;
+			}
+		} else {
+			vfs_set_error("unlink() failed: %s", strerror(errno));
+			return false;
+		}
+	} else {
+		return true;
+	}
+
+	UNREACHABLE;
+}
+
 #ifndef __SWITCH__
 static const void *vfs_syspath_mmap(VFSNode *node, size_t *size) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
@@ -205,6 +256,8 @@ VFS_NODE_FUNCS(VFSSysPathNode, {
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
 	.open = vfs_syspath_open,
+	.rename = vfs_syspath_rename,
+	.delete = vfs_syspath_delete,
 #ifndef __SWITCH__
 	.mmap = vfs_syspath_mmap,
 	.munmap = vfs_syspath_munmap,

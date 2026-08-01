@@ -246,6 +246,58 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
+static bool vfs_syspath_rename(VFSNode *node, VFSNode *target) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+
+	StringBuffer buf = { acquire_scratch_arena() };
+	bool ok = false;
+
+	const wchar_t *src_wpath = pnode->wpath;
+	wchar_t *dest_wpath;
+
+	VFSSysPathNode *ptarget = VFS_NODE_TRY_CAST(VFSSysPathNode, target);
+	if(ptarget) {
+		dest_wpath = ptarget->wpath;
+	} else {
+		if(!vfs_node_syspath(target, &buf)) {
+			strbuf_clear(&buf);
+			vfs_node_repr(target, true, &buf);
+			vfs_set_error("Target node %s doesn't represent a system path", strbuf_commit(&buf));
+			goto end;
+		}
+
+		const char *dest_path = strbuf_commit(&buf);
+		size_t wpath_buf_size = strlen(dest_path) + 1;
+		dest_wpath = ARENA_ALLOC_ARRAY(buf.arena, wpath_buf_size, wchar_t);
+		utf8_to_utf16(dest_path, wpath_buf_size, dest_wpath);
+	}
+
+	if(!(ok = MoveFileEx(src_wpath, dest_wpath, MOVEFILE_REPLACE_EXISTING))) {
+		vfs_set_error_win32();
+	}
+
+end:
+	release_scratch_arena(buf.arena);
+	return ok;
+}
+
+static bool vfs_syspath_delete(VFSNode *node) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	auto q = vfs_syspath_query(node);
+
+	if(q.error) {
+		return false;
+	}
+
+	bool ok = q.is_dir ? RemoveDirectory(pnode->wpath) : DeleteFile(pnode->wpath);
+
+	if(!ok) {
+		vfs_set_error_win32();
+	}
+
+	return ok;
+}
+
 static const void *vfs_syspath_mmap(VFSNode *node, size_t *size) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 
@@ -327,6 +379,8 @@ VFS_NODE_FUNCS(VFSSysPathNode, {
 	.iter = vfs_syspath_iter,
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
+	.rename = vfs_syspath_rename,
+	.delete = vfs_syspath_delete,
 	.open = vfs_syspath_open,
 	.mmap = vfs_syspath_mmap,
 	.munmap = vfs_syspath_munmap,
