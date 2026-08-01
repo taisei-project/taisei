@@ -18,6 +18,7 @@
 #include "vfs/public.h"
 
 #define CONFIG_FILE "storage/config"
+#define CONFIG_FILE_TEMP CONFIG_FILE "~"
 
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#define CONFIGDEF(_type,_name,_default,_ufield) { .type = _type, .name = _name, .val = { ._ufield = _default } },
@@ -275,7 +276,7 @@ static void config_delete_unknown_entries(void) {
 }
 
 void config_save(void) {
-	SDL_IOStream *out = vfs_open(CONFIG_FILE, VFS_MODE_WRITE);
+	SDL_IOStream *out = vfs_open(CONFIG_FILE_TEMP, VFS_MODE_WRITE);
 	ConfigEntry *e = configdefs;
 
 	if(!out) {
@@ -301,12 +302,34 @@ void config_save(void) {
 		}
 	}
 
-	SDL_WriteIO(out, sbuf.start, (sbuf.pos - sbuf.start));
+	size_t write_size = sbuf.pos - sbuf.start;
+	size_t written = SDL_WriteIO(out, sbuf.start, write_size) ;
 	release_scratch_arena(sbuf.arena);
-	SDL_CloseIO(out);
+
+	if(written != write_size) {
+		log_sdl_error(LOG_ERROR, "SDL_WriteIO");
+		SDL_CloseIO(out);
+		return;
+	}
+
+	if(!SDL_FlushIO(out)) {
+		log_sdl_error(LOG_ERROR, "SDL_FlushIO");
+		SDL_CloseIO(out);
+		return;
+	}
+
+	if(!SDL_CloseIO(out)) {
+		log_sdl_error(LOG_ERROR, "SDL_CloseIO");
+		return;
+	}
+
+	if(!vfs_rename(CONFIG_FILE_TEMP, CONFIG_FILE)) {
+		log_error("Rename failed: VFS error: %s", vfs_get_error());
+		return;
+	}
 
 	char *sp = vfs_repr(CONFIG_FILE, true);
-	log_info("Saved config '%s'", sp);
+	log_info("Saved config to %s", sp);
 	mem_free(sp);
 }
 
