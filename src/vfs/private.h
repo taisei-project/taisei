@@ -35,6 +35,8 @@ struct VFSNodeFuncs {
 	const char* (*iter)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
 	void        (*iter_stop)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
 	bool        (*mkdir)(VFSNode *parent, const char *subdir) attr_nonnull(1);
+	bool        (*rename)(VFSNode *node, VFSNode *target) attr_nonnull(1, 2);
+	bool        (*delete)(VFSNode *node) attr_nonnull(1);
 	SDL_IOStream*  (*open)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
 	const void* (*mmap)(VFSNode *filenode, size_t *out_size) attr_nonnull(1, 2);
 	bool        (*munmap)(VFSNode *filenode, const void *data, size_t size) attr_nonnull(1, 2);
@@ -130,6 +132,10 @@ VFSNode *vfs_node_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) att
 const char *vfs_node_iter(VFSNode *node, void **opaque) attr_nonnull(1);
 void vfs_node_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
 bool vfs_node_mkdir(VFSNode *parent, const char *subdir) attr_nonnull(1);
+bool vfs_node_rename(VFSNode *node, VFSNode *target) attr_nonnull(1, 2);
+bool vfs_node_rename_with_fallback(VFSNode *node, VFSNode *target) attr_nonnull(1, 2);
+bool vfs_node_copy(VFSNode *src, VFSNode *dst) attr_nonnull(1);
+bool vfs_node_delete(VFSNode *src) attr_nonnull(1);
 SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) attr_nodiscard;
 VFSMMapTicket vfs_node_mmap(VFSNode *filenode, const void **addr, size_t *size, bool allow_fallback) attr_nonnull(1, 2, 3) attr_nodiscard;
 bool vfs_node_munmap(VFSNode *filenode, VFSMMapTicket ticket) attr_nonnull(1);

@@ -162,6 +162,113 @@ bool vfs_node_mkdir(VFSNode *parent, const char *subdir) {
 	return parent->funcs->mkdir(parent, subdir);
 }
 
+bool vfs_node_rename(VFSNode *node, VFSNode *target) {
+	assert(node->funcs != NULL);
+
+	if(node->funcs->rename == NULL) {
+		vfs_set_error("Node doesn't support renaming");
+		return false;
+	}
+
+	// Enforce readonly property of target (could be a wrapper)
+
+	auto q = vfs_node_query(target);
+
+	if(q.error) {
+		return false;  // propagate error
+	}
+
+	if(q.is_readonly) {
+		StringBuffer buf = { acquire_scratch_arena() };
+		vfs_node_repr(target, true, &buf);
+		vfs_set_error("Target node %s is read-only", strbuf_commit(&buf));
+		release_scratch_arena(buf.arena);
+		return false;
+	}
+
+	return node->funcs->rename(node, target);
+}
+
+bool vfs_node_copy(VFSNode *src, VFSNode *dst) {
+	// NOTE: No callback func for this yet, just a generic implementation
+
+	SDL_IOStream *src_stream = NULL;
+	SDL_IOStream *dst_stream = NULL;
+
+	if(!(src_stream = vfs_node_open(src, VFS_MODE_READ))) {
+		goto fail;
+	}
+
+	if(!(dst_stream = vfs_node_open(src, VFS_MODE_WRITE))) {
+		goto fail;
+	}
+
+	char chunk[1 << 12];
+	size_t len;
+
+	while((len = SDL_ReadIO(src_stream, chunk, sizeof(chunk)))) {
+		if(SDL_WriteIO(dst_stream, chunk, len) != len) {
+			vfs_set_error("SDL_WriteIO() failed: %s", SDL_GetError());
+			goto fail;
+		}
+	}
+
+	if(SDL_GetIOStatus(src_stream) != SDL_IO_STATUS_EOF) {
+		vfs_set_error("SDL_ReadIO() failed: %s", SDL_GetError());
+		goto fail;
+	}
+
+	SDL_CloseIO(src_stream);
+	src_stream = NULL;
+
+	if(!SDL_FlushIO(dst_stream)) {
+		vfs_set_error("SDL_FlushIO() failed: %s", SDL_GetError());
+		goto fail;
+	}
+
+	if(SDL_CloseIO(dst_stream)) {
+		return true;
+	} else {
+		vfs_set_error("SDL_CloseIO() failed: %s", SDL_GetError());
+	}
+
+fail:
+	if(src_stream) {
+		SDL_CloseIO(src_stream);
+	}
+
+	if(dst_stream) {
+		SDL_CloseIO(dst_stream);
+	}
+
+	return false;
+}
+
+bool vfs_node_delete(VFSNode *node) {
+	assert(node->funcs != NULL);
+
+	if(node->funcs->mkdir == NULL) {
+		vfs_set_error("Node doesn't support deletion");
+		return false;
+	}
+
+	return node->funcs->delete(node);
+}
+
+bool vfs_node_rename_with_fallback(VFSNode *node, VFSNode *target) {
+	if(vfs_node_rename(node, target)) {
+		return true;
+	}
+
+	log_debug("Native rename failed (%s), attempting copy-and-delete", vfs_get_error());
+
+	if(!vfs_node_copy(node, target)) {
+		return false;
+	}
+
+	return vfs_node_delete(node);
+}
+
 SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	assert(filenode->funcs != NULL);
 

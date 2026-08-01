@@ -172,6 +172,88 @@ bool vfs_mkparents(const char *path) {
 	return true;
 }
 
+bool vfs_copy(const char *src, const char *dst) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
+	char src_norm[strlen(src) + 1];
+	vfs_path_normalize(src, src_norm);
+
+	VFSNode *src_node = vfs_locate(vfs_root, src_norm);
+	if(!src_node) {
+		vfs_set_error("Node '%s' does not exist", src_norm);
+		return false;
+	}
+
+	char dst_norm[strlen(dst) + 1];
+	vfs_path_normalize(dst, dst_norm);
+
+	VFSNode *dst_node = vfs_locate(vfs_root, dst_norm);
+	if(!dst_node) {
+		vfs_set_error("Node '%s' does not exist", dst_norm);
+		vfs_decref(src_node);
+		return false;
+	}
+
+	bool result = vfs_node_copy(src_node, dst_node);
+	vfs_decref(src_node);
+	vfs_decref(dst_node);
+
+	return result;
+}
+
+bool vfs_rename(const char *src, const char *dst) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
+	char src_norm[strlen(src) + 1];
+	vfs_path_normalize(src, src_norm);
+
+	VFSNode *src_node = vfs_locate(vfs_root, src_norm);
+	if(!src_node) {
+		vfs_set_error("Node '%s' does not exist", src_norm);
+		return false;
+	}
+
+	char dst_norm[strlen(dst) + 1];
+	vfs_path_normalize(dst, dst_norm);
+
+	VFSNode *dst_node = vfs_locate(vfs_root, dst_norm);
+	if(!dst_node) {
+		vfs_set_error("Node '%s' does not exist", dst_norm);
+		vfs_decref(src_node);
+		return false;
+	}
+
+	bool result = vfs_node_rename_with_fallback(src_node, dst_node);
+	vfs_decref(src_node);
+	vfs_decref(dst_node);
+
+	return result;
+}
+
+bool vfs_delete(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
+	char path_norm[strlen(path) + 1];
+	vfs_path_normalize(path, path_norm);
+
+	VFSNode *node = vfs_locate(vfs_root, path_norm);
+	if(!node) {
+		vfs_set_error("Node '%s' does not exist", path_norm);
+		return false;
+	}
+
+	bool result = vfs_node_delete(node);
+	vfs_decref(node);
+
+	return result;
+}
+
 char* vfs_repr(const char *path, bool try_syspath) {
 	if(UNLIKELY(!vfs_initialized())) {
 		return false;
