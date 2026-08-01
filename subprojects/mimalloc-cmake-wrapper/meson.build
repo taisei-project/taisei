@@ -18,6 +18,8 @@ mimalloc_options.add_cmake_defines({
     'MI_BUILD_STATIC': true,
     'MI_BUILD_OBJECT': false,
     'MI_BUILD_TESTS': false,
+    'MI_NO_OPT_ARCH': true,
+    'MI_OPT_ARCH': false,
     'CMAKE_BUILD_TYPE': mimalloc_buildtype,
 })
 
