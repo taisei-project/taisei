@@ -6,13 +6,14 @@
 
 UNIFORM(512) mat4 r_modelViewMatrix;
 UNIFORM(513) mat4 r_projectionMatrix;
-UNIFORM(514) mat4 r_textureMatrix;
-UNIFORM(515) vec4 r_color;
+UNIFORM(514) mat4 r_screenSpaceProjectionMatrix;
+UNIFORM(515) mat4 r_textureMatrix;
+UNIFORM(516) vec4 r_color;
 
 // Active viewport, i.e. the region we're rendering into.
 // xy = offset, zw = width and height.
 // Units are real pixels.
-UNIFORM(516) vec4 r_viewport;
+UNIFORM(517) vec4 r_viewport;
 
 // Size(s) of output buffer(s) we're rendering into, in real pixels.
 // A size of 0,0 means the buffer is not attached.
@@ -21,7 +22,7 @@ UNIFORM(516) vec4 r_viewport;
 // it is affected by the output -> attachment mapping (see r_framebuffer_set_output_attachments).
 // This means that r_colorOutputSizes[N] always corresponds to fragment shader output #N, which
 // is probably what you'd expect.
-UNIFORM(517) vec2 r_colorOutputSizes[4];  // NOTE: should match FRAMEBUFFER_MAX_OUTPUTS in renderer/api.h
-UNIFORM(521) vec2 r_depthOutputSize;
+UNIFORM(518) vec2 r_colorOutputSizes[4];  // NOTE: should match FRAMEBUFFER_MAX_OUTPUTS in renderer/api.h
+UNIFORM(522) vec2 r_depthOutputSize;
 
 #endif

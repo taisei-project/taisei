@@ -12,10 +12,9 @@ UNIFORM(6) sampler2D water_noisetex;
 
 const int steps = 10;
 
-// way to optimize: do projection matrix in the vertex shader
 vec3 pos_to_texcoord(vec3 pos) {
-	vec4 tmp = r_projectionMatrix * vec4(pos, 1);
-	return 0.5*tmp.xyz/tmp.w + vec3(0.5);
+	vec4 tmp = r_screenSpaceProjectionMatrix * vec4(pos, 1);
+	return tmp.xyz / tmp.w;
 }
 
 vec3 trace_screenspace_reflection(vec3 pos, vec3 n, sampler2D screen_depth, sampler2D screen_color) {

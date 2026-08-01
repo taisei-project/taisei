@@ -610,7 +610,7 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GPUTextureSamplerBin
 }
 
 static void sdlgpu_set_magic_uniforms(
-	ShaderObject *shobj, const FloatRect *viewport, mat4 projection_mat
+	ShaderObject *shobj, const FloatRect *viewport, mat4 projection_mat, mat4 ss_projection_mat
 ) {
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_MV], 0, 1,
@@ -618,6 +618,9 @@ static void sdlgpu_set_magic_uniforms(
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_PROJ], 0, 1,
 		projection_mat);
+	sdlgpu_shader_object_uniform_set_data(
+		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_PROJ_SS], 0, 1,
+		ss_projection_mat);
 	sdlgpu_shader_object_uniform_set_data(
 		shobj, shobj->magic_unfiroms[UMAGIC_MATRIX_TEX], 0, 1,
 		_r_matrices.texture.head);
@@ -735,7 +738,7 @@ static void sdlgpu_draw_generic(
 		.y = vp->y,
 		.h = vp->h,
 		.w = vp->w,
-		.min_depth = 0 ,
+		.min_depth = 0,
 		.max_depth = 1,
 	});
 
@@ -746,11 +749,19 @@ static void sdlgpu_draw_generic(
 		{ 0.0f,  0.0f, 0.5f, 0.0f },
 		{ 0.0f,  0.0f, 0.5f, 1.0f },
 	};
-
 	glm_mat4_mul(clip_conversion, *_r_matrices.projection.head, proj);
 
-	sdlgpu_set_magic_uniforms(v_shader, vp, proj);
-	sdlgpu_set_magic_uniforms(f_shader, vp, proj);
+	mat4 ss_proj;
+	mat4 ss_proj_bias = {
+		{ 0.5f,  0.0f, 0.0f, 0.0f },
+		{ 0.0f, -0.5f, 0.0f, 0.0f },
+		{ 0.0f,  0.0f, 1.0f, 0.0f },
+		{ 0.5f,  0.5f, 0.0f, 1.0f },
+	};
+	glm_mat4_mul(ss_proj_bias, proj, ss_proj);
+
+	sdlgpu_set_magic_uniforms(v_shader, vp, proj, ss_proj);
+	sdlgpu_set_magic_uniforms(f_shader, vp, proj, ss_proj);
 
 	SDL_BindGPUGraphicsPipeline(pass, pipe);
 	SDL_BindGPUVertexBuffers(pass, 0, vbuf_bindings, ARRAY_SIZE(vbuf_bindings));
