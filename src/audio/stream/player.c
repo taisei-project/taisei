@@ -86,11 +86,15 @@ static inline void splayer_stream_ended(StreamPlayer *plr, int chan) {
 	splayer_halt(plr, chan);
 }
 
-static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsize, void *buffer) {
+static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsize, void *buffer, int clock) {
 	AudioStreamReadFlags rflags = 0;
 	StreamPlayerChannel *pchan = plr->channels + chan;
 
 	if(pchan->paused || !pchan->stream) {
+		return 0;
+	}
+
+	if(clock < pchan->scheduled_time) {
 		return 0;
 	}
 
@@ -148,7 +152,7 @@ static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsiz
 	return bufsize - (buf_end - buf);
 }
 
-void splayer_process(StreamPlayer *plr, size_t bufsize, void *vbuffer) {
+void splayer_process(StreamPlayer *plr, size_t bufsize, void *vbuffer, int clock) {
 	if(plr->paused) {
 		return;
 	}
@@ -160,7 +164,7 @@ void splayer_process(StreamPlayer *plr, size_t bufsize, void *vbuffer) {
 	for(int i = 0; i < num_channels; ++i) {
 		uint8_t staging_buffer_bytes[bufsize];
 		union audio_buffer staging_buffer = { staging_buffer_bytes };
-		size_t chan_bytes = splayer_process_channel(plr, i, sizeof(staging_buffer_bytes), staging_buffer_bytes);
+		size_t chan_bytes = splayer_process_channel(plr, i, sizeof(staging_buffer_bytes), staging_buffer_bytes, clock);
 
 		if(chan_bytes) {
 			assert(chan_bytes <= bufsize);
@@ -233,7 +237,10 @@ static void splayer_set_fade(StreamPlayer *plr, StreamPlayerChannel *pchan, floa
 	}
 }
 
-bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, float gain, double position, double fadein) {
+bool splayer_play(
+	StreamPlayer *plr, int chan, AudioStream *stream, bool loop, float gain, double position, double fadein,
+	int scheduled_time
+) {
 	if(!splayer_validate_channel(plr, chan)) {
 		return false;
 	}
@@ -254,6 +261,7 @@ bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, f
 	pchan->looping = loop;
 	pchan->paused = false;
 	pchan->gain = gain;
+	pchan->scheduled_time = scheduled_time;
 
 	splayer_history_move_to_back(plr, pchan);
 	splayer_set_fade(plr, pchan, 0, 1, fadein);

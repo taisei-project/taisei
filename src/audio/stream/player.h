@@ -27,6 +27,7 @@ struct StreamPlayerChannel {
 		float step;
 		int num_steps;
 	} fade;
+	int scheduled_time;
 	bool looping;
 	bool paused;
 };
@@ -42,8 +43,11 @@ struct StreamPlayer {
 
 bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *dst_spec) attr_nonnull_all;
 void splayer_shutdown(StreamPlayer *plr) attr_nonnull_all;
-void splayer_process(StreamPlayer *plr, size_t bufsize, void *buffer) attr_nonnull_all;
-bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, float gain, double position, double fadein) attr_nonnull_all;
+void splayer_process(StreamPlayer *plr, size_t bufsize, void *buffer, int clock) attr_nonnull_all;
+bool splayer_play(
+	StreamPlayer *plr, int chan, AudioStream *stream, bool loop, float gain, double position, double fadein,
+	int scheduled_time
+) attr_nonnull_all;
 bool splayer_pause(StreamPlayer *plr, int chan) attr_nonnull_all;
 bool splayer_resume(StreamPlayer *plr, int chan) attr_nonnull_all;
 void splayer_halt(StreamPlayer *plr, int chan) attr_nonnull_all;

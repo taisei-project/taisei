@@ -128,7 +128,7 @@ void mixer_shutdown(Mixer *mx) {
 // BEGIN BGM
 
 bool mixer_bgm_play(Mixer *mx, MixerBGMImpl *bgm, bool loop, double position, double fadein) {
-	return splayer_play(mx->players + CHANGROUP_BGM, 0, &bgm->stream, loop, 1, position, fadein);
+	return splayer_play(mx->players + CHANGROUP_BGM, 0, &bgm->stream, loop, 1, position, fadein, -1);
 }
 
 bool mixer_bgm_stop(Mixer *mx, double fadeout) {
@@ -218,8 +218,7 @@ double mixerbgm_get_loop_start(MixerBGMImpl *bgm) {
 // BEGIN SFX
 
 AudioBackendChannel mixer_sfx_play(
-	Mixer *mx,
-	MixerSFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel flat_chan, bool loop
+	Mixer *mx, MixerSFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel flat_chan, bool loop, int clock
 ) {
 	int chan;
 	StreamPlayer *plr;
@@ -240,7 +239,7 @@ AudioBackendChannel mixer_sfx_play(
 
 	if(
 		astream_pcm_reopen(&stream->astream, &mx->spec, sfx->pcm_size, sfx->pcm, 0) &&
-		splayer_play(plr, chan, &stream->astream, loop, sfx->gain, 0, 0)
+		splayer_play(plr, chan, &stream->astream, loop, sfx->gain, 0, 0, clock)
 	) {
 		return flat_chan;
 	}
@@ -431,10 +430,10 @@ void mixer_notify_sfx_unload(Mixer *mx, MixerSFXImpl *sfx) {
 
 // BEGIN PROCESS
 
-void mixer_process(Mixer *mx, size_t bufsize, void *buffer) {
+void mixer_process(Mixer *mx, size_t bufsize, void *buffer, int clock) {
 	for(int i = 0; i < ARRAY_SIZE(mx->players); ++i) {
 		StreamPlayer *plr = mx->players + i;
-		splayer_process(plr, bufsize, buffer);
+		splayer_process(plr, bufsize, buffer, clock);
 	}
 }
 

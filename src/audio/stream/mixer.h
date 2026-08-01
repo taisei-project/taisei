@@ -55,8 +55,7 @@ MixerBGMImpl *mixer_bgm_current(Mixer *mx) attr_nonnull(1);
 bool mixer_bgm_looping(Mixer *mx) attr_nonnull(1);
 
 AudioBackendChannel mixer_sfx_play(
-	Mixer *mx,
-	MixerSFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel flat_chan, bool loop
+	Mixer *mx, MixerSFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel flat_chan, bool loop, int clock
 ) attr_nonnull(1, 2);
 bool mixer_chan_stop(Mixer *mx, AudioBackendChannel chan, double fadeout) attr_nonnull(1);
 bool mixer_chan_unstop(Mixer *mx, AudioBackendChannel chan, double fadein) attr_nonnull(1);
@@ -81,4 +80,4 @@ bool mixersfx_set_volume(MixerSFXImpl *sfx, double vol) attr_nonnull(1);
 void mixer_notify_bgm_unload(Mixer *mx, MixerBGMImpl *bgm) attr_nonnull_all;
 void mixer_notify_sfx_unload(Mixer *mx, MixerSFXImpl *sfx) attr_nonnull_all;
 
-void mixer_process(Mixer *mx, size_t bufsize, void *buffer);
+void mixer_process(Mixer *mx, size_t bufsize, void *buffer, int clock);
