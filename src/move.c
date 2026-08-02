@@ -20,10 +20,10 @@ cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
 
 		if(LIKELY(o.attraction_exponent == 1)) {
 			o.velocity += cmul_finite(o.attraction, av);
-		} else {
+		} else if(av) {
 			real m = cabs2(av);
 			assume(m >= 0);
-			m = pow(m, o.attraction_exponent - 0.5);
+			m = pow(m, 0.5 * o.attraction_exponent - 0.5);
 			assert(isfinite(m));
 			o.velocity += cmul_finite(o.attraction, av * m);
 		}
