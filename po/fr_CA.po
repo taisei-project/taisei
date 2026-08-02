@@ -6535,7 +6535,7 @@ msgstr "Vies:"
 
 #: src/stagedraw.c:1331
 msgid "Spell Cards:"
-msgstr "Cartes Magiques:"
+msgstr "Cartes de sort:"
 
 #: src/stagedraw.c:1338
 msgid "Power:"
@@ -6551,7 +6551,7 @@ msgstr "Volts:"
 
 #: src/stagedraw.c:1344
 msgid "Graze:"
-msgstr "Frôlements:"
+msgstr "Frôle:"
 
 #: src/stagedraw.c:1357 src/stagedraw.c:1358
 msgid "N/A"
