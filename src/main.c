@@ -16,6 +16,7 @@
 #include "filewatch/filewatch.h"
 #include "gamepad.h"
 #include "global.h"
+#include "i18n/i18n.h"
 #include "log.h"
 #include "log_sdl.h"
 #include "memory/scratch.h"
@@ -24,14 +25,12 @@
 #include "progress.h"
 #include "renderer/common/models.h"
 #include "renderer/common/sprite_batch.h"
-#include "i18n/i18n.h"
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
 #include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "stageobjects.h"
-
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/gamemode.h"
@@ -42,8 +41,15 @@
 #include "video.h"
 #include "watchdog.h"
 
+#include <cglm/version.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <unibreakbase.h>
 #include <locale.h>
+#include <png.h>
+#include <webp/decode.h>
 #include <zlib.h>
+#include <zstd.h>
 
 #undef UNICODE
 #include <SDL3/SDL_main.h>
@@ -166,14 +172,6 @@ static void init_sdl(void) {
 	log_sdl_init(SDL_LOG_PRIORITY_INFO);
 	log_info("SDL initialized");
 
-	int v = SDL_VERSION;
-	log_info("Compiled against SDL %u.%u.%u",
-		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
-
-	v = SDL_GetVersion();
-	log_info("Using SDL %u.%u.%u",
-		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
-
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "Taisei Project");
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, TAISEI_VERSION);
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "org.taisei_project.Taisei");
@@ -182,16 +180,38 @@ static void init_sdl(void) {
 }
 
 static void log_lib_versions(void) {
+	int sdl_v = SDL_VERSION;
+	log_info("Compiled against SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(sdl_v), SDL_VERSIONNUM_MINOR(sdl_v), SDL_VERSIONNUM_MICRO(sdl_v));
+
+	sdl_v = SDL_GetVersion();
+	log_info("Using SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(sdl_v), SDL_VERSIONNUM_MINOR(sdl_v), SDL_VERSIONNUM_MICRO(sdl_v));
+
 	log_info("Compiled against zlib %s", ZLIB_VERSION);
 	log_info("Using zlib %s", zlibVersion());
+
+	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
+	log_info("Using libpng %s", png_get_libpng_ver(NULL));
+
+	int webp_v = WebPGetDecoderVersion();
+	log_info("Using libwebpdecoder %d.%d.%d", (webp_v >> 16) & 0xff, (webp_v >> 8) & 0xff, webp_v & 0xff);
+
+	log_info("Compiled against libzstd %s", ZSTD_VERSION_STRING);
+	log_info("Using libzstd %s", ZSTD_versionString());
+
+	log_info("Compiled against cglm %d.%d.%d", CGLM_VERSION_MAJOR, CGLM_VERSION_MINOR, CGLM_VERSION_PATCH);
+
+	log_info("Compiled against libunibreak %d.%d", UNIBREAK_VERSION >> 8, UNIBREAK_VERSION & 0xff);
+	log_info("Using libunibreak %d.%d", unibreak_version >> 8, unibreak_version & 0xff);
 }
 
 static void log_system_specs(void) {
+	log_info("Platform: %s", SDL_GetPlatform());
 	log_info("CPU count: %d", SDL_GetNumLogicalCPUCores());
 	// log_info("CPU type: %s", SDL_GetCPUType());
 	// log_info("CPU name: %s", SDL_GetCPUName());
-	log_info("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	log_info("Altivec: %d", SDL_HasAltiVec());
+	log_info("AltiVec: %d", SDL_HasAltiVec());
 	log_info("MMX: %d", SDL_HasMMX());
 	log_info("SSE: %d", SDL_HasSSE());
 	log_info("SSE2: %d", SDL_HasSSE2());
@@ -200,8 +220,14 @@ static void log_system_specs(void) {
 	log_info("SSE4.2: %d", SDL_HasSSE42());
 	log_info("AVX: %d", SDL_HasAVX());
 	log_info("AVX2: %d", SDL_HasAVX2());
+	log_info("AVX512F: %d", SDL_HasAVX512F());
+	log_info("ARMSIMD: %d", SDL_HasARMSIMD());
 	log_info("NEON: %d", SDL_HasNEON());
+	log_info("LSX: %d", SDL_HasLSX());
+	log_info("LASX: %d", SDL_HasLASX());
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
+	log_info("Page size: %d", SDL_GetSystemPageSize());
+	log_info("Cacheline size: %d", SDL_GetCPUCacheLineSize());
 }
 
 static void log_version(void) {

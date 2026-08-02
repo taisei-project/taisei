@@ -216,9 +216,16 @@ static void init_fonts(void) {
 	try_create_mutex(&globals.mutex.new_face);
 	try_create_mutex(&globals.mutex.done_face);
 
+	log_info("Compiled against freetype2 %d.%d.%d",
+		FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
+
 	if((err = FT_New_Library(&ft_mem, &globals.lib))) {
 		log_fatal("FT_New_Library() failed: %s", ft_error_str(err));
 	}
+
+	FT_Int v_maj, v_min, v_patch;
+	FT_Library_Version(globals.lib, &v_maj, &v_min, &v_patch);
+	log_info("Using freetype2 %d.%d.%d", v_maj, v_min, v_patch);
 
 	FT_Add_Default_Modules(globals.lib);
 
