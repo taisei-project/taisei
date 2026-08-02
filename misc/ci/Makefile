@@ -11,10 +11,6 @@ endif
 # docker #
 ##########
 
-docker/windows: tag
-	docker build . -t taiseiproject/windows-toolkit:$(TAG) -f "Dockerfile.windows"
-	docker push taisei/windows-toolkit:$(TAG)
-
 docker/switch: tag
 	docker build . -t taiseiproject/switch-toolkit:$(TAG) -f "Dockerfile.switch"
 	docker push taiseiproject/switch-toolkit:$(TAG)
