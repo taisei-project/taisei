@@ -30,3 +30,9 @@ foreach tdict : tests
         args :  tdict.get('args', []),
     )
 endforeach
+
+if have_taisei_exe
+    test('basic_replay', taisei,
+        args : ['-R', files('test-replay.tsr')],
+        env : dev_env)
+endif

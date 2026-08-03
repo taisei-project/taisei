@@ -662,6 +662,17 @@ subdir('po')
 subdir('resources')  # Depends on: external, po
 subdir('atlas')      # Depends on: resources
 subdir('src')
+
+dev_env = {
+    'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
+    'TAISEI_LOCALE_PATH': l10n_build_dir,
+    'TAISEI_GL_DEBUG': '1',
+    # TODO: Add support for this in libkoishi
+    'ASAN_OPTIONS': 'detect_stack_use_after_return=false:abort_on_error=1',
+}
+
+meson.add_devenv(dev_env)
+
 subdir('test')
 
 if macos_app_bundle
@@ -697,14 +708,6 @@ if have_debug_syms_target
     )
     alias_target('debugsyms', debug_symbols_compressed)
 endif
-
-meson.add_devenv({
-    'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
-    'TAISEI_LOCALE_PATH': l10n_build_dir,
-    'TAISEI_GL_DEBUG': '1',
-    # TODO: Add support for this in libkoishi
-    'ASAN_OPTIONS': 'detect_stack_use_after_return=false:abort_on_error=1',
-})
 
 summary({
     'System type' : systype,

@@ -207,6 +207,7 @@ configure_file(configuration : config, output : 'build_config.h')
 
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 have_libtaisei = false
+have_taisei_exe = false
 have_debug_syms_target = false
 
 if host_machine.system() == 'emscripten'
@@ -475,6 +476,7 @@ else
         link_with : libtaisei,
     )
 
+    have_taisei_exe = true
     taisei = executable(taisei_basename, taisei_main_src,
         dependencies : stages_live_reload ? libtaisei_dep.as_link_whole() : libtaisei_dep,
         win_subsystem : get_option('win_console') ? 'console' : 'windows',
