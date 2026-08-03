@@ -5,12 +5,14 @@
 #include "log.h"
 #include "rwops/rwops_stdiofp.h"
 #include "events.h"
+#include "util/env.h"
 
 #include <locale.h>
 
 static void test_init_log(void) {
 	log_init(LOG_ALL);
-	log_add_output(LOG_ALL, SDL_RWFromFP(stderr, false), log_formatter_console);
+	LogLevel lvls = log_parse_levels(LOG_ALL, env_get("TAISEI_TEST_LOG", ""));
+	log_add_output(lvls, SDL_RWFromFP(stderr, false), log_formatter_console);
 }
 
 static void test_init_sdl(void) {
