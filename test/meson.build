@@ -13,16 +13,20 @@ subdir('renderer')
 subdir('i18n')
 
 tests = [
-    'shader_transpiler',
+    { 'name' : 'shader_transpiler' },
+    { 'name' : 'zip_io',
+      'depends' : zip_targets,
+      'args' : resources_build_dir },
 ]
 
-foreach testname : tests
-    e = executable(
-        testname, '@0@.c'.format(testname),
-        dependencies : libtaisei_dep,
-        include_directories : test_incdir,
-        install : false,
+foreach tdict : tests
+    test(tdict['name'], executable(
+            tdict['name'], '@0@.c'.format(tdict['name']),
+            dependencies : libtaisei_dep,
+            include_directories : test_incdir,
+            install : false,
+        ),
+        depends : tdict.get('depends', []),
+        args :  tdict.get('args', []),
     )
-    test(testname, e)
 endforeach
-

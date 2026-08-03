@@ -1,5 +1,6 @@
 
 resources_dir = meson.current_source_dir()
+resources_build_dir = meson.current_build_dir()
 
 packages = [
     '00-taisei',
@@ -71,6 +72,15 @@ install_data(
     install_tag : res_install_tag,
 )
 
+zip_sha256 = package_data
+zip_install_dir = data_path
+
+if zip_sha256
+    zip_install_dir = [zip_install_dir, false]
+endif
+
+zips = []
+
 # Package or install all static pkgdirs
 foreach pkg : packages
     pkg_pkgdir = '@0@.pkgdir'.format(pkg)
@@ -78,20 +88,11 @@ foreach pkg : packages
     pkg_path = join_paths(meson.current_source_dir(), pkg_pkgdir)
 
     if package_data
-        bindist_deps += custom_target(pkg_zip,
-            command : [pack_command,
-                pkg_path,
-                '@OUTPUT@',
-                '--depfile', '@DEPFILE@',
-                '--exclude', '**/meson.build',
-            ],
-            output : pkg_zip,
-            depfile : '@0@.d'.format(pkg_zip),
-            install : true,
-            install_dir : data_path,
-            install_tag : res_install_tag,
-            console : true,
-        )
+        zips += {
+            'zip' : pkg_zip,
+            'source' : pkg_path,
+            'pack_args' : ['--exclude', '**/meson.build']
+        }
     else
         glob_result = run_command(glob_command, pkg_path, '**/meson.build', check : true)
         install_subdir(
@@ -105,23 +106,15 @@ endforeach
 
 # Package or install the special l10n pkgdir
 if package_data
-    l10n_pkg_zip = '@0@.zip'.format(l10n_pkg_name)
-    bindist_deps += custom_target(l10n_pkg_zip,
-        command : [pack_command,
-            l10n_build_dir,
-            '@OUTPUT@',
+    zips += {
+        'zip' : '@0@.zip'.format(l10n_pkg_name),
+        'source' : l10n_build_dir,
+        'pack_args' : [
             '--prefix', l10n_subdir_name,
             '--exclude', '*.zip',
-            '--depfile', '@DEPFILE@',
         ],
-        output : l10n_pkg_zip,
-        depends : l10n_mo_targets,
-        depfile : '@0@.d'.format(l10n_pkg_zip),
-        install : true,
-        install_dir : data_path,
-        install_tag : res_install_tag,
-        console : true,
-    )
+        'depends' : l10n_mo_targets,
+    }
 else
     bindist_deps += l10n_mo_targets
 endif
@@ -131,22 +124,15 @@ if host_machine.system() == 'nx'
     shader_pkg_zip = '01-es-shaders.zip'
     shader_pkg_path = join_paths(shaders_build_dir, '..')
     if package_data
-        bindist_deps += custom_target(shader_pkg_zip,
-            command : [pack_command,
-                shader_pkg_path,
-                '@OUTPUT@',
-                '--depfile', '@DEPFILE@',
+        zips += {
+            'zip' : shader_pkg_zip,
+            'source' : shader_pkg_path,
+            'pack_args' : [
                 '--exclude', '**/*.spv',
                 '--exclude', '**/meson.build',
             ],
-            output : shader_pkg_zip,
-            depends : essl_targets,
-            depfile : '@0@.d'.format(shader_pkg_zip),
-            install : true,
-            install_dir : data_path,
-            install_tag : res_install_tag,
-            console : true,
-        )
+            'depends' : essl_targets,
+        }
     else
         glob_result = run_command(
             glob_command, shaders_build_dir, '**/*.spv', '**/meson.build',
@@ -160,3 +146,32 @@ if host_machine.system() == 'nx'
         )
     endif
 endif
+
+zip_targets = []
+
+foreach zip : zips
+    outputs = [zip['zip']]
+    command = [pack_command,
+        zip['source'],
+        '@OUTPUT0@',
+        '--depfile', '@DEPFILE@',
+    ] + zip.get('pack_args', [])
+
+    if zip_sha256
+        command += ['--sha256sums', '@OUTPUT1@']
+        outputs += ['@0@.sha256'.format(outputs[0])]
+    endif
+
+    zip_targets += custom_target(zip['zip'],
+        command : command,
+        output : outputs,
+        depends : zip.get('depends', []),
+        depfile : '@0@.d'.format(zip['zip']),
+        install : true,
+        install_dir : zip_install_dir,
+        install_tag : res_install_tag,
+        console : true,
+    )
+endforeach
+
+bindist_deps += zip_targets
