@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+import dataclasses
+import hashlib
 import re
 import struct
-import sys
 import zlib
-import dataclasses
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -39,6 +39,7 @@ from taiseilib.common import (
     add_common_args,
     run_main,
     write_depfile,
+    update_text_file,
 )
 
 
@@ -104,14 +105,16 @@ class PreparedEntry:
     file_size: int      # uncompressed size
     compress_size: int  # = len(data)
     crc: int
+    sha256: str
 
 
-def _prepare_zst(zst_path, arcname):
+def _prepare_zst(zst_path, arcname, calc_sha256=False):
     '''
     Worker: decompress zst to compute CRC and file size, read raw compressed
     bytes. Returns a PreparedEntry ready to be written to the zip.
     '''
     decompressor = ZstdDecompressor()
+    sha256 = ''
 
     with zst_path.open('rb') as zst_file:
         compress_size = zst_file.seek(0, 2)
@@ -121,6 +124,10 @@ def _prepare_zst(zst_path, arcname):
         # Unfortunately we must decompress it to compute crc32.
         # We'll also compute file size from decompressed data instead of relying on frame headers.
         decomp_data = decompressor.decompress(data)
+
+        if calc_sha256:
+            sha256 = hashlib.sha256(decomp_data).hexdigest()
+
         file_size = len(decomp_data)
         crc = zlib.crc32(decomp_data)
         del decomp_data
@@ -135,13 +142,16 @@ def _prepare_zst(zst_path, arcname):
         file_size=file_size,
         compress_size=compress_size,
         crc=crc,
+        sha256=sha256,
     )
 
 
-def _prepare_file(path, arcname, comp_type, comp_level, zstd_frame_size, zstd_seekable_threshold, store_threshold):
+def _prepare_file(
+    path, arcname, comp_type, comp_level, zstd_frame_size, zstd_seekable_threshold, store_threshold, calc_sha256=False):
     data = path.read_bytes()
     uncompressed_size = len(data)
     crc = zlib.crc32(data)
+    sha256 = hashlib.sha256(data).hexdigest() if calc_sha256 else ''
 
     if comp_type == ZIP_STORED:
         compressed_data = None
@@ -175,6 +185,7 @@ def _prepare_file(path, arcname, comp_type, comp_level, zstd_frame_size, zstd_se
         file_size=uncompressed_size,
         compress_size=compressed_size,
         crc=crc,
+        sha256=sha256,
     )
 
 
@@ -279,6 +290,9 @@ def pack(args):
 
                 tasks.append(('file', path, str(relpath), ctype))
 
+    sha256sums = {}
+    write_sha256sums = args.sha256sums is not None
+
     # Phase 1: submit all compression/CRC work in parallel, preserving order.
     with ThreadPoolExecutor() as executor:
         pending = []
@@ -287,12 +301,13 @@ def pack(args):
                 pending.append(task)
             elif task[0] == 'zst':
                 _, path, arcname = task
-                pending.append(('future', executor.submit(_prepare_zst, path, arcname)))
+                pending.append(('future', executor.submit(_prepare_zst, path, arcname, calc_sha256=write_sha256sums)))
             else:
                 _, path, arcname, ctype = task
                 pending.append(('future', executor.submit(
                     _prepare_file, path, arcname, ctype, comp_level,
                     zstd_frame_size, zstd_seekable_threshold, store_threshold,
+                    calc_sha256=write_sha256sums
                 )))
 
         # Phase 2: write results in order as futures complete.
@@ -310,7 +325,13 @@ def pack(args):
                     add_directory_entry(name, path)
                 else:
                     _, future = item
-                    _write_entry(zf, future.result())
+                    entry = future.result()
+                    sha256sums[entry.arcname] = entry.sha256
+                    _write_entry(zf, entry)
+
+    if write_sha256sums:
+        update_text_file(args.sha256sums,
+            '\n'.join(f'{v} {k}' for k, v in sorted(sha256sums.items(), key=lambda x: x[0])))
 
     if args.depfile is not None:
         if nocompress_file is not None:
@@ -393,6 +414,13 @@ def main(args):
         default=None,
         metavar='BYTES',
         help='minimum file size to use seekable zstd compression (default: frame size * 1.5)'
+    )
+
+    parser.add_argument('--sha256sums',
+        type=Path,
+        default=None,
+        metavar='FILE',
+        help='write SHA256 sum of each file in the archive into a file'
     )
 
     add_common_args(parser, depfile=True)
