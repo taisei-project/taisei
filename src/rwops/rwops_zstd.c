@@ -575,6 +575,16 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 	total_read += out.pos;
 	z->pos += out.pos;
 
+	if(total_read < request_size) {
+		// should have been set by rwzstd_reader_fill_in_buffer
+		// request_size == 0 case is handled by SDL
+		assert(*status == SDL_IO_STATUS_EOF);
+	} else {
+		// we may have buffered the entire input, but not yet consumed all of the decompressed output
+		// don't propagate EOF from rwzstd_reader_fill_in_buffer
+		*status = SDL_IO_STATUS_READY;
+	}
+
 end:
 	SPAM("%s: READ(%zu): %zu from cache, %zu decompressed",
 		iostream_get_name(z->iostream), request_size, from_cache, total_read - from_cache);
