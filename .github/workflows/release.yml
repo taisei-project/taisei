@@ -125,8 +125,8 @@ jobs:
     - name: Unwanted Library Check
       run: $(pwd)/scripts/smoke-test-standalone-linux-exe.py $(pwd)/build-release/taisei
 
-    - name: Run Test
-      run: $(pwd)/build-release/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
+    - name: Run Tests
+      run: meson test -C build/linux
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
@@ -244,8 +244,8 @@ jobs:
         scripts/sign-release.py build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg
       shell: bash
 
-    - name: Run Test
-      run: $(pwd)/build-release/compiled/combined/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
+    - name: Run Tests
+      run: meson test -C build-release/aarch64
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}

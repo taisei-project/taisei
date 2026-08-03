@@ -69,8 +69,8 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Run Test
-      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
+    - name: Run Tests
+      run: meson test -C build/
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
@@ -134,8 +134,8 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Run Test
-      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
+    - name: Run Tests
+      run: meson test -C build/
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
