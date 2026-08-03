@@ -64,6 +64,13 @@ static size_t rwsha256_write(void *ctx, const void *ptr, size_t size, SDL_IOStat
 	return result;
 }
 
+static bool rwsha256_flush(void *ctx, SDL_IOStatus *status) {
+	struct sha256_ctx *sctx = ctx;
+	bool result = SDL_FlushIO(sctx->src);
+	*status = SDL_GetIOStatus(sctx->src);
+	return result;
+}
+
 SDL_IOStream *SDL_RWWrapSHA256(SDL_IOStream *src, SHA256State *sha256, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
@@ -76,6 +83,7 @@ SDL_IOStream *SDL_RWWrapSHA256(SDL_IOStream *src, SHA256State *sha256, bool auto
 		.close = rwsha256_close,
 		.read = rwsha256_read,
 		.write = rwsha256_write,
+		.flush = rwsha256_flush,
 	};
 
 	auto sctx = ALLOC(struct sha256_ctx, {
