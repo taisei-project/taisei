@@ -18,9 +18,6 @@
 
 DIAGNOSTIC(push)
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
-#ifndef	_MATH_H
-#define	_MATH_H	1
-#endif
 #include <cglm/cglm.h>  // IWYU pragma: export
 DIAGNOSTIC(pop)
 

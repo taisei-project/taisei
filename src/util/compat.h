@@ -13,7 +13,33 @@
 	#undef __BSD_VISIBLE
 	#define __BSD_VISIBLE 1
 
-	#include <openlibm.h>
+	#include <openlibm_complex.h>
+	#include <openlibm_math.h>
+
+	// Defense against bad headers that pull in system math.h
+	#ifndef	_MATH_H			/* glibc, musl */
+	#define	_MATH_H		1
+	#endif
+
+	#ifndef	_MATH_H_		/* mingw, BSDs */
+	#define	_MATH_H_	1
+	#endif
+
+	#ifndef	__MATH_H__		/* macOS */
+	#define	__MATH_H__	1
+	#endif
+
+	#ifndef	__MATH_H		/* some obscure embedded crap  */
+	#define	__MATH_H	1
+	#endif
+
+	#ifndef _INC_MATH		/* msvc/ucrt apparently, not that we support that crap */
+	#define _INC_MATH	1
+	#endif
+
+	#ifndef	MATH_H			/* unknown/just in case */
+	#define	MATH_H		1
+	#endif
 #else
 	#include <complex.h>       // IWYU pragma: export
 	#include <math.h>          // IWYU pragma: export
