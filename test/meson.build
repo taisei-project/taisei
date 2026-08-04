@@ -13,11 +13,14 @@ subdir('renderer')
 subdir('i18n')
 
 tests = [
-    { 'name' : 'shader_transpiler' },
     { 'name' : 'zip_io',
       'depends' : zip_targets,
       'args' : resources_build_dir },
 ]
+
+if shader_transpiler_enabled
+    tests += { 'name' : 'shader_transpiler' }
+endif
 
 foreach tdict : tests
     test(tdict['name'], executable(
