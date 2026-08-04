@@ -6,6 +6,8 @@
  */
 
 #include "arch_switch.h"
+
+#include "global.h"
 #include "renderer/glcommon/debug.h"
 #include "util/env.h"
 #include "util/io.h"
