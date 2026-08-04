@@ -16,6 +16,9 @@
 	#include <openlibm_complex.h>
 	#include <openlibm_math.h>
 
+	typedef double double_t;
+	typedef float float_t;
+
 	// Defense against bad headers that pull in system math.h
 	#ifndef	_MATH_H			/* glibc, musl */
 	#define	_MATH_H		1
