@@ -74,6 +74,7 @@ RUN zypper --no-refresh -n install -y --no-recommends \
 	SDL3-devel \
 	shaderc \
 	shaderc-devel \
+	spirv-cross-devel \
 	systemd-devel \
 	vulkan-devel \
 	wayland-devel \
@@ -96,4 +97,3 @@ RUN mkdir -p "$ZIG_GLOBAL_CACHE_DIR" && \
 	for target in $ZIG_CACHE_TARGETS; do \
 		echo 'int main(){}' | zig cc -target "$target" -x c - -o /tmp/zigout; \
 	done && rm /tmp/zigout
-
