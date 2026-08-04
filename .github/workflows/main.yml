@@ -114,6 +114,7 @@ jobs:
         opusfile
         pygments
         sdl3
+        shaderc
         webp
 
         pip install

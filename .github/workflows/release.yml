@@ -193,6 +193,7 @@ jobs:
         gettext
         ninja
         pygments
+        shaderc
 
         pip3 install
         meson==${{ env.MESON_VERSION }}
