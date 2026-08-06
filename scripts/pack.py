@@ -2,6 +2,7 @@
 
 import dataclasses
 import hashlib
+import os
 import re
 import struct
 import zlib
@@ -51,6 +52,23 @@ SEEKABLE_SKIPPABLE_MAGIC  = 0x184D2A5E
 SEEKABLE_FOOTER_MAGIC     = 0x8F92EAB1
 SEEKABLE_FOOTER_SIZE      = 9   # Number_Of_Frames(4) + Seek_Table_Descriptor(1) + Seekable_Magic_Number(4)
 SEEKABLE_ENTRY_SIZE       = 8   # Compressed_Size(4) + Decompressed_Size(4)
+
+# https://reproducible-builds.org/specs/source-date-epoch/
+SOURCE_DATE_EPOCH = os.environ.get('SOURCE_DATE_EPOCH')
+if SOURCE_DATE_EPOCH is not None:
+    SOURCE_DATE_EPOCH = int(SOURCE_DATE_EPOCH)
+
+
+def entry_mtime(path):
+    '''
+    mtime to embed in the zip for `path`, clamped to SOURCE_DATE_EPOCH if set.
+    Files generated during the build (e.g. compiled .mo files) otherwise get
+    the wall-clock build time, which makes the archive unreproducible.
+    '''
+    mtime = path.stat().st_mtime
+    if SOURCE_DATE_EPOCH is not None:
+        mtime = min(mtime, SOURCE_DATE_EPOCH)
+    return mtime
 
 
 def check_zip64(path, uncompressed_size, compressed_size):
@@ -193,6 +211,7 @@ def _write_entry(zf, entry):
     log_entry(entry)
 
     zi = ZipInfo.from_file(entry.path, arcname=entry.arcname)
+    zi.date_time = datetime.fromtimestamp(entry_mtime(entry.path)).timetuple()[0:6]
     zi.compress_type = entry.comp_type
     zi.file_size = entry.file_size
     zi.compress_size = entry.compress_size
@@ -313,7 +332,7 @@ def pack(args):
         # Phase 2: write results in order as futures complete.
         with ZipFile(args.output, 'w', ZIP_STORED) as zf:
             def add_directory_entry(name, realpath):
-                zi = ZipInfo(name, datetime.fromtimestamp(realpath.stat().st_mtime).timetuple())
+                zi = ZipInfo(name, datetime.fromtimestamp(entry_mtime(realpath)).timetuple())
                 zi.compress_type = ZIP_STORED
                 zi.external_attr = 0o40755 << 16  # drwxr-xr-x
                 print('          dir', '|', zi.filename, '<--', str(realpath))
