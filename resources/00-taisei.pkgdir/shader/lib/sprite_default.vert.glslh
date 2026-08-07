@@ -8,7 +8,7 @@ void main(void) {
     gl_Position = r_projectionMatrix * spriteVMTransform * vec4(vertPos, 0.0, 1.0);
 
     #ifdef SPRITE_OUT_COLOR
-    color       = spriteRGBA;
+    color = spriteRGBA;
     #endif
 
     #ifdef SPRITE_OUT_TEXCOORD_RAW
@@ -16,22 +16,29 @@ void main(void) {
     #endif
 
     #ifdef SPRITE_OUT_TEXCOORD
-    texCoord    = uv_to_region(spriteTexRegion, vertTexCoord);
+    texCoord = uv_to_region(spriteTexRegion, vertTexCoord);
     #endif
 
     #ifdef SPRITE_OUT_TEXCOORD_OVERLAY
-    texCoordOverlay = (spriteTexTransform * vec4(vertTexCoord, 0.0, 1.0)).xy;
+    texCoordOverlay = (spriteCustomMatrix * vec4(vertTexCoord, 0.0, 1.0)).xy;
     #endif
 
     #ifdef SPRITE_OUT_TEXREGION
-    texRegion   = spriteTexRegion;
+    texRegion = spriteTexRegion;
     #endif
 
     #ifdef SPRITE_OUT_DIMENSIONS
     dimensions = spriteDimensions;
     #endif
 
+    #ifdef SPRITE_OUT_CUSTOM_MATRIX
+    customVec0 = spriteCustomMatrix[0];
+    customVec1 = spriteCustomMatrix[1];
+    customVec2 = spriteCustomMatrix[2];
+    customVec3 = spriteCustomMatrix[3];
+    #endif
+
     #ifdef SPRITE_OUT_CUSTOM
-    customParams = spriteCustomParams;
+    customVec4 = spriteCustomVec;
     #endif
 }

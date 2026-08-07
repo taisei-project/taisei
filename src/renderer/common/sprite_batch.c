@@ -78,14 +78,14 @@ void r_sprite_batch_init(void) {
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[1]),  1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[2]),  1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[3]),  1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[0]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[1]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[2]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[3]), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom[0]),        1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom[1]),        1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom[2]),        1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom[3]),        1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom[4]),        1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),          1 },
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
 	};
 
 	#undef VERTEX_OFS
@@ -189,7 +189,6 @@ static void _r_sprite_batch_compute_attribs(
 ) {
 	SpriteInstanceAttribs attribs = { };
 	r_mat_mv_current(attribs.mv_transform);
-	r_mat_tex_current(attribs.tex_transform);
 
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
@@ -256,7 +255,7 @@ static void _r_sprite_batch_compute_attribs(
 	attribs.sprite_size = spr->extent;
 
 	if(params->shader_params != NULL) {
-		attribs.custom = *params->shader_params;
+		attribs.custom[4] = *params->shader_params;
 	}
 
 	*out_attribs = attribs;

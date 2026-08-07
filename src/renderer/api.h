@@ -490,22 +490,30 @@ typedef struct SpriteParamsBuffer {
 } SpriteParamsBuffer;
 
 // Matches vertex buffer layout
-typedef struct SpriteInstanceAttribs {
-	mat4 mv_transform;
-	mat4 tex_transform;
-
-	union {
-		FloatRect texrect;
-		vec4 texrect_vec4;
+typedef union SpriteInstanceAttribs {
+	struct {
+		mat4 mv_transform;
+		mat4 custom_matrix;
 	};
 
-	Color rgba;
-	FloatExtent sprite_size;
-	ShaderCustomParams custom;
+	struct {
+		char _pad_mv_transform[sizeof(mat4)];
+		ShaderCustomParams custom[5];
 
-	// offsetof(end_of_fields) == size without padding.
-	char end_of_fields;
+		union {
+			FloatRect texrect;
+			vec4 texrect_vec4;
+		};
+
+		Color rgba;
+		FloatExtent sprite_size;
+
+		// offsetof(end_of_fields) == size without padding.
+		char end_of_fields[0];
+	};
 } SpriteInstanceAttribs;
+
+static_assert(offsetof(SpriteInstanceAttribs, custom[0]) == offsetof(SpriteInstanceAttribs, custom_matrix));
 
 /*
  * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.

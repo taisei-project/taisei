@@ -20,14 +20,14 @@ ATTRIBUTE(4)   mat4  spriteVMTransform;
 // 5
 // 6
 // 7
-ATTRIBUTE(8)   mat4  spriteTexTransform;
+ATTRIBUTE(8)   mat4  spriteCustomMatrix;
 // 9
 // 10
 // 11
-ATTRIBUTE(12)  vec4  spriteRGBA;
-ATTRIBUTE(13)  vec4  spriteTexRegion;
-ATTRIBUTE(14)  vec2  spriteDimensions;
-ATTRIBUTE(15)  vec4  spriteCustomParams;
+ATTRIBUTE(12)  vec4  spriteCustomVec;
+ATTRIBUTE(13)  vec4  spriteRGBA;
+ATTRIBUTE(14)  vec4  spriteTexRegion;
+ATTRIBUTE(15)  vec2  spriteDimensions;
 #endif
 
 #ifdef FRAG_STAGE
@@ -41,12 +41,19 @@ UNIFORM(64) sampler2D tex_aux0;
 UNIFORM(65) sampler2D tex_aux1;
 UNIFORM(66) sampler2D tex_aux2;
 
-VARYING(0) vec2  texCoordRaw;
-VARYING(1) vec2  texCoord;
-VARYING(2) vec2  texCoordOverlay;
-VARYING(3) vec4  texRegion;
-VARYING(4) vec4  color;
-VARYING(5) vec2  dimensions;
-VARYING(6) vec4  customParams;
+VARYING(0)  vec2  texCoordRaw;
+VARYING(1)  vec2  texCoord;
+VARYING(2)  vec2  texCoordOverlay;
+VARYING(3)  vec4  texRegion;
+VARYING(4)  vec4  color;
+VARYING(5)  vec2  dimensions;
+VARYING(6)  vec4  customVec0;
+VARYING(7)  vec4  customVec1;
+VARYING(8)  vec4  customVec2;
+VARYING(9)  vec4  customVec3;
+VARYING(10) vec4  customVec4;
+
+#define customParams customVec4
+#define customMatrix mat4(customVec0, customVec1, customVec2, customVec3)
 
 #endif

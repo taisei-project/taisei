@@ -14,10 +14,10 @@ UNIFORM(1) int light_count;
 UNIFORM(2) vec3 light_positions[PBR_MAX_LIGHTS];
 UNIFORM(8) vec3 light_colors[PBR_MAX_LIGHTS]; // layout-id also depends on PBR_MAX_LIGHTS
 
-VARYING(7)  vec3  pos;
-VARYING(8)  vec3  normal;
-VARYING(9)  vec3  tangent;
-VARYING(10) vec3  bitangent;
+VARYING(11) vec3 pos;
+VARYING(12) vec3 normal;
+VARYING(13) vec3 tangent;
+VARYING(14) vec3 bitangent;
 
 // customParams.rgb = ambient color
 // customParams.a   = metallicity

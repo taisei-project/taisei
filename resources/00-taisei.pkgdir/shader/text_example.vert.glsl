@@ -22,13 +22,13 @@ void main(void) {
     texRegion = spriteTexRegion;
 
     // Global overlay coordinates for this primitive.
-    texCoordOverlay = (spriteTexTransform * vec4(tc, 0.0, 1.0)).xy;
+    texCoordOverlay = (spriteCustomMatrix * vec4(tc, 0.0, 1.0)).xy;
 
     // Fragment shader needs to know the sprite dimensions so that it can denormalize texCoord for processing.
     dimensions = spriteDimensions;
 
     // Arbitrary parameters provided by the application. You can use this to pass e.g. times/frames.
-    customParams = spriteCustomParams;
+    customParams = spriteCustomVec;
 
     // Should be obvious.
     color = spriteRGBA;
