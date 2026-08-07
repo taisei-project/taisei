@@ -159,9 +159,6 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 
 static void marisa_laser_draw_slave(EntityInterface *ent) {
 	MarisaASlave *slave = ENT_CAST(ent, MarisaASlave);
-
-	ShaderCustomParams shader_params;
-	shader_params.color = RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
@@ -169,8 +166,12 @@ static void marisa_laser_draw_slave(EntityInterface *ent) {
 		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = t * 0.05f,
-		.color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha),
-		.shader_params = &shader_params,
+		.color = color_lerp(
+			RGB(0.2, 0.4, 0.5),
+			RGB(1.0, 1.0, 1.0),
+			0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha
+		),
+		.shader_params.vec = { 0.2, 0.4, 0.5, slave->flare_alpha * 0.75 },
 	});
 }
 
@@ -294,8 +295,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 }
 
 static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	float o = 1 - t / p->timeout;
 	sp.color = color_mul_scalar(sp.color, o);
 	sp.color.r *= o;

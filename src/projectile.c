@@ -699,7 +699,7 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = p->sprite,
 		.shader = p->shader,
-		.shader_params = &(ShaderCustomParams) {{ opacity }},
+		.shader_params.vec = { opacity },
 		.color = p->color,
 	});
 
@@ -788,18 +788,17 @@ static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs 
 	float angle = args[2].as_float[0];
 	float scale = args[2].as_float[1];
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 
-	float o = spbuf.shader_params.vector[0];
-	spbuf.shader_params.vector[0] = o * max(0, 1.5f * (1 - tf) - 0.5f);
+	float o = sp.shader_params.vec[0];
+	sp.shader_params.vec[0] = o * max(0, 1.5f * (1 - tf) - 0.5f);
 
 	r_draw_sprite(&sp);
 
 	sp.sprite = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
 	sp.scale.as_cmplx *= scale * (0.0f + 1.5f * tf);
 	sp.color.a *= (1 - tf);
-	spbuf.shader_params.vector[0] = o;
+	sp.shader_params.vec[0] = o;
 	sp.rotation.angle += angle;
 
 	r_draw_sprite(&sp);
@@ -843,9 +842,7 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 	);
 }
 
-SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbuf) {
-	spbuf->shader_params = (ShaderCustomParams) {{ proj->opacity, 0, 0, 0 }};
-
+SpriteParams projectile_sprite_params(Projectile *proj) {
 	return (SpriteParams) {
 		.blend = proj->blend,
 		.color = proj->color,
@@ -857,21 +854,20 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 		},
 		.scale.x = re(proj->scale),
 		.scale.y = im(proj->scale),
-		.shader_params = &spbuf->shader_params,
+		.shader_params.vec = { proj->opacity },
 		.shader = proj->shader,
 		.sprite = proj->sprite,
 	};
 }
 
 static void pdraw_basic_func(Projectile *proj, int t, ProjDrawRuleArgs args) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(proj, &spbuf);
+	SpriteParams sp = projectile_sprite_params(proj);
 
 	float eff = proj_spawn_effect_factor(proj, t);
 
 	if(eff < 1) {
 		sp.color.a *= eff;
-		spbuf.shader_params.vector[0] *= min(1.0f, eff * 2.0f);
+		sp.shader_params.vec[0] *= min(1.0f, eff * 2.0f);
 	}
 
 	r_draw_sprite(&sp);
@@ -898,15 +894,14 @@ static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 		return;
 	}
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.rotation.angle = rot_angle;
 	glm_vec3_copy(rot_axis, sp.rotation.vector);
 	sp.scale.x = tf;
 	sp.scale.y = tf;
 
 	sp.color = RGBA(0.3, 0.6, 1.0, 1);
-	spbuf.shader_params.vector[0] = opacity;
+	sp.shader_params.vec[0] = opacity;
 
 	r_disable(RCAP_CULL_FACE);
 	r_draw_sprite(&sp);
@@ -950,9 +945,8 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 		return;
 	}
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
-	spbuf.shader_params.vector[0] *= opacity;
+	SpriteParams sp = projectile_sprite_params(p);
+	sp.shader_params.vec[0] *= opacity;
 	sp.scale.as_cmplx = cwmulf(sp.scale.as_cmplx, scale);
 
 	r_draw_sprite(&sp);
@@ -1001,12 +995,10 @@ static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 
 	float rot_angle = args[1].as_float[1];
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	glm_vec3_copy(rot_axis, sp.rotation.vector);
 	sp.rotation.angle = DEG2RAD*t*4.0f + rot_angle;
-
-	spbuf.shader_params.vector[0] *= (1.0f - projectile_timeout_factor(p));
+	sp.shader_params.vec[0] *= (1.0f - projectile_timeout_factor(p));
 
 	r_disable(RCAP_CULL_FACE);
 	r_draw_sprite(&sp);

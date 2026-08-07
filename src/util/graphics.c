@@ -78,7 +78,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = params->fill,
-			.shader_params = &(ShaderCustomParams){{ 1 }},
+			.shader_params.vec = { 1.0f },
 			.color = fill_clr,
 		});
 		i++;
@@ -88,7 +88,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = params->fill,
-			.shader_params = &(ShaderCustomParams){{ params->filled.fragments / (float)params->limits.fragments }},
+			.shader_params.vec = { params->filled.fragments / (float)params->limits.fragments },
 			.color = frag_clr,
 		});
 		i++;
@@ -98,7 +98,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = params->fill,
-			.shader_params = &(ShaderCustomParams){{ 0 }},
+			.shader_params.vec = { 0.0f },
 			.color = frag_clr,
 		});
 		i++;

@@ -100,8 +100,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 		f = 1.0f + (tt - 0.5f) / 0.5f;
 	}
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.scale.x *= f;
 	r_draw_sprite(&sp);
 
@@ -111,7 +110,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = player_frame,
 		.pos.as_cmplx = slicepos,
-		.shader_params = &spbuf.shader_params,
+		.shader_params = sp.shader_params,
 		.color = RGB(1, 1, 1),
 	});
 }

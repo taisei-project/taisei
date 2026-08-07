@@ -269,4 +269,4 @@ cmplx projectile_graze_size(Projectile *p);
 float projectile_timeout_factor(Projectile *p);
 int projectile_time(Projectile *p);
 
-SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbuf);
+SpriteParams projectile_sprite_params(Projectile *proj);

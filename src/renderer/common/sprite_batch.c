@@ -248,10 +248,8 @@ static void _r_sprite_batch_compute_attribs(
 
 	attribs.sprite_size = spr->extent;
 
-	if(params->shader_params != NULL) {
-		attribs.custom[4] = *params->shader_params;
-	}
-
+	static_assert(sizeof(attribs.custom) == sizeof(params->shader_params.as_array));
+	memcpy(attribs.custom, params->shader_params.as_array, sizeof(attribs.custom));
 	*out_attribs = attribs;
 }
 

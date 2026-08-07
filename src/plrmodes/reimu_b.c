@@ -81,8 +81,7 @@ DEFINE_ENTITY_TYPE(ReimuBController, {
 });
 
 static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.scale.as_cmplx = 0.75 * clamp(t / 5.0, 0.1, 1.0) * (1 + I);
 	r_draw_sprite(&sp);
 }

@@ -88,22 +88,13 @@ static cmplx fairy_visual_pos(const Enemy *e, const FairyVisual *visual) {
 	return visual_pos(enemy_visual_pos(e), &visual->base);
 }
 
-static SpriteParams fairy_make_sprite_params(
-	const Enemy *fairy,
-	const FairyVisual *visual,
-	int time,
-	SpriteParamsBuffer *out_spbuf
-) {
+static SpriteParams fairy_make_sprite_params(const Enemy *fairy, const FairyVisual *visual, int time) {
 	auto ani = visual->base.ani;
 	const char *seqname = !fairy->moving ? "main" : (fairy->dir ? "left" : "right");
 	Sprite *spr = animation_get_frame(ani, get_ani_sequence(ani, seqname), time);
 
 	float o = visual->base.opacity;
 	float b = 1.0f - visual->base.fakepos.blendfactor;
-	out_spbuf->shader_params.vector[0] = visual->summon.progress;
-	out_spbuf->shader_params.vector[1] = visual->summon.cloak;
-	out_spbuf->shader_params.vector[2] = visual->summon.mask_ofs_bits.val;
-	out_spbuf->shader_params.vector[3] = global.frames / 60.0f;
 
 	return (SpriteParams) {
 		.color = RGBA(o*b, o*b, o*b, o),
@@ -112,13 +103,17 @@ static SpriteParams fairy_make_sprite_params(
 		.scale = { visual->base.scale, visual->base.scale },
 		.shader = visual->shader,
 		.aux_textures = { visual->noise_texture },
-		.shader_params = &out_spbuf->shader_params,
+		.shader_params.vec = {
+			visual->summon.progress,
+			visual->summon.cloak,
+			visual->summon.mask_ofs_bits.val,
+			global.frames / 60.0f,
+		}
 	};
 }
 
 static void fairy_draw(Enemy *fairy, const FairyVisual *visual, int time) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = fairy_make_sprite_params(fairy, visual, time, &spbuf);
+	SpriteParams sp = fairy_make_sprite_params(fairy, visual, time);
 	r_draw_sprite(&sp);
 }
 
@@ -498,22 +493,15 @@ typedef struct SwirlParams {
 	SwirlHandle *out;
 } SwirlParams;
 
-static SpriteParams swirl_make_sprite_prams(
-	const Enemy *swirl,
-	const SwirlVisual *visual,
-	int time,
-	SpriteParamsBuffer *spbuf
-) {
+static SpriteParams swirl_make_sprite_prams(const Enemy *swirl, const SwirlVisual *visual, int time) {
 	float o = visual->base.opacity;
 	float b = 1.0f - visual->base.fakepos.blendfactor;
-
-	spbuf->shader_params = (ShaderCustomParams) { 1.0f };
 
 	return (SpriteParams) {
 		.color = RGBA(o*b*b, o*b*b, o*b*b, o),
 		.sprite = visual->base.spr,
 		.shader = visual->shader,
-		.shader_params = &spbuf->shader_params,
+		.shader_params.vec = { 1.0f },
 		.pos.as_cmplx = visual_pos(enemy_visual_pos(swirl), &visual->base),
 		.rotation.angle = time * 10 * DEG2RAD,
 		.scale = { visual->base.scale, visual->base.scale },
@@ -521,8 +509,7 @@ static SpriteParams swirl_make_sprite_prams(
 }
 
 static void swirl_draw(Enemy *swirl, const SwirlVisual *visual, int time) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = swirl_make_sprite_prams(swirl, visual, time, &spbuf);
+	SpriteParams sp = swirl_make_sprite_prams(swirl, visual, time);
 	r_draw_sprite(&sp);
 }
 

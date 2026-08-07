@@ -72,9 +72,6 @@ DEFINE_ENTITY_TYPE(MarisaBBeams, {
 
 static void marisa_star_draw_slave(EntityInterface *ent) {
 	MarisaBSlave *slave = ENT_CAST(ent, MarisaBSlave);
-
-	ShaderCustomParams shader_params = {};
-	// shader_params.color = RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
@@ -82,9 +79,7 @@ static void marisa_star_draw_slave(EntityInterface *ent) {
 		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = t * 0.05f,
-		// .color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha),
 		.color = RGB(0.2, 0.4, 0.5),
-		.shader_params = &shader_params,
 	});
 }
 

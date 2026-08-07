@@ -9,8 +9,7 @@
 #include "spells.h"
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	r_draw_sprite(&sp);
 
 	float f = 1 - min(time / 60.0f, 1.0f);

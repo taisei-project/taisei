@@ -605,7 +605,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 		.sprite = p->sprite,
 		.scale.both = s,
 		.color = c,
-		.shader_params = &(ShaderCustomParams){{ deform }},
+		.shader_params.vec = { deform },
 		.shader = p->shader,
 	});
 }
@@ -683,7 +683,7 @@ void draw_boss_background(Boss *boss) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = res_sprite("boss_circle"),
 		.shader = res_shader("sprite_particle"),
-		.shader_params = &(ShaderCustomParams) { 1.0f },
+		.shader_params.vec = { 1.0f },
 		.color = RGBA(1, 1, 1, 0),
 	});
 	r_mat_mv_pop();
@@ -714,7 +714,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = aniplayer_get_frame(&boss->ani),
 		.shader = res_shader("sprite_particle"),
-		.shader_params = &(ShaderCustomParams) { 1.0f },
+		.shader_params.vec = { 1.0f },
 		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
 		.color = c,
 	});

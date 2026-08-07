@@ -471,22 +471,22 @@ typedef struct SpriteParams {
 	Sprite *sprite attr_explicit_init;
 	ShaderProgram *shader;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
-	Color color attr_explicit_init;
-
-	// TODO: maybe embed these by value and get rid of SpriteParamsBuffer?
-	const ShaderCustomParams *shader_params;
-
-	BlendMode blend;
-
 	FloatOffset pos;
 	SpriteScaleParams scale;
 	SpriteRotationParams rotation;
+	Color color attr_explicit_init;
+
+	union {
+		ShaderCustomParams as_array[5];
+		struct {
+			mat4_noalign mat;
+			vec4_noalign vec;
+		};
+	} shader_params;
+
+	BlendMode blend;
 	SpriteFlipParams flip;
 } SpriteParams;
-
-typedef struct SpriteParamsBuffer {
-	ShaderCustomParams shader_params;
-} SpriteParamsBuffer;
 
 // Matches vertex buffer layout
 typedef union SpriteInstanceAttribs {

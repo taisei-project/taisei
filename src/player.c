@@ -265,14 +265,13 @@ static void ent_draw_player(EntityInterface *ent) {
 		return;
 	}
 
-	ShaderCustomParams shader_params = { 1.0f };
 	ShaderProgram *shader = res_shader("sprite_particle");
 
 	if(plr->focus_circle_alpha) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = res_sprite("fairy_circle"),
 			.shader = shader,
-			.shader_params = &shader_params,
+			.shader_params.vec = { 1.0f },
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
 			.pos = { re(plr->pos), im(plr->pos) },
@@ -291,7 +290,7 @@ static void ent_draw_player(EntityInterface *ent) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = aniplayer_get_frame(&plr->ani),
 		.shader = shader,
-		.shader_params = &shader_params,
+		.shader_params.vec = { 1.0f },
 		.pos.as_cmplx = plr->pos,
 		.color = c,
 	});
@@ -471,7 +470,7 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 		.scale.both = s,
 		.pos = { re(p->pos), im(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
-		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
+		.shader_params.vec = { -2 * nt * nt },
 		.shader = p->shader,
 	});
 }
@@ -940,8 +939,7 @@ static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleAr
 		return;
 	}
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.scale.x *= sx;
 	sp.scale.y *= sy;
 	sp.rotation.angle = 0;

@@ -69,11 +69,9 @@ static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 
 	float fadein = clamp(t / 10.0, 0, 1);
 	float s = 1 - projectile_timeout_factor(p);
-
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
-
 	float a = opacity * fadein;
+
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.color = myon_color(focus_factor, a * s * s, 0);
 	sp.scale.as_cmplx *= fadein * (2 - s);
 
@@ -155,8 +153,7 @@ static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = 2 * time_progress;
 	float a = min(1, s) * (1 - time_progress);
 
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	sp.color = color_mul_scalar(sp.color, a);
 	sp.scale.as_cmplx *= s;
 	r_draw_sprite(&sp);
@@ -483,13 +480,12 @@ static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx
 }
 
 static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
-	SpriteParamsBuffer spbuf;
-	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	SpriteParams sp = projectile_sprite_params(p);
 	float nt = 1 - projectile_timeout_factor(p);
 	float s = 1 + (1 - nt);
 	sp.scale.as_cmplx *= s;
 	sp.rotation.angle -= M_PI/2;
-	spbuf.shader_params.vector[0] = -2 * nt * nt;
+	sp.shader_params.vec[0] = -2 * nt * nt;
 	sp.color.r *= nt * nt;
 	sp.color.g *= nt * nt;
 	sp.color.b *= nt;
