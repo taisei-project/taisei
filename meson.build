@@ -136,6 +136,9 @@ taisei_c_args = [
 
     '-fmerge-all-constants',
     '-fzero-init-padding-bits=all',
+
+    # GCC is stupid (fix undefined reference error with LTO)
+    '-fno-builtin-sincos',
 ]
 
 taisei_conversion_c_args = [
