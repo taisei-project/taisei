@@ -43,7 +43,7 @@ TASK(animate_bg_fullstage) {
 
 static void stage4_bg_init_common(void) {
 	Stage4DrawData *draw_data = stage4_get_draw_data();
-	draw_data->ambient_color = *RGB(0.3, 0.3, 0.3);
+	draw_data->ambient_color = RGB(0.3, 0.3, 0.3);
 	stage_3d_context.cam.far = 300;
 
 	glm_vec3_copy((vec3) { 0.8f, 0.4f, 0.2f }, draw_data->corridor.torch_light.base);

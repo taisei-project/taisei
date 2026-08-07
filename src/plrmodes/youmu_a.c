@@ -51,9 +51,9 @@ struct YoumuAController {
 	YoumuBombBGData bomb_bg;
 };
 
-static Color *myon_color(Color *c, float f, float opacity, float alpha) {
-	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, opacity);
-	c->a *= alpha;
+static Color myon_color(float f, float opacity, float alpha) {
+	Color c = RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, opacity);
+	c.a *= alpha;
 	return c;
 }
 
@@ -74,7 +74,7 @@ static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 
 	float a = opacity * fadein;
-	myon_color(&spbuf.color, focus_factor, a * s * s, 0);
+	sp.color = myon_color(focus_factor, a * s * s, 0);
 	sp.scale.as_cmplx *= fadein * (2 - s);
 
 	r_draw_sprite(&sp);
@@ -105,7 +105,7 @@ TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
 
 	for(int t = 0;; ++t) {
 		real f = myon->focus_factor;
-		myon_color(&p->color, f, powf(1 - min(1, t / p->timeout), 2), 0.95f);
+		p->color = myon_color(f, powf(1 - min(1, t / p->timeout), 2), 0.95f);
 		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - global.frames * 2) * 0.1) * M_PI/8);
 		p->move.velocity = 3 * myon_tail_dir(myon);
 		YIELD;
@@ -157,12 +157,12 @@ static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
-	color_mul_scalar(&spbuf.color, a);
+	sp.color = color_mul_scalar(sp.color, a);
 	sp.scale.as_cmplx *= s;
 	r_draw_sprite(&sp);
 }
 
-TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr; ShaderProgram *shader; }) {
+TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; Color clr; ShaderProgram *shader; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.color = ARGS.clr,
 		.damage = ARGS.dmg,
@@ -174,9 +174,8 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 		.type = PROJ_PLAYER,
 	));
 
-	Color trail_color = p->color;
+	Color trail_color = color_mul_scalar(p->color, 0.075);
 	trail_color.a = 0;
-	color_mul_scalar(&trail_color, 0.075);
 
 	Sprite *trail_sprite = res_sprite("part/boss_shadow");
 	MoveParams trail_move = move_linear(ARGS.vel * 0.8);
@@ -193,7 +192,7 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 		PARTICLE(
 			.sprite_ptr = trail_sprite,
 			.pos = p->pos,
-			.color = &trail_color,
+			.color = trail_color,
 			.draw_rule = myon_draw_proj_trail,
 			.timeout = 10,
 			.move = trail_move,
@@ -204,27 +203,24 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 	}
 }
 
-static inline void youmu_mirror_myon_proj(cmplx pos, cmplx vel, real dmg, const Color *clr, ShaderProgram *shader) {
+static inline void youmu_mirror_myon_proj(cmplx pos, cmplx vel, real dmg, Color clr, ShaderProgram *shader) {
 	INVOKE_TASK(youmu_mirror_myon_proj, pos, vel, dmg, clr, shader);
 }
 
-static void myon_proj_color(Color *clr, real focus_factor) {
+static Color myon_proj_color(real focus_factor) {
 	Color intermediate = { 1.0, 1.0, 1.0, 1.0 };
 	focus_factor = smooth(focus_factor);
 
 	if(focus_factor < 0.5) {
-		*clr = *RGB(0.4, 0.6, 0.6);
-		color_lerp(
-			clr,
-			&intermediate,
+		return color_lerp(
+			RGB(0.4, 0.6, 0.6),
+			intermediate,
 			focus_factor * 2
 		);
 	} else {
-		Color mc;
-		*clr = intermediate;
-		color_lerp(
-			clr,
-			myon_color(&mc, focus_factor, 1, 1),
+		return color_lerp(
+			intermediate,
+			myon_color(focus_factor, 1, 1),
 			(focus_factor - 0.5) * 2
 		);
 	}
@@ -249,38 +245,38 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 		Color clr;
 
 		{
-			myon_proj_color(&clr, myon->focus_factor);
+			clr = myon_proj_color(myon->focus_factor);
 			forward = speed * myon->dir;
 			spread = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
 
-			youmu_mirror_myon_proj(myon->pos, forward, dmg_center, &clr, shader);
+			youmu_mirror_myon_proj(myon->pos, forward, dmg_center, clr, shader);
 
 			if(power_rank >= 2) {
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(+2 * spread), dmg_side, &clr, shader);
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(-2 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+2 * spread), dmg_side, clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-2 * spread), dmg_side, clr, shader);
 			}
 
 			if(power_rank >= 4) {
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(+4 * spread), dmg_side, &clr, shader);
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(-4 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+4 * spread), dmg_side, clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-4 * spread), dmg_side, clr, shader);
 			}
 		}
 
 		WAIT(SHOT_MYON_HALFDELAY);
 
 		{
-			myon_proj_color(&clr, myon->focus_factor);
+			clr = myon_proj_color(myon->focus_factor);
 			forward = speed * myon->dir;
 			spread = (psin(global.frames * 2.0) * 0.5 + 0.5) * 0.1;
 
 			if(power_rank >= 1) {
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(+1 * spread), dmg_side, &clr, shader);
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(-1 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+1 * spread), dmg_side, clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-1 * spread), dmg_side, clr, shader);
 			}
 
 			if(power_rank >= 3) {
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(+3 * spread), dmg_side, &clr, shader);
-				youmu_mirror_myon_proj(myon->pos, forward * cdir(-3 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+3 * spread), dmg_side, clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-3 * spread), dmg_side, clr, shader);
 			}
 		}
 
@@ -494,9 +490,9 @@ static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs
 	sp.scale.as_cmplx *= s;
 	sp.rotation.angle -= M_PI/2;
 	spbuf.shader_params.vector[0] = -2 * nt * nt;
-	spbuf.color.r *= nt * nt;
-	spbuf.color.g *= nt * nt;
-	spbuf.color.b *= nt;
+	sp.color.r *= nt * nt;
+	sp.color.g *= nt * nt;
+	sp.color.b *= nt;
 	r_draw_sprite(&sp);
 }
 

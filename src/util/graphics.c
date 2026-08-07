@@ -42,14 +42,14 @@ void fade_out(float f) {
 void draw_fragments(const DrawFragmentsParams *params) {
 	int i = 0;
 
-	const Color *fill_clr = params->color.fill;
-	const Color *back_clr = params->color.back;
-	const Color *frag_clr = params->color.frag;
+	Color fill_clr = params->color.fill;
+	Color back_clr = params->color.back;
+	Color frag_clr = params->color.frag;
 
 	if(params->alpha < 1) {
-		fill_clr = color_mul_scalar(COLOR_COPY(fill_clr), params->alpha);
-		frag_clr = color_mul_scalar(COLOR_COPY(frag_clr), params->alpha);
-		back_clr = color_mul_scalar(COLOR_COPY(back_clr), params->alpha);
+		fill_clr = color_mul_scalar(fill_clr, params->alpha);
+		frag_clr = color_mul_scalar(frag_clr, params->alpha);
+		back_clr = color_mul_scalar(back_clr, params->alpha);
 	}
 
 	static Color prev_back_clr;
@@ -57,9 +57,9 @@ void draw_fragments(const DrawFragmentsParams *params) {
 	ShaderProgram *prog_saved = r_shader_current();
 	ShaderProgram *prog_wanted = res_shader("sprite_circleclipped_indicator");
 
-	if(memcmp(&prev_back_clr, back_clr, sizeof(prev_back_clr))) {
+	if(memcmp(&prev_back_clr, &back_clr, sizeof(prev_back_clr))) {
 		// HACK/FIXME: we can't pass more than 4 floats via custom params, and we don't have auto-flush based on uniforms state, so...
-		prev_back_clr = *back_clr;
+		prev_back_clr = back_clr;
 		r_flush_sprites();
 	}
 
@@ -108,7 +108,13 @@ void draw_fragments(const DrawFragmentsParams *params) {
 	r_shader_ptr(prog_saved);
 }
 
-double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad) {
+double draw_fraction(
+	double value, Alignment a,
+	double pos_x, double pos_y,
+	Font *f_int, Font *f_fract,
+	Color c_int, Color c_fract,
+	bool zero_pad
+) {
 	double val_int, val_fract;
 	char buf_int[4], buf_fract[4];
 	val_fract = modf(value, &val_int);

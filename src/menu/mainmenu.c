@@ -180,16 +180,19 @@ void draw_main_menu(MenuData *menu) {
 	float o = 0.7;
 
 	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		Color clr;
+
 		if(e->action == NULL) {
-			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
+			clr = RGBA(0.2 * o, 0.3 * o, 0.5 * o, o);
 		} else {
 			float a = 1 - e->drawdata;
-			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
+			clr = RGBA(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
 		text_draw(_(e->name), &(TextParams) {
 			.pos = { 50 - 15 * e->drawdata, 20 * (i - menu->drawdata[1]) },
 			.font = "standard",
+			.color = clr,
 		});
 	});
 

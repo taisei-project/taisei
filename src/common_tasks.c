@@ -87,7 +87,7 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, Color clr, rea
 
 	return PARTICLE(
 		.sprite = "graze",
-		.color = &clr,
+		.color = clr,
 		.pos = pos,
 		.draw_rule = pdraw_timeout_scalefade(2, 0.05, 0, 1),
 		.move = move,
@@ -97,19 +97,21 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, Color clr, rea
 	);
 }
 
-static void randomize_hue(Color *clr, float r) {
-	float h, s, l, a = clr->a;
-	float m = max(clr->r, max(clr->g, clr->b));
+static Color randomize_hue(Color clr, float r) {
+	float h, s, l, a = clr.a;
+	float m = max(clr.r, max(clr.g, clr.b));
 
 	if(UNLIKELY(m == 0)) {
-		return;
+		return clr;
 	}
 
-	color_div_scalar(clr, m);
-	color_get_hsl(clr, &h, &s, &l);
+	clr = color_div_scalar(clr, m);
+	color_get_hsl(&clr, &h, &s, &l);
 	h += rng_f32s() * r;
-	*clr = *HSLA(h, s, l, a);
-	color_mul_scalar(clr, m);
+	clr = HSLA(h, s, l, a);
+	clr = color_mul_scalar(clr, m);
+
+	return clr;
 }
 
 TASK(charge_sound_stopper, { SFXPlayID id; }) {
@@ -157,22 +159,20 @@ static int common_charge_impl(
 		real sdist = dist * glm_ease_quad_out(power);
 
 		for(int j = 0; j < nparts; ++j) {
-			Color c = color;
-			randomize_hue(&c, hue_rand);
-			color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
+			Color c = randomize_hue(color, hue_rand);
+			c = color_lerp(c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
 			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), c, power);
 			ENT_ARRAY_ADD(&particles, p);
-			color_mul_scalar(&c, 0.2);
+			c = color_mul_scalar(c, 0.2);
 		}
 
-		Color c = color;
-		randomize_hue(&c, hue_rand);
-		color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-		color_mul_scalar(&c, 0.5);
+		Color c = randomize_hue(color, hue_rand);
+		c = color_lerp(c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
+		c = color_mul_scalar(c, 0.5);
 
 		ENT_ARRAY_ADD(&particles, PARTICLE(
 			.sprite = "blast_huge_rays",
-			.color = &c,
+			.color = c,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 			.move = move_towards(0, pos, 0.1),
@@ -192,15 +192,11 @@ static int common_charge_impl(
 		stop_sfx(charge_snd_id);
 	}
 
-	Color c = color;
-	randomize_hue(&c, hue_rand);
-	color_mul_scalar(&c, 2.0);
-
 	cmplx pos = *anchor + offset;
 
 	PARTICLE(
 		.sprite = "blast_huge_halo",
-		.color = &c,
+		.color = color_mul_scalar(randomize_hue(color, hue_rand), 2.0),
 		.pos = pos,
 		.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 		.timeout = 30,

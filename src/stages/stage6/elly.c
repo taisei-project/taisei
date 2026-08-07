@@ -20,8 +20,8 @@ TASK(elly_animate_colors, { BoxedBoss boss; }) {
 	auto boss = TASK_BIND(ARGS.boss);
 
 	for(int t = 0;; ++t, YIELD) {
-		boss->glowcolor = *HSL(t/120.0, 1.0, 0.25);
-		boss->shadowcolor = *HSLA_MUL_ALPHA((t+20)/120.0, 1.0, 0.25, 0.5);
+		boss->glowcolor = HSL(t/120.0, 1.0, 0.25);
+		boss->shadowcolor = HSLA_MUL_ALPHA((t+20)/120.0, 1.0, 0.25, 0.5);
 	}
 }
 
@@ -442,4 +442,3 @@ void elly_clap(Boss *b, int claptime) {
 	aniplayer_queue(&b->ani, "unclapyohands", 1);
 	aniplayer_queue(&b->ani, "main", 0);
 }
-

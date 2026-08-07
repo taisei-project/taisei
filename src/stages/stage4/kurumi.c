@@ -46,9 +46,9 @@ TASK(kurumi_shadowcolor, { BoxedBoss boss; }) {
 	// TODO: less braindead way of doing this. Perhaps a boss event on attack switch?
 	for(;;YIELD) {
 		if(b->current && ATTACK_IS_SPELL(b->current->type)) {
-			b->shadowcolor = *RGBA_MUL_ALPHA(0.0, 0.4, 0.5, 0.5);
+			b->shadowcolor = RGBA_MUL_ALPHA(0.0, 0.4, 0.5, 0.5);
 		} else {
-			b->shadowcolor = *RGBA_MUL_ALPHA(1.0, 0.1, 0.0, 0.5);
+			b->shadowcolor = RGBA_MUL_ALPHA(1.0, 0.1, 0.0, 0.5);
 		}
 	}
 }
@@ -56,7 +56,7 @@ TASK(kurumi_shadowcolor, { BoxedBoss boss; }) {
 Boss *stage4_spawn_kurumi(cmplx pos) {
 	Boss* b = create_boss(N_("Kurumi"), "kurumi", pos);
 	boss_set_portrait(b, "kurumi", NULL, "normal");
-	b->glowcolor = *RGB(0.5, 0.1, 0.0);
+	b->glowcolor = RGB(0.5, 0.1, 0.0);
 	INVOKE_TASK(kurumi_shadowcolor, ENT_BOX(b));
 	return b;
 }
@@ -90,4 +90,3 @@ void kurumi_spell_bg(Boss *b, int time) {
 	fill_viewport(time / 300.0, time / 300.0, 0.5, "stage4/kurumibg2");
 	r_color4(1, 1, 1, 1);
 }
-

@@ -334,7 +334,7 @@ static bool stage2_fog(Framebuffer *fb) {
 	Stage2DrawData *dd = stage2_get_draw_data();
 	r_shader("zbuf_fog_tonemap");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4_rgba("fog_color", &dd->fog.color);
+	r_uniform_vec4_rgba("fog_color", dd->fog.color);
 	r_uniform_float("start", 0.0);
 	r_uniform_float("end", dd->fog.end);
 	r_uniform_float("exponent", 24.0);

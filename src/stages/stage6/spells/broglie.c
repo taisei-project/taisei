@@ -25,7 +25,7 @@ TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool 
 	PROJECTILE(
 		.proto = ARGS.fast ? pp_thickrice : pp_rice,
 		.pos = pos,
-		.color = &ARGS.color,
+		.color = ARGS.color,
 		.move = move_linear(-speed * dir)
 	);
 
@@ -40,7 +40,7 @@ TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
 
 	for(int t = 0;; t++) {
 		real charge = min(1, powf(t / dt, 4));
-		l->color = *HSLA(ARGS.hue, 1.0, 0.5 + 0.2 * charge, 0.0);
+		l->color = HSLA(ARGS.hue, 1.0, 0.5 + 0.2 * charge, 0.0);
 		l->width_exponent = 1.0 - 0.5 * charge;
 
 		YIELD;
@@ -56,7 +56,7 @@ TASK(broglie_spin_baryon, { BoxedEllyBaryons baryons; int peaktime; }) {
 
 	INVOKE_SUBTASK(common_charge,
 		.anchor = &baryons->poss[0],
-		.color = *RGBA(0.05, 1, 0.5, 0),
+		.color = RGBA(0.05, 1, 0.5, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 		.time = peaktime,
 	);
@@ -117,9 +117,8 @@ TASK(broglie_charger_bullet, {
 		real f = pow(clamp((140 - (ARGS.firetime - t)) / 90.0, 0, 1), 8);
 
 		if(f > 0.1) {
-			Color *clr = COLOR_COPY(&p->color);
-			color_mul_scalar(clr, 2);
-			clr->a = 0;
+			Color clr = color_mul_scalar(p->color, 2);
+			clr.a = 0;
 
 			real l = rng_range(70, 100) * (0.5 + 0.5 * f);
 			real s = 4 + f;
@@ -148,7 +147,7 @@ TASK(broglie_charger_bullet, {
 	PARTICLE(
 		.sprite = "blast",
 		.pos = p->pos,
-		.color = &clr,
+		.color = clr,
 		.timeout = 35,
 		.draw_rule = pdraw_timeout_scalefade(1, 2.4, 1, 0),
 		.flags = PFLAG_REQUIREDPARTICLE,
@@ -176,7 +175,7 @@ TASK(broglie_charger_bullet, {
 				.laser = ENT_BOX(l),
 				.laser_offset = laser_offset,
 				.angle_freq = s_freq * 10,
-				.color = *HSLA(hue + lnum / 6.0, 1.0, 0.5, 0.0),
+				.color = HSLA(hue + lnum / 6.0, 1.0, 0.5, 0.0),
 				.fast = fast
 			);
 		}

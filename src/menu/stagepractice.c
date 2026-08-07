@@ -76,27 +76,28 @@ static void draw_stgpract_menu(MenuData *m) {
 
 		const char *subtitle = _(stg->subtitle);
 		float ia = 1 - 0.3 * fabsf(ioff);
-		Color clr = *RGBA_MUL_ALPHA(1, 1, 1, ia);
+		Color clr = RGBA_MUL_ALPHA(1, 1, 1, ia);
 		if(e->action == NULL) {
-			clr = *RGBA_MUL_ALPHA(0.1, 0.1, 0.1, ia);
+			clr = RGBA_MUL_ALPHA(0.1, 0.1, 0.1, ia);
 			for(char *p = title; *p; p++) {
 				*p = '?';
 			}
 			subtitle = _("??????");
 		}
 
-		r_color(&clr);
 		text_draw(title, &(TextParams) {
 			.pos = { x, y },
 			.shader_ptr = text_shader,
 			.font_ptr = font_big,
 			.align = ALIGN_CENTER,
+			.color = clr,
 		});
 
 		text_draw(subtitle, &(TextParams) {
 			.pos = { x, y + 35 },
 			.shader_ptr = text_shader,
 			.align = ALIGN_CENTER,
+			.color = clr,
 		});
 	});
 

@@ -13,13 +13,15 @@
 #include "i18n/i18n.h"
 
 void stage2_draw_hina_spellbg(Boss *h, int time) {
-	SpriteParams sp = {};
-	sp.pos.x = VIEWPORT_W/2;
-	sp.pos.y = VIEWPORT_H/2;
-	sp.scale.both = 0.6;
-	sp.shader_ptr = res_shader("sprite_default");
-	sp.sprite_ptr = res_sprite("stage2/spellbg1");
-	sp.blend = BLEND_PREMUL_ALPHA;
+	SpriteParams sp = {
+		.pos.x = VIEWPORT_W/2,
+		.pos.y = VIEWPORT_H/2,
+		.scale.both = 0.6,
+		.shader_ptr = res_shader("sprite_default"),
+		.sprite_ptr = res_sprite("stage2/spellbg1"),
+		.blend = BLEND_PREMUL_ALPHA,
+		.color = RGB(1, 1, 1),
+	};
 	r_draw_sprite(&sp);
 	sp.scale.both = 1;
 	sp.blend = BLEND_MOD;
@@ -40,7 +42,7 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 Boss *stage2_spawn_hina(cmplx pos) {
 	Boss *hina = create_boss(N_("Kagiyama Hina"), "hina", pos);
 	boss_set_portrait(hina, "hina", NULL, "normal");
-	hina->glowcolor = *RGBA_MUL_ALPHA(0.7, 0.2, 0.3, 0.5);
+	hina->glowcolor = RGBA_MUL_ALPHA(0.7, 0.2, 0.3, 0.5);
 	hina->shadowcolor = hina->glowcolor;
 	return hina;
 }

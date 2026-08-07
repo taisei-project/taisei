@@ -85,10 +85,10 @@ static void draw_saverpy_menu(MenuData *m) {
 		Color clr;
 
 		if(e->action == NULL) {
-			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5);
+			clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5);
 		} else {
 			float ia = 1-a;
-			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
+			clr = RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, 0.7 + 0.3 * a);
 		}
 
 		text_draw(e->name, &(TextParams) {
@@ -96,7 +96,7 @@ static void draw_saverpy_menu(MenuData *m) {
 			.align = ALIGN_CENTER,
 			.pos = { -50 + 100 * i, 0 },
 			.shader = "text_default",
-			.color = &clr,
+			.color = clr,
 		});
 	});
 

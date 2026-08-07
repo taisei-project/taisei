@@ -34,6 +34,7 @@ TASK(amulet_draw, { BoxedEnemy e; }) {
 		});
 
 		r_draw_sprite(&(SpriteParams) {
+			.color = RGBA(1, 1, 1, 1),
 			.sprite_ptr = spr_swirl,
 			.pos.as_cmplx = p,
 			.rotation.angle = t * -10 * DEG2RAD,
@@ -50,7 +51,7 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 
 	for(int i = 0; i < nshots; ++i) {
 		WAIT(60);
-		common_charge(charge_time, &core->pos, 0, *RGBA(0.6, 0.2, 0.5, 0));
+		common_charge(charge_time, &core->pos, 0, RGBA(0.6, 0.2, 0.5, 0));
 
 		ENT_ARRAY_FOREACH(ARGS.spinners, Projectile *p, {
 			int cnt = difficulty_value(12, 16, 22, 24);

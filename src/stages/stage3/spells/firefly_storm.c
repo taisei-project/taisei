@@ -18,7 +18,7 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs a
 		// TODO: Maybe convert this into a particle effect?
 		sp.sprite_ptr = res_sprite("proj/ball");
 		sp.scale.as_cmplx *= f;
-		spbuf.color.a = 0;
+		sp.color.a = 0;
 		r_draw_sprite(&sp);
 	}
 }
@@ -45,7 +45,7 @@ TASK(fstorm_bullet, { BoxedBoss boss; ProjPrototype *proto; cmplx pos; cmplx vel
 		}
 
 		real f = t / (real)ARGS.convert_time;
-		p->color = *RGB(0.3 + 0.7 * (1 - pow(1 - f, 4)), 0.3 + 0.3 * f * f, 0.7 - 0.7 * f);
+		p->color = RGB(0.3 + 0.7 * (1 - pow(1 - f, 4)), 0.3 + 0.3 * f * f, 0.7 - 0.7 * f);
 	}
 
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));

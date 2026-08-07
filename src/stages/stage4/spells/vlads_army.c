@@ -17,6 +17,7 @@ TASK(kurumi_vladsarmy_shield_draw, { BoxedEnemy e; }) {
 	SpriteParams sp = {
 		.sprite_ptr = res_sprite("enemy/swirl"),
 		.shader_ptr = res_shader("sprite_negative"),
+		.color = {},
 	};
 
 	for(int t = 0;; ++t) {
@@ -45,7 +46,7 @@ TASK(kurumi_vladsarmy_shield_death_proj, { cmplx pos; MoveParams move; }) {
 
 	int duration = 60;
 	for(int i = 0; i < duration; i++, YIELD) {
-		p->color = *color_lerp(
+		p->color = color_lerp(
 			RGBA(2.0, 0.0, 0.0, 0.0),
 			RGBA(0.2, 0.1, 0.5, 0.0),
 		i / (float) duration);
@@ -274,8 +275,8 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 	int chase_drop_step = difficulty_value(17, 14, 11, 8);
 	for(int i = 0; i < ARGS.chase_time / chase_drop_step; i++, WAIT(chase_drop_step)) {
 		if(global.diff>D_Easy) {
-			Color *clr = RGBA_MUL_ALPHA(0.1 + 0.07 * i, 0.3, 1 - 0.05 * i, 0.8);
-			clr->a = 0;
+			Color clr = RGBA_MUL_ALPHA(0.1 + 0.07 * i, 0.3, 1 - 0.05 * i, 0.8);
+			clr.a = 0;
 
 			PROJECTILE(
 				.proto = pp_ball,

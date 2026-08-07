@@ -468,12 +468,12 @@ typedef struct SpriteFlipParams {
 } SpriteFlipParams;
 
 typedef struct SpriteParams {
-	Sprite *sprite_ptr;
+	Sprite *sprite_ptr attr_explicit_init;
 	ShaderProgram *shader_ptr;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
+	Color color attr_explicit_init;
 
 	// TODO: maybe embed these by value and get rid of SpriteParamsBuffer?
-	const Color *color;
 	const ShaderCustomParams *shader_params;
 
 	BlendMode blend;
@@ -485,7 +485,6 @@ typedef struct SpriteParams {
 } SpriteParams;
 
 typedef struct SpriteParamsBuffer {
-	Color color;
 	ShaderCustomParams shader_params;
 } SpriteParamsBuffer;
 
@@ -543,7 +542,7 @@ void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
 
 void r_color4(float r, float g, float b, float a);
-const Color* r_color_current(void);
+Color r_color_current(void);
 
 void r_blend(BlendMode mode);
 BlendMode r_blend_current(void);
@@ -617,8 +616,8 @@ void _r_uniform_ptr_vec3_vec(Uniform *uniform, vec3_noalign value) attr_nonnull(
 void _r_uniform_vec3_vec(const char *uniform, vec3_noalign value) attr_nonnull(1, 2);
 #define r_uniform_vec3_vec(uniform, ...) _R_UNIFORM_GENERIC(vec3_vec, uniform, __VA_ARGS__)
 
-void _r_uniform_ptr_vec3_rgb(Uniform *uniform, const Color *rgb) attr_nonnull(2);
-void _r_uniform_vec3_rgb(const char *uniform, const Color *rgb) attr_nonnull(1, 2);
+void _r_uniform_ptr_vec3_rgb(Uniform *uniform, Color rgb);
+void _r_uniform_vec3_rgb(const char *uniform, Color rgb) attr_nonnull(1);
 #define r_uniform_vec3_rgb(uniform, ...) _R_UNIFORM_GENERIC(vec3_rgb, uniform, __VA_ARGS__)
 
 void _r_uniform_ptr_vec3_array(Uniform *uniform, uint offset, uint count, vec3_noalign elements[count]) attr_nonnull(4);
@@ -633,8 +632,8 @@ void _r_uniform_ptr_vec4_vec(Uniform *uniform, vec4_noalign value) attr_nonnull(
 void _r_uniform_vec4_vec(const char *uniform, vec4_noalign value) attr_nonnull(1, 2);
 #define r_uniform_vec4_vec(uniform, ...) _R_UNIFORM_GENERIC(vec4_vec, uniform, __VA_ARGS__)
 
-void _r_uniform_ptr_vec4_rgba(Uniform *uniform, const Color *rgba) attr_nonnull(2);
-void _r_uniform_vec4_rgba(const char *uniform, const Color *rgba) attr_nonnull(1, 2);
+void _r_uniform_ptr_vec4_rgba(Uniform *uniform, Color rgba);
+void _r_uniform_vec4_rgba(const char *uniform, Color rgba) attr_nonnull(1);
 #define r_uniform_vec4_rgba(uniform, ...) _R_UNIFORM_GENERIC(vec4_rgba, uniform, __VA_ARGS__)
 
 void _r_uniform_ptr_vec4_array(Uniform *uniform, uint offset, uint count, vec4_noalign elements[count]) attr_nonnull(4);
@@ -758,7 +757,7 @@ void r_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_d
 void r_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) attr_nonnull(1, 6);
 bool r_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) attr_nonnull(1, 4);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
-void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
+void r_texture_clear(Texture *tex, Color clr) attr_nonnull(1);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
 bool r_texture_transfer(Texture *dst, Texture *src) attr_nonnull(1);
 
@@ -782,7 +781,7 @@ void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h)
 void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
-void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval);
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, Color colorval, float depthval);
 void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) attr_nonnull_all;
 IntExtent r_framebuffer_get_size(Framebuffer *fb);
 void r_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, void *userdata, FramebufferReadAsyncCallback callback);
@@ -966,8 +965,8 @@ INLINE void r_mat_tex_scale(float sx, float sy, float sz) { r_mat_tex_scale_v((v
 #pragma GCC diagnostic pop
 
 INLINE
-void r_color(const Color *c) {
-	r_color4(c->r, c->g, c->b, c->a);
+void r_color(Color c) {
+	r_color4(c.r, c.g, c.b, c.a);
 }
 
 INLINE
@@ -991,7 +990,7 @@ Uniform* r_shader_current_uniform(const char *name) {
 }
 
 INLINE
-void r_clear(BufferKindFlags flags, const Color *colorval, float depthval) {
+void r_clear(BufferKindFlags flags, Color colorval, float depthval) {
 	r_framebuffer_clear(r_framebuffer_current(), flags, colorval, depthval);
 }
 

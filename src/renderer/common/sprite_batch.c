@@ -233,13 +233,7 @@ static void _r_sprite_batch_compute_attribs(
 		glm_vec4_scale(attribs.mv_transform[1], scale_y * imgdims.h, attribs.mv_transform[1]);
 	}
 
-	if(params->color == NULL) {
-		// XXX: should we use r_color_current here?
-		attribs.rgba = *RGBA(1, 1, 1, 1);
-	} else {
-		attribs.rgba = *params->color;
-	}
-
+	attribs.rgba = params->color;
 	attribs.texrect = spr->tex_area;
 
 	if(UNLIKELY(params->flip.x)) {

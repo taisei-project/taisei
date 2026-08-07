@@ -326,8 +326,8 @@ void r_color4(float r, float g, float b, float a) {
 	B.color4(r, g, b, a);
 }
 
-const Color* r_color_current(void) {
-	return B.color_current();
+Color r_color_current(void) {
+	return *B.color_current();
 }
 
 void r_blend(BlendMode mode) {
@@ -483,8 +483,8 @@ void r_texture_invalidate(Texture *tex) {
 	B.texture_invalidate(tex);
 }
 
-void r_texture_clear(Texture *tex, const Color *clr) {
-	B.texture_clear(tex, clr);
+void r_texture_clear(Texture *tex, Color clr) {
+	B.texture_clear(tex, &clr);
 }
 
 void r_texture_destroy(Texture *tex) {
@@ -614,8 +614,8 @@ void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment
 	B.framebuffer_outputs(fb, config, 0x00);
 }
 
-void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval) {
-	B.framebuffer_clear(fb, flags, colorval, depthval);
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, Color colorval, float depthval) {
+	B.framebuffer_clear(fb, flags, &colorval, depthval);
 }
 
 void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
@@ -978,11 +978,11 @@ void _r_uniform_vec3_vec(const char *uniform, vec3_noalign value) {
 	_r_uniform_ptr_vec3_vec(r_shader_current_uniform(uniform), value);
 }
 
-void _r_uniform_ptr_vec3_rgb(Uniform *uniform, const Color *rgb) {
-	_r_uniform_ptr_vec3(uniform, rgb->r, rgb->g, rgb->b);
+void _r_uniform_ptr_vec3_rgb(Uniform *uniform, Color rgb) {
+	_r_uniform_ptr_vec3(uniform, rgb.r, rgb.g, rgb.b);
 }
 
-void _r_uniform_vec3_rgb(const char *uniform, const Color *rgb) {
+void _r_uniform_vec3_rgb(const char *uniform, Color rgb) {
 	_r_uniform_ptr_vec3_rgb(r_shader_current_uniform(uniform), rgb);
 }
 
@@ -1013,11 +1013,11 @@ void _r_uniform_vec4_vec(const char *uniform, vec4_noalign value) {
 	_r_uniform_ptr_vec4_vec(r_shader_current_uniform(uniform), value);
 }
 
-void _r_uniform_ptr_vec4_rgba(Uniform *uniform, const Color *rgba) {
-	_r_uniform_ptr_vec4(uniform, rgba->r, rgba->g, rgba->b, rgba->a);
+void _r_uniform_ptr_vec4_rgba(Uniform *uniform, Color rgba) {
+	_r_uniform_ptr_vec4(uniform, rgba.r, rgba.g, rgba.b, rgba.a);
 }
 
-void _r_uniform_vec4_rgba(const char *uniform, const Color *rgba) {
+void _r_uniform_vec4_rgba(const char *uniform, Color rgba) {
 	_r_uniform_ptr_vec4_rgba(r_shader_current_uniform(uniform), rgba);
 }
 

@@ -45,7 +45,7 @@ TASK(rain) {
 }
 
 TASK(lightning_segment, {
-	cmplx a; cmplx b; real width; Color *color;
+	cmplx a; cmplx b; real width; Color color;
 }) {
 	real lifetime = 10;
 	real chargetime = CHARGE_TIME;
@@ -75,7 +75,7 @@ TASK(fork_branch, {
 	}
 
 	cmplx mid = clerp(orig, dest, rng_range(0.15, 0.25));
-	INVOKE_TASK(lightning_segment, orig, mid, ARGS.width, &ARGS.color);
+	INVOKE_TASK(lightning_segment, orig, mid, ARGS.width, ARGS.color);
 
 	int delay = 1;
 	WAIT(delay);
@@ -111,7 +111,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 	real branch_len = seglen * 6;
 	real next_len = seglen;
 
-	Color *color = RGBA(0.1, 0.5, 1, 0);
+	Color color = RGBA(0.1, 0.5, 1, 0);
 
 	INVOKE_SUBTASK(common_charge, {
 		.time = CHARGE_TIME,
@@ -120,7 +120,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 			.discharge = "boom",
 		},
 		.pos = orig,
-		.color = *RGBA(1.5, 1, 2, 0),
+		.color = RGBA(1.5, 1, 2, 0),
 	});
 
 	for(real d = 0; d < maxdist; d += next_len) {
@@ -147,7 +147,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 				real angle = rng_range(M_TAU/24, M_TAU/12);
 				cmplx r = cdir(s * angle);
 				INVOKE_TASK(fork_branch,
-					b, b + arcdir * r * branch_len, branch_chance, width, *color
+					b, b + arcdir * r * branch_len, branch_chance, width, color
 				);
 			}
 		}
@@ -156,7 +156,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 		seglen = lerp(seglen, 32, 0.2);
 		branch_len *= 0.98;
 
-		color_lerp(color, RGBA(0.5, 0.1, 1, 0), 0.1);
+		color = color_lerp(color, RGBA(0.5, 0.1, 1, 0), 0.1);
 
 		WAIT(1);
 	}

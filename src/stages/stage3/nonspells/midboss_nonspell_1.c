@@ -18,7 +18,7 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_wave,
 		.pos = ARGS.pos,
-		.color = phase_colors,
+		.color = phase_colors[0],
 		.max_viewport_dist = 50,
 	));
 
@@ -91,7 +91,7 @@ DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
 	int delay = 120;
 
 	cmplx origin;
-	Color charge_color = *RGBA(1, 0, 0, 0);
+	Color charge_color = RGBA(1, 0, 0, 0);
 
 	for(;;) {
 		origin = boss->pos;

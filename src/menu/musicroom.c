@@ -88,6 +88,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 		text_draw(e->name, &(TextParams) {
 			.pos = { 20 - e->drawdata, 20 * i },
 			.shader = "text_default",
+			.color = r_color_current(),
 		});
 
 		return;
@@ -95,12 +96,12 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 	char buf[16];
 	const char *title = p->state & MSTATE_TITLE_VISIBLE ? e->name : "???????";
-	Color clr = *r_color_current();
+	Color clr = r_color_current();
 	TextParams tparams = {
 		.pos = { 20 - e->drawdata, 20 * i },
 		.shader_ptr = p->text_shader,
 		.font_ptr = res_font("standard"),
-		.color = &clr,
+		.color = clr,
 	};
 	bool kerning_saved = font_get_kerning_enabled(tparams.font_ptr);
 
@@ -122,12 +123,12 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	tparams.pos.x += text_draw(title, &tparams);
 
 	if(p->state & MSTATE_PLAYING) {
-		color_mul(&clr, RGBA(0.1, 0.6, 0.8, 0.8));
+		clr = color_mul(clr, RGBA(0.1, 0.6, 0.8, 0.8));
 		text_draw(_("Now playing"), &(TextParams) {
 			.pos = { SCREEN_W - 200, 20 * i },
 			.shader_ptr = p->text_shader,
 			.align = ALIGN_RIGHT,
-			.color = &clr,
+			.color = clr,
 		});
 	}
 }
@@ -167,15 +168,15 @@ static void musicroom_draw(MenuData *m) {
 
 		const char *comment;
 		MusicEntryParam *p = e->arg;
-		Color *clr = RGBA(a, a, a, a);
+		Color clr = RGBA(a, a, a, a);
 
 		if(p->state & MSTATE_CONFIRM) {
 			comment = (
 				_("\nYou have not unlocked this track yet!\n\n"
 				  "If you wish to hear it anyway, please select it again to confirm.")
 			);
-			clr->g *= 0.3;
-			clr->b *= 0.2;
+			clr.g *= 0.3;
+			clr.b *= 0.2;
 		} else if(!(p->state & MSTATE_COMMENT_VISIBLE)) {
 			continue;
 		} else if(!(comment = _(bgm_get_comment(p->bgm)))) {

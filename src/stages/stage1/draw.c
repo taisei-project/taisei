@@ -119,7 +119,7 @@ static void stage1_water_render_reflections(void) {
 static void stage1_water_render_waves(float pos) {
 	r_shader_ptr(stage1_draw_data->water_shader);
 	r_uniform_float("time", 0.5f * global.frames / (float)FPS);
-	r_uniform_vec4_rgba("water_color", &water_color);
+	r_uniform_vec4_rgba("water_color", water_color);
 	r_uniform_vec2("wave_offset", 0, pos / 2400.0f);
 	r_uniform_sampler("water_noisetex", "fractal_noise");
 	r_mat_mv_push();
@@ -143,7 +143,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_shader_standard_notex();
 	r_mat_mv_push();
 	r_mat_mv_scale(10000, 900000, 1);
-	r_color(&water_color);
+	r_color(water_color);
 	r_draw_quad();
 	r_mat_mv_pop();
 	r_state_pop();

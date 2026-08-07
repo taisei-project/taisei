@@ -63,7 +63,7 @@ Projectile *reimu_common_ofuda_swawn_trail(Projectile *p) {
 	Projectile *trail = PARTICLE(
 		// .sprite_ptr = p->sprite,
 		.sprite_ptr = res_sprite("proj/hghost"),
-		.color = &p->color,
+		.color = p->color,
 		.timeout = 12,
 		.pos = p->pos + p->move.velocity * 0.3,
 		.move = move_linear(p->move.velocity * 0.5),

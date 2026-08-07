@@ -22,7 +22,7 @@ TASK(spinshot_fairy_attack_spawn_projs, {
 	cmplx *proj_origins;
 	int spawn_period;
 	cmplx initial_offset;
-	const Color *color;
+	Color color;
 }) {
 	Enemy *e = TASK_BIND(ARGS.e);
 	int count = ARGS.projs->capacity;
@@ -59,10 +59,9 @@ TASK(spinshot_fairy_attack, {
 	cmplx activated_vel_multiplier;
 	cmplx activated_accel_multiplier;
 	cmplx activated_retention_multiplier;
-	const Color *color;
+	Color color;
 }) {
 	int count = ARGS.count;
-	Color color = *ARGS.color;
 
 	DECLARE_ENT_ARRAY(Projectile, projs, count);
 	cmplx proj_origins[count];
@@ -74,7 +73,7 @@ TASK(spinshot_fairy_attack, {
 			proj_origins,
 			ARGS.spawn_period,
 			ARGS.initial_offset,
-			&color
+			ARGS.color
 		)
 	);
 
@@ -157,14 +156,14 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 	INVOKE_SUBTASK(common_charge,
 		.time = charge_time + waves * wave_period,
 		.anchor = &e->pos,
-		.color = *RGBA(1.0, 0.1, 0.1, 0.0),
+		.color = RGBA(1.0, 0.1, 0.1, 0.0),
 		.sound = COMMON_CHARGE_SOUNDS
 	);
 
 	INVOKE_SUBTASK_DELAYED(5, common_charge,
 		.time = charge_time + waves * wave_period,
 		.anchor = &e->pos,
-		.color = *RGBA(0.1, 0.1, 1.0, 0.0)
+		.color = RGBA(0.1, 0.1, 1.0, 0.0)
 	);
 
 	cmplx dir = rng_dir();
@@ -217,7 +216,7 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_exit; }) {
 	INVOKE_SUBTASK_DELAYED(summon_time - precharge_time, common_charge, {
 		.time = charge_time + precharge_time,
 		.pos = e->pos,
-		.color = *RGBA(0.5, 0.2, 1.0, 0.0),
+		.color = RGBA(0.5, 0.2, 1.0, 0.0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 

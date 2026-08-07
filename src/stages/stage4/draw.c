@@ -27,11 +27,9 @@ static bool stage4_fog(Framebuffer *fb) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 
-	Color c = *RGBA(0.05, 0.0, 0.01, 1.0);
-
 	r_shader("zbuf_fog_tonemap");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4_rgba("fog_color", &c);
+	r_uniform_vec4_rgba("fog_color", RGBA(0.05, 0.0, 0.01, 1.0));
 	r_uniform_float("start", 0.4);
 	r_uniform_float("end", 1);
 	r_uniform_float("exponent", 20.0);

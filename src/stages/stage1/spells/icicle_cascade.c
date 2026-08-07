@@ -26,7 +26,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (re(v) > 0));
 	p->move = move_asymptotic_simple(v, 2);
 	p->angle = carg(p->move.velocity);
-	p->color = *RGB(0.5, 0.5, 0.5);
+	p->color = RGB(0.5, 0.5, 0.5);
 
 	play_sfx("redirect");
 	spawn_projectile_highlight_effect(p);

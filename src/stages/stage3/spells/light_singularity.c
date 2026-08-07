@@ -31,7 +31,7 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 		rd->phase = t / 10.0;
 		rd->velocity *= r;
 
-		l->color = *HSLA((carg(rd->velocity) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
+		l->color = HSLA((carg(rd->velocity) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
 	}
 }
 

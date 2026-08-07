@@ -65,7 +65,7 @@ void gl33_sync_buffer(BufferBindingIndex bindidx);
 GLuint gl33_buffer_current(BufferBindingIndex bindidx);
 GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx);
 
-void gl33_set_clear_color(const Color *color);
+void gl33_set_clear_color(Color color);
 void gl33_set_clear_depth(float depth);
 
 void gl33_sync_shader(void);

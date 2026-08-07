@@ -1341,15 +1341,15 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	float a = e->drawdata * 0.1;
 	float alpha = entry_is_active(menu, i) ? 1 : 0.5;
 
-	clr = *r_color_current();
+	clr = r_color_current();
 
 	if(!entry_is_active(menu, i)) {
-		color_mul_scalar(&clr, 0.5f);
+		clr = color_mul_scalar(clr, 0.5f);
 	}
 
 	text_draw(_(e->name), &(TextParams) {
 		.pos = { (1 + (bind ? bind->pad : 0)) * OPTIONS_ACTIVE_X_OFFSET - e->drawdata, OPTIONS_ITEM_HEIGHT*i },
-		.color = &clr,
+		.color = clr,
 	});
 
 	if(bind) {
@@ -1371,8 +1371,8 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						OPTIONS_ITEM_HEIGHT*i,
 						fnt_int,
 						fnt_fract,
-						&clr,
-						&clr,
+						clr,
+						clr,
 						false
 					);
 				} else if(bind->values) {
@@ -1382,15 +1382,15 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						}
 
 						if(val == j) {
-							clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
+							clr = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
 						} else {
-							clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
+							clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
 						}
 
 						text_draw(_(bind->values[j]), &(TextParams) {
 							.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 							.align = ALIGN_RIGHT,
-							.color = &clr,
+							.color = clr,
 						});
 					}
 				} else {
@@ -1400,7 +1400,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 					});
 				}
 				break;
@@ -1423,7 +1423,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					text_draw(txt, &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 					});
 				}
 
@@ -1460,7 +1460,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					text_draw(txt, &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 						.max_width = (SCREEN_W - margin) / 2,
 					});
 				}
@@ -1485,7 +1485,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				text_draw(buf, &(TextParams) {
 					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
-					.color = &clr,
+					.color = clr,
 					.max_width = (SCREEN_W - margin) / 2,
 				});
 				break;
@@ -1510,13 +1510,13 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					text_draw(_(name), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 					});
 				} else {
 					text_draw(_("Unbound"), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 					});
 				}
 				break;
@@ -1535,7 +1535,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					text_draw(config_get_str(bind->configentry), &(TextParams) {
 						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
-						.color = &clr,
+						.color = clr,
 					});
 				}
 				break;
@@ -1557,7 +1557,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				text_draw(tmp, &(TextParams) {
 					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
-					.color = &clr,
+					.color = clr,
 				});
 				break;
 			}
@@ -1569,7 +1569,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				text_draw(tmp, &(TextParams) {
 					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
-					.color = &clr,
+					.color = clr,
 				});
 				break;
 			}
@@ -1595,7 +1595,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				text_draw(tmp, &(TextParams) {
 					.pos = { -((w+cw) * 0.5 + 10), 0 },
 					.align = ALIGN_RIGHT,
-					.color = &clr,
+					.color = clr,
 				});
 				r_shader_standard_notex();
 				r_mat_mv_push();

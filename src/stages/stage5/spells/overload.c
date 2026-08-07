@@ -308,7 +308,7 @@ TASK(trigger_ball, { cmplx pos; NodesGrid *grid; int charge_time; }) {
 	int discharge_time = charge_time;
 	Node *target = nearest_node(ARGS.grid, global.plr.pos);
 
-	Color charge_color = *RGBA(0.5, 0.2, 1.0, 0.0);
+	Color charge_color = RGBA(0.5, 0.2, 1.0, 0.0);
 
 	auto p = TASK_BIND(PROJECTILE(
 		.proto = pp_soul,

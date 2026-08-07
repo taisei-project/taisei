@@ -313,6 +313,14 @@ typedef _Complex double cmplx;
 	#define attr_designated_init
 #endif
 
+// Struct field must be explicitly initialized
+#if __has_attribute(require_explicit_initialization)
+	#define attr_explicit_init \
+		__attribute__ ((require_explicit_initialization))
+#else
+	#define attr_explicit_init
+#endif
+
 // Function returns a pointer that can't alias any other pointer when the function returns.
 // Storage pointed at doesn't contain pointers to any valid objects.
 #define attr_malloc \

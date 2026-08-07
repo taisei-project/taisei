@@ -319,7 +319,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
 	cmplx dir = cnormalize(global.plr.pos - e->pos);
 	cmplx ofs = -24 * dir;
 
-	common_charge(60, &e->pos, ofs, *RGBA(0.0, 0.25, 0.5, 0));
+	common_charge(60, &e->pos, ofs, RGBA(0.0, 0.25, 0.5, 0));
 
 	real spread = difficulty_value(M_PI/20, M_PI/18, M_PI/16, M_PI/14);
 	real interval = difficulty_value(3, 2, 1, 1);
@@ -342,7 +342,7 @@ TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
 	INVOKE_SUBTASK_DELAYED(80, common_charge, {
 		.time = 120,
 		.pos = e->pos,
-		.color = *RGBA(1.0, 0, 0.2, 0),
+		.color = RGBA(1.0, 0, 0.2, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 	ecls_fairy_summon(fairy, 120);
@@ -363,20 +363,20 @@ TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
 		Color clr;
 
 		if(s == 1) {
-			clr = *RGB(1, 0, 0);
+			clr = RGB(1, 0, 0);
 		} else {
-			clr = *color_lerp(
+			clr = color_lerp(
 				RGB(0.1, 0.6, 1.0),
 				RGB(1.0, 0.0, 0.3),
 				s * s
 			);
-			color_mul(&clr, &clr);
+			clr = color_mul(clr, clr);
 		}
 
 		PROJECTILE(
 			.proto = s == 1 ? pp_bigball : pp_ball,
 			.pos = e->pos,
-			.color = &clr,
+			.color = clr,
 			.move = move_asymptotic_simple(aim, 1 + 8 * s),
 		);
 
@@ -385,7 +385,7 @@ TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = e->pos,
-				.color = &clr,
+				.color = clr,
 				.move = move_asymptotic_simple(aim, 1 + 8 * s),
 			);
 		}
@@ -607,7 +607,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx end_velocity; }) {
 	INVOKE_SUBTASK_DELAYED(120, common_charge, {
 		.pos = e->pos,
 		.time = 60,
-		.color = *RGBA(0.1, 0.2, 1.0, 0),
+		.color = RGBA(0.1, 0.2, 1.0, 0),
 		.sound = COMMON_CHARGE_SOUNDS,
 	});
 	ecls_fairy_summon(fairy, 180);

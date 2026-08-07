@@ -104,7 +104,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 
 	for(int burst = 0;; ++burst) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
-		common_charge_static(charge_time, boss->pos, *RGBA(0, 0.5, 1.0, 0.0));
+		common_charge_static(charge_time, boss->pos, RGBA(0, 0.5, 1.0, 0.0));
 		aniplayer_queue(&boss->ani, "main", 0);
 
 		real angle_ofs = carg(global.plr.pos - boss->pos);
@@ -124,7 +124,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 
 		ENT_ARRAY_FOREACH(&snowflake_projs, Projectile *p, {
 			spawn_projectile_highlight_effect(p)->opacity = 0.25;
-			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+			p->color = color_lerp(p->color, RGB(0.5, 0.5, 0.5), 0.5);
 			p->move.velocity = 2 * cdir(p->angle);
 			p->move.acceleration = -cdir(p->angle) * difficulty_value(0.1, 0.15, 0.2, 0.2);
 		});

@@ -87,8 +87,8 @@ TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 	));
 
 	Color trail_color = p->color;
-	color_mul(&trail_color, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
-	color_mul_scalar(&trail_color, 0.6);
+	trail_color = color_mul(trail_color, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	trail_color = color_mul_scalar(trail_color, 0.6);
 	trail_color .a = 0;
 
 	MoveParams trail_move = move_linear(p->move.velocity * 0.8);
@@ -99,7 +99,7 @@ TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 
 		PARTICLE(
 			.sprite_ptr = p->sprite,
-			.color = &trail_color,
+			.color = trail_color,
 			.timeout = 12,
 			.pos = p->pos,
 			.move = trail_move,
@@ -113,8 +113,8 @@ TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
 
 static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real vfactor) {
-	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
-	c->a = 0;
+	Color c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
+	c.a = 0;
 
 	return PARTICLE(
 		.sprite = "ofuda_glow",
@@ -136,7 +136,7 @@ TASK(reimu_spirit_homing_impact, { BoxedProjectile p; }) {
 
 	Projectile *p = TASK_BIND(PARTICLE(
 		.proto = ref->proto,
-		.color = &ref->color,
+		.color = ref->color,
 		.timeout = 32,
 		.pos = ref->pos,
 		.angle = ref->angle,
@@ -194,9 +194,8 @@ TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 	p->flags &= ~PFLAG_NOAUTOREMOVE;
 }
 
-static Color *reimu_spirit_orb_color(Color *c, int i) {
-	*c = *RGBA((0.2 + (i==0))/1.2, (0.2 + (i==1))/1.2, (0.2 + 1.5*(i==2))/1.2, 0.0);
-	return c;
+static Color reimu_spirit_orb_color(int i) {
+	return RGBA((0.2 + (i==0))/1.2, (0.2 + (i==1))/1.2, (0.2 + 1.5*(i==2))/1.2, 0.0);
 }
 
 static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
@@ -241,11 +240,11 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	Color base_colors[3];
 
 	for(int i = 0; i < 3; ++i) {
-		base_colors[i] = *reimu_spirit_orb_color(&(Color){}, i);
+		base_colors[i] = reimu_spirit_orb_color(i);
 
 		PARTICLE(
 			.sprite = "blast",
-			.color = color_mul_scalar(COLOR_COPY(&base_colors[i]), 2),
+			.color = color_mul_scalar(base_colors[i], 2),
 			.pos = pos + 30 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
 			.timeout = 40,
 			.draw_rule = pdraw_timeout_scalefade(0, 7.5, 1, 0),
@@ -255,7 +254,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_ADD(&impact_effects, PARTICLE(
 			.sprite = "fantasyseal_impact",
-			.color = reimu_spirit_orb_color(&(Color){}, i),
+			.color = reimu_spirit_orb_color(i),
 			.pos = pos + 2 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
 			.timeout = 120,
 			.layer = LAYER_BOSS + 1,
@@ -273,8 +272,8 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 			float decay = t;
 
 			Color c = base_colors[i];
-			color_lerp(&c, RGBA(0.2, 0.1, 0, 1.0), decay);
-			color_mul_scalar(&c, powf(1.0f - decay, 2.0f) * 0.75f);
+			c = color_lerp(c, RGBA(0.2, 0.1, 0, 1.0), decay);
+			c = color_mul_scalar(c, powf(1.0f - decay, 2.0f) * 0.75f);
 			p->color = c;
 			p->scale = (0.75f + 0.25f / (powf(decay, 3.0f) + 1.0f)) + sqrtf(5.0f * (1.0f - attack));
 
@@ -306,7 +305,7 @@ TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
 		ENT_ARRAY_ADD(&components, PARTICLE(
 			.sprite_ptr = glowball,
 			.shader_ptr = shader,
-			.color = reimu_spirit_orb_color(&(Color){}, i),
+			.color = reimu_spirit_orb_color(i),
 			.opacity = 0.7,
 			.layer = LAYER_PLAYER_FOCUS - 1,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
@@ -480,7 +479,7 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 static void reimu_spirit_draw_slave(EntityInterface *ent) {
 	ReimuASlave *slave = ENT_CAST(ent, ReimuASlave);
 	r_draw_sprite(&(SpriteParams) {
-		.color = &slave->color,
+		.color = slave->color,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = global.frames * -6 * DEG2RAD,
 		.shader_ptr = slave->shader,
@@ -488,13 +487,13 @@ static void reimu_spirit_draw_slave(EntityInterface *ent) {
 	});
 }
 
-static ReimuASlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color *color) {
+static ReimuASlave *reimu_spirit_create_slave(ReimuAController *ctrl, Color color) {
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_HOST_ENT(ReimuASlave);
 	slave->sprite = res_sprite("yinyang");
 	slave->shader = res_shader("sprite_yinyang");
 	slave->pos = plr->pos;
-	slave->color = *color;
+	slave->color = color;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	slave->ent.draw_func = reimu_spirit_draw_slave;
 	slave->alive = 1;
@@ -511,13 +510,11 @@ TASK(reimu_slave_shot_particles, {
 	BoxedReimuASlave slave;
 	int num;
 	cmplx dir;
-	Color *color0;
-	Color *color1;
+	Color color0;
+	Color color1;
 	Sprite *sprite;
 }) {
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	Color color0 = *ARGS.color0;
-	Color color1 = *ARGS.color1;
 	int num = ARGS.num;
 	Sprite *sprite = ARGS.sprite;
 	ProjDrawRule draw = pdraw_timeout_scalefade(0.25, 0, 1, 0);
@@ -530,7 +527,7 @@ TASK(reimu_slave_shot_particles, {
 
 		PARTICLE(
 			.angle = angle,
-			.color = COLOR_COPY(color_lerp(&color0, &color1, rng_f32())),
+			.color = color_lerp(ARGS.color0, ARGS.color1, rng_f32()),
 			.draw_rule = draw,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.move = move,

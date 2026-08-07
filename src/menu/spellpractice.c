@@ -32,6 +32,7 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 			text_draw(_(e->name), &(TextParams) {
 				.pos = { 30, y },
 				.shader_ptr = text_shader,
+				.color = r_color_current(),
 			});
 		}
 		return;
@@ -50,37 +51,35 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	float a = e->drawdata * 0.1;
 	float o = (pr < 0 ? 1-pr/(-100-10) : 1);
 
-
 	Color clr;
 	if(p && p->unlocked) {
 		float ia = 1-a;
-		clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
+		clr = RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a)*o);
 	} else {
-		clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.8);
+		clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.8);
 	}
 
 	char title[128];
 	assert(stg->title.type == STAGE_TITLE_SPELL);
 	snprintf(title, sizeof(title), F_("№ %d"), stg->title.numeral);
 
-	Color second_clr = clr;
-	color_mul_scalar(&second_clr, 0.7);
+	Color second_clr = color_mul_scalar(clr, 0.7);
 
 	text_draw(title, &(TextParams) {
 		.pos = { 0 - text_width(res_font("standard"), title, 0), y },
-		.color = &second_clr,
+		.color = second_clr,
 		.shader_ptr = text_shader,
 	});
 
 	if(p && p->unlocked) {
 		text_draw(_(stg->subtitle), &(TextParams) {
 			.pos = { 10, y },
-			.color = &clr,
+			.color = clr,
 			.shader_ptr = text_shader,
 		});
 		text_draw(difficulty_name(stg->difficulty), &(TextParams) {
 			.pos = { 20 + text_width(res_font("standard"), _(stg->subtitle), 0), y },
-			.color = &second_clr,
+			.color = second_clr,
 			.shader_ptr = text_shader,
 		});
 	} else {
@@ -90,13 +89,12 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 		r_mat_mv_push();
 		r_mat_mv_translate(10 + width / 2, y - 3, 0);
-		r_color(&second_clr);
+		r_color(second_clr);
 		r_mat_mv_scale(width, 1.3, 1);
 		r_draw_quad();
 		r_mat_mv_pop();
 		r_state_pop();
 	}
-
 }
 
 static void draw_spell_menu_summary(MenuData *m) {
@@ -110,7 +108,7 @@ static void draw_spell_menu_summary(MenuData *m) {
 		return;
 	}
 
-	Color clr = *RGBA(0.8,0.8,0.8,1.0);
+	Color clr = RGBA(0.8,0.8,0.8,1.0);
 
 	auto font = res_font("standard");
 	r_state_push();
@@ -158,11 +156,11 @@ static void draw_spell_menu_summary(MenuData *m) {
 
 			text_draw(labels[i], &(TextParams) {
 				.pos = { -5 - text_width(font, labels[i], 0), y },
-				.color = &clr,
+				.color = clr,
 			});
 			text_draw(bufs[i], &(TextParams) {
 				.pos = { 5, y },
-				.color = &clr,
+				.color = clr,
 			});
 		}
 	}
@@ -194,18 +192,18 @@ static void draw_spell_menu_summary(MenuData *m) {
 			Color labelclr = clr;
 			auto modeprog = p->per_plrmode[plr_id][shot_id];
 			if(modeprog.num_cleared == 0) {
-				color_mul_scalar(&labelclr, 0.6);
+				labelclr = color_mul_scalar(labelclr, 0.6);
 			}
 
 			text_draw(buf, &(TextParams) {
 				.pos = { -5 - text_width(font, buf, 0), y },
-				.color = &labelclr,
+				.color = labelclr,
 			});
 
 			snprintf(buf, sizeof(buf), "%d/%d", modeprog.num_cleared, modeprog.num_played);
 			text_draw(buf, &(TextParams) {
 				.pos = { 5, y },
-				.color = &labelclr,
+				.color = labelclr,
 			});
 		}
 	}

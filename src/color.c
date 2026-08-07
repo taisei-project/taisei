@@ -7,87 +7,81 @@
  */
 
 #include "color.h"
-#include "util/stringops.h"
 
 #define COLOR_OP(c1, op, c2) do { \
-	(c1)->r = (c1)->r op (c2)->r; \
-	(c1)->g = (c1)->g op (c2)->g; \
-	(c1)->b = (c1)->b op (c2)->b; \
-	(c1)->a = (c1)->a op (c2)->a; \
+	(c1).r = (c1).r op (c2).r; \
+	(c1).g = (c1).g op (c2).g; \
+	(c1).b = (c1).b op (c2).b; \
+	(c1).a = (c1).a op (c2).a; \
 } while(0);
 
-Color* color_copy(Color *dst, const Color *src) {
-	*dst = *src;
-	return dst;
-}
-
-Color* color_add(Color *clr, const Color *clr2) {
+Color color_add(Color clr, Color clr2) {
 	COLOR_OP(clr, +, clr2);
 	return clr;
 }
 
-Color* color_sub(Color *clr, const Color *clr2) {
+Color color_sub(Color clr, Color clr2) {
 	COLOR_OP(clr, -, clr2);
 	return clr;
 }
 
-Color* color_mul(Color *clr, const Color *clr2) {
+Color color_mul(Color clr, Color clr2) {
 	COLOR_OP(clr, *, clr2);
 	return clr;
 }
 
-Color* color_mul_alpha(Color *clr) {
-	clr->r *= clr->a;
-	clr->g *= clr->a;
-	clr->b *= clr->a;
+Color color_mul_alpha(Color clr) {
+	clr.r *= clr.a;
+	clr.g *= clr.a;
+	clr.b *= clr.a;
 	return clr;
 }
 
-Color* color_mul_scalar(Color *clr, float scalar) {
-	clr->r *= scalar;
-	clr->g *= scalar;
-	clr->b *= scalar;
-	clr->a *= scalar;
+Color color_mul_scalar(Color clr, float scalar) {
+	clr.r *= scalar;
+	clr.g *= scalar;
+	clr.b *= scalar;
+	clr.a *= scalar;
 	return clr;
 }
 
-Color* color_div(Color *clr, const Color *clr2) {
+Color color_div(Color clr, Color clr2) {
 	COLOR_OP(clr, /, clr2);
 	return clr;
 }
 
-Color* color_div_alpha(Color *clr) {
-	if(clr->a != 0) {
-		clr->r /= clr->a;
-		clr->g /= clr->a;
-		clr->b /= clr->a;
+Color color_div_alpha(Color clr) {
+	if(clr.a != 0) {
+		clr.r /= clr.a;
+		clr.g /= clr.a;
+		clr.b /= clr.a;
 	}
 
 	return clr;
 }
 
-Color* color_div_scalar(Color *clr, float scalar) {
-	clr->r /= scalar;
-	clr->g /= scalar;
-	clr->b /= scalar;
-	clr->a /= scalar;
+Color color_div_scalar(Color clr, float scalar) {
+	clr.r /= scalar;
+	clr.g /= scalar;
+	clr.b /= scalar;
+	clr.a /= scalar;
 	return clr;
 }
 
-Color* color_lerp(Color *clr, const Color *clr2, float a) {
+Color color_lerp(Color clr, Color clr2, float a) {
 	float ia = 1 - a;
-	clr->r = clr->r * ia + clr2->r * a;
-	clr->g = clr->g * ia + clr2->g * a;
-	clr->b = clr->b * ia + clr2->b * a;
-	clr->a = clr->a * ia + clr2->a * a;
+	clr.r = clr.r * ia + clr2.r * a;
+	clr.g = clr.g * ia + clr2.g * a;
+	clr.b = clr.b * ia + clr2.b * a;
+	clr.a = clr.a * ia + clr2.a * a;
 	return clr;
 }
 
-Color* color_approach(Color *clr, const Color *clr2, float delta) {
-	clr->r += (clr2->r - clr->r) * delta;
-	clr->g += (clr2->g - clr->g) * delta;
-	clr->b += (clr2->b - clr->b) * delta;
-	clr->a += (clr2->a - clr->a) * delta;
+Color color_approach(Color clr, Color clr2, float delta) {
+	clr.r += (clr2.r - clr.r) * delta;
+	clr.g += (clr2.g - clr.g) * delta;
+	clr.b += (clr2.b - clr.b) * delta;
+	clr.a += (clr2.a - clr.a) * delta;
 	return clr;
 }
 
@@ -115,9 +109,11 @@ static float hue_to_rgb(float v1, float v2, float vH) {
 	return v1;
 }
 
-Color* color_hsla(Color *clr, float h, float s, float l, float a) {
+Color color_hsla(float h, float s, float l, float a) {
+	Color clr;
+
 	if(s == 0) {
-		clr->r = clr->g = clr->b = l;
+		clr.r = clr.g = clr.b = l;
 	} else {
 		float v1, v2;
 		h = fmod(h, 1.0);
@@ -130,12 +126,12 @@ Color* color_hsla(Color *clr, float h, float s, float l, float a) {
 
 		v1 = 2.0 * l - v2;
 
-		clr->r = hue_to_rgb(v1, v2, h + (1.0/3.0));
-		clr->g = hue_to_rgb(v1, v2, h);
-		clr->b = hue_to_rgb(v1, v2, h - (1.0/3.0));
+		clr.r = hue_to_rgb(v1, v2, h + (1.0/3.0));
+		clr.g = hue_to_rgb(v1, v2, h);
+		clr.b = hue_to_rgb(v1, v2, h - (1.0/3.0));
 	}
 
-	clr->a = a;
+	clr.a = a;
 	return clr;
 }
 
@@ -165,22 +161,21 @@ void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l) {
 	if(out_l) *out_l = l;
 }
 
-Color* color_set_opacity(Color *clr, float opacity) {
+Color color_set_opacity(Color clr, float opacity) {
 	// FIXME: is this correct?
 
-	if(clr->a != 0) {
-		opacity /= clr->a;
+	if(clr.a != 0) {
+		opacity /= clr.a;
 	}
 
-	color_mul_scalar(clr, opacity);
-	return clr;
+	return color_mul_scalar(clr, opacity);
 }
 
-bool color_equals(const Color *clr, const Color *clr2) {
+bool color_equals(Color clr, Color clr2) {
 	return (
-		clr->r == clr2->r &&
-		clr->g == clr2->g &&
-		clr->b == clr2->b &&
-		clr->a == clr2->a
+		clr.r == clr2.r &&
+		clr.g == clr2.g &&
+		clr.b == clr2.b &&
+		clr.a == clr2.a
 	);
 }

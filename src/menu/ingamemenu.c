@@ -202,14 +202,16 @@ void draw_ingame_menu(MenuData *menu) {
 
 	if(ctx && ctx->title) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
-		r_color(RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)));
 		text_draw(_(ctx->title), &(TextParams) {
+			.color = RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)),
 			.align = ALIGN_CENTER,
 			.pos = { 0, -2 * 35 },
 		});
 	}
 
 	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		Color clr;
+
 		if(e->action) {
 			float s = 0, t = 0.7;
 			if(i == menu->cursor) {
@@ -217,14 +219,15 @@ void draw_ingame_menu(MenuData *menu) {
 				s = 0.3 + 0.2*sin(menu->frames/7.0);
 			}
 
-			r_color(RGBA_MUL_ALPHA(t-s, t-s, t-s/2, 1-menu_fade(menu)));
+			clr = RGBA_MUL_ALPHA(t-s, t-s, t-s/2, 1-menu_fade(menu));
 		} else {
-			r_color(RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu))));
+			clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * (1-menu_fade(menu)));
 		}
 
 		text_draw(_(e->name), &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, i * 35 },
+			.color = clr,
 		});
 	});
 

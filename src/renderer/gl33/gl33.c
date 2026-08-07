@@ -535,7 +535,7 @@ static void gl33_sync_magic_uniforms(void) {
 	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], proj);
 	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ_SS], ss_proj);
 	r_uniform_mat4(u[UMAGIC_MATRIX_TEX], *_r_matrices.texture.head);
-	r_uniform_vec4_rgba(u[UMAGIC_COLOR], &R.color);
+	r_uniform_vec4_rgba(u[UMAGIC_COLOR], R.color);
 	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], (float*)&R.viewport.active);
 
 	int num_color_out;
@@ -1396,10 +1396,10 @@ static ShaderProgram *gl33_shader_current(void) {
 	return R.progs.pending;
 }
 
-void gl33_set_clear_color(const Color *color) {
-	if(memcmp(&R.clear_color, color, sizeof(*color))) {
-		memcpy(&R.clear_color, color, sizeof(*color));
-		glClearColor(color->r, color->g, color->b, color->a);
+void gl33_set_clear_color(Color color) {
+	if(memcmp(&R.clear_color, &color, sizeof(color))) {
+		memcpy(&R.clear_color, &color, sizeof(color));
+		glClearColor(color.r, color.g, color.b, color.a);
 	}
 }
 

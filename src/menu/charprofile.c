@@ -249,7 +249,7 @@ static void charprofile_draw(MenuData *m) {
 
 	int selected = check_unlocked_profile(m->cursor);
 
-	Color *color = RGBA(pbrightness, pbrightness, pbrightness, 1);
+	Color color = RGBA(pbrightness, pbrightness, pbrightness, 1);
 
 	// if not unlocked, darken the sprite so it's barely visible
 	if(selected == PROFILE_LOCKED) {

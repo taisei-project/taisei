@@ -74,7 +74,7 @@ static void marisa_star_draw_slave(EntityInterface *ent) {
 	MarisaBSlave *slave = ENT_CAST(ent, MarisaBSlave);
 
 	ShaderCustomParams shader_params = {};
-	// shader_params.color = *RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
+	// shader_params.color = RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
@@ -88,12 +88,10 @@ static void marisa_star_draw_slave(EntityInterface *ent) {
 	});
 }
 
-static Color *marisa_star_slave_projectile_color(Color *c, real focus, real brightener) {
+static Color marisa_star_slave_projectile_color(real focus, real brightener) {
 	static const Color unfocused = { 0.3, 0.8, 1.0, 0.2 };
 	static const Color focused   = { 1.0, 0.8, 0.3, 0.2 };
-	*c = unfocused;
-	color_lerp(c, &focused, focus);
-	return color_add(c, RGBA(brightener, brightener, brightener, brightener));
+	return color_add(color_lerp(unfocused, focused, focus), RGBA(brightener, brightener, brightener, brightener));
 }
 
 TASK(marisa_star_slave_projectile, {
@@ -148,7 +146,7 @@ TASK(marisa_star_slave_projectile, {
 		cmplx center = clerp(plr->pos, ctrl->slave_ref_pos, tanh(t / 10.0));
 
 		real brightener = -1 / (1 + sqrt(0.03 * fabs(re(p->pos - center))));
-		marisa_star_slave_projectile_color(&p->color, focus, brightener);
+		p->color = marisa_star_slave_projectile_color(focus, brightener);
 
 		real verticalfac = - 5 * t * (1 + 0.01 * t) + 10 * t / (0.01 * t + 1);
 
@@ -290,11 +288,13 @@ static void marisa_star_draw_orbiter(EntityInterface *ent) {
 	MarisaBOrbiter *orbiter = ENT_CAST(ent, MarisaBOrbiter);
 	MarisaBController *ctrl = orbiter->ctrl;
 
-	SpriteParams sp = {};
-	sp.pos.as_cmplx = orbiter->pos;
-	sp.color = color_mul_scalar(COLOR_COPY(&orbiter->circle_color), ctrl->bomb.beams_alpha);
-	sp.rotation.angle = global.frames * 10 * DEG2RAD;
-	sp.sprite_ptr = ctrl->sprites.fairy_circle;
+	SpriteParams sp = {
+		.pos.as_cmplx = orbiter->pos,
+		.color = color_mul_scalar(orbiter->circle_color, ctrl->bomb.beams_alpha),
+		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.sprite_ptr = ctrl->sprites.fairy_circle,
+	};
+
 	r_draw_sprite(&sp);
 	sp.sprite_ptr = ctrl->sprites.lightningball;
 	sp.scale.both = 0.6;
@@ -334,7 +334,7 @@ TASK(marisa_star_orbiter_stars, { MarisaBController *ctrl; BoxedMarisaBOrbiter o
 		PARTICLE(
 			.sprite_ptr = ctrl->sprites.maristar_orbit,
 			.pos = orbiter->pos,
-			.color = ARGS.color,
+			.color = *ARGS.color,
 			.draw_rule = pdraw_timeout_scalefade(0, 6, 1, 0),
 			.timeout = 150,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
@@ -351,14 +351,14 @@ TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; real hue; BoxedM
 
 	MarisaBOrbiter *orbiter = TASK_HOST_ENT(MarisaBOrbiter);
 	orbiter->ctrl = ctrl;
-	orbiter->particle_color = *HSLA(ARGS.hue, 1, 0.6, 1);
-	orbiter->circle_color = *HSLA(ARGS.hue, 0.9, 0.5, 0);
+	orbiter->particle_color = HSLA(ARGS.hue, 1, 0.6, 1);
+	orbiter->circle_color = HSLA(ARGS.hue, 0.9, 0.5, 0);
 	orbiter->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 	orbiter->ent.draw_func = marisa_star_draw_orbiter;
 
 	*ARGS.out_ref = ENT_BOX(orbiter);
 
-	Color pcolor;
+	Color pcolor = orbiter->particle_color;
 
 	BoxedTask stars_task = cotask_box(INVOKE_SUBTASK_DELAYED(1, marisa_star_orbiter_stars,
 		.ctrl = ctrl,
@@ -382,13 +382,13 @@ TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; real hue; BoxedM
 			stars_task = (BoxedTask) {};
 		}
 
-		color_mul_alpha(&pcolor);
+		pcolor = color_mul_alpha(pcolor);
 		pcolor.a = 0;
 
 		PARTICLE(
 			.sprite_ptr = ctrl->sprites.maristar_orbit,
 			.pos = orbiter->pos,
-			.color = color_mul_scalar(COLOR_COPY(&pcolor), 0.5),
+			.color = color_mul_scalar(pcolor, 0.5),
 			.timeout = 10,
 			.angle = t * 0.1,
 			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),

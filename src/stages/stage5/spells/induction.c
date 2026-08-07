@@ -26,7 +26,7 @@ DEFINE_EXTERN_TASK(stage5_spell_induction) {
 		int c2 = 6 - (global.diff/4);
 		for(int i = 0; i < c; i++) {
 			for(int j = 0; j < 2; j++) {
-				Color *clr = RGBA(1 - 1 / (1 + 0.1 * (x % c2)), 0.5 - 0.1 * (x % c2), 1.0, 0.0);
+				Color clr = RGBA(1 - 1 / (1 + 0.1 * (x % c2)), 0.5 - 0.1 * (x % c2), 1.0, 0.0);
 				float shift = 0.6 * (x / c2);
 				float a = -0.0002 * difficulty_value(0, 1, 2, 3);
 				if(global.diff >= D_Hard) {

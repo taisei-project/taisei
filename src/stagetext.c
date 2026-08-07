@@ -13,7 +13,7 @@
 
 static StageText *textlist = NULL;
 
-StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	auto t = list_append(&textlist, STAGE_ACQUIRE_OBJ(StageText));
 
 	if(text != NULL) {
@@ -24,7 +24,7 @@ StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *fon
 	t->font = font;
 	t->pos = pos;
 	t->align = align;
-	t->color = *clr;
+	t->color = clr;
 
 	t->time.spawn = global.frames + delay;
 	t->time.fadein = fadeintime;
@@ -38,7 +38,7 @@ static void stagetext_numeric_update(StageText *txt, int t, float a) {
 	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(txt->text), txt->text);
 }
 
-StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	auto t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.update = stagetext_numeric_update;
@@ -96,18 +96,17 @@ static void stagetext_draw_single(StageText *txt) {
 		ofs_x = ofs_y = 10 * pow(f, 2);
 	}
 
-	TextParams params = {};
-	params.font_ptr = txt->font;
-	params.align = txt->align;
-	params.blend = BLEND_PREMUL_ALPHA;
-	params.shader_ptr = res_shader("text_stagetext");
-	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
-	params.aux_textures[0] = res_texture("titletransition");
-	params.pos.x = re(txt->pos) + ofs_x;
-	params.pos.y = im(txt->pos) + ofs_y;
-	params.color = &txt->color;
-
-	text_draw(txt->text, &params);
+	text_draw(txt->text, &(TextParams) {
+		.font_ptr = txt->font,
+		.align = txt->align,
+		.blend = BLEND_PREMUL_ALPHA,
+		.shader_ptr = res_shader("text_stagetext"),
+		.shader_params = &(ShaderCustomParams){{ 1 - f }},
+		.aux_textures[0] = res_texture("titletransition"),
+		.pos.x = re(txt->pos) + ofs_x,
+		.pos.y = im(txt->pos) + ofs_y,
+		.color = txt->color,
+	});
 }
 
 void stagetext_update(void) {
@@ -134,10 +133,10 @@ static void stagetext_table_push(StageTextTable *tbl, StageText *txt, bool updat
 	tbl->delay += 5;
 }
 
-void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *titleclr, const Color *clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
+void stagetext_begin_table(StageTextTable *tbl, const char *title, Color titleclr, Color clr, double width, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	*tbl = (typeof(*tbl)) {
 		.pos = VIEWPORT_W/2 + VIEWPORT_H/2*I,
-		.clr = *clr,
+		.clr = clr,
 		.width = width,
 		.lifetime = lifetime,
 		.fadeintime = fadeintime,
@@ -160,19 +159,19 @@ void stagetext_end_table(StageTextTable *tbl) {
 }
 
 static void stagetext_table_add_label(StageTextTable *tbl, const char *title) {
-	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, ALIGN_LEFT, res_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(title, tbl->pos - tbl->width * 0.5, ALIGN_LEFT, res_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, false);
 }
 
 void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, res_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add(val, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, res_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n) {
 	stagetext_table_add_label(tbl, title);
-	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, res_font("standard"), &tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
+	StageText *txt = stagetext_add_numeric(n, tbl->pos + tbl->width * 0.5, ALIGN_RIGHT, res_font("standard"), tbl->clr, tbl->delay, tbl->lifetime, tbl->fadeintime, tbl->fadeouttime);
 	stagetext_table_push(tbl, txt, true);
 }
 
@@ -185,7 +184,6 @@ void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title,
 void stagetext_table_add_separator(StageTextTable *tbl) {
 	tbl->pos += I * 0.5 * font_get_lineskip(res_font("standard"));
 }
-
 
 StageText *stagetext_list_head(void) {
 	return textlist;

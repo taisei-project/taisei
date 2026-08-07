@@ -8,7 +8,7 @@
 
 #include "spells.h"
 
-static Projectile *vapor_particle(cmplx pos, const Color *clr) {
+static Projectile *vapor_particle(cmplx pos, Color clr) {
 	return PARTICLE(
 		.sprite = "stain",
 		.color = clr,
@@ -38,7 +38,7 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 
 	WAIT(ARGS.delay);
 
-	p->color = *RGBA(0.3, 0.8, 0.8, 0.0);
+	p->color = RGBA(0.3, 0.8, 0.8, 0.0);
 	projectile_set_prototype(p, pp_bullet);
 
 	cmplx vel = cdir(rng_sreal()*0.01) * (global.plr.pos - p->pos) * 0.001;
@@ -48,7 +48,7 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 	p->move.retention = 1.02 + deflection * sin(global.frames*314) * I;
 
 	if(rng_chance(0.5)) {
-		Projectile *v = vapor_particle(p->pos, color_mul_scalar(COLOR_COPY(&p->color), 0.3));
+		Projectile *v = vapor_particle(p->pos, color_mul_scalar(p->color, 0.3));
 
 		if(rng_chance(0.5)) {
 			v->flags |= PFLAG_REQUIREDPARTICLE;
@@ -120,18 +120,18 @@ DEFINE_EXTERN_TASK(kurumi_vampvape) {
 	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
 	for(int t = 0;; t++) {
-		INVOKE_SUBTASK(common_charge, b->pos, *RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(50);
 		play_sfx("laser1");
 		INVOKE_SUBTASK(kurumi_vampvape_slave,
-			       .pos = b->pos,
-			       .target = 0,
-			       .time_offset = t
+			.pos = b->pos,
+			.target = 0,
+			.time_offset = t
 		);
 		INVOKE_SUBTASK(kurumi_vampvape_slave,
-			       .pos = b->pos,
-			       .target = VIEWPORT_W,
-			       .time_offset = 1.23*t
+			.pos = b->pos,
+			.target = VIEWPORT_W,
+			.time_offset = 1.23*t
 		);
 		WAIT(210);
 

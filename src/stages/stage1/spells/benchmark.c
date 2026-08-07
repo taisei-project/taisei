@@ -36,7 +36,7 @@ static void stage1_spell_benchmark_proc(Boss *b, int t) {
 			projectile_set_prototype(p, pp_plainball);
 
 		if(t > 1200 && rng_chance(0.5))
-			p->color = *RGB(1.0, 0.2, 0.8);
+			p->color = RGB(1.0, 0.2, 0.8);
 
 		if(t > 350 && rng_chance(0.5))
 			p->color.a = 0;

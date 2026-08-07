@@ -1283,14 +1283,7 @@ static float _text_ucs4_draw(Font *font, size_t ucs4len, const uint32_t ucs4text
 
 	text_ucs4_bbox(font, ucs4len, ucs4text, 0, &bbox);
 
-	Color color;
-
-	if(params->color == NULL) {
-		// XXX: sprite batch code defaults this to RGB(1, 1, 1)
-		color = *r_color_current();
-	} else {
-		color = *params->color;
-	}
+	Color color = params->color;
 
 	ShaderCustomParams shader_params;
 

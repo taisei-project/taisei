@@ -88,7 +88,7 @@ static void scythe_touch_bullet(Projectile *p) {
 	auto p2 = PROJECTILE(
 		.proto = p->proto,
 		.pos = p->pos,
-		.color = &p->color,
+		.color = p->color,
 		.move = p->move,
 	);
 
@@ -158,5 +158,3 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 		o += 0.5;
 	}
 }
-
-

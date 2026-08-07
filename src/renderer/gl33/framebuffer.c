@@ -181,7 +181,7 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, con
 
 	if(flags & BUFFER_COLOR) {
 		assert(colorval != NULL);
-		gl33_set_clear_color(colorval);
+		gl33_set_clear_color(*colorval);
 	}
 
 	if(flags & BUFFER_DEPTH) {

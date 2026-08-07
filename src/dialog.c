@@ -42,7 +42,7 @@ void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide si
 		.side = side,
 		.target_opacity = 1,
 		.composite_dirty = true,
-		.speech_color = (side == DIALOG_SIDE_RIGHT) ? *RGB(0.6, 0.6, 1.0) : *RGB(1.0, 1.0, 1.0),
+		.speech_color = (side == DIALOG_SIDE_RIGHT) ? RGB(0.6, 0.6, 1.0) : RGB(1.0, 1.0, 1.0),
 	};
 
 	alist_append(&d->actors, a);
@@ -282,8 +282,7 @@ static void dialog_title_draw(Dialog *dialog) {
 
 	Sprite *bg = res_sprite("part/smoke");
 	float bg_opacity = 0.2f * dialog->opacity * dialog->title.main_alpha;
-	Color bg_color = *RGB(1, 1, 1);
-	color_mul_scalar(&bg_color, bg_opacity);
+	Color bg_color = RGBA_MUL_ALPHA(1, 1, 1, bg_opacity);
 
 	r_mat_mv_push();
 	r_mat_mv_translate(title_bg_rect.x, title_bg_rect.y, 0);
@@ -292,7 +291,7 @@ static void dialog_title_draw(Dialog *dialog) {
 	r_mat_mv_rotate(global.frames * 1 * DEG2RAD, 0, 0, 1);
 	SpriteParams bgsp = {
 		.sprite_ptr = bg,
-		.color = &bg_color,
+		.color = bg_color,
 		.shader_ptr = res_shader("sprite_default"),
 	};
 	r_draw_sprite(&bgsp);
@@ -301,14 +300,14 @@ static void dialog_title_draw(Dialog *dialog) {
 	r_draw_sprite(&bgsp);
 	r_mat_mv_pop();
 
-	Color clr = *RGB(1, 1, 1);
+	Color clr = RGB(1, 1, 1);
 	ShaderCustomParams sp = {{ dialog->opacity * dialog->title.main_alpha, 0 }};
 
 	TextParams p = {
 		.shader_ptr = res_shader("text_stagetext"),
 		.shader_params = &sp,
 		.aux_textures = { res_texture("titletransition") },
-		.color = &clr,
+		.color = clr,
 		.pos = { title_bg_rect.x, title_bg_rect.y - title_bg_rect.h * 0.2 },
 		.align = ALIGN_CENTER,
 		.font_ptr = main_font,
@@ -343,8 +342,6 @@ void dialog_draw(Dialog *dialog) {
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_width/2.0, 64, 0);
 
-	Color clr = {};
-
 	for(DialogActor *a = dialog->actors.first; a; a = a->next) {
 		if(a->opacity <= 0) {
 			continue;
@@ -370,15 +367,11 @@ void dialog_draw(Dialog *dialog) {
 		float ofs = 10 * (1 - a->focus);
 		r_mat_mv_translate(ofs, ofs, 0);
 		float brightness = 0.5 + 0.5 * a->focus;
-		clr.r = clr.g = clr.b = brightness;
-		clr.a = 1;
-
-		color_mul_scalar(&clr, a->opacity);
 
 		r_flush_sprites();
 		r_draw_sprite(&(SpriteParams) {
 			.blend = BLEND_PREMUL_ALPHA,
-			.color = &clr,
+			.color = color_mul_scalar(RGB(brightness, brightness, brightness), a->opacity),
 			.pos.x = (dialog_width - portrait->w) / 2 + 32 + a->offset.x,
 			.pos.y = VIEWPORT_H - portrait->h / 2 + a->offset.y,
 			.sprite_ptr = portrait,
@@ -408,7 +401,6 @@ void dialog_draw(Dialog *dialog) {
 	r_draw_quad();
 	r_mat_mv_pop();
 
-
 	Font *font = res_font("standard");
 
 	r_mat_tex_push();
@@ -417,16 +409,14 @@ void dialog_draw(Dialog *dialog) {
 	dialog_bg_rect.x -= dialog_bg_rect.w * 0.5;
 	dialog_bg_rect.y -= dialog_bg_rect.h * 0.5;
 
-
 	if(dialog->text.fading_out->opacity > 0) {
-		clr = dialog->text.fading_out->color;
-		color_mul_scalar(&clr, dialog->opacity);
-
 		text_draw_wrapped(_(dialog->text.fading_out->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
-			.shader_params = &(ShaderCustomParams) {{ dialog->opacity * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
-			.color = &clr,
+			.shader_params = &(ShaderCustomParams) {{
+			 	dialog->opacity * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1
+			}},
+			.color = color_mul_scalar(dialog->text.fading_out->color, dialog->opacity),
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
@@ -435,14 +425,11 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	if(dialog->text.current->opacity > 0) {
-		clr = dialog->text.current->color;
-		color_mul_scalar(&clr, dialog->opacity);
-
 		text_draw_wrapped(_(dialog->text.current->text), dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { res_texture("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ dialog->opacity * dialog->text.current->opacity, 0 }},
-			.color = &clr,
+			.color = color_mul_scalar(dialog->text.current->color, dialog->opacity),
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,

@@ -54,13 +54,13 @@ void lasers_shutdown(void) {
 	laserintern_shutdown();
 }
 
-Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserRule rule) {
+Laser *create_laser(cmplx pos, float time, float deathtime, Color color, LaserRule rule) {
 	auto l = alist_push(&global.lasers, STAGE_ACQUIRE_OBJ(Laser));
 	l->birthtime = global.frames;
 	l->timespan = time;
 	l->deathtime = deathtime;
 	l->pos = pos;
-	l->color = *color;
+	l->color = color;
 	l->rule = rule;
 	l->width = 10;
 	l->width_exponent = 1.0;
@@ -76,11 +76,11 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 	return l;
 }
 
-Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr) {
+Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, Color clr) {
 	return create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr);
 }
 
-Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
+Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, Color clr) {
 	// NOTE: timespan influences number of samples used for quantization (about 2x the amount).
 	// Multiple samples are still needed for lines because the width is non-uniform.
 	// TODO: make this a separate parameter and optimize sample counts for other line-type lasers
@@ -547,7 +547,7 @@ void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata) {
 	return NULL;
 }
 
-static void laser_clear_effect(Sprite *spr, cmplx p, cmplxf scale, const Color *clr) {
+static void laser_clear_effect(Sprite *spr, cmplx p, cmplxf scale, Color clr) {
 	int timeout = rng_irange(18, 24);
 	cmplx v = rng_dir();
 	v *= rng_range(0.4, 1.2);
@@ -588,11 +588,11 @@ static void *laser_clear_now_tracefunc(Laser *l, const LaserTraceSample *sample,
 			cmplx ipos = clerp(ctx->prev.pos, pos, f);
 			float iwidth = lerpf(ctx->prev.width, width, f);
 			laser_clear_effect(
-				ctx->particle.spr, ipos, iwidth / ctx->particle.spr->w, &ctx->particle.clr);
+				ctx->particle.spr, ipos, iwidth / ctx->particle.spr->w, ctx->particle.clr);
 		}
 	}
 
-	laser_clear_effect(ctx->particle.spr, pos, width / ctx->particle.spr->w, &ctx->particle.clr);
+	laser_clear_effect(ctx->particle.spr, pos, width / ctx->particle.spr->w, ctx->particle.clr);
 	ctx->prev.pos = pos;
 	ctx->prev.width = width;
 	return NULL;
@@ -601,9 +601,7 @@ static void *laser_clear_now_tracefunc(Laser *l, const LaserTraceSample *sample,
 static void laser_clear_now(Laser *l) {
 	LaserClearTraceCtx ctx;
 	ctx.particle.spr = res_sprite("part/flare");
-	ctx.particle.clr = l->color;
-	color_mul(&ctx.particle.clr, RGBA(2, 2, 2, 0));
-	color_add(&ctx.particle.clr, RGBA(0.1, 0.1, 0.1, 0));
+	ctx.particle.clr = color_add(color_mul(l->color, RGBA(2, 2, 2, 0)), RGBA(0.1, 0.1, 0.1, 0));
 	laser_trace(l, CLEAR_STEP, laser_clear_now_tracefunc, &ctx);
 }
 
@@ -727,7 +725,7 @@ static bool laser_collision(Laser *l, Player *plr) {
 	}
 
 	if(graze_dist < graze_maxdist) {
-		player_graze(plr, graze_pos, 7, 5, &l->color);
+		player_graze(plr, graze_pos, 7, 5, l->color);
 		l->next_graze = global.frames + 4;
 	}
 

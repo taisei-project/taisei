@@ -69,7 +69,7 @@ typedef struct TextParams {
 		struct { float x, y; };
 		cmplxf as_cmplx;
 	} pos;
-	const Color *color;
+	Color color attr_explicit_init;
 	const ShaderCustomParams *shader_params;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	float max_width;

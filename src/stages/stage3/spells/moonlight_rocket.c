@@ -78,7 +78,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 
 	real dt = ARGS.rocket_time;
 	Laser *l = create_laser(
-		ARGS.pos, dt, dt, &ARGS.color,
+		ARGS.pos, dt, dt, ARGS.color,
 		laser_rule_sine_expanding(2.5*ARGS.dir, M_PI/20, 0.2, ARGS.phase)
 	);
 
@@ -116,7 +116,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 
 	int cnt = 22;
 	real rot = (global.frames - NOT_NULL(boss->current)->starttime) * 0.0037 * global.diff;
-	Color *c = HSLA(fmod(rot, M_TAU) / (M_TAU), 1.0, 0.5, 0);
+	Color c = HSLA(fmod(rot, M_TAU) / (M_TAU), 1.0, 0.5, 0);
 	real boost = difficulty_value(4, 6, 8, 10);
 
 	for(int i = 0; i < cnt; ++i) {
@@ -178,8 +178,8 @@ TASK(rocket_slave, { BoxedBoss boss; real rot_speed; real rot_initial; }) {
 	for(;;WAIT(rperiod)) {
 		play_sfx("laser1");
 		INVOKE_TASK_DELAYED(rocket_time - warn_time, aimcircle, 60 + warn_time, warn_time);
-		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(1.0, 1.0, 0.5, 0.0), 0, laccel, rocket_time);
-		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(0.5, 1.0, 0.5, 0.0), M_PI, laccel, rocket_time);
+		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, RGBA(1.0, 1.0, 0.5, 0.0), 0, laccel, rocket_time);
+		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, RGBA(0.5, 1.0, 0.5, 0.0), M_PI, laccel, rocket_time);
 	}
 }
 

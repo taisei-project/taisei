@@ -19,9 +19,9 @@ typedef struct DrawFragmentsParams {
 	Sprite *fill;
 
 	struct {
-		const Color *fill;
-		const Color *back;
-		const Color *frag;
+		Color fill;
+		Color back;
+		Color frag;
 	} color;
 
 	struct {
@@ -47,6 +47,6 @@ typedef struct DrawFragmentsParams {
 } DrawFragmentsParams;
 
 void draw_fragments(const DrawFragmentsParams *params);
-double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad);
+double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, Color c_int, Color c_fract, bool zero_pad);
 void draw_framebuffer_tex(Framebuffer *fb, double width, double height);
 void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment);

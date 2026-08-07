@@ -46,10 +46,9 @@ const char *difficulty_sprite_name(Difficulty diff) {
 	return d ? d->spr_name : "difficulty/unknown";
 }
 
-const Color *difficulty_color(Difficulty diff) {
-	static Color unknown_clr = { 0.5, 0.5, 0.5, 1.0 };
+Color difficulty_color(Difficulty diff) {
 	DiffDef *d = get_diff_def(diff);
-	return d ? &d->color : &unknown_clr;
+	return d ? d->color : RGBA(0.5, 0.5, 0.5, 1.0);
 }
 
 void difficulty_preload(ResourceGroup *rg) {

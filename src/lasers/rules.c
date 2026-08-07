@@ -143,7 +143,7 @@ TASK(laser_dynamic, {
 	cmplx pos;
 	float timespan;
 	float deathtime;
-	const Color *color;
+	Color color;
 	MoveParams **out_move;
 }) {
 	int histsize = ceilf(ARGS.timespan) + 2;
@@ -178,7 +178,7 @@ TASK(laser_dynamic, {
 }
 
 Laser *create_dynamic_laser(
-	cmplx pos, float time, float deathtime, const Color *color, MoveParams **out_move
+	cmplx pos, float time, float deathtime, Color color, MoveParams **out_move
 ) {
 	Laser *l;
 	INVOKE_TASK(laser_dynamic, &l, pos, time, deathtime, color, out_move);

@@ -230,10 +230,10 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		Color clr;
 
 		if(e->action == NULL) {
-			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * alpha);
+			clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.5 * alpha);
 		} else {
 			float ia = 1-a;
-			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
+			clr = RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
 		}
 
 		// NOTE: e->name is already localized!
@@ -241,7 +241,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 		text_draw(e->name, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 20*i },
-			.color = &clr,
+			.color = clr,
 			.shader = "text_default",
 		});
 	});
@@ -265,6 +265,8 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt, void *ctx) {
 	ReplayStage *first_stage = dynarray_get_ptr(&rpy->stages, 0);
 	time_t t = first_stage->start_time;
 	struct tm *timeinfo = localtime(&t);
+
+	Font *font = res_font("standard");
 
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
@@ -324,15 +326,17 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt, void *ctx) {
 		}
 
 		switch(a) {
-			case ALIGN_CENTER: o += csize * 0.5 - text_width(res_font("standard"), tmp, 0) * 0.5; break;
-			case ALIGN_RIGHT:  o += csize - text_width(res_font("standard"), tmp, 0);             break;
-			default:                                                                              break;
+			case ALIGN_CENTER: o += csize * 0.5 - text_width(font, tmp, 0) * 0.5; break;
+			case ALIGN_RIGHT:  o += csize - text_width(font, tmp, 0);             break;
+			default:                                                              break;
 		}
 
 		text_draw(tmp, &(TextParams) {
 			.pos = { o + 10, 20 * item },
 			.shader = "text_default",
 			.max_width = csize,
+			.font_ptr = font,
+			.color = r_color_current(),
 		});
 	}
 }

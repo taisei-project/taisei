@@ -18,12 +18,12 @@ TASK(animate_color_shift) {
 
 	int dur = 12000;
 	Color fog_color_start = draw_data->fog.color;
-	Color fog_color_final = *RGBA(0.1, 0.1, 1.0, 1.0);
+	Color fog_color_final = RGBA(0.1, 0.1, 1.0, 1.0);
 
 	for(int i = 0; i < dur; i++, YIELD) {
-		draw_data->fog.color = *color_lerp(
-			&fog_color_start,
-			&fog_color_final,
+		draw_data->fog.color = color_lerp(
+			fog_color_start,
+			fog_color_final,
 			i/(float)dur
 		);
 	}
@@ -52,7 +52,7 @@ TASK(animate_bg_fullstage) {
 	cam->rot.v[2] = -90;
 
 	Stage2DrawData *draw_data = stage2_get_draw_data();
-	draw_data->fog.color = *RGBA(0.45, 0.5, 0.5, 1);
+	draw_data->fog.color = RGBA(0.45, 0.5, 0.5, 1);
 	draw_data->fog.end = 1.0;
 	INVOKE_TASK(common_easing_animate_vec4,
 		&draw_data->fog.color.rgba, { 0.04, 0.06, 0.09, 1 }, 1600, glm_ease_quad_out);
@@ -88,7 +88,7 @@ TASK(animate_bg_spellpractice) {
 	cam->vel[1] = 0.05f;
 
 	Stage2DrawData *draw_data = stage2_get_draw_data();
-	draw_data->fog.color = *RGBA(0.1, 0.1, 1, 1.0);
+	draw_data->fog.color = RGBA(0.1, 0.1, 1, 1.0);
 	draw_data->hina_lights = 1.0;
 	draw_data->fog.end = 3.8;
 

@@ -32,7 +32,7 @@ static real safe_radius(real phase) {
 }
 
 TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; real timespan; int time_offset; }) {
-	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color,
+	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, ARGS.color,
 		laser_rule_arc(0, ARGS.turn_speed, ARGS.time_offset)));
 	auto rd = NOT_NULL(laser_get_ruledata_arc(l));
 
@@ -79,7 +79,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
 		.offset = offset,
-		.color = *RGBA(0.2, 1, 0.5, 0),
+		.color = RGBA(0.2, 1, 0.5, 0),
 		.turn_speed = turn_speed,
 		.timespan = 12,
 		.time_offset = 0
@@ -89,7 +89,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
 		.offset = offset,
-		.color = *RGBA(1, 0, 0, 0),
+		.color = RGBA(1, 0, 0, 0),
 		.turn_speed = -turn_speed,
 		.timespan = 2.5,
 		.time_offset = 0
@@ -99,7 +99,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
 		.offset = offset,
-		.color = *RGBA(0.2, 0.4, 1, 0),
+		.color = RGBA(0.2, 0.4, 1, 0),
 		.turn_speed = turn_speed,
 		.timespan = 12,
 		.time_offset = 30
@@ -109,7 +109,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
 		.offset = offset,
-		.color = *RGBA(1, 0, 0, 0),
+		.color = RGBA(1, 0, 0, 0),
 		.turn_speed = -turn_speed,
 		.timespan = 2.5,
 		.time_offset = 30
@@ -179,7 +179,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
 							.bind_to_entity = ARGS.baryons.as_generic,
 							.time = 250 - d,
-							.color = *RGBA(0.02, 0.01, 0.1, 0.0),
+							.color = RGBA(0.02, 0.01, 0.1, 0.0),
 							.sound = COMMON_CHARGE_SOUNDS,
 						);
 					} else {
@@ -188,7 +188,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
 							.bind_to_entity = ARGS.baryons.as_generic,
 							.time = 250 - d,
-							.color = *RGBA(0.02, 0.01, 0.1, 0.0),
+							.color = RGBA(0.02, 0.01, 0.1, 0.0),
 						);
 					}
 				}
@@ -293,4 +293,3 @@ DEFINE_EXTERN_TASK(stage6_spell_ricci) {
 }
 
 /* Thank you for visiting Akari danmaku code (tm) rejuvenated by lao */
-

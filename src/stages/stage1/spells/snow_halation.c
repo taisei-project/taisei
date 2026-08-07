@@ -9,22 +9,20 @@
 #include "spells.h"
 #include "i18n/i18n.h"
 
-static Color *halation_color(Color *out_clr, float phase) {
+static Color halation_color(float phase) {
 	if(phase < 0.5) {
-		*out_clr = *color_lerp(
+		return color_lerp(
 			RGBA(0.4, 0.4, 0.75, 0),
 			RGBA(0.4, 0.4, 0.3, 0),
 			phase * phase
 		);
 	} else {
-		*out_clr = *color_lerp(
+		return color_lerp(
 			RGBA(0.4, 0.4, 0.3, 0),
 			RGBA(1.0, 0.3, 0.2, 0),
 			(phase - 0.5) * 2
 		);
 	}
-
-	return out_clr;
 }
 
 TASK(halation_laser_color, { BoxedLaser laser; float max_width; }) {
@@ -32,7 +30,7 @@ TASK(halation_laser_color, { BoxedLaser laser; float max_width; }) {
 	float max_width = ARGS.max_width;
 
 	for(;;) {
-		halation_color(&l->color, l->width / max_width);
+		l->color = halation_color(l->width / max_width);
 		YIELD;
 	}
 }
@@ -41,11 +39,10 @@ static Laser *create_halation_laser(cmplx a, cmplx b, float width, float charge,
 	Laser *l;
 
 	if(clr == NULL) {
-		Color c = { };
-		l = create_laserline_ab(a, b, width, charge, dur, &c);
+		l = create_laserline_ab(a, b, width, charge, dur, (Color) {});
 		INVOKE_TASK(halation_laser_color, ENT_BOX(l), width);
 	} else {
-		l = create_laserline_ab(a, b, width, charge, dur, clr);
+		l = create_laserline_ab(a, b, width, charge, dur, *clr);
 	}
 
 	return l;
@@ -72,7 +69,7 @@ TASK(halation_orb, {
 		.move = move_from_towards(ARGS.pos[0], ARGS.pos[2], 0.1),
 	));
 
-	halation_color(&orb->color, 0);
+	orb->color = halation_color(0);
 
 	INVOKE_SUBTASK(halation_orb_trail, ENT_BOX(orb));
 	CANCEL_TASK_AFTER(&orb->events.cleared, THIS_TASK);
@@ -126,7 +123,7 @@ TASK(halation_orb, {
 		PROJECTILE(
 			.proto = pp_crystal,
 			.pos = orb->pos,
-			.color = colors+i,
+			.color = colors[i],
 			.move = move_asymptotic_simple(cdir(rot + M_PI * 2 * (i + 1.0) / pcount), 3),
 		);
 	}

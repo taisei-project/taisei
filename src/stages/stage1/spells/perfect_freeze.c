@@ -17,7 +17,7 @@ TASK(move_frozen, { BoxedProjectileArray *parray; }) {
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		cmplx dir = rng_dir();
 		p->move = move_asymptotic_halflife(0, 4 * dir, rng_range(60, 80));
-		p->color = *RGB(0.9, 0.9, 0.9);
+		p->color = RGB(0.9, 0.9, 0.9);
 
 		stage1_spawn_stain(p->pos, p->angle, 30);
 		spawn_projectile_highlight_effect(p);
@@ -35,7 +35,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 	for(;;) {
 		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2.0 + 100.0*I, 0.04);
-		common_charge(40, &boss->pos, 0, *RGBA(1.0, 0.5, 0.0, 0));
+		common_charge(40, &boss->pos, 0, RGBA(1.0, 0.5, 0.0, 0));
 
 		int n = global.diff;
 		int nfrog = n*60;
@@ -69,7 +69,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			spawn_projectile_highlight_effect(p);
 			play_sfx("shot_special1");
 
-			p->color = *RGB(0.9, 0.9, 0.9);
+			p->color = RGB(0.9, 0.9, 0.9);
 			p->move.retention = 0.8;
 
 			if(rng_chance(0.2)) {
@@ -85,8 +85,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		int charge_time = difficulty_value(85, 80, 75, 70);
 		aniplayer_queue(&boss->ani, "(9)", 0);
 
-		INVOKE_SUBTASK(common_charge, +60, *RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
-		INVOKE_SUBTASK(common_charge, -60, *RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
+		INVOKE_SUBTASK(common_charge, +60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, -60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
 		WAIT(charge_time);
 
 		INVOKE_SUBTASK_DELAYED(120, move_frozen, &projs);

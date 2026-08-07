@@ -170,7 +170,7 @@ DEFINE_ENTITY_TYPE(Projectile, {
 
 typedef struct ProjArgs {
 	ProjPrototype *proto;
-	const Color *color;
+	Color color;
 	const char *sprite;
 	Sprite *sprite_ptr;
 	const char *shader;

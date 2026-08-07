@@ -17,7 +17,7 @@ static void iku_slave_draw(EntityInterface *e) {
 		.pos.as_cmplx = slave->pos,
 		.sprite_ptr = slave->sprites.cloud,
 		.scale.as_cmplx = slave->scale,
-		.color = &slave->color,
+		.color = slave->color,
 	});
 }
 
@@ -47,7 +47,7 @@ TASK(iku_slave_visual, { BoxedIkuSlave slave; }) {
 		PARTICLE(
 			.sprite_ptr = slave->sprites.cloud,
 			.pos = slave->pos,
-			.color = &slave->color,
+			.color = slave->color,
 			.draw_rule = pdraw_timeout_fade(2, 0),
 			.timeout = 50,
 			.move = move_linear(offset * 0.2),
@@ -62,7 +62,7 @@ void stage5_init_iku_slave(IkuSlave *slave, cmplx pos) {
 	slave->ent.draw_layer = LAYER_BOSS - 1;
 	slave->ent.draw_func = iku_slave_draw;
 	slave->scale = (1 + I);
-	slave->color = *RGBA(0.05, 0.05, 0.3, 0);
+	slave->color = RGBA(0.05, 0.05, 0.3, 0);
 	slave->sprites.lightning0 = res_sprite("part/lightning0");
 	slave->sprites.lightning1 = res_sprite("part/lightning1");
 	slave->sprites.cloud = res_sprite("part/lightningball");
@@ -109,8 +109,8 @@ static void iku_nonspell_spawn_cloud(void) {
 Boss *stage5_spawn_iku(cmplx pos) {
 	Boss *iku = create_boss(N_("Nagae Iku"), "iku", pos);
 	boss_set_portrait(iku, "iku", NULL, "normal");
-	iku->glowcolor = *RGB(0.2, 0.4, 0.5);
-	iku->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
+	iku->glowcolor = RGB(0.2, 0.4, 0.5);
+	iku->shadowcolor = RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 	return iku;
 }
 

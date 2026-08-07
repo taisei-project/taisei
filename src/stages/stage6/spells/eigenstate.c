@@ -28,7 +28,7 @@ TASK(eigenstate_bullet, { cmplx pos; cmplx v0; cmplx v1; Color color; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_plainball,
 		.pos = ARGS.pos,
-		.color = &ARGS.color,
+		.color = ARGS.color,
 		.move = move_asymptotic_simple(ARGS.v0, 1)
 	));
 
@@ -58,7 +58,7 @@ TASK(eigenstate_spawn_bullets, { BoxedEllyBaryons baryons; int baryon_idx; }) {
 					    .pos = baryons->poss[ARGS.baryon_idx] + 60 * cdir(M_TAU/count*i),
 					    .v0 = v0,
 					    .v1 = v1,
-					    .color = *RGBA(j == 0, j == 1, j == 2, 0.0)
+					    .color = RGBA(j == 0, j == 1, j == 2, 0.0)
 				);
 			}
 		}

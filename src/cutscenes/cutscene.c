@@ -340,6 +340,7 @@ static void draw_text(CutsceneState *st) {
 		.align = ALIGN_LEFT,
 		.font_ptr = font,
 		.overlay_projection = &textbox,
+		.color = {},
 	};
 
 	StringBuffer buf = { acquire_scratch_arena() };
@@ -347,7 +348,7 @@ static void draw_text(CutsceneState *st) {
 	for(CutsceneTextVisual *tv = st->text_visuals.first; tv; tv = tv->next) {
 		const CutscenePhaseTextEntry *e = tv->entry;
 
-		p.color = &e->color;
+		p.color = e->color;
 		cparams.vector[0] = tv->alpha;
 
 		if(e->type == CTT_CENTERED) {

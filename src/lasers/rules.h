@@ -67,7 +67,7 @@ typedef struct LaserRuleDynamicData {
 	LaserRuleDynamicTaskData *const task_data;
 } LaserRuleDynamicData;
 
-Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, const Color *color, MoveParams **out_move);
+Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, Color color, MoveParams **out_move);
 LaserRuleDynamicData *laser_get_ruledata_dynamic(Laser *l);
 
 #define MAKE_LASER_RULE(func, data) ({ \

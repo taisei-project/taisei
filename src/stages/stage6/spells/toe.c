@@ -54,32 +54,31 @@ void elly_spellbg_toe(Boss *b, int t) {
 		float wobble = max(0, t - BREAKTIME) * 0.03f;
 
 		a = glm_ease_quad_inout(a) * 0.4;
-		Color color;
 
 		SpriteParams sp = {
-			.color = &color,
 			.sprite_ptr = res_sprite(texname),
 			.pos = {
 				VIEWPORT_W / 2.0 + positions[i][0] + cos(wobble + i) * wobble,
 				VIEWPORT_H / 2.0 - 150 + positions[i][1] + sin(i + wobble) * wobble,
 			},
 			.blend = BLEND_PREMUL_ALPHA,
+			.color = {},
 		};
 
 		cmplxf basepos = sp.pos.as_cmplx;
 
 		float f = a * 0.2;
-		color.a = f;
+		sp.color.a = f;
 
 		for(int j = 0; j < 3; ++j) {
 			sp.pos.as_cmplx = basepos + 2 * cdir(0.1 * t + j*M_TAU/3);
-			color.r = -f * (j == 0);
-			color.g = -f * (j == 1);
-			color.b = -f * (j == 2);
+			sp.color.r = -f * (j == 0);
+			sp.color.g = -f * (j == 1);
+			sp.color.b = -f * (j == 2);
 			r_draw_sprite(&sp);
 		}
 
-		color = *RGBA(a, a, a, a);
+		sp.color = RGBA(a, a, a, a);
 		sp.pos.as_cmplx = basepos;
 		r_draw_sprite(&sp);
 	}
@@ -128,17 +127,16 @@ TASK(toe_boson_effect_spin, { BoxedProjectile p; }) {
 	}
 }
 
-static Color* boson_color(Color *out_clr, int pos, int warps) {
+static Color boson_color(int pos, int warps) {
 	float f = pos / 3.0;
-	*out_clr = *HSL(( warps - 0.3 * (1 - f)) / 3.0, 1 + f, 0.5);
-	return out_clr;
+	return HSL((warps - 0.3 * (1 - f)) / 3.0, 1 + f, 0.5);
 }
 
 TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activation_delay; int trail_idx; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_rice,
 		.pos = ARGS.pos,
-		.color = boson_color(&(Color){}, ARGS.trail_idx, 0),
+		.color = boson_color(ARGS.trail_idx, 0),
 		.max_viewport_dist = 20,
 	));
 
@@ -160,7 +158,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			PARTICLE(
 				.sprite = "smoothdot",
 				.pos = p->pos,
-				.color = &thiscolor_additive,
+				.color = thiscolor_additive,
 				.draw_rule = pdraw_timeout_fade(1, 0),
 				.timeout = 10,
 			);
@@ -207,7 +205,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			PARTICLE(
 				.sprite = "myon",
 				.pos = prev_pos,
-				.color = &thiscolor_additive,
+				.color = thiscolor_additive,
 				.timeout = 50,
 				.draw_rule = pdraw_timeout_scalefade(5, 0, 1, 0),
 				.angle = rng_angle(),
@@ -217,21 +215,21 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			PARTICLE(
 				.sprite = "stardust",
 				.pos = prev_pos,
-				.color = &thiscolor_additive,
+				.color = thiscolor_additive,
 				.timeout = 60,
 				.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 				.angle = rng_angle(),
 				.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 			);
 
-			boson_color(&p->color, ARGS.trail_idx, ARGS.num_warps - warps_left);
+			p->color = boson_color(ARGS.trail_idx, ARGS.num_warps - warps_left);
 			thiscolor_additive = p->color;
 			thiscolor_additive.a = 0;
 
 			Projectile *part = PARTICLE(
 				.sprite = "stardust",
 				.pos = p->pos,
-				.color = &thiscolor_additive,
+				.color = thiscolor_additive,
 				.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 				.timeout = 30,
 				.flags = PFLAG_REQUIREDPARTICLE,
@@ -251,8 +249,8 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			float overshoot_time = re(pos0 * conj(dir)) / re(ARGS.vel * conj(dir));
 			pos_lookahead -= ARGS.vel * overshoot_time;
 
-			Color *clr = boson_color(&(Color){}, ARGS.trail_idx, ARGS.num_warps - warps_left + 1);
-			clr->a = 0;
+			Color clr = boson_color(ARGS.trail_idx, ARGS.num_warps - warps_left + 1);
+			clr.a = 0;
 
 			PARTICLE(
 				.sprite = "smoothdot",
@@ -301,8 +299,8 @@ static LaserRule toe_laser_rule(cmplx velocity, int type) {
 }
 
 static void toe_laser_particle(Laser *l, cmplx origin) {
-	Color *c = color_mul(COLOR_COPY(&l->color), &l->color);
-	c->a = 0;
+	Color c = color_mul(l->color, l->color);
+	c.a = 0;
 
 	PARTICLE(
 		.sprite = "stardust",
@@ -317,7 +315,7 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 	PARTICLE(
 		.sprite = "stain",
 		.pos = origin,
-		.color = color_mul_scalar(COLOR_COPY(c), 0.5),
+		.color = color_mul_scalar(c, 0.5),
 		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.timeout = 20,
 		.angle = rng_angle(),
@@ -376,7 +374,7 @@ DEFINE_TASK(toe_laser) {
 	};
 
 	Laser *l = TASK_BIND(
-		create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, &type_to_color[ARGS.type],
+		create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, type_to_color[ARGS.type],
 			toe_laser_rule(ARGS.vel, ARGS.type)));
 	toe_laser_particle(l, ARGS.pos);
 
@@ -414,7 +412,7 @@ TASK(toe_fermion_yukawa_effect, { BoxedProjectile parent; }) {
 
 	Projectile *p = TASK_BIND(PARTICLE(
 		.sprite = "blast",
-		.color = &thiscolor_additive,
+		.color = thiscolor_additive,
 		.timeout = 60,
 		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.angle = rng_angle(),
@@ -439,7 +437,7 @@ TASK(toe_fermion_effects, { BoxedProjectile p; }) {
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
-			.color = &thiscolor_additive,
+			.color = thiscolor_additive,
 			.timeout = min(t / 6.0f, 10),
 			.draw_rule = pdraw_timeout_scalefade(particle_scale * 0.5, particle_scale * 2, 1, 0),
 			.angle = rng_angle(),
@@ -500,7 +498,7 @@ TASK(toe_higgs, { cmplx pos; cmplx vel; Color color; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_flea,
 		.pos = ARGS.pos,
-		.color = &ARGS.color,
+		.color = ARGS.color,
 		.flags = PFLAG_NOSPAWNFLARE,
 	));
 
@@ -621,12 +619,12 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 				cmplx wait_pos = boss->pos + 18 * dir * i;
 
 				INVOKE_TASK(toe_boson,
-					    .pos = boss->pos,
-					    .wait_pos = wait_pos,
-					    .vel = 2.5 * dir,
-					    .num_warps = num_warps,
-					    .activation_delay = 42*2 - step * t,
-					    .trail_idx = i
+					.pos = boss->pos,
+					.wait_pos = wait_pos,
+					.vel = 2.5 * dir,
+					.num_warps = num_warps,
+					.activation_delay = 42*2 - step * t,
+					.trail_idx = i
 				);
 			}
 		}
@@ -715,7 +713,7 @@ TASK(toe_part_higgs, { BoxedBoss boss; int fast_duration; int full_duration; }) 
 				INVOKE_TASK(toe_higgs,
 					.pos = boss->pos,
 					.vel = vel,
-					.color = *RGB(dir * (t > fast_steps), 0, 1)
+					.color = RGB(dir * (t > fast_steps), 0, 1)
 				);
 			}
 		}
@@ -800,4 +798,3 @@ DEFINE_EXTERN_TASK(stage6_spell_toe) {
 		WAIT(100);
 	}
 }
-

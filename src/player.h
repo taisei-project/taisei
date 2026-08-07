@@ -204,7 +204,7 @@ void player_move(Player*, cmplx delta);
 
 void player_realdeath(Player*);
 void player_death(Player*);
-void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color);
+void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, Color color);
 
 PlayerEventResult player_event(
 	Player *plr,

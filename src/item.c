@@ -115,14 +115,12 @@ static void ent_draw_item(EntityInterface *ent) {
 		alpha = clamp(2.0f - (global.frames - i->birthtime) / 60.0f, 0.1f, 1.0f);
 	}
 
-	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
-
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = i->sprites.pickup,
 		.shader_ptr = shader,
 		.shader_params = &shader_params,
 		.pos = { re(i->pos), y },
-		.color = c,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 	});
 }
 

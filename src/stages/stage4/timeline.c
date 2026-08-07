@@ -187,7 +187,7 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 	int count = difficulty_value(35, 55, 75, 90);
 	real speed = difficulty_value(1.0, 1.2, 1.4, 1.6);
 
-	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0, 0.7, 1.0, 0), 40, .anchor = &ARGS.e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0, 0.7, 1.0, 0), 40, .anchor = &ARGS.e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(40);
 
 	for(int i = 0; i < count; i++) {
@@ -326,7 +326,7 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1)));
 	INVOKE_TASK(bigcircle_fairy_move, ENT_BOX(e), ARGS.vel);
 	WAIT(20);
-	INVOKE_SUBTASK(common_charge, 0, *RGBA(0, 0.8, 0, 0), 60, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0, 0.8, 0, 0), 60, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
 	WAIT(40);
 	int shots = difficulty_value(3, 4, 6, 7);
@@ -403,12 +403,12 @@ TASK(supercard_proj, { cmplx pos; Color color; MoveParams move_start; MoveParams
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_card,
 		.pos = ARGS.pos,
-		.color = &ARGS.color,
+		.color = ARGS.color,
 	));
 	p->move = ARGS.move_start;
 
 	WAIT(ARGS.split_time);
-	p->color = *RGB(p->color.b, 0.2, p->color.g);
+	p->color = RGB(p->color.b, 0.2, p->color.g);
 	play_sfx_ex("redirect", 10, false);
 	spawn_projectile_highlight_effect(p);
 	p->move = ARGS.move_split;
@@ -448,7 +448,7 @@ TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
 
 					INVOKE_TASK(supercard_proj,
 						.pos = e->pos + 30 * dir,
-						.color = *RGB(0, 0.2, 1.0 - 0.2 * psin(i / 20.0)),
+						.color = RGB(0, 0.2, 1.0 - 0.2 * psin(i / 20.0)),
 						.move_start = move_linear(0.01 * dir),
 						.move_split = move_split,
 						.split_time = 100 - i
@@ -531,9 +531,9 @@ TASK(spiral_fairy, { cmplx pos; cmplx dir; }) {
 	int petals = 5;
 
 	Color colors[3] = {
-		*RGBA(1.0, 0.0, 0.0, 0.0),
-		*RGBA(0.0, 1.0, 0.0, 0.0),
-		*RGBA(0.0, 0.0, 1.0, 0.0),
+		RGBA(1.0, 0.0, 0.0, 0.0),
+		RGBA(0.0, 1.0, 0.0, 0.0),
+		RGBA(0.0, 0.0, 1.0, 0.0),
 	};
 
 	WAIT(20);
@@ -550,7 +550,7 @@ TASK(spiral_fairy, { cmplx pos; cmplx dir; }) {
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = e->pos + petal_pos,
-				.color = &colors[j],
+				.color = colors[j],
 				.move = move_linear(1 * dir),
 				.angle = carg(petal_pos),
 				.flags = PFLAG_MANUALANGLE,
@@ -584,7 +584,7 @@ TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
 	INVOKE_SUBTASK_DELAYED(60, common_charge,
 		.time = 90,
 		.pos = e->pos,
-		.color = *color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
+		.color = color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
 	ecls_fairy_summon(fairy, 120);
@@ -694,7 +694,7 @@ TASK(scythe_post_mid, { int fleetime; }) {
 		struct projentry *pe = &projs[i % (sizeof(projs)/sizeof(struct projentry))];
 
 		float ca = i/60.0f;
-		Color *c = RGBA(cosf(ca), sinf(ca), cosf(ca + 2.1f), 0.5f);
+		Color c = RGBA(cosf(ca), sinf(ca), cosf(ca + 2.1f), 0.5f);
 
 		play_sfx_ex(pe->snd, 3, true);
 

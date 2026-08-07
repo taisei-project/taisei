@@ -100,7 +100,7 @@ TASK(reimu_dream_gap_bomb_projectile_impact, { BoxedProjectile p; Sprite *impact
 
 	PARTICLE(
 		.angle = rng_angle(),
-		.color = &p->color,
+		.color = p->color,
 		.draw_rule = pdraw_timeout_scalefade(0, 3 * range / ARGS.impact_sprite->w, 1, 0),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.layer = LAYER_BOSS + 2,
@@ -116,7 +116,7 @@ TASK(reimu_dream_gap_bomb_projectile_impact, { BoxedProjectile p; Sprite *impact
 TASK(reimu_dream_gap_bomb_projectile, {
 	cmplx pos;
 	cmplx vel;
-	const Color *color;
+ 	Color color;
 	Sprite *sprite;
 	Sprite *impact_sprite;
 }) {
@@ -179,7 +179,7 @@ TASK(reimu_dream_bomb, { ReimuBController *ctrl; }) {
 
 	int t = 0;
 	do {
-		Color *pcolor = HSLA(t/30.0, 0.5, 0.5, 0.5);
+		Color pcolor = HSLA(t/30.0, 0.5, 0.5, 0.5);
 
 		for(int i = 0; i < NUM_GAPS; ++i) {
 			ReimuBGap *gap = ctrl->gaps.array + i;
@@ -321,11 +321,10 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.flags = PFLAG_MANUALANGLE,
 	);
 
-	Color *clr = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit);
 	PARTICLE(
 		.sprite = exit ? "stain" : "stardust",
 		.pos = pos,
-		.color = clr,
+		.color = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit),
 		.timeout = 20,
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scalefade(0.1, 0.6, 1, 0),
@@ -414,7 +413,7 @@ TASK(reimu_dream_needle, {
 		.shader_ptr = ARGS.shader,
 	));
 
-	Color *trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.15);
+	Color trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.15);
 	int warp_cnt = 1;
 
 	for(;;) {

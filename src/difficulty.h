@@ -29,8 +29,8 @@ const char *difficulty_name(Difficulty diff)
 const char *difficulty_sprite_name(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
-const Color *difficulty_color(Difficulty diff)
-	attr_pure attr_returns_nonnull;
+Color difficulty_color(Difficulty diff)
+	attr_pure;
 
 void difficulty_preload(ResourceGroup *rg);
 

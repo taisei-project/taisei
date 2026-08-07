@@ -74,7 +74,7 @@ static void youmu_homing_trail(YoumuBController *ctrl, Projectile *p, cmplx v, i
 	PARTICLE(
 		.sprite_ptr = ctrl->sprites.smoothdot,
 		.pos = p->pos,
-		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), &p->color),
+		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), p->color),
 		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*re(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*im(p->pos)/VIEWPORT_H*M_TAU)), 2),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.5+0.5*I, 3+7*I, 1, 0, 2),
 		.timeout = to,
@@ -112,6 +112,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 		.sprite_ptr = player_frame,
 		.pos.as_cmplx = slicepos,
 		.shader_params = &spbuf.shader_params,
+		.color = RGB(1, 1, 1),
 	});
 }
 
@@ -145,7 +146,7 @@ TASK(youmu_burst_shot, { YoumuBController *ctrl; int num_shots; }) {
 	for(int shot = 1; shot <= nshots; ++shot) {
 		real np = shot / (real)nshots;
 
-		Color *clr = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5);
+		Color clr = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5);
 		real spread = 0.5 * (1 + 0.25 * sin(global.frames/10.0));
 		real speed = base_speed * (1 - 0.25 * (1 - np));
 		real boost = 3 * (1 - pow(1 - np, 2));
@@ -237,7 +238,7 @@ TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
 	PARTICLE(
 		.sprite_ptr = p->sprite,
 		.shader_ptr = p->shader,
-		.color = &p->color,
+		.color = p->color,
 		.timeout = 30,
 		.draw_rule = pdraw_timeout_scalefade(1+I, 0.1+I, 1, 0),
 		.pos = p->pos,
@@ -483,7 +484,7 @@ TASK(youmu_haunting_bomb_slice_petal, { YoumuBController *ctrl; cmplx pos; cmplx
 	real transition_time = 40;
 
 	for(real t = 0; t <= transition_time; ++t) {
-		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / transition_time));
+		p->color = color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / transition_time));
 		YIELD;
 	}
 }
@@ -518,7 +519,7 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 			a = min(1, tt / 0.2);
 		}
 
-		p->color = *RGBA(a, a, a, 0);
+		p->color = RGBA(a, a, a, 0);
 
 		if(t % 5 == 0) {
 			INVOKE_TASK(youmu_haunting_bomb_slice_petal, ctrl, p->pos - 400 * petal_dir, petal_dir);

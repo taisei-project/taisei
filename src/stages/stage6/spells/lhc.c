@@ -18,7 +18,7 @@ TASK(lhc_laser, { BoxedEllyBaryons baryons; int baryon_idx; real direction; Colo
 	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 
 	Laser *l = TASK_BIND(create_laser(
-		baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color,
+		baryons->poss[ARGS.baryon_idx], 200, 300, ARGS.color,
 		laser_rule_linear(ARGS.direction * VIEWPORT_W * 0.005)));
 	l->unclearable = true;
 
@@ -59,7 +59,7 @@ TASK(lhc_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 
 	for(;;) {
 		for(int baryon_idx = 2; baryon_idx < NUM_BARYONS; baryon_idx += 3) {
-			Color clr = *RGBA(0.1 + 0.9 * (baryon_idx > 3), 0, 1 - 0.9 * (baryon_idx > 3), 0);
+			Color clr = RGBA(0.1 + 0.9 * (baryon_idx > 3), 0, 1 - 0.9 * (baryon_idx > 3), 0);
 			INVOKE_SUBTASK(lhc_laser, ARGS.baryons, baryon_idx,
 				.direction = (1 - 2 * (baryon_idx > 3)),
 				.color = clr
@@ -160,4 +160,3 @@ DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 		WAIT(LHC_PERIOD - 20);
 	}
 }
-

@@ -161,7 +161,7 @@ TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 
 	int interval = 20;
 	int petals = 5;
-	Color pcolor = *RGBA(1, 0.5, 0, 1);
+	Color pcolor = RGBA(1, 0.5, 0, 1);
 
 	int orange_cnt = difficulty_value(5, 5, 7, 7);
 	int red_cnt = difficulty_value(5, 7, 7, 9);
@@ -184,7 +184,7 @@ TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 			cmplx dir = r * cdir(M_TAU / petals * i);
 			PROJECTILE(
 				.proto = pp_wave,
-				.color = &pcolor,
+				.color = pcolor,
 				.pos = e->pos - 4 * dir,
 				.move = move_asymptotic_halflife(speed * 0.7 * dir, speed * -4 * dir * twist, 200),
 			);
@@ -275,7 +275,7 @@ TASK(horde_fairy_spawn, { int count; int interval; cmplx velocity; }) {
 TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
-	common_charge(120, &e->pos, 0, *RGBA(0.6, 0.8, 2, 0));
+	common_charge(120, &e->pos, 0, RGBA(0.6, 0.8, 2, 0));
 	cmplx offset = rng_dir();
 
 	int lance_count = difficulty_value(50, 100, 200, 300);
@@ -354,7 +354,7 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 
 }
 
-TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; }) {
+TASK(laserball, { cmplx origin; cmplx velocity; Color color; real freq_factor; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_bigball,
 		.pos = ARGS.origin,
@@ -395,7 +395,7 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 			.color = RGBA(1, 1, 1, 0),
 		);
 
-		create_laser(p->pos, lt, dt, &p->color,
+		create_laser(p->pos, lt, dt, p->color,
 			laser_rule_sine_expanding(lv, amp, freq, i * phase));
 
 		for(int t = 0; t < delay; ++t) {
@@ -424,7 +424,7 @@ TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
 	)), 120).entity);
 
 	WAIT(30);
-	common_charge(90, &e->pos, 0, *RGBA(0.5, 1, 0.25, 0));
+	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
 
 	int balls = 6;
 	int cycles = difficulty_value(1, 1, 2, 2);

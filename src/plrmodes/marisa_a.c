@@ -161,7 +161,7 @@ static void marisa_laser_draw_slave(EntityInterface *ent) {
 	MarisaASlave *slave = ENT_CAST(ent, MarisaASlave);
 
 	ShaderCustomParams shader_params;
-	shader_params.color = *RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
+	shader_params.color = RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
@@ -272,6 +272,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	SpriteParams sp = {
 		.sprite_ptr = res_sprite("part/smoothdot"),
 		.shader_ptr = res_shader("sprite_default"),
+		.color = RGB(1, 1, 1),
 	};
 
 	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
@@ -296,8 +297,8 @@ static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args)
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 	float o = 1 - t / p->timeout;
-	color_mul_scalar(&spbuf.color, o);
-	spbuf.color.r *= o;
+	sp.color = color_mul_scalar(sp.color, o);
+	sp.color.r *= o;
 	r_draw_sprite(&sp);
 }
 
@@ -588,7 +589,7 @@ TASK(marisa_laser_bomb_masterspark, { MarisaAController *ctrl; }) {
 		}
 
 		cmplx dir = -cdir(1.5 * sin(t * M_PI * 1.12)) * I;
-		Color *c = HSLA(-bomb_progress * 5.321, 1, 0.5, rng_range(0, 0.5));
+		Color c = HSLA(-bomb_progress * 5.321, 1, 0.5, rng_range(0, 0.5));
 		cmplx pos = plr->pos + 40 * dir;
 
 		for(int i = 0; i < 2; ++i) {

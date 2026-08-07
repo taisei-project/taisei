@@ -283,9 +283,9 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	if(!player_is_vulnerable(plr)) {
 		float f = 0.3*sin(0.1*global.frames);
-		c = *RGBA_MUL_ALPHA(1.0+f, 1.0, 1.0-f, 0.7+f);
+		c = RGBA_MUL_ALPHA(1.0+f, 1.0, 1.0-f, 0.7+f);
 	} else {
-		c = *RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
+		c = RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
 	}
 
 	r_draw_sprite(&(SpriteParams) {
@@ -293,7 +293,7 @@ static void ent_draw_player(EntityInterface *ent) {
 		.shader_ptr = shader,
 		.shader_params = &shader_params,
 		.pos.as_cmplx = plr->pos,
-		.color = &c,
+		.color = c,
 	});
 }
 
@@ -511,7 +511,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 		if(t % 6 == 0 && plr->powersurge.bonus.discharge_range > 0) {
 			real scale = 2 * plr->powersurge.bonus.discharge_range / field_sprite->w;
 			real angle = rng_angle();
-			Color *color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25);
+			Color color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25);
 
 			ENT_ARRAY_COMPACT(&fields);
 
@@ -1395,7 +1395,7 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 	}
 }
 
-void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color) {
+void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, Color color) {
 	if(++plr->graze >= PLR_MAX_GRAZE) {
 		log_debug("Graze counter overflow");
 		plr->graze = PLR_MAX_GRAZE;
@@ -1406,10 +1406,10 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 	player_add_points(plr, pts, pos);
 	play_sfx("graze");
 
-	Color *c = COLOR_COPY(color);
-	color_add(c, RGBA(1, 1, 1, 1));
-	color_mul_scalar(c, 0.5);
-	c->a = 0;
+	Color c = color;
+	c = color_add(c, RGBA(1, 1, 1, 1));
+	c = color_mul_scalar(c, 0.5);
+	c.a = 0;
 
 	for(int i = 0; i < effect_intensity; ++i) {
 		RNG_ARRAY(R, 4);
@@ -1424,7 +1424,7 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 			// .layer = LAYER_PARTICLE_LOW,
 		);
 
-		color_mul_scalar(c, 0.4);
+		c = color_mul_scalar(c, 0.4);
 	}
 
 	spawn_items(pos, ITEM_POWER_MINI, 1);
@@ -1551,17 +1551,17 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 	if(is_piv) {
 		importance = sqrt(min(points/500.0, 1));
 		a = lerp(0.4, 1.0, importance);
-		c = *color_lerp(RGB(0.5, 0.8, 1.0), RGB(1.0, 0.3, 1.0), importance);
+		c = color_lerp(RGB(0.5, 0.8, 1.0), RGB(1.0, 0.3, 1.0), importance);
 		timings.lifetime = 35 + 10 * importance;
 	} else {
 		importance = clamp(0.25 * (double)points / (double)plr->point_item_value, 0, 1);
 		a = clamp(0.5 + 0.5 * cbrtf(importance), 0, 1);
-		c = *color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), importance);
+		c = color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), importance);
 		timings.lifetime = 25 + 20 * importance;
 	}
 
 	a *= config_get_float(CONFIG_SCORETEXT_ALPHA);
-	color_mul_scalar(&c, a);
+	c = color_mul_scalar(c, a);
 
 	if(!stxt) {
 		if(c.a < 1e-4) {
@@ -1569,7 +1569,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 		}
 
 		stxt = stagetext_add(
-			NULL, location, ALIGN_CENTER, res_font("small"), &c,
+			NULL, location, ALIGN_CENTER, res_font("small"), c,
 			timings.delay, timings.lifetime, timings.fadeintime, timings.fadeouttime
 		);
 

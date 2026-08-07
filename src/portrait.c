@@ -83,13 +83,15 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_mat_proj_push_ortho(spr_w - s_base->padding.w, spr_h - s_base->padding.h);
 	r_mat_mv_push_identity();
 
-	SpriteParams sp = {};
-	sp.sprite_ptr = s_base;
-	sp.blend = BLEND_NONE;
-	sp.pos.x = spr_w * 0.5f - s_base->padding.offset.x;
-	sp.pos.y = spr_h * 0.5f - s_base->padding.offset.y;
-	sp.color = RGBA(1, 1, 1, 1);
-	sp.shader_ptr = res_shader("sprite_default");
+	SpriteParams sp = {
+		.sprite_ptr = s_base,
+		.blend = BLEND_NONE,
+		.pos.x = spr_w * 0.5f - s_base->padding.offset.x,
+		.pos.y = spr_h * 0.5f - s_base->padding.offset.y,
+		.color = RGBA(1, 1, 1, 1),
+		.shader_ptr = res_shader("sprite_default"),
+	};
+
 	r_draw_sprite(&sp);
 	sp.blend = BLEND_PREMUL_ALPHA;
 	sp.sprite_ptr = s_face;
