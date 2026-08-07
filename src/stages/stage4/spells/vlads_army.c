@@ -15,8 +15,8 @@ TASK(kurumi_vladsarmy_shield_draw, { BoxedEnemy e; }) {
 	auto e = TASK_BIND(ARGS.e);
 
 	SpriteParams sp = {
-		.sprite_ptr = res_sprite("enemy/swirl"),
-		.shader_ptr = res_shader("sprite_negative"),
+		.sprite = res_sprite("enemy/swirl"),
+		.shader = res_shader("sprite_negative"),
 		.color = {},
 	};
 

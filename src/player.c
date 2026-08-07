@@ -205,7 +205,7 @@ void player_draw_overlay(Player *plr) {
 		float o = 1 - smoothstep(start + ofs, end + ofs, t);
 
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = char_spr,
+			.sprite = char_spr,
 			.pos = { char_spr->w * 0.5 + VIEWPORT_W * powf(1 - char_in, 4 - i * 0.3f) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
@@ -214,7 +214,7 @@ void player_draw_overlay(Player *plr) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = char_spr,
+		.sprite = char_spr,
 		.pos = { char_spr->w * 0.5f + VIEWPORT_W * powf(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
 		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
 		.flip.x = true,
@@ -231,7 +231,7 @@ void player_draw_overlay(Player *plr) {
 	Sprite *spell_spr = res_sprite("spell");
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = spell_spr,
+		.sprite = spell_spr,
 		.pos = { spell_x, spell_y },
 		.color = color_mul_scalar(RGBA(1, 1, 1, spell_in * 0.5), spell_opacity),
 		.scale.both = 3 - 2 * (1 - pow(1 - spell_in, 3)) + 2 * (1 - spell_out),
@@ -270,8 +270,8 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	if(plr->focus_circle_alpha) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = res_sprite("fairy_circle"),
-			.shader_ptr = shader,
+			.sprite = res_sprite("fairy_circle"),
+			.shader = shader,
 			.shader_params = &shader_params,
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
@@ -289,8 +289,8 @@ static void ent_draw_player(EntityInterface *ent) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = aniplayer_get_frame(&plr->ani),
-		.shader_ptr = shader,
+		.sprite = aniplayer_get_frame(&plr->ani),
+		.shader = shader,
 		.shader_params = &shader_params,
 		.pos.as_cmplx = plr->pos,
 		.color = c,
@@ -312,7 +312,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 		float scale = 1.0f + trans_factor;
 
 		SpriteParams sp = {
-			.sprite_ptr = indicators->sprites.focus,
+			.sprite = indicators->sprites.focus,
 			.rotation.angle = rot_speed,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, focus_opacity),
 			.pos.as_cmplx = pos,
@@ -467,12 +467,12 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	float s = 1 + (2 + 0.5 * psin((t+global.frames*1.23)/5.0)) * nt * nt;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
+		.sprite = p->sprite,
 		.scale.both = s,
 		.pos = { re(p->pos), im(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
-		.shader_ptr = p->shader,
+		.shader = p->shader,
 	});
 }
 

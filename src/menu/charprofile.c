@@ -259,15 +259,15 @@ static void charprofile_draw(MenuData *m) {
 	Sprite *spr = e->arg;
 	SpriteParams portrait_params = {
 		.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
-		.sprite_ptr = spr,
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = spr,
+		.shader = res_shader("sprite_default"),
 		.color = color,
 	};
 
 	r_draw_sprite(&portrait_params);
 
 	if(selected != PROFILE_LOCKED) {
-		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
+		portrait_params.sprite = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
 		r_draw_sprite(&portrait_params);
 		text_draw_wrapped(_("Press [Fire] for alternate expressions"), DESCRIPTION_WIDTH, &(TextParams) {
 			.align = ALIGN_LEFT,
@@ -327,14 +327,14 @@ static void charprofile_draw(MenuData *m) {
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("menu/arrow"),
+		.sprite = res_sprite("menu/arrow"),
 		.pos = { 30, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },
 	});
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("menu/arrow"),
+		.sprite = res_sprite("menu/arrow"),
 		.pos = { 30 + 340, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },

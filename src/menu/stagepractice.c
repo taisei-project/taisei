@@ -52,8 +52,8 @@ static void draw_stgpract_menu(MenuData *m) {
 			float p = e->drawdata/10;
 			SpriteParams portrait_params = {
 				.pos = { SCREEN_W/2.0 + 180, SCREEN_H - spr->h * 0.5 },
-				.sprite_ptr = spr,
-				.shader_ptr = res_shader("sprite_silhouette"),
+				.sprite = spr,
+				.shader = res_shader("sprite_silhouette"),
 				.color = RGBA_MUL_ALPHA(0, 0, 0, p),
 			};
 
@@ -63,13 +63,13 @@ static void draw_stgpract_menu(MenuData *m) {
 			r_mat_mv_translate(-x, -y*0.6, 0);
 			r_draw_sprite(&portrait_params);
 			r_mat_mv_pop();
-			portrait_params.shader_ptr = res_shader("sprite_default");
+			portrait_params.shader = res_shader("sprite_default");
 			portrait_params.color = RGBA_MUL_ALPHA(1, 1, 1, p);
 
 			StageProgress *prog = stageinfo_get_progress(stg, progress.game_settings.difficulty, false);
 			if(e->action != NULL && prog && prog->global.num_cleared > 0) {
 				r_draw_sprite(&portrait_params);
-				portrait_params.sprite_ptr = res_sprite(bosses[i][1]);
+				portrait_params.sprite = res_sprite(bosses[i][1]);
 				r_draw_sprite(&portrait_params);
 			}
 		}

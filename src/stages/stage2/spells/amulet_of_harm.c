@@ -28,14 +28,14 @@ TASK(amulet_draw, { BoxedEnemy e; }) {
 
 		r_draw_sprite(&(SpriteParams) {
 			.color = RGBA(2, 1, 1, 0),
-			.sprite_ptr = spr_circle,
+			.sprite = spr_circle,
 			.pos.as_cmplx = p,
 			.rotation.angle = t * 5 * DEG2RAD,
 		});
 
 		r_draw_sprite(&(SpriteParams) {
 			.color = RGBA(1, 1, 1, 1),
-			.sprite_ptr = spr_swirl,
+			.sprite = spr_swirl,
 			.pos.as_cmplx = p,
 			.rotation.angle = t * -10 * DEG2RAD,
 		});

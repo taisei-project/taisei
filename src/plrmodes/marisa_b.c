@@ -78,8 +78,8 @@ static void marisa_star_draw_slave(EntityInterface *ent) {
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = slave->sprite,
-		.shader_ptr = slave->shader,
+		.sprite = slave->sprite,
+		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = t * 0.05f,
 		// .color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha),
@@ -292,11 +292,11 @@ static void marisa_star_draw_orbiter(EntityInterface *ent) {
 		.pos.as_cmplx = orbiter->pos,
 		.color = color_mul_scalar(orbiter->circle_color, ctrl->bomb.beams_alpha),
 		.rotation.angle = global.frames * 10 * DEG2RAD,
-		.sprite_ptr = ctrl->sprites.fairy_circle,
+		.sprite = ctrl->sprites.fairy_circle,
 	};
 
 	r_draw_sprite(&sp);
-	sp.sprite_ptr = ctrl->sprites.lightningball;
+	sp.sprite = ctrl->sprites.lightningball;
 	sp.scale.both = 0.6;
 	r_draw_sprite(&sp);
 }

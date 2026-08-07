@@ -101,8 +101,8 @@ static void ent_draw_item(EntityInterface *ent) {
 		if(s != NULL) {
 			float alpha = -tanhf(y * 0.1f) / (1 + 0.1 * fabsf(y));
 			r_draw_sprite(&(SpriteParams) {
-				.sprite_ptr = s,
-				.shader_ptr = shader,
+				.sprite = s,
+				.shader = shader,
 				.shader_params = &shader_params,
 				.pos = { re(i->pos), indicator_display_y },
 				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
@@ -116,8 +116,8 @@ static void ent_draw_item(EntityInterface *ent) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = i->sprites.pickup,
-		.shader_ptr = shader,
+		.sprite = i->sprites.pickup,
+		.shader = shader,
 		.shader_params = &shader_params,
 		.pos = { re(i->pos), y },
 		.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),

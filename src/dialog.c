@@ -290,9 +290,9 @@ static void dialog_title_draw(Dialog *dialog) {
 	r_mat_mv_push();
 	r_mat_mv_rotate(global.frames * 1 * DEG2RAD, 0, 0, 1);
 	SpriteParams bgsp = {
-		.sprite_ptr = bg,
+		.sprite = bg,
 		.color = bg_color,
-		.shader_ptr = res_shader("sprite_default"),
+		.shader = res_shader("sprite_default"),
 	};
 	r_draw_sprite(&bgsp);
 	r_mat_mv_pop();
@@ -374,7 +374,7 @@ void dialog_draw(Dialog *dialog) {
 			.color = color_mul_scalar(RGB(brightness, brightness, brightness), a->opacity),
 			.pos.x = (dialog_width - portrait->w) / 2 + 32 + a->offset.x,
 			.pos.y = VIEWPORT_H - portrait->h / 2 + a->offset.y,
-			.sprite_ptr = portrait,
+			.sprite = portrait,
 		});
 
 		r_mat_mv_pop();

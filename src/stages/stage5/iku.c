@@ -15,7 +15,7 @@ static void iku_slave_draw(EntityInterface *e) {
 	IkuSlave *slave = ENT_CAST(e, IkuSlave);
 	r_draw_sprite(&(SpriteParams) {
 		.pos.as_cmplx = slave->pos,
-		.sprite_ptr = slave->sprites.cloud,
+		.sprite = slave->sprites.cloud,
 		.scale.as_cmplx = slave->scale,
 		.color = slave->color,
 	});

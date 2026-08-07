@@ -413,7 +413,7 @@ static void stage_draw_collision_areas(void) {
 		if(re(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
 				.color = RGB(0, 0.5, 0.5),
-				.sprite_ptr = &stagedraw.dummy,
+				.sprite = &stagedraw.dummy,
 				.pos = { re(p->pos), im(p->pos) },
 				.rotation.angle = p->angle + M_PI/2,
 				.scale = { .x = re(gsize), .y = im(gsize) },
@@ -428,7 +428,7 @@ static void stage_draw_collision_areas(void) {
 
 	for(Projectile *p = global.projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = &stagedraw.dummy,
+			.sprite = &stagedraw.dummy,
 			.pos = { re(p->pos), im(p->pos) },
 			.rotation.angle = p->angle + M_PI/2,
 			.scale = { .x = re(p->collision_size), .y = im(p->collision_size) },
@@ -442,7 +442,7 @@ static void stage_draw_collision_areas(void) {
 
 		if(hurt_radius > 0) {
 			r_draw_sprite(&(SpriteParams) {
-				.sprite_ptr = &stagedraw.dummy,
+				.sprite = &stagedraw.dummy,
 				.pos = { re(e->pos), im(e->pos) },
 				.scale = { .x = hurt_radius * 2, .y = hurt_radius * 2 },
 				.blend = BLEND_ALPHA,
@@ -453,7 +453,7 @@ static void stage_draw_collision_areas(void) {
 
 	if(global.boss && boss_is_player_collision_active(global.boss)) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = &stagedraw.dummy,
+			.sprite = &stagedraw.dummy,
 			.pos = { re(global.boss->pos), im(global.boss->pos) },
 			.scale = { .x = BOSS_HURT_RADIUS * 2, .y = BOSS_HURT_RADIUS * 2 },
 			.blend = BLEND_ALPHA,
@@ -462,7 +462,7 @@ static void stage_draw_collision_areas(void) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = &stagedraw.dummy,
+		.sprite = &stagedraw.dummy,
 		.pos = { re(global.plr.pos), im(global.plr.pos) },
 		.scale.both = 2, // NOTE: actual player is a singular point
 		.color = RGB(1, 1, 1),
@@ -545,8 +545,8 @@ static void draw_spellbg(int t) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("boss_spellcircle0"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("boss_spellcircle0"),
+		.shader = res_shader("sprite_default"),
 		.pos = { re(b->pos), im(b->pos) },
 		.rotation.angle = global.frames * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
@@ -1808,10 +1808,10 @@ void stage_draw_hud(void) {
 
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite(difficulty_sprite_name(global.diff)),
+		.sprite = res_sprite(difficulty_sprite_name(global.diff)),
 		.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 400 },
 		.scale.both = 0.6,
-		.shader_ptr = res_shader("sprite_default"),
+		.shader = res_shader("sprite_default"),
 		.color = RGB(1, 1, 1),
 	});
 
@@ -1821,43 +1821,43 @@ void stage_draw_hud(void) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
-		.sprite_ptr = res_sprite("item/power"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/power"),
+		.shader = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.power },
-		.sprite_ptr = res_sprite("item/power"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/power"),
+		.shader = res_shader("sprite_default"),
 		.color = RGB(1, 1, 1),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.value + 2 },
-		.sprite_ptr = res_sprite("item/point"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/point"),
+		.shader = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.value },
-		.sprite_ptr = res_sprite("item/point"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/point"),
+		.shader = res_shader("sprite_default"),
 		.color = RGB(1, 1, 1),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.voltage + 2 },
-		.sprite_ptr = res_sprite("item/voltage"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/voltage"),
+		.shader = res_shader("sprite_default"),
 		.color = RGBA(0, 0, 0, 0.5),
 	});
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.voltage },
-		.sprite_ptr = res_sprite("item/voltage"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("item/voltage"),
+		.shader = res_shader("sprite_default"),
 		.color = RGB(1, 1, 1),
 	});
 
@@ -1917,8 +1917,8 @@ void stage_draw_hud(void) {
 			red = 0;
 
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = res_sprite("boss_indicator"),
-			.shader_ptr = res_shader("sprite_default"),
+			.sprite = res_sprite("boss_indicator"),
+			.shader = res_shader("sprite_default"),
 			.pos = { VIEWPORT_X+re(global.boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
 		});
@@ -1937,8 +1937,8 @@ void stage_draw_hud(void) {
 		Sprite *bg = res_sprite("part/smoke");
 
 		SpriteParams sp = {
-			.sprite_ptr = bg,
-			.shader_ptr = res_shader("sprite_default"),
+			.sprite = bg,
+			.shader = res_shader("sprite_default"),
 			.color = RGBA(0.1, 0.1, 0.2, 0.07),
 		};
 

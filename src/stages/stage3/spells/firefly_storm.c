@@ -16,7 +16,7 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs a
 	float f = 1 - min(time / 60.0f, 1.0f);
 	if(f > 0) {
 		// TODO: Maybe convert this into a particle effect?
-		sp.sprite_ptr = res_sprite("proj/ball");
+		sp.sprite = res_sprite("proj/ball");
 		sp.scale.as_cmplx *= f;
 		sp.color.a = 0;
 		r_draw_sprite(&sp);

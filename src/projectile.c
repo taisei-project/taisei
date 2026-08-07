@@ -697,8 +697,8 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_rotate(tex_angle, 0, 0, 1);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
-		.shader_ptr = p->shader,
+		.sprite = p->sprite,
+		.shader = p->shader,
 		.shader_params = &(ShaderCustomParams) {{ opacity }},
 		.color = p->color,
 	});
@@ -796,7 +796,7 @@ static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs 
 
 	r_draw_sprite(&sp);
 
-	sp.sprite_ptr = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
+	sp.sprite = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
 	sp.scale.as_cmplx *= scale * (0.0f + 1.5f * tf);
 	sp.color.a *= (1 - tf);
 	spbuf.shader_params.vector[0] = o;
@@ -858,8 +858,8 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 		.scale.x = re(proj->scale),
 		.scale.y = im(proj->scale),
 		.shader_params = &spbuf->shader_params,
-		.shader_ptr = proj->shader,
-		.sprite_ptr = proj->sprite,
+		.shader = proj->shader,
+		.sprite = proj->sprite,
 	};
 }
 

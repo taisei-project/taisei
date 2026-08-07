@@ -439,8 +439,8 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float opacity = opacity_noplr * b->hud.plrproximity_opacity;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("spell"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("spell"),
+		.shader = res_shader("sprite_default"),
 		.pos = { (VIEWPORT_W - 128), y_offset * (1 - pow(1 - f2, 5)) + VIEWPORT_H * pow(1 - f2, 2) },
 		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
@@ -571,7 +571,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 		float o = 1 - smoothstep(start + ofs, end + ofs, t);
 
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = char_spr,
+			.sprite = char_spr,
 			.pos = { char_spr->w * 0.5 + VIEWPORT_W * powf(1 - char_in, 4 - i * 0.3f) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
@@ -580,7 +580,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 	}
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = char_spr,
+		.sprite = char_spr,
 		.pos = { char_spr->w * 0.5f + VIEWPORT_W * powf(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
 		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
 		.flip.x = true,
@@ -602,11 +602,11 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { re(p->pos), im(p->pos) },
-		.sprite_ptr = p->sprite,
+		.sprite = p->sprite,
 		.scale.both = s,
 		.color = c,
 		.shader_params = &(ShaderCustomParams){{ deform }},
-		.shader_ptr = p->shader,
+		.shader = p->shader,
 	});
 }
 
@@ -681,8 +681,8 @@ void draw_boss_background(Boss *boss) {
 
 	r_mat_mv_scale(f, f, 1);
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("boss_circle"),
-		.shader_ptr = res_shader("sprite_particle"),
+		.sprite = res_sprite("boss_circle"),
+		.shader = res_shader("sprite_particle"),
 		.shader_params = &(ShaderCustomParams) { 1.0f },
 		.color = RGBA(1, 1, 1, 0),
 	});
@@ -712,8 +712,8 @@ static void ent_draw_boss(EntityInterface *ent) {
 	c = color_mul_scalar(c, boss_alpha);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		.shader_ptr = res_shader("sprite_particle"),
+		.sprite = aniplayer_get_frame(&boss->ani),
+		.shader = res_shader("sprite_particle"),
 		.shader_params = &(ShaderCustomParams) { 1.0f },
 		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
 		.color = c,
@@ -794,7 +794,7 @@ void draw_boss_overlay(Boss *boss) {
 				// I guess we can just always skip the first one
 				if(spell_found) {
 					r_draw_sprite(&(SpriteParams) {
-						.sprite_ptr = star,
+						.sprite = star,
 						.pos = { x, 40 + 8 * !radial_style },
 						.color = clr,
 					});

@@ -107,10 +107,10 @@ static SpriteParams fairy_make_sprite_params(
 
 	return (SpriteParams) {
 		.color = RGBA(o*b, o*b, o*b, o),
-		.sprite_ptr = spr,
+		.sprite = spr,
 		.pos.as_cmplx = fairy_visual_pos(fairy, visual),
 		.scale = { visual->base.scale, visual->base.scale },
-		.shader_ptr = visual->shader,
+		.shader = visual->shader,
 		.aux_textures = { visual->noise_texture },
 		.shader_params = &out_spbuf->shader_params,
 	};
@@ -511,8 +511,8 @@ static SpriteParams swirl_make_sprite_prams(
 
 	return (SpriteParams) {
 		.color = RGBA(o*b*b, o*b*b, o*b*b, o),
-		.sprite_ptr = visual->base.spr,
-		.shader_ptr = visual->shader,
+		.sprite = visual->base.spr,
+		.shader = visual->shader,
 		.shader_params = &spbuf->shader_params,
 		.pos.as_cmplx = visual_pos(enemy_visual_pos(swirl), &visual->base),
 		.rotation.angle = time * 10 * DEG2RAD,

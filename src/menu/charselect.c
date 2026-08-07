@@ -219,14 +219,14 @@ void draw_char_menu(MenuData *menu) {
 
 		SpriteParams portrait_params = {
 			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
-			.sprite_ptr = spr,
-			.shader_ptr = res_shader("sprite_default"),
+			.sprite = spr,
+			.shader = res_shader("sprite_default"),
 			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
 			// .flip.x = true,
 		};
 
 		r_draw_sprite(&portrait_params);
-		portrait_params.sprite_ptr = res_sprite(face);
+		portrait_params.sprite = res_sprite(face);
 		r_draw_sprite(&portrait_params);
 
 		r_mat_mv_push();
@@ -327,14 +327,14 @@ void draw_char_menu(MenuData *menu) {
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("menu/arrow"),
+		.sprite = res_sprite("menu/arrow"),
 		.pos = { 30, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },
 	});
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = res_sprite("menu/arrow"),
+		.sprite = res_sprite("menu/arrow"),
 		.pos = { 30 + 340, SCREEN_H/3+10 },
 		.color = RGBA(o, o, o, o),
 		.scale = { 0.5, 0.7 },

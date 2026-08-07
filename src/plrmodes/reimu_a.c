@@ -482,8 +482,8 @@ static void reimu_spirit_draw_slave(EntityInterface *ent) {
 		.color = slave->color,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = global.frames * -6 * DEG2RAD,
-		.shader_ptr = slave->shader,
-		.sprite_ptr = slave->sprite,
+		.shader = slave->shader,
+		.sprite = slave->sprite,
 	});
 }
 

@@ -165,8 +165,8 @@ static void marisa_laser_draw_slave(EntityInterface *ent) {
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = slave->sprite,
-		.shader_ptr = slave->shader,
+		.sprite = slave->sprite,
+		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = t * 0.05f,
 		.color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha),
@@ -270,8 +270,8 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	}
 
 	SpriteParams sp = {
-		.sprite_ptr = res_sprite("part/smoothdot"),
-		.shader_ptr = res_shader("sprite_default"),
+		.sprite = res_sprite("part/smoothdot"),
+		.shader = res_shader("sprite_default"),
 		.color = RGB(1, 1, 1),
 	};
 

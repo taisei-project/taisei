@@ -291,8 +291,8 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 	r_blend(BLEND_PREMUL_ALPHA);
 
 	SpriteParams yinyang = {
-		.sprite_ptr = ctrl->yinyang_sprite,
-		.shader_ptr = ctrl->yinyang_shader,
+		.sprite = ctrl->yinyang_sprite,
+		.shader = ctrl->yinyang_shader,
 		.rotation.angle = global.frames * -6 * DEG2RAD,
 		.color = RGB(0.95, 0.75, 1.0),
 		.scale.both = 0.5,
@@ -387,8 +387,8 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 static void reimu_dream_draw_slave(EntityInterface *ent) {
 	ReimuBSlave *slave = ENT_CAST(ent, ReimuBSlave);
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = slave->sprite,
-		.shader_ptr = slave->shader,
+		.sprite = slave->sprite,
+		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = global.frames * -6 * DEG2RAD,
 		.color = RGB(0.95, 0.75, 1.0),

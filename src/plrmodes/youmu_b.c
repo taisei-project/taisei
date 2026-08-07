@@ -109,7 +109,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 	cmplx slicepos = p->pos - (tt > 0.1f) * slicelen * I*cdir(p->angle) * (5 * powf(tt - 0.1f, 1.1f) - 0.5f);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = player_frame,
+		.sprite = player_frame,
 		.pos.as_cmplx = slicepos,
 		.shader_params = &spbuf.shader_params,
 		.color = RGB(1, 1, 1),

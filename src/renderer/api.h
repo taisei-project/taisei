@@ -468,8 +468,8 @@ typedef struct SpriteFlipParams {
 } SpriteFlipParams;
 
 typedef struct SpriteParams {
-	Sprite *sprite_ptr attr_explicit_init;
-	ShaderProgram *shader_ptr;
+	Sprite *sprite attr_explicit_init;
+	ShaderProgram *shader;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	Color color attr_explicit_init;
 

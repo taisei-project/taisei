@@ -473,9 +473,9 @@ static void credits_draw_entry(CreditsEntry *e) {
 			float halfheight = yukkuri_spr->h * 0.5;
 
 			r_draw_sprite(&(SpriteParams) {
-				.sprite_ptr = yukkuri_spr,
+				.sprite = yukkuri_spr,
 				.pos.y = -60 * elevation * fadein + halfheight * squeeze,
-				.shader_ptr = res_shader("sprite_default"),
+				.shader = res_shader("sprite_default"),
 				.scale.x = 1.0 - squeeze,
 				.scale.y = 1.0 + squeeze,
 				.color = clr,

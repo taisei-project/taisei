@@ -84,17 +84,17 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_mat_mv_push_identity();
 
 	SpriteParams sp = {
-		.sprite_ptr = s_base,
+		.sprite = s_base,
 		.blend = BLEND_NONE,
 		.pos.x = spr_w * 0.5f - s_base->padding.offset.x,
 		.pos.y = spr_h * 0.5f - s_base->padding.offset.y,
 		.color = RGBA(1, 1, 1, 1),
-		.shader_ptr = res_shader("sprite_default"),
+		.shader = res_shader("sprite_default"),
 	};
 
 	r_draw_sprite(&sp);
 	sp.blend = BLEND_PREMUL_ALPHA;
-	sp.sprite_ptr = s_face;
+	sp.sprite = s_face;
 	r_draw_sprite(&sp);
 	r_flush_sprites();
 

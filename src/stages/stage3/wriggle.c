@@ -40,7 +40,7 @@ static void wriggle_slave_draw(EntityInterface *e) {
 	int time = global.frames - slave->spawn_time;
 	r_draw_sprite(&(SpriteParams) {
 		.pos.as_cmplx = slave->pos,
-		.sprite_ptr = slave->sprites.circle,
+		.sprite = slave->sprites.circle,
 		.rotation.angle = DEG2RAD * 7 * time,
 		.scale.as_cmplx = slave->scale,
 		.color = slave->color,

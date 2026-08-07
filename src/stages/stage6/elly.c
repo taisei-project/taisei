@@ -305,8 +305,8 @@ static void baryons_bg_fill(Stage6DrawData *draw_data, int t, EllyBaryons *baryo
 
 		for(int i = 0; i < NUM_BARYONS; ++i) {
 			r_draw_sprite(&(SpriteParams) {
-				.sprite_ptr = sprite,
-				.shader_ptr = shader,
+				.sprite = sprite,
+				.shader = shader,
 				.color = RGBA(1, 0.2, 1.0, 0.7),
 				.pos.as_cmplx = baryons->poss[i], //+10*frand()*cexp(2.0*I*M_PI*frand());
 				.rotation.angle = (i - t) / 16.0, // frand()*M_PI*2,
