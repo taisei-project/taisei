@@ -185,6 +185,10 @@ void marena_deinit(MemArena *arena) {
 }
 
 void marena_reset(MemArena *arena) {
+	if(UNLIKELY(!arena->pages.first)) {
+		return;
+	}
+
 	auto used = arena->total_used;
 	arena->total_used = 0;
 	arena->page_offset = 0;
