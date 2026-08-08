@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "cotask.h"
+#include "memory/arena.h"
 
 #ifdef __EMSCRIPTEN__
 	#define CO_STACK_SIZE (64 * 1024)
@@ -93,11 +94,6 @@ extern CoTaskStats cotask_stats;
 
 #define STAT_VAL_ADD(name, value) STAT_VAL_SET(name, STAT_VAL(name) + (value))
 
-typedef struct CoTaskHeapMemChunk {
-	struct CoTaskHeapMemChunk *next;
-	alignas(MEM_ALLOC_ALIGNMENT) char data[];
-} CoTaskHeapMemChunk;
-
 struct CoTaskData {
 	LIST_INTERFACE(CoTaskData);
 
@@ -136,8 +132,7 @@ struct CoTaskData {
 	} hosted;
 
 	struct {
-		CoTaskHeapMemChunk *onheap_alloc_head;
-		char *onstack_alloc_head;
+		MemArena arena;
 		alignas(MEM_ALLOC_ALIGNMENT) char onstack_alloc_area[MEM_AREA_SIZE];
 	} mem;
 };

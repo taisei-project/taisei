@@ -324,12 +324,7 @@ static bool cotask_finalize(CoTask *task) {
 		TASK_DEBUG("[%zu] DONE canceling slave tasks for %s", ev, task->debug_label);
 	}
 
-	CoTaskHeapMemChunk *heap_alloc = task_data->mem.onheap_alloc_head;
-	while(heap_alloc) {
-		CoTaskHeapMemChunk *next = heap_alloc->next;
-		mem_free(heap_alloc);
-		heap_alloc = next;
-	}
+	marena_deinit(&task_data->mem.arena);
 
 	task->data = NULL;
 	TASK_DEBUG("[%zu] DONE finalizing task %s", ev, task->debug_label);
@@ -354,7 +349,7 @@ static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *i
 	task->data = data;
 	data->task = task;
 	data->sched = init_data->sched;
-	data->mem.onstack_alloc_head = data->mem.onstack_alloc_area;
+	marena_init_with_foreign_page(&data->mem.arena, sizeof(data->mem.onstack_alloc_area), data->mem.onstack_alloc_area);
 
 	CoTaskData *master_data = init_data->master_task_data;
 	if(master_data) {
@@ -621,26 +616,20 @@ static void *_cotask_malloc(CoTaskData *task_data, size_t size, bool allow_heap_
 	assert(size > 0);
 	assert(size < PTRDIFF_MAX);
 
-	void *mem = NULL;
-	ptrdiff_t available_on_stack = (task_data->mem.onstack_alloc_area + sizeof(task_data->mem.onstack_alloc_area)) - task_data->mem.onstack_alloc_head;
+	auto p = ASSUME_ALIGNED(marena_alloc(&NOT_NULL(task_data)->mem.arena, size), MEM_ALLOC_ALIGNMENT);
 
-	if(available_on_stack >= (ptrdiff_t)size) {
-		log_debug("Requested size=%zu, available=%zi, serving from the stack", size, (ssize_t)available_on_stack);
-		mem = task_data->mem.onstack_alloc_head;
-		task_data->mem.onstack_alloc_head += MEM_ALIGN_SIZE(size);
+	char *begin = task_data->mem.onstack_alloc_area;
+	char *end = begin + sizeof(task_data->mem.onstack_alloc_area);
+
+	if(LIKELY((char*)p >= begin && (char*)p < end)) {
+		// log_debug("Allocated %zu from task stack; arena used/allocated: %zu/%zu",
+		// 	size, task_data->mem.arena.total_used, task_data->mem.arena.total_allocated);
 	} else {
-		if(!allow_heap_fallback) {
-			UNREACHABLE;
-		}
-
-		log_warn("Requested size=%zu, available=%zi, serving from the heap", size, (ssize_t)available_on_stack);
-		auto chunk = ALLOC_FLEX(CoTaskHeapMemChunk, size);
-		chunk->next = task_data->mem.onheap_alloc_head;
-		task_data->mem.onheap_alloc_head = chunk;
-		mem = chunk->data;
+		log_warn("Allocated %zu from the heap; arena used/allocated: %zu/%zu",
+			size, task_data->mem.arena.total_used, task_data->mem.arena.total_allocated);
 	}
 
-	return ASSUME_ALIGNED(mem, MEM_ALLOC_ALIGNMENT);
+	return p;
 }
 
 void *cotask_malloc(CoTask *task, size_t size) {
