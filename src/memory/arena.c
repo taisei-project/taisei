@@ -24,6 +24,7 @@ static void *_arena_alloc_page(size_t s) {
 }
 
 static void _arena_dealloc_page(MemArenaPage *p) {
+	assert(!p->is_foreign);
 	mem_free(p);
 }
 
@@ -54,7 +55,7 @@ INLINE MemArenaPage *_arena_active_page(MemArena *arena) {
 }
 
 INLINE bool _arena_try_free_unused_page(MemArena *arena, MemArenaPage *page, size_t page_offset) {
-	if(page_offset == 0 && page != arena->pages.last) {
+	if(page_offset == 0 && page != arena->pages.last && !page->is_foreign) {
 		alist_unlink(&arena->pages, page);
 		arena->total_allocated -= page->size;
 		_arena_delete_page(arena, page);
@@ -177,10 +178,33 @@ void marena_init(MemArena *arena, size_t min_size) {
 	}
 }
 
+static void _arena_add_foreign_page(MemArena *arena, size_t page_size, void *page) {
+	assume(page_size > sizeof(MemArenaPage));
+
+	// makes little sense to add multiple foreign pages, as only one page can be active and we can't coalesce them
+	assume(!arena->pages.first);
+
+	MemArenaPage *apage = page;
+	ASSUME_ALIGNED(apage->data, alignof(max_align_t));
+	apage->is_foreign = true;
+	apage->size = page_size - sizeof(MemArenaPage);
+
+	alist_append(&arena->pages, apage);
+	arena->total_allocated += apage->size;
+	arena->page_offset = 0;
+}
+
+void marena_init_with_foreign_page(MemArena *arena, size_t page_size, void *page) {
+	*arena = (MemArena) { };
+	_arena_add_foreign_page(arena, page_size, page);
+}
+
 void marena_deinit(MemArena *arena) {
 	MemArenaPage *p;
 	while((p = alist_pop(&arena->pages))) {
-		_arena_delete_page(arena, p);
+		if(!p->is_foreign) {
+			_arena_delete_page(arena, p);
+		}
 	}
 }
 
@@ -193,7 +217,21 @@ void marena_reset(MemArena *arena) {
 	arena->total_used = 0;
 	arena->page_offset = 0;
 
-	if(arena->pages.first->next) {
+	if(!arena->pages.first->next) {
+		// just one page was enough for the workload — keep it as-is
+		return;
+	}
+
+	if(arena->pages.first->is_foreign) {
+		// have a foreign page - just delete everything else
+
+		for(auto p = arena->pages.last; p != arena->pages.first; p = arena->pages.last) {
+			_arena_delete_page(arena, alist_unlink(&arena->pages, p));
+		}
+		arena->total_allocated = arena->pages.first->size;
+	} else {
+		// coalesce multiple pages into one that would've been big enough for the working set
+
 		MemArenaPage *p;
 		while((p = alist_pop(&arena->pages))) {
 			_arena_delete_page(arena, p);

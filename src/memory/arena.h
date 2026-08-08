@@ -25,6 +25,7 @@ struct MemArena {
 struct MemArenaPage {
 	LIST_INTERFACE(MemArenaPage);
 	size_t size;
+	bool is_foreign;
 	alignas(alignof(max_align_t)) char data[];
 };
 
@@ -34,6 +35,9 @@ typedef struct MemArenaSnapshot {
 } MemArenaSnapshot;
 
 void marena_init(MemArena *arena, size_t min_size)
+	attr_nonnull_all;
+
+void marena_init_with_foreign_page(MemArena *arena, size_t page_size, void *page)
 	attr_nonnull_all;
 
 void marena_deinit(MemArena *arena)
