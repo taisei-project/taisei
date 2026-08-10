@@ -506,7 +506,7 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAMyon *myon; }) {
 
 		float t = player_get_bomb_progress(&global.plr);
 		float f = max(0, 1 - 10 * t);
-		cmplx myonpos = CMPLX(re(myon->pos)/VIEWPORT_W, 1 - im(myon->pos)/VIEWPORT_H);
+		cmplx myonpos = CMPLX(re(myon->pos)/VIEWPORT_W, im(myon->pos)/VIEWPORT_H);
 
 		FBPair *fbpair = stage_get_postprocess_fbpair();
 		r_framebuffer(fbpair->back);
