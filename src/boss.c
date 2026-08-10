@@ -627,27 +627,23 @@ DEFINE_TASK(boss_particles) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	DECLARE_ENT_ARRAY(Projectile, smoke_parts, 16);
 
+	YIELD;
 	cmplx prev_pos = boss->pos;
 
-	for(;;YIELD) {
-		ENT_ARRAY_FOREACH(&smoke_parts, Projectile *p, {
-			p->pos += boss->pos - prev_pos;
-		});
-		prev_pos = boss->pos;
-
-		Color glowcolor = boss->glowcolor;
-		Color shadowcolor = boss->shadowcolor;
-
+	for(;;) {
 		Attack *cur = boss->current;
 		bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !attack_has_finished(cur);
 		bool is_extra = cur && cur->type == AT_ExtraSpell && attack_has_started(cur);
 
 		if(!(global.frames % 13) && !is_extra) {
+			Color shadowcolor = boss->shadowcolor;
+			shadowcolor.a = 0;
+
 			ENT_ARRAY_COMPACT(&smoke_parts);
 			ENT_ARRAY_ADD(&smoke_parts, PARTICLE(
 				.sprite = "smoke",
 				.pos = cdir(global.frames) + boss->pos,
-				.color = RGBA(shadowcolor.r, shadowcolor.g, shadowcolor.b, 0.0),
+				.color = shadowcolor,
 				.timeout = 180,
 				.draw_rule = pdraw_timeout_scale(2, 0.01),
 				.angle = rng_angle(),
@@ -662,8 +658,16 @@ DEFINE_TASK(boss_particles) {
 		) {
 			float glowstr = 0.5;
 			float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
-			spawn_boss_glow(boss, color_mul_scalar(glowcolor, a), 24);
+			spawn_boss_glow(boss, color_mul_scalar(boss->glowcolor, a), 24);
 		}
+
+		YIELD;
+
+		ENT_ARRAY_FOREACH(&smoke_parts, Projectile *p, {
+			p->pos += boss->pos - prev_pos;
+		});
+
+		prev_pos = boss->pos;
 	}
 }
 
