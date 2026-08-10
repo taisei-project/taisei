@@ -909,7 +909,7 @@ void stage_draw_overlay(void) {
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_vec2("player", re(global.plr.pos), VIEWPORT_H - im(global.plr.pos));
+	r_uniform_vec2_complex("player", global.plr.pos);
 }
 
 static inline void begin_viewport_shake(void) {
