@@ -139,6 +139,14 @@ taisei_c_args = [
 
     # GCC is stupid (fix undefined reference error with LTO)
     '-fno-builtin-sincos',
+    '-fno-builtin-sincosf',
+]
+
+taisei_link_args = [
+    # sincosf is not directly referenced, but the compiler may generate calls to it as an optimization
+    '-Wl,-u,sincosf',
+    # Give sincos the same treatment, just in case it gets inlined into its one explicit call site
+    '-Wl,-u,sincos',
 ]
 
 taisei_conversion_c_args = [
@@ -174,6 +182,7 @@ elif deprecation_warnings == 'ignore'
 endif
 
 taisei_c_args = cc.get_supported_arguments(taisei_c_args)
+taisei_link_args = cc.get_supported_link_arguments(taisei_link_args)
 
 foreach arglist : [
         taisei_conversion_c_args,

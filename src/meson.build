@@ -403,6 +403,7 @@ if host_machine.system() == 'emscripten'
             '--pre-js', em_preamble,
             '--post-js', em_postamble,
             get_option('c_args'),
+            taisei_link_args,
             get_option('c_link_args'),
             em_common_args,
             em_link_args,
@@ -423,6 +424,7 @@ elif host_machine.system() == 'nx'
         dependencies : taisei_deps_linkwhole + taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
+        link_args : taisei_link_args,
         install : is_debug_build,
         install_dir : bindir,
         override_options: ['strip=false'],
@@ -483,6 +485,7 @@ else
         install : true,
         install_dir : bindir,
         export_dynamic : stages_live_reload,
+        link_args : taisei_link_args,
     )
 
     if host_machine.system() == 'darwin'

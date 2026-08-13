@@ -11,5 +11,6 @@ foreach testname : tests
         dependencies : libtaisei_dep,
         include_directories : test_incdir,
         install : false,
+        link_args : taisei_link_args,
     )
 endforeach

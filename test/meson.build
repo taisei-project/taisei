@@ -28,6 +28,7 @@ foreach tdict : tests
             dependencies : libtaisei_dep,
             include_directories : test_incdir,
             install : false,
+            link_args : taisei_link_args,
         ),
         depends : tdict.get('depends', []),
         args :  tdict.get('args', []),
