@@ -737,7 +737,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 			.draw_rule = pdraw_timeout_scalefade_exp(0, 0.2f * max(sx, sy) * vrng_f32_range(R[0], 0.8f, 1.0f), 1, 0, 2),
 			.angle = vrng_angle(R[1]),
 			.pos = p->pos + vrng_range(R[2], 0, 8) * vrng_dir(R[3]),
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.timeout = vrng_range(R[4], 22, 26),
 			.color = clr,
 		);
@@ -761,7 +761,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		},
 		.angle = p->angle,
 		.pos = p->pos + vrng_range(R[1], 0, 2) * vrng_dir(R[2]),
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.timeout = vrng_range(R[3], 30, 34),
 		.color = clr,
 	);
@@ -825,7 +825,7 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 		.size = proj->size,
 		.pos = proj->pos,
 		.color = proj->color,
-		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.shader_ptr = proj->shader,
 		.draw_rule = {
 			projectile_clear_effect_draw,
