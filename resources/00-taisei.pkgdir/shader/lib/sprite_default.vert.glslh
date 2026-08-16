@@ -31,14 +31,14 @@ void main(void) {
     dimensions = spriteDimensions;
     #endif
 
-    #ifdef SPRITE_OUT_CUSTOM_MATRIX
-    customVec0 = spriteCustomMatrix[0];
-    customVec1 = spriteCustomMatrix[1];
-    customVec2 = spriteCustomMatrix[2];
-    customVec3 = spriteCustomMatrix[3];
+    #ifdef SPRITE_OUT_CUSTOM
+    customVec0 = spriteCustomVec;
     #endif
 
-    #ifdef SPRITE_OUT_CUSTOM
-    customVec4 = spriteCustomVec;
+    #ifdef SPRITE_OUT_CUSTOM_MATRIX
+    customVec1 = spriteCustomMatrix[0];
+    customVec2 = spriteCustomMatrix[1];
+    customVec3 = spriteCustomMatrix[2];
+    customVec4 = spriteCustomMatrix[3];
     #endif
 }

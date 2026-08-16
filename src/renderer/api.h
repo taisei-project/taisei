@@ -467,6 +467,14 @@ typedef struct SpriteFlipParams {
 	bool y;
 } SpriteFlipParams;
 
+typedef union SpriteShaderCustomParams {
+	ShaderCustomParams as_array[5];
+	struct {
+		vec4_noalign vec;
+		mat4_noalign mat;
+	};
+} SpriteShaderCustomParams;
+
 typedef struct SpriteParams {
 	Sprite *sprite attr_explicit_init;
 	ShaderProgram *shader;
@@ -475,14 +483,7 @@ typedef struct SpriteParams {
 	SpriteScaleParams scale;
 	SpriteRotationParams rotation;
 	Color color attr_explicit_init;
-
-	union {
-		ShaderCustomParams as_array[5];
-		struct {
-			mat4_noalign mat;
-			vec4_noalign vec;
-		};
-	} shader_params;
+	SpriteShaderCustomParams shader_params;
 
 	BlendMode blend;
 	SpriteFlipParams flip;
@@ -491,28 +492,25 @@ typedef struct SpriteParams {
 // Matches vertex buffer layout
 typedef union SpriteInstanceAttribs {
 	struct {
-		mat4 mv_transform;
-		mat4 custom_matrix;
-	};
-
-	struct {
-		char _pad_mv_transform[sizeof(mat4)];
-		ShaderCustomParams custom[5];
-
-		union {
+		mat4 mv_transform;					// attrib 4..7
+		Color rgba;							// attrib 8
+		SpriteShaderCustomParams custom;	// attrib 9..13
+		union {								// attrib 14
 			FloatRect texrect;
 			vec4 texrect_vec4;
 		};
+		FloatExtent sprite_size;			// attrib 15
+		char end_of_fields[0];				// offset of this = size without padding
+	};
 
-		Color rgba;
-		FloatExtent sprite_size;
-
-		// offsetof(end_of_fields) == size without padding.
-		char end_of_fields[0];
+	struct {
+		float _padding[4][6];
+		mat4 custom_mat_aligned;
 	};
 } SpriteInstanceAttribs;
 
-static_assert(offsetof(SpriteInstanceAttribs, custom[0]) == offsetof(SpriteInstanceAttribs, custom_matrix));
+static_assert(offsetof(SpriteInstanceAttribs, custom.mat) == offsetof(SpriteInstanceAttribs, custom_mat_aligned));
+static_assert(offsetof(SpriteInstanceAttribs, custom.mat) % alignof(mat4) == 0);
 
 /*
  * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.
