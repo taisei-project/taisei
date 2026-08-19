@@ -76,6 +76,7 @@ glsl_files = [
     'sprite_particle.frag.glsl',
     'sprite_pbr.frag.glsl',
     'sprite_pbr.vert.glsl',
+    'sprite_rect.frag.glsl',
     'sprite_silhouette.frag.glsl',
     'sprite_silhouette.vert.glsl',
     'sprite_yinyang.frag.glsl',

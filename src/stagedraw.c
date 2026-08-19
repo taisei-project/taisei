@@ -403,6 +403,30 @@ static void stage_draw_collision_areas(void) {
 		return;
 	}
 
+	r_shader("sprite_rect");
+
+	for(Projectile *p = global.projs.first; p; p = p->next) {
+		real cd = 2 * projectile_cull_distance(p);
+		r_draw_sprite(&(SpriteParams) {
+			.color = color_mul_scalar(RGBA(0, 0, 1, 0), 0.5),
+			.sprite = &stagedraw.dummy,
+			.pos.as_cmplx = p->pos,
+			.scale = { cd, cd },
+			.blend = BLEND_PREMUL_ALPHA,
+		});
+	}
+
+	for(Projectile *p = global.projs.first; p; p = p->next) {
+		r_draw_sprite(&(SpriteParams) {
+			.color = color_mul_scalar(RGBA(0, 1, 0, 0), 0.2),
+			.sprite = &stagedraw.dummy,
+			.pos.as_cmplx = p->pos,
+			.scale.as_cmplx = projectile_size(p),
+			.rotation.angle = p->angle + M_PI/2,
+			.blend = BLEND_PREMUL_ALPHA,
+		});
+	}
+
 	r_shader("sprite_filled_circle");
 	r_uniform_vec4("color_inner", 0, 0, 0, 1);
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
@@ -412,11 +436,11 @@ static void stage_draw_collision_areas(void) {
 
 		if(re(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
-				.color = RGB(0, 0.5, 0.5),
+				.color = RGB(0, 0.2, 0.2),
 				.sprite = &stagedraw.dummy,
 				.pos = { re(p->pos), im(p->pos) },
 				.rotation.angle = p->angle + M_PI/2,
-				.scale = { .x = re(gsize), .y = im(gsize) },
+				.scale.as_cmplx = gsize,
 				.blend = BLEND_SUB,
 			});
 		}
