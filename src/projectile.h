@@ -241,6 +241,10 @@ bool projectile_in_viewport(Projectile *proj) attr_nonnull_all;
 void process_projectiles(ProjectileList *projlist, bool collision) attr_hot attr_nonnull_all;
 bool projectile_is_clearable(Projectile *p) attr_nonnull_all;
 
+cmplx projectile_size(Projectile *p) attr_nonnull_all;
+cmplx projectile_graze_size(Projectile *p) attr_nonnull_all;
+real projectile_cull_distance(Projectile *proj) attr_nonnull_all;
+
 Projectile *spawn_projectile_collision_effect(Projectile *proj) attr_nonnull_all;
 Projectile *spawn_projectile_clear_effect(Projectile *proj) attr_nonnull_all;
 Projectile *spawn_projectile_highlight_effect(Projectile *proj) attr_nonnull_all;
@@ -265,7 +269,6 @@ void petal_explosion(int n, cmplx pos);
 void projectiles_preload(ResourceGroup *rg);
 void projectiles_free(void);
 
-cmplx projectile_graze_size(Projectile *p);
 float projectile_timeout_factor(Projectile *p);
 int projectile_time(Projectile *p);
 

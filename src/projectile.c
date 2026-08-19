@@ -113,7 +113,7 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 	assert(args->type <= PROJ_PLAYER);
 }
 
-static cmplx projectile_size(Projectile *p) {
+cmplx projectile_size(Projectile *p) {
 	cmplx r;
 
 	if(p->type == PROJ_PARTICLE && LIKELY(p->sprite != NULL)) {
@@ -490,10 +490,13 @@ static void ent_draw_projectile(EntityInterface *ent) {
 #endif
 }
 
+real projectile_cull_distance(Projectile *proj) {
+	return proj->max_viewport_dist + 0.5 * im(csort(projectile_size(proj)));
+}
+
 bool projectile_in_viewport(Projectile *proj) {
-	real e = proj->max_viewport_dist;
-	cmplx size = projectile_size(proj);
-	cmplx buffer = 0.5 * size + CMPLX(e, e);
+	real cd = projectile_cull_distance(proj);
+	cmplx buffer = CMPLX(cd, cd);
 	cmplx pos = proj->pos;
 	cmplx br = pos + buffer;
 
