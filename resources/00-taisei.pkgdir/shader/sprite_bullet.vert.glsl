@@ -10,6 +10,10 @@ void main(void) {
     texCoordRaw = vertTexCoord;
     texCoord = uv_to_region(spriteTexRegion, vertTexCoord);
     texRegion = spriteTexRegion;
-    customParams = spriteCustomVec;
+    customVec0 = spriteCustomVec;
+    customVec1 = spriteCustomMatrix[0];
+    customVec2 = spriteCustomMatrix[1];
+    customVec3 = spriteCustomMatrix[2];
+    // customVec4 = spriteCustomMatrix[3];
     color = spriteRGBA;
 }

@@ -11,6 +11,24 @@ void spriteMain(out vec4 fragColor) {
 		discard;
 	}
 
-	vec4 color2 = smoothstep(mask.g - 0.25, 1 + 0.5 * mask.r, 0.1 + 0.8 * color);
-	fragColor = (color * mask.g + mix(mask.r * color2, vec4(1.0), mask.b)) * customParams.r;
+	float opacity = customVec0.x;
+	float shadow_thres = customVec0.y;
+	float shadow_strength = customVec0.z;
+	float shadow_brightness = customVec0.w;
+	vec4 edge_color = color;
+	vec4 core_color = customVec1;
+	vec4 shifted_color0 = customVec2;
+	vec4 shifted_color1 = customVec3;
+
+	float shadow_mask = mask.r;
+	float edge_mask = mask.g;
+	float core_mask = mask.b;
+
+	edge_color = mix(edge_color, shifted_color0, mask.b);
+	edge_color = mix(edge_color, shifted_color1, mask.r);
+
+	float shadow_value = smoothstep(0, shadow_thres, shadow_mask) * shadow_strength;
+	vec4 shadow = vec4(edge_color.rgb * shadow_brightness, edge_color.a) * shadow_value;
+
+	fragColor = alphaCompose(shadow, edge_color * edge_mask + core_color * core_mask) * opacity;
 }

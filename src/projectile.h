@@ -208,6 +208,29 @@ struct ProjPrototype {
 	void *private;
 };
 
+// Custom per-sprite parameters for the sprite_bullet shader
+typedef union ProjShaderParams {
+	SpriteShaderCustomParams as_generic;
+	struct {
+		struct {
+			float opacity;
+			float shadow_threshold;
+			float shadow_opacity;
+			float shadow_brightness;
+		};							// customVec0
+		Color core_color;			// customVec1
+		Color shifted_color0;		// customVec2
+		Color shifted_color1;		// customVec3
+		// NOTE: if you extend this to use customVec4,
+		// make sure to edit sprite_bullet.vert.glsl so that it's passed on!
+	};
+} ProjShaderParams;
+
+static_assert(sizeof(ProjShaderParams) == sizeof(SpriteShaderCustomParams));
+
+// NOTE: opacity slot is shared with some other shaders (like sprite_particle)
+static_assert(offsetof(ProjShaderParams, opacity) == offsetof(ProjShaderParams, as_generic.vec[0]));
+
 #define PP(name) \
 	extern ProjPrototype _pp_##name; \
 	extern ProjPrototype *pp_##name; \
@@ -272,4 +295,5 @@ void projectiles_free(void);
 float projectile_timeout_factor(Projectile *p);
 int projectile_time(Projectile *p);
 
+ProjShaderParams projectile_shader_params(Projectile *proj);
 SpriteParams projectile_sprite_params(Projectile *proj);

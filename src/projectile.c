@@ -699,17 +699,20 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_scale(sx, sy, 1);
 	r_mat_mv_rotate(tex_angle, 0, 0, 1);
 
+	auto psp = projectile_shader_params(p);
+	psp.opacity = opacity;
+
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = p->sprite,
 		.shader = p->shader,
-		.shader_params.vec = { opacity },
+		.shader_params = psp.as_generic,
 		.color = p->color,
 	});
 
 	r_mat_mv_pop();
 }
 
-static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, bool flare) {
+static Projectile *spawn_projectile_highlight_effect_internal(Projectile *p, bool flare) {
 	if(!p->sprite) {
 		return NULL;
 	}
@@ -793,15 +796,18 @@ static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs 
 
 	SpriteParams sp = projectile_sprite_params(p);
 
-	float o = sp.shader_params.vec[0];
-	sp.shader_params.vec[0] = o * max(0, 1.5f * (1 - tf) - 0.5f);
+	ProjShaderParams psp = { .as_generic = sp.shader_params };
+	float o = psp.opacity;
+	psp.opacity = o * max(0, 1.5f * (1 - tf) - 0.5f);
+	sp.shader_params = psp.as_generic;
 
 	r_draw_sprite(&sp);
 
 	sp.sprite = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
 	sp.scale.as_cmplx *= scale * (0.0f + 1.5f * tf);
 	sp.color.a *= (1 - tf);
-	sp.shader_params.vec[0] = o;
+	psp.opacity = o;
+	sp.shader_params = psp.as_generic;
 	sp.rotation.angle += angle;
 
 	r_draw_sprite(&sp);
@@ -845,6 +851,24 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 	);
 }
 
+ProjShaderParams projectile_shader_params(Projectile *proj) {
+	// TODO: better colorspace (OKHSL?); maybe cache this
+	Color base = proj->color;
+	float h, s, l;
+	color_get_hsl(&base, &h, &s, &l);
+
+	return (ProjShaderParams) {
+		.opacity = proj->opacity,
+		.shadow_threshold = 0.5,
+		.shadow_opacity = 0.35,
+		// for additive stuff, the "shadow" acts more like a glow
+		.shadow_brightness = lerpf(1, 0.25f, base.a),
+		.core_color = RGBA(1, 1, 1, 1),
+		.shifted_color0 = HSLA(h - 0.08, s, l, base.a),
+		.shifted_color1 = HSLA(h + 0.08, s, l, base.a),
+	};
+}
+
 SpriteParams projectile_sprite_params(Projectile *proj) {
 	return (SpriteParams) {
 		.blend = proj->blend,
@@ -857,7 +881,7 @@ SpriteParams projectile_sprite_params(Projectile *proj) {
 		},
 		.scale.x = re(proj->scale),
 		.scale.y = im(proj->scale),
-		.shader_params.vec = { proj->opacity },
+		.shader_params = projectile_shader_params(proj).as_generic,
 		.shader = proj->shader,
 		.sprite = proj->sprite,
 	};
@@ -870,7 +894,10 @@ static void pdraw_basic_func(Projectile *proj, int t, ProjDrawRuleArgs args) {
 
 	if(eff < 1) {
 		sp.color.a *= eff;
-		sp.shader_params.vec[0] *= min(1.0f, eff * 2.0f);
+
+		ProjShaderParams psp = { .as_generic = sp.shader_params };
+		psp.opacity *= min(1.0f, eff * 2.0f);
+		sp.shader_params = psp.as_generic;
 	}
 
 	r_draw_sprite(&sp);
@@ -904,7 +931,10 @@ static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	sp.scale.y = tf;
 
 	sp.color = RGBA(0.3, 0.6, 1.0, 1);
-	sp.shader_params.vec[0] = opacity;
+
+	ProjShaderParams psp = { .as_generic = sp.shader_params };
+	psp.opacity = opacity;
+	sp.shader_params = psp.as_generic;
 
 	r_disable(RCAP_CULL_FACE);
 	r_draw_sprite(&sp);
@@ -949,7 +979,9 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	}
 
 	SpriteParams sp = projectile_sprite_params(p);
-	sp.shader_params.vec[0] *= opacity;
+	ProjShaderParams psp = { .as_generic = sp.shader_params };
+	psp.opacity *= opacity;
+	sp.shader_params = psp.as_generic;
 	sp.scale.as_cmplx = cwmulf(sp.scale.as_cmplx, scale);
 
 	r_draw_sprite(&sp);
@@ -1001,7 +1033,10 @@ static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	SpriteParams sp = projectile_sprite_params(p);
 	glm_vec3_copy(rot_axis, sp.rotation.vector);
 	sp.rotation.angle = DEG2RAD*t*4.0f + rot_angle;
-	sp.shader_params.vec[0] *= (1.0f - projectile_timeout_factor(p));
+
+	ProjShaderParams psp = { sp.shader_params };
+	psp.opacity *= (1.0f - projectile_timeout_factor(p));
+	sp.shader_params = psp.as_generic;
 
 	r_disable(RCAP_CULL_FACE);
 	r_draw_sprite(&sp);
