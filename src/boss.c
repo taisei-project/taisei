@@ -491,8 +491,9 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		bool kern = font_get_kerning_enabled(font);
 		font_set_kerning_enabled(font, false);
 
-		// TODO: display plrmode-specific data?
-		snprintf(buf, sizeof(buf), "%u / %u", p->global.num_cleared, p->global.num_played);
+		auto plrmode = global.plr.mode;
+		auto plrprog = &p->per_plrmode[plrmode->character->id][plrmode->shot_mode];
+		snprintf(buf, sizeof(buf), "%u / %u", plrprog->num_cleared, plrprog->num_played);
 
 		draw_boss_text(ALIGN_RIGHT,
 			VIEWPORT_W - 10 - text_width(font, buf, 0), 0,
