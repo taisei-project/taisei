@@ -12,5 +12,9 @@ PP_BASIC(rice,         10, 20,    6.00, 12.00)
 PP_BASIC(soul,         80, 80,   36.00, 36.00)
 PP_BASIC(thickrice,    10, 14,    6.00,  8.40)
 PP_BASIC(wave,         23, 25,    9.00, 12.00)
+PP_BASIC(pointer,      20, 25,    6.00, 16.00)
+PP_BASIC(droplet,      15, 20,    6.00,  9.00)
+PP_BASIC(pill,         25, 62,   10.00, 25.00)
+PP_BASIC(diamond,      16, 24,    6.00,  9.00)
 
 #undef PP_BASIC
