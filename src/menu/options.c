@@ -1181,6 +1181,10 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 	add_menu_entry(m, N_("Toggle collision areas overlay"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HITAREAS)
 	);
+
+	add_menu_entry(m, N_("Toggle time freeze"), do_nothing,
+		bind_keybinding(CONFIG_KEY_TIMESTOP)
+	);
 #endif
 
 	add_menu_separator(m);

@@ -58,6 +58,7 @@
 	CONFIGDEF_KEYBINDING(KEY_RELOAD_RESOURCES,  "key_reload_resources", SDL_SCANCODE_F5) \
 	CONFIGDEF_KEYBINDING(KEY_QUICKSAVE,         "key_quicksave",        SDL_SCANCODE_F4) \
 	CONFIGDEF_KEYBINDING(KEY_QUICKLOAD,         "key_quickload",        SDL_SCANCODE_F3) \
+	CONFIGDEF_KEYBINDING(KEY_TIMESTOP,          "key_timestop",         SDL_SCANCODE_SLASH) \
 
 
 #define GPKEYDEFS \
