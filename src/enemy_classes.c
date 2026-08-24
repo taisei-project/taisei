@@ -118,9 +118,9 @@ static void fairy_draw(Enemy *fairy, const FairyVisual *visual, int time) {
 }
 
 static void fairy_draw_loop(Enemy *e, const FairyVisual *visual) {
-	for(int t = 0;; ++t) {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(&e->events.draw);
-		fairy_draw(e, visual, t);
+		fairy_draw(e, visual, global.frames - e->birthtime);
 	}
 }
 
@@ -514,9 +514,9 @@ static void swirl_draw(Enemy *swirl, const SwirlVisual *visual, int time) {
 }
 
 static void swirl_draw_loop(Enemy *e, const SwirlVisual *visual) {
-	for(int t = 0;; ++t) {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(&e->events.draw);
-		swirl_draw(e, visual, t);
+		swirl_draw(e, visual, global.frames - e->birthtime);
 	}
 }
 
