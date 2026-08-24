@@ -8,39 +8,56 @@
 
 #include "spells.h"
 
-#define CHARGE_TIME 90
+#define CHARGE_TIME 120
 
-TASK(rain_lane, { cmplx origin; real spread; }) {
-	real accel = difficulty_value(0.005, 0.01, 0.01, 0.01);
+TASK(rain_lane, { cmplx origin; real spread; cmplx *wind; real max_viewport_dist; }) {
+	real accel = difficulty_value(0.005, 0.01, 0.01, 0.015);
 	int delay = 16;
 
 	for(;;WAIT(delay)) {
+		cmplx wind = *ARGS.wind;
+
+		if( (re(wind) <= 0 && re(ARGS.origin) < 0) ||
+			(re(wind) >= 0 && re(ARGS.origin) > VIEWPORT_H)
+		) {
+			// This bullet will never enter the viewport, so don't spawn it.
+			continue;
+		}
+
 		cmplx ofs = ARGS.spread * rng_sreal();
 		cmplx p = ofs + ARGS.origin;
 
 		PROJECTILE(
 			.pos = p,
-			.proto = pp_rice,
-			.color = RGB(0.2, 0.3, 1.0),
-			.move = move_next(p, move_accelerated(0, I * accel)),
-			.max_viewport_dist = ARGS.spread * 2,
+			.proto = (ProjPrototype*[]) { pp_droplet, pp_rice, pp_thickrice }[rng_irange(0, 3)],
+			.color = RGB(0.3, 0.6, 1.0),
+			.move = move_next(p, move_accelerated(wind, I * accel)),
+			.max_viewport_dist = ARGS.max_viewport_dist,
 		);
 	}
 }
 
 TASK(rain) {
-	int cnt = difficulty_value(8, 9, 10, 11);
+	int cnt = difficulty_value(8, 9, 9, 10);
 	real spacing = VIEWPORT_W / cnt;
+	cmplx wind = 0;
 
-	for(int i = 0; i < cnt; ++i) {
-		INVOKE_SUBTASK_DELAYED((7 * i) % 13, rain_lane, {
+	int extra = 3;
+	real spread = 0.25 * spacing;
+	real max_viewport_dist = spread + spacing * extra;
+
+	for(int i = -extra; i < cnt + extra; ++i) {
+		INVOKE_SUBTASK_DELAYED((7 * (i + extra)) % 13, rain_lane, {
 			.origin = spacing * (i + 0.5),
-			.spread = 0.25 * spacing,
+			.spread = spread,
+			.wind = &wind,
+			.max_viewport_dist = max_viewport_dist,
 		});
 	}
 
-	for(;;WAIT(5)) {
+	for(int t = 0;; ++t, YIELD) {
 		play_sfx_loop("shot1_loop");
+		re(wind) = 0.5 * sin(t * 0.0076) * smoothstep(0, 600, t);
 	}
 }
 
@@ -95,7 +112,10 @@ TASK(fork_branch, {
 	}
 }
 
-TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
+TASK(fork, {
+	cmplx orig; cmplx dest; real maxwidth; real minwidth;
+	Color color0; Color color1;
+}) {
 	cmplx orig = ARGS.orig;
 	cmplx dest = ARGS.dest;
 	real width = ARGS.maxwidth;
@@ -111,7 +131,7 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 	real branch_len = seglen * 6;
 	real next_len = seglen;
 
-	Color color = RGBA(0.1, 0.5, 1, 0);
+	Color color = ARGS.color0;
 
 	INVOKE_SUBTASK(common_charge, {
 		.time = CHARGE_TIME,
@@ -156,10 +176,34 @@ TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
 		seglen = lerp(seglen, 32, 0.2);
 		branch_len *= 0.98;
 
-		color = color_lerp(color, RGBA(0.5, 0.1, 1, 0), 0.1);
+		color = color_lerp(color, ARGS.color1, 0.1);
 
 		WAIT(1);
 	}
+
+	AWAIT_SUBTASKS;
+}
+
+TASK(double_strike, { cmplx origin; real maxwidth; real minwidth; int delay; }) {
+	INVOKE_SUBTASK(fork,
+		.orig = ARGS.origin,
+		.dest = global.plr.pos,
+		.maxwidth = ARGS.maxwidth,
+		.minwidth = ARGS.minwidth,
+		.color0 = RGBA(0.1, 0.5, 1, 0),
+		.color1 = RGBA(0.5, 0.1, 1, 0),
+	);
+
+	WAIT(ARGS.delay);
+
+	INVOKE_SUBTASK(fork,
+		.orig = ARGS.origin,
+		.dest = global.plr.pos,
+		.maxwidth = ARGS.maxwidth,
+		.minwidth = ARGS.minwidth,
+		.color0 = RGBA(1.0, 1.0, 0.5, 0),
+		.color1 = RGBA(1.0, 0.5, 0.5, 0),
+	);
 
 	AWAIT_SUBTASKS;
 }
@@ -177,13 +221,47 @@ DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
 	INVOKE_SUBTASK(rain);
 
 	boss->move.attraction = 0.03;
-	int delay = difficulty_value(180, 140, 120, 110);
+
+	int delay_reduction = 20;
+	int delay_reduction_steps = 5;
+	int delay_final = difficulty_value(180, 140, 140, 140);
+	int delay = delay_final + delay_reduction * delay_reduction_steps;
+	int movement_delay = 60;
+
+	assert(delay_final > movement_delay);
 
 	for(int x = 0;; ++x) {
-		WAIT(delay);
+		WAIT(movement_delay);
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.25, wander_bounds);
+		WAIT(delay - movement_delay);
 		aniplayer_hard_switch(&boss->ani, (x & 1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
-		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.3, wander_bounds);
-		INVOKE_SUBTASK(fork, re(boss->pos), global.plr.pos, 64, 8);
+
+		if(global.diff > D_Normal) {
+			INVOKE_SUBTASK(double_strike,
+				.origin = re(boss->pos),
+				.minwidth = 8,
+				.maxwidth = 64,
+				.delay = 30,
+			);
+		} else {
+			INVOKE_SUBTASK(fork,
+				.orig = re(boss->pos),
+				.dest = global.plr.pos,
+				.minwidth = 8,
+				.maxwidth = 64,
+				.color0 = RGBA(0.1, 0.5, 1, 0),
+				.color1 = RGBA(0.5, 0.1, 1, 0),
+			);
+		}
+
+		if(x > 23) {  // rage phase!
+			delay = 30;
+			movement_delay = 0;
+		} else if(delay > delay_final) {
+			delay -= delay_reduction;
+		} else {
+			assert(delay == delay_final);
+		}
 	}
 }

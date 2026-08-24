@@ -22,6 +22,7 @@ extern struct stage5_spells_s {
 	struct {
 		AttackInfo atmospheric_discharge;
 		AttackInfo artificial_lightning;
+		AttackInfo double_lightning;
 		AttackInfo induction_field;
 		AttackInfo inductive_resonance;
 		AttackInfo natural_cathode;

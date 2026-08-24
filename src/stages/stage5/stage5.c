@@ -35,7 +35,12 @@ struct stage5_spells_s stage5_spells = {
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},
 		.artificial_lightning = {
-			{ 4,  5,  6,  7}, AT_Spellcard, N_("Charge Sign “Artificial Lightning”"), 75, 60000,
+			{ 4,  5,  -1,  -1}, AT_Spellcard, N_("Charge Sign “Artificial Lightning”"), 75, 60000,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_artificial_lightning),
+			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+		},
+		.double_lightning = {
+			{ -1,  -1,  6,  7}, AT_Spellcard, N_("Thunderstorm “Double-Striking Lightning”"), 75, 60000,
 			TASK_INDIRECT_INIT(BossAttack, stage5_spell_artificial_lightning),
 			iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
 		},

@@ -68,7 +68,12 @@ TASK(spawn_boss) {
 	boss_add_attack_from_info(boss, &stage5_spells.boss.atmospheric_discharge, false);
 
 	boss_add_attack_task(boss, AT_Normal, "Bolts2", 45, 27000, TASK_INDIRECT(BossAttack, stage5_boss_nonspell_2), NULL);
-	boss_add_attack_from_info(boss, &stage5_spells.boss.artificial_lightning, false);
+
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(boss, &stage5_spells.boss.artificial_lightning, false);
+	} else {
+		boss_add_attack_from_info(boss, &stage5_spells.boss.double_lightning, false);
+	}
 
 	boss_add_attack_task(boss, AT_Normal, "Bolts3", 50, 30000, TASK_INDIRECT(BossAttack, stage5_boss_nonspell_3), NULL);
 	if(global.diff < D_Hard) {
