@@ -1047,16 +1047,10 @@ static void set_bg_color_filter_uniforms(void) {
 }
 
 void stage_draw_scene(StageInfo *stage) {
-#ifdef DEBUG
-	bool key_nobg = gamekeypressed(KEY_NOBACKGROUND);
-#else
-	bool key_nobg = false;
-#endif
-
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
 
-	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG) && !key_nobg;
+	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG);
 
 	if(draw_bg) {
 		stage_render_bg(stage);
@@ -1082,7 +1076,7 @@ void stage_draw_scene(StageInfo *stage) {
 		r_state_pop();
 
 		coevent_signal(&stagedraw.events.background_drawn);
-	} else if(!key_nobg) {
+	} else {
 		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 

@@ -48,7 +48,6 @@
 	CONFIGDEF_KEYBINDING(KEY_IDDQD,             "key_iddqd",            SDL_SCANCODE_Q) \
 	CONFIGDEF_KEYBINDING(KEY_HAHAIWIN,          "key_skipstage",        SDL_SCANCODE_E) \
 	CONFIGDEF_KEYBINDING(KEY_PAUSE,             "key_pause",            SDL_SCANCODE_PAUSE) \
-	CONFIGDEF_KEYBINDING(KEY_NOBACKGROUND,      "key_nobackground",     SDL_SCANCODE_LALT) \
 	CONFIGDEF_KEYBINDING(KEY_POWERUP,           "key_powerup",          SDL_SCANCODE_2) \
 	CONFIGDEF_KEYBINDING(KEY_POWERDOWN,         "key_powerdown",        SDL_SCANCODE_1) \
 	CONFIGDEF_KEYBINDING(KEY_FPSLIMIT_OFF,      "key_fpslimit_off",     SDL_SCANCODE_RSHIFT) \

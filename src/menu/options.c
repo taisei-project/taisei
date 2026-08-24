@@ -1178,10 +1178,6 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 		bind_keybinding(CONFIG_KEY_POWERDOWN)
 	);
 
-	add_menu_entry(m, N_("Disable background rendering (HoM effect)"), do_nothing,
-		bind_keybinding(CONFIG_KEY_NOBACKGROUND)
-	);
-
 	add_menu_entry(m, N_("Toggle collision areas overlay"), do_nothing,
 		bind_keybinding(CONFIG_KEY_HITAREAS)
 	);
