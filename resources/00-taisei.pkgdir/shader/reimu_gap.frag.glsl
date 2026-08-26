@@ -8,6 +8,11 @@
 #define BBOX_TEST
 // #define BBOX_TEST_DEBUG
 
+struct GapVars {
+	vec2 views[NUM_GAPS];
+	mat2 rotations[NUM_GAPS];
+};
+
 bool posInBBox(vec2 pos, vec2 origin, float size) {
 	return all(bvec4(
 		pos.x > origin.x - size,
@@ -17,20 +22,30 @@ bool posInBBox(vec2 pos, vec2 origin, float size) {
 	));
 }
 
-void drawGap(inout vec4 frag_color, vec2 frag_loc, int i) {
+void drawGap(inout vec4 frag_color, vec2 frag_loc, int i, GapVars gapvars) {
 	const float h0 = 1;
 	const float h1 = h0 * 0.8;
 	const vec4 gap_color = vec4(0.75, 0, 0.4, 1);
 
 	vec2 gap = gaps[i];
-	mat2 gap_rot = mat2(gap_rotations[i]);
+	mat2 gap_rot = gapvars.rotations[i];
 	float edge = length(gap_rot * (frag_loc - gap) / gap_size);
 	float gap_mask = smoothstep(h0, h1, edge);
-	vec2 tc = gap_views[i];
+	vec2 tc = gapvars.views[i];
 	frag_color = mix(frag_color, mix(gap_color, texture(tex, tc), 1 - pow(edge, 3)), gap_mask);
 }
 
 void main(void) {
+	GapVars gapvars;
+	gapvars.views[0] = gap_views_0;
+	gapvars.views[1] = gap_views_1;
+	gapvars.views[2] = gap_views_2;
+	gapvars.views[3] = gap_views_3;
+	gapvars.rotations[0] = mat2(gap_rotations_0);
+	gapvars.rotations[1] = mat2(gap_rotations_1);
+	gapvars.rotations[2] = mat2(gap_rotations_2);
+	gapvars.rotations[3] = mat2(gap_rotations_3);
+
 	if(draw_background != 0) {
 		fragColor = texture(tex, texCoord);
 	} else {
@@ -59,10 +74,10 @@ void main(void) {
 		frag_loc.x += mag * sin(t *  1.35 - frag_loc.y * pmag);
 
 		// This used to be a loop, but unfortunately ANGLE miscompiles it for the D3D backend.
-		drawGap(fragColor, frag_loc, 0);
-		drawGap(fragColor, frag_loc, 1);
-		drawGap(fragColor, frag_loc, 2);
-		drawGap(fragColor, frag_loc, 3);
+		drawGap(fragColor, frag_loc, 0, gapvars);
+		drawGap(fragColor, frag_loc, 1, gapvars);
+		drawGap(fragColor, frag_loc, 2, gapvars);
+		drawGap(fragColor, frag_loc, 3, gapvars);
 
 		#ifdef DRAW_LINKS
 		for(int i = 0; i < NUM_GAPS; ++i) {

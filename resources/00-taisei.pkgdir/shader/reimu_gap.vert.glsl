@@ -8,7 +8,10 @@ void main(void) {
 	gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);
 	texCoord = (r_textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
 
-    for(int i = 0; i < NUM_GAPS; ++i) {
+	vec2 gap_views[NUM_GAPS];
+	vec4 gap_rotations[NUM_GAPS];
+
+	for(int i = 0; i < NUM_GAPS; ++i) {
 		vec2 gap = gaps[i];
 		float gap_angle = gap_angles[i];
 		int link = gap_links[i];
@@ -22,4 +25,14 @@ void main(void) {
 		gap_views[i] = tc;
 		gap_rotations[i] = vec4(rot(gap_angle));
 	}
+
+	gap_views_0 = gap_views[0];
+	gap_views_1 = gap_views[1];
+	gap_views_2 = gap_views[2];
+	gap_views_3 = gap_views[3];
+
+	gap_rotations_0 = gap_rotations[0];
+	gap_rotations_1 = gap_rotations[1];
+	gap_rotations_2 = gap_rotations[2];
+	gap_rotations_3 = gap_rotations[3];
 }
