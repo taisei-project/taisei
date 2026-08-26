@@ -16,6 +16,16 @@ sdl3_options.add_cmake_defines({
     'SDL_STATIC': true,
 })
 
+dawn_cmake_dir = get_option('dawn_cmake_dir')
+if dawn_cmake_dir != ''
+    sdl3_options.add_cmake_defines({'Dawn_DIR': dawn_cmake_dir})
+endif
+
+dawn_root_dir = get_option('dawn_root_dir')
+if dawn_root_dir != ''
+    sdl3_options.add_cmake_defines({'Dawn_ROOT': dawn_root_dir})
+endif
+
 passthrough_toggles = [
     'alsa',
     'pipewire',
