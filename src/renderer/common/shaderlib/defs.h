@@ -24,6 +24,7 @@ typedef enum ShaderLanguage {
 	SHLANG_HLSL,
 	SHLANG_DXBC,
 	SHLANG_MSL,
+	SHLANG_WGSL,
 
 	SHLANG_FIRST = SHLANG_INVALID + 1,
 } ShaderLanguage;

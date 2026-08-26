@@ -404,6 +404,10 @@ static bool sdlgpu_init(RendererBackend *backend, char *opts) {
 		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
 	}
 
+	if(wgsl_supported()) {
+		shader_formats |= SDL_GPU_SHADERFORMAT_WGSL;
+	}
+
 	sdlgpu.debug = env_get("TAISEI_SDLGPU_DEBUG", false);
 	bool lowpower = env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false);
 	SDL_PropertiesID props = SDL_CreateProperties();

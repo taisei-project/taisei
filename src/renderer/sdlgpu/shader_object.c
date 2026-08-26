@@ -40,6 +40,10 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 		.lang = SHLANG_MSL,
 	};
 
+	static const ShaderLangInfo lang_wgsl = {
+		.lang = SHLANG_WGSL,
+	};
+
 	SDL_GPUShaderFormat formats = SDL_GetGPUShaderFormats(sdlgpu.device);
 
 	if(formats & SDL_GPU_SHADERFORMAT_SPIRV) {
@@ -48,6 +52,8 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 		want_lang = &lang_dxbc;
 	} else if(formats & SDL_GPU_SHADERFORMAT_MSL) {
 		want_lang = &lang_msl;
+	} else if(formats & SDL_GPU_SHADERFORMAT_WGSL) {
+		want_lang = &lang_wgsl;
 	} else {
 		UNREACHABLE;
 	}
@@ -294,6 +300,7 @@ static SDL_GPUShaderFormat shader_format_ts2sdlgpu(ShaderLanguage shlang) {
 		case SHLANG_SPIRV: return SDL_GPU_SHADERFORMAT_SPIRV;
 		case SHLANG_DXBC: return SDL_GPU_SHADERFORMAT_DXBC;
 		case SHLANG_MSL: return SDL_GPU_SHADERFORMAT_MSL;
+		case SHLANG_WGSL: return SDL_GPU_SHADERFORMAT_WGSL;
 		default: UNREACHABLE;
 	}
 }

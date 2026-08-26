@@ -117,6 +117,7 @@ static uint8_t *shader_cache_construct_entry(
 			break;
 		}
 
+		case SHLANG_WGSL:
 		case SHLANG_MSL: {
 			break;
 		}
@@ -227,6 +228,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 			break;
 		}
 
+		case SHLANG_WGSL:
 		case SHLANG_MSL: {
 			break;
 		}

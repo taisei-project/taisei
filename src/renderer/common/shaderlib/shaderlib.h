@@ -15,6 +15,7 @@
 #include "lang_spirv.h"
 #include "lang_hlsl.h"
 #include "lang_dxbc.h"
+#include "lang_wgsl.h"
 
 struct ShaderLangInfo {
 	ShaderLanguage lang;

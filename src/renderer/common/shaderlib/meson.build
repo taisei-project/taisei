@@ -19,16 +19,28 @@ dep_glslang = dependency('glslang',
     fallback : ['glslang', 'glslang_dep'],
     method : 'cmake',
     modules : ['glslang::glslang', 'glslang::glslang-default-resource-limits'])
-shader_transpiler_enabled = dep_spvc.found() and dep_glslang.found()
+dep_spvtools = dependency('SPIRV-Tools',
+    required : opt_shader_transpiler,
+    fallback : ['SPIRV-Tools', 'spirv_tools_opt_dep'])
+shader_transpiler_enabled = dep_spvc.found() and dep_glslang.found() and dep_spvtools.found()
 
 opt_shader_transpiler_dxbc = (get_option('shader_transpiler_dxbc').
     disable_auto_if(host_machine.system() != 'windows').
     require(shader_transpiler_enabled,
         error_message : 'shader_transpiler must be enabled to use shader_transpiler_dxbc'))
 
+opt_shader_transpiler_wgsl = (get_option('shader_transpiler_wgsl').
+    require(shader_transpiler_enabled,
+        error_message : 'shader_transpiler must be enabled to use shader_transpiler_wgsl'))
+
+dep_wgslcrap = dependency('wgslcrap',
+    method : 'builtin',
+    required : opt_shader_transpiler_wgsl,
+    fallback : ['naga-wrapper', 'wgslcrap_dep'])
+
 if shader_transpiler_enabled
     r_shaderlib_src += files('lang_spirv.c')
-    r_shaderlib_libdeps += [dep_glslang, dep_spvc]
+    r_shaderlib_libdeps += [dep_glslang, dep_spvc, dep_spvtools]
 else
     r_shaderlib_src += files('lang_spirv_stub.c')
 endif
@@ -37,4 +49,11 @@ if opt_shader_transpiler_dxbc.allowed()
     r_shaderlib_src += files('lang_dxbc.c')
 else
     r_shaderlib_src += files('lang_dxbc_stub.c')
+endif
+
+if dep_wgslcrap.found()
+    r_shaderlib_src += files('lang_wgsl.c')
+    r_shaderlib_libdeps += [dep_wgslcrap]
+else
+    r_shaderlib_src += files('lang_wgsl_stub.c')
 endif

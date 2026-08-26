@@ -35,6 +35,9 @@ typedef struct CacheEntryMetadata {
 		struct {
 			const DXBCCompileOptions *compile_options;
 		} dxbc;
+
+		struct {
+		} wgsl;
 	};
 } CacheEntryMetadata;
 
@@ -110,6 +113,19 @@ static size_t shader_cache_serialize_entry_metadata_msl(
 	return sizeof(data);
 }
 
+static size_t shader_cache_serialize_entry_metadata_wgsl(
+	const CacheEntryMetadata *meta, size_t size, uint8_t buf[size]
+) {
+	uint8_t data[] = {
+		meta->stage,
+		meta->reflection,
+	};
+
+	assume(sizeof(data) <= size);
+	memcpy(buf, data, sizeof(data));
+	return sizeof(data);
+}
+
 static size_t shader_cache_serialize_entry_metadata(
 	const CacheEntryMetadata *meta, size_t size, uint8_t buf[size]
 ) {
@@ -129,6 +145,9 @@ static size_t shader_cache_serialize_entry_metadata(
 
 		case SHLANG_MSL:
 			return shader_cache_serialize_entry_metadata_msl(meta, size, buf);
+
+		case SHLANG_WGSL:
+			return shader_cache_serialize_entry_metadata_wgsl(meta, size, buf);
 
 		default:
 			log_error("Unhandled shading language %s", shader_lang_name(meta->lang.lang));
@@ -154,6 +173,7 @@ static bool shader_cache_entry_name(
 		[SHLANG_HLSL - SHLANG_FIRST] = "hlsl_",
 		[SHLANG_DXBC - SHLANG_FIRST] = "dxbc_",
 		[SHLANG_MSL - SHLANG_FIRST] = "msl_",
+		[SHLANG_WGSL - SHLANG_FIRST] = "wgsl_",
 	};
 
 	uint idx = meta->lang.lang - SHLANG_FIRST;
@@ -245,6 +265,25 @@ fail:
 	return false;
 }
 
+static bool spirv_decompile_internal(
+	const ShaderSource *in,
+	ShaderSource *out,
+	MemArena *arena,
+	const SPIRVDecompileOptions *options
+) {
+	if(options->lang->lang == SHLANG_WGSL) {
+		bool ok = wgsl_translate_from_spirv(in, out, arena);
+
+		if(ok && options->reflect) {
+			out->reflection = NOT_NULL(in->reflection);
+		}
+
+		return ok;
+	} else {
+		return _spirv_decompile(in, out, arena, options);
+	}
+}
+
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena, const SPIRVDecompileOptions *options) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
@@ -256,14 +295,14 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 	assume(m.lang.lang != SHLANG_SPIRV);
 
 	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
-		return _spirv_decompile(in, out, arena, options);
+		return spirv_decompile_internal(in, out, arena, options);
 	}
 
 	auto scratch = acquire_scratch_arena();
 
 	if(!shader_cache_hash(in, NULL, sizeof(hash), hash, scratch)) {
 		release_scratch_arena(scratch);
-		return _spirv_decompile(in, out, arena, options);
+		return spirv_decompile_internal(in, out, arena, options);
 	}
 
 	auto arena_snap = marena_snapshot(arena);
@@ -282,7 +321,7 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		marena_rollback(arena, &arena_snap);
 	}
 
-	if((result = _spirv_decompile(in, out, arena, options))) {
+	if((result = spirv_decompile_internal(in, out, arena, options))) {
 		shader_cache_set(hash, name, out, scratch);
 	}
 
@@ -310,7 +349,9 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 		compile_dxbc = true;
 	}
 
-	bool reflect_on_compile = options->decompile.reflect && decompile_lang.lang == SHLANG_SPIRV;
+	bool reflect_on_compile = options->decompile.reflect && (
+		decompile_lang.lang == SHLANG_SPIRV ||
+		decompile_lang.lang == SHLANG_WGSL);
 
 	if(
 		_in.lang.lang == SHLANG_GLSL &&
@@ -359,6 +400,7 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 	ADD_MACRO_DYNAMIC("LANG_HLSL", "%d", SHLANG_HLSL);
 	ADD_MACRO_DYNAMIC("LANG_DXBC", "%d", SHLANG_DXBC);
 	ADD_MACRO_DYNAMIC("LANG_MSL", "%d", SHLANG_MSL);
+	ADD_MACRO_DYNAMIC("LANG_WGSL", "%d", SHLANG_WGSL);
 	ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_LANG", "%d", decompile_lang.lang);
 
 	switch(decompile_lang.lang) {
@@ -374,6 +416,7 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 
 		case SHLANG_SPIRV:
 		case SHLANG_MSL:
+		case SHLANG_WGSL:
 			break;
 
 		default: UNREACHABLE;
