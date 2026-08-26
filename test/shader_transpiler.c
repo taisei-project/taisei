@@ -90,6 +90,9 @@ static bool test_shader(const char *path) {
 		{ "MSL", {
 			.lang = SHLANG_MSL,
 		}},
+		{ "WGSL", {
+			.lang = SHLANG_WGSL,
+		}},
 	};
 
 	for(uint i = 0; i < ARRAY_SIZE(langs); ++i) {

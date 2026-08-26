@@ -119,6 +119,12 @@ option(
 )
 
 option(
+    'shader_transpiler_wgsl',
+    type : 'feature',
+    description : 'Enable translations of shaders into WGSL; required for the WebGPU backend of SDL_GPU; requires Rust and Cargo'
+)
+
+option(
     'validate_glsl',
     type : 'feature',
     deprecated : {'true' : 'enabled', 'false' : 'disabled'},

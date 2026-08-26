@@ -1,0 +1,26 @@
+[package]
+name = "wgslcrap"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[profile.release]
+opt-level = 's'
+
+[profile.release-lto]
+inherits = "release"
+lto = 'fat'
+
+[profile.release-debug]
+inherits = "release"
+debug = true
+
+[profile.release-lto-debug]
+inherits = "release-lto"
+debug = true
+
+[dependencies]
+naga = { version = "30.0.1", features = ["wgsl-out", "spv-in"] }
+spirv-webgpu-transform = "0.1.6"
