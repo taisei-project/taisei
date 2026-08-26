@@ -40,3 +40,15 @@ option('pthreads',
     value : 'auto',
     description : 'Use POSIX threads for multi-threading'
 )
+
+option('dawn_cmake_dir',
+    type : 'string',
+    value : '',
+    description : 'Path to Dawn cmake directory (e.g. /opt/dawn/lib64/cmake); passed to CMake as Dawn_DIR'
+)
+
+option('dawn_root_dir',
+    type : 'string',
+    value : '',
+    description : 'Path to Dawn root directory (e.g. /opt/dawn); passed to CMake as Dawn_ROOT'
+)
