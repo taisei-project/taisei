@@ -16,18 +16,23 @@ ATTRIBUTE(3) vec4  vertTangent;
 /*
  * Per-instance attributes
  */
-ATTRIBUTE(4)   mat4  spriteVMTransform;
-// 5
-// 6
-// 7
+ATTRIBUTE(4)   vec4  spriteVMTransform0;
+ATTRIBUTE(5)   vec4  spriteVMTransform1;
+ATTRIBUTE(6)   vec4  spriteVMTransform2;
+ATTRIBUTE(7)   vec4  spriteVMTransform3;
 ATTRIBUTE(8)   vec4  spriteRGBA;
-ATTRIBUTE(9)   vec4  spriteCustomVec;
-ATTRIBUTE(10)  mat4  spriteCustomMatrix;
-// 11
-// 12
-// 13
+ATTRIBUTE(9)   vec4  spriteCustomVec0;
+ATTRIBUTE(10)  vec4  spriteCustomVec1;
+ATTRIBUTE(11)  vec4  spriteCustomVec2;
+ATTRIBUTE(12)  vec4  spriteCustomVec3;
+ATTRIBUTE(13)  vec4  spriteCustomVec4;
 ATTRIBUTE(14)  vec4  spriteTexRegion;
 ATTRIBUTE(15)  vec2  spriteDimensions;
+
+#define spriteCustomVec     spriteCustomVec0
+#define spriteVMTransform   mat4(spriteVMTransform0, spriteVMTransform1, spriteVMTransform2, spriteVMTransform3)
+#define spriteCustomMatrix  mat4(spriteCustomVec1, spriteCustomVec2, spriteCustomVec3, spriteCustomVec4)
+
 #endif
 
 #ifdef FRAG_STAGE
