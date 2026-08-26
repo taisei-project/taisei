@@ -242,7 +242,8 @@ static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src,
 	}
 
 	uint32_t content_size = READU32LE(s);
-	char *content = marena_alloc(arena, content_size);
+	char *content = marena_alloc(arena, content_size + 1);
+	content[content_size] = 0;
 
 	if(SDL_ReadIO(s, content, content_size) != content_size) {
 		log_sdl_error(LOG_ERROR, "SDL_ReadIO");
