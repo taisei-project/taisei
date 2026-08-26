@@ -32,6 +32,7 @@ const char *shader_lang_name(ShaderLanguage lang) {
 		case SHLANG_HLSL:    return "HLSL";
 		case SHLANG_DXBC:    return "DXBC";
 		case SHLANG_MSL:     return "MSL";
+		case SHLANG_WGSL:    return "WGSL";
 	}
 
 	assert(0 && "Unknown ShaderLanguage value");
