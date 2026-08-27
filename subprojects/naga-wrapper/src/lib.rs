@@ -117,7 +117,9 @@ pub unsafe extern "C" fn spirv_to_wgsl(
 		}
 	};
 
-	let wgsl = match naga::back::wgsl::write_string(&module, &info, WriterFlags::EXPLICIT_TYPES) {
+	let preamble = "diagnostic(off, derivative_uniformity);\n";
+
+	let mut wgsl = match naga::back::wgsl::write_string(&module, &info, WriterFlags::EXPLICIT_TYPES) {
 		Ok(s) => s,
 		Err(err) => {
 			let errstr = format_error_chain(&err);
@@ -126,5 +128,6 @@ pub unsafe extern "C" fn spirv_to_wgsl(
 		}
 	};
 
+	wgsl.insert_str(0, preamble);
 	return WGSLResult::content(&allocator, &wgsl);
 }
