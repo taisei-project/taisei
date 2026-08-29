@@ -691,39 +691,36 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	MSG(yumemi, "Hmm? A fairytale witch who knows about computers?");
 
 	FACE(marisa, happy);
-	MSG(marisa, "Heh heh, I’ve helped the kappa out with computer problems tons of times!");
+	MSG(marisa, "I’ve helped the kappa out with computer problems tons of times!");
+	MSG(marisa, "My favourite one is—");
 
-	MSG(yumemi, "Is that so?");
 	FACE(yumemi, smug);
 	MSG(yumemi, "How absurd.");
 	MSG(yumemi, "But even knowing those things, this place is beyond the comprehension of any fantasy creature.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Those women I conscripted before are proof of that.");
+	MSG(yumemi, "Those silly women I conscripted before are proof of that.");
 
 	FACE(marisa, puzzled);
 	MSG(marisa, "Hey, no point blamin’ students for a bad teacher.");
 
-	MSG(yumemi, "…");
 	FACE(yumemi, normal);
 	MSG(yumemi, "I built this machine through the merging of computer science and unified physics.");
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "When it was completed, its impressive display of power and ability…");
 	FACE(yumemi, sigh);
-	MSG(yumemi, "… did nothing.");
+	MSG(yumemi, "… was completely ignored.");
 	FACE(marisa, normal);
 	FACE(yumemi, sad);
 	MSG(yumemi, "Nobody cared. They were disillusioned before they'd even seen it.");
 	MSG(yumemi, "‘Big deal. Rich people can already go to the moon. It’s just another toy for them.’");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "… even though I wouldn’t dare give those lunar-bound idiots even a glimpse.");
+	MSG(yumemi, "… even though I wouldn’t dare give those lunatics even a glimpse.");
 
 	FACE(yumemi, normal);
 	FACE(marisa, puzzled);
-	MSG(marisa, "Yeah, uh, screw those guys, I guess?");
+	MSG(marisa, "Yeah, uh, to hell with the Lunarians, I guess?");
 
 	FACE(yumemi, smug);
-	MSG(yumemi, "… heh.");
-	FACE(yumemi, normal);
 	MSG(yumemi, "You know, I knew people who used to practice witchcraft.");
 	FACE(marisa, normal);
 	MSG(yumemi, "Some of them even wore silly hats, just like yours.");
@@ -745,16 +742,13 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	MSG(marisa, "‘We’? Ya mean those former-underlings of yours?");
 
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "…");
-	FACE(yumemi, normal);
 	MSG(yumemi, "It was all a distraction from the real problem.");
 	FACE(marisa, normal);
 	MSG(yumemi, "Comforting, at first, to think there was some hidden meaning to reality, but…");
 
 	FACE(marisa, sweat_smile);
-	MSG(marisa, "Hey, why don’t we work this all out over some sake and physics textbooks?");
-	FACE(marisa, happy);
-	MSG(marisa, "If you can look past the hat, I’m a pretty understandin’ lady!");
+	MSG(marisa, "Hey, uh, why don’t we work this all out over some sake and physics textbooks?");
+	MSG(marisa, "(Good grief, this is rough…)");
 
 	FACE(yumemi, smug);
 	MSG(yumemi, "I don’t take orders from fairytales.");
@@ -769,29 +763,22 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 
 	MSG(marisa, "A completely ordinary witch.");
 	FACE(marisa, normal);
-	MSG(marisa, "Sake’s gettin’ cold.");
-	MSG(marisa, "How about you do me a solid, turn this thing off, and you can tell me ALL about that Grand Unified Theory of yours back at my place?");
+	MSG(marisa, "So, how about you turn this thing off, and you can tell me ALL about that Grand Unified Theory of yours back at my place?");
 
 	FACE(yumemi, normal);
 	MSG(yumemi, "If it’s all the same to you, I’d rather keep it on, and stay here.");
 	FACE(marisa, happy);
 	MSG(marisa, "Good thing it’s not all the same to me, then!");
-	FACE(yumemi, surprised);
-	MSG(yumemi, "Huh? It’s an expression-");
-	MSG(marisa, "Gahahahah!");
 
 	FACE(yumemi, sigh);
-	MSG(yumemi, "I won’t take sass from some ‘ordinary’ witch.");
+	MSG(yumemi, "I don’t need to take sass from something like you.");
 	FACE(marisa, smug);
 	MSG(marisa, "Why not? My sass is legendary.");
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "Because you’re not real. You’re a figment of delusional minds.");
 	MSG(yumemi, "People waste their time thinking about ‘Otherworlds’, about Gensōkyō, while everything else decays and dies.");
 	FACE(marisa, normal);
-	MSG(yumemi, "I’m going to give them no other escape than the world they truly live in.");
-	FACE(yumemi, sigh);
-	MSG(yumemi, "It’s likely they’ll find some other distraction, some other way to destroy themselves…");
+	MSG(yumemi, "Even if I destroy this place, it’s likely they’ll find some other distraction, some other way to destroy themselves…");
 	FACE(yumemi, sad);
 	MSG(yumemi, "It probably won’t change a thing.");
 	FACE(yumemi, eyes_closed);
@@ -800,26 +787,20 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	FACE(marisa, sweat_smile);
 	MSG(marisa, "Yikes.");
 	FACE(marisa, normal);
-	MSG(marisa, "Y’know destroyin’ fantasy will just make your problems worse, right?");
-	MSG(marisa, "If all I did was studyin’, I’d be dull in no time flat!");
-	FACE(marisa, happy);
-	MSG(marisa, "Goofin’ off and thinkin’ about weird stuff keeps your mind sharp! Let’s you recharge!");
+	MSG(marisa, "Y’know, destroyin’ fantasy will just make your problems worse, right?");
 
-	FACE(yumemi, smug);
-	MSG(yumemi, "Yes, of course it’d work for the likes of you.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "But for us mere humans, well, we’re unable to handle the Siren’s song of these places.");
+	MSG(yumemi, "Humans are unable to withstand the Siren’s song of these places. It’s in our nature.");
 
 	FACE(marisa, normal);
-	MSG(marisa, "I really am human, y’know.");
-	MSG(marisa, "And from one human to another, please, turn off the dang madness rays, would ya?");
+	MSG(marisa, "I really am human, though!");
+	MSG(marisa, "So from one human to another: turn off the dang madness rays, would ya?");
 
 	EVENT(music_changes);
 	FACE(yumemi, sigh);
-	MSG(yumemi, "Fantasy *is* tenacious, isn’t it? I guess it was always going to come down to a fight, no matter what.");
-	MSG(yumemi, "It’s not like I have anything to lose.");
+	MSG(yumemi, "Fantasy *is* tenacious, isn’t it? Oh well.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "If nothing else, destroying you will provide valuable data in annihilating the rest of you.");
+	MSG(yumemi, "If nothing else, you’ll provide valuable data in annihilating these irritating worlds!");
 
 	DIALOG_END();
 }
@@ -846,17 +827,14 @@ DIALOG_TASK(marisa, StageExPostBoss) {
 
 	FACE(marisa, smug);
 	MSG(marisa, "‘God’? What’s a ‘God’ gotta do with it? Ain’t that against your non-beliefs?");
-	MSG(marisa, "Or are ya just mad ya got schooled by an ‘imaginary’ girl wearin’ a silly hat?");
+	MSG(marisa, "Or are ya just mad ya got schooled by an ‘imaginary’ girl wearing a silly hat?");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "…");
-	FACE(yumemi, normal);
-	FACE(marisa, normal);
 	MSG(yumemi, "Despite the extensive calculations, I still lost.");
 	MSG(yumemi, "I suppose everything really was doomed from the start. People are too invested in fantasical delusions…");
 
 	MSG(marisa, "Listen up, brain genius.");
-	FACE(marisa, smug);
 	MSG(marisa, "You’re doin’ mathematics and mathematicians a disservice by bein’ all hard-line like this.");
 	FACE(marisa, happy);
 	MSG(marisa, "Mathematicians are some of the weirdest folks out there!");
@@ -868,18 +846,16 @@ DIALOG_TASK(marisa, StageExPostBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Computer Science, and now Topology…?");
 	FACE(marisa, normal);
-	MSG(yumemi, "How is knowledge of things not utterly incompatible with your existence…?");
+	MSG(yumemi, "How is knowledge of these things not utterly incompatible with your existence…?");
 
 	FACE(marisa, inquisitive);
 	MSG(marisa, "Wait, is it supposed to be?!");
 	MSG(marisa, "Why didn’t ya say that before?!");
-	FACE(marisa, smug);
-	MSG(marisa, "I gotta run home ‘n burn all my Fractal Geometry textbooks right away!");
 	FACE(marisa, happy);
-	MSG(marisa, "Gahahaha!");
+	MSG(marisa, "I gotta run home ‘n burn all my Fractal Geometry textbooks right away!");
 
 	FACE(yumemi, sigh);
-	MSG(yumemi, "… okay, okay, I get it.");
+	MSG(yumemi, "… okay, okay, fine.");
 	FACE(marisa, normal);
 	MSG(yumemi, "I didn’t… expect to find somethi—");
 	FACE(yumemi, normal);
@@ -887,38 +863,22 @@ DIALOG_TASK(marisa, StageExPostBoss) {
 
 	MSG(marisa, "There’s somethin’ ya gotta learn, poindexter.");
 	MSG(marisa, "Gensōkyō’s one of the weirdest places, anywhere, anywhen.");
-	MSG(marisa, "Nothin’ here is like you’d expect, not even the unexpected!");
-	FACE(marisa, happy);
-	MSG(marisa, "Magic here’s all about mixin’ fantasy with reality. Always has been.");
-	MSG(marisa, "It don’t matter where yer at - if you’re unbalanced about it, you’re gonna go nowhere in life.");
 	FACE(marisa, smug);
-	MSG(marisa, "And thaaaaat means, no friggin’ genocide, ya got it?!");
+	MSG(marisa, "Nothin’ here is like you’d expect, not even the unexpected!");
 
-	FACE(marisa, normal);
 	FACE(yumemi, sad);
-	MSG(yumemi, "Is… there a point to this lecture? Aren’t you going to punish me anyways?");
+	MSG(yumemi, "Is… there a point to this lecture? Aren’t you going to punish me in some gruesome way?");
 
 	FACE(marisa, happy);
 	MSG(marisa, "Gettin’ sassed on by me ain’t punishment enough? Gahahah!");
-
-	MSG(yumemi, "Punish me with…");
-	FACE(yumemi, sad);
-	MSG(yumemi, "…");
-
-	FACE(marisa, sweat_smile);
-	MSG(marisa, "Whoa, whoa, for real? Ya think I’d do that?!");
-	MSG(marisa, "Hey now, ya seem pretty miserable as it is. No point in addin’ to that misery.");
-	FACE(marisa, smug);
-	MSG(marisa, "How would I even explain that to the others?");
-	MSG(marisa, "‘Oh yeah, I murdered that girl, no big deal’?");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "I’m sorry.");
 	FACE(marisa, normal);
 	FACE(yumemi, sad);
-	MSG(yumemi, "This was all a mistake. It was never going to solve anything anyways.");
+	MSG(yumemi, "This was all a mistake. It was never going to solve anything.");
 	MSG(yumemi, "And… this isn’t what she—…");
-	MSG(yumemi, "… ugh, I’ve been such an idiot!");
+	MSG(yumemi, "… ugh."):
 
 	FACE(marisa, normal);
 	MSG(marisa, "Tragically stupid smart people are a dime a dozen in these parts.");
