@@ -948,13 +948,13 @@ static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleAr
 
 TASK(player_death_blastspam, { cmplx pos; }) {
 	for(int i = 0; i < 12; ++i) {
-		RNG_ARRAY(R, 4);
+		RNG_ARRAY(R, 5);
 		PARTICLE(
 			.proto = pp_blast,
 			.pos = ARGS.pos + vrng_range(R[0], 2, 3) * vrng_dir(R[1]),
 			.color = RGBA(0.15, 0.2, 0.5, 0),
 			.timeout = i + vrng_range(R[2], 10, 14),
-			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
+			.draw_rule = pdraw_timeout_scalefade(0, vrng_range(R[4], 2, 3), 1, 0),
 			.angle = vrng_angle(R[3]),
 			.flags = PFLAG_NOREFLECT,
 			.layer = LAYER_OVERLAY,
@@ -1016,6 +1016,18 @@ void player_death(Player *plr) {
 	INVOKE_TASK_AFTER(&p->events.killed, player_death_blastspam, p->pos);
 
 	plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
+
+	PARTICLE(
+		.sprite = "blast_huge_halo",
+		.pos = plr->pos,
+		.size = 1+I,
+		.timeout = plr->deathtime - global.frames,
+		.draw_rule = pdraw_timeout_scalefade(5, 0.01, 1, 1),
+		.color = RGBA(2, 0.5, 0.25, 0),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
+		.layer = LAYER_OVERLAY,
+		.angle = rng_angle(),
+	);
 
 	if(player_is_powersurge_active(plr)) {
 		player_cancel_powersurge(plr);
