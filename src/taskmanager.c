@@ -11,6 +11,7 @@
 #include "list.h"
 #include "log.h"
 #include "util/env.h"
+#include "memory/mempool.h"
 
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_mutex.h>
@@ -22,6 +23,21 @@ typedef enum TaskManagerState {
 	TMGR_STATE_ABORTED,
 } TaskManagerState;
 
+struct Task {
+	LIST_INTERFACE(Task);
+	TaskManager *manager;
+	task_func_t callback;
+	task_free_func_t userdata_free_callback;
+	void *userdata;
+	SDL_Mutex *mutex;
+	SDL_Condition *cond;
+	void *result;
+	int prio;
+	TaskStatus status;
+	bool disowned;
+	bool in_queue;
+};
+
 struct TaskManager {
 	LIST_ANCHOR(Task) queue;
 	SDL_Semaphore *queue_sem;
@@ -29,47 +45,78 @@ struct TaskManager {
 	uint numthreads;
 	TaskManagerState state;
 	SDL_AtomicInt numtasks;
+	SDL_Mutex *task_pool_lock;
+	MemArena task_pool_arena;
+	MEMPOOL(Task) task_pool;
 	Thread *threads[];
 };
 
-struct Task {
-	LIST_INTERFACE(Task);
-	task_func_t callback;
-	task_free_func_t userdata_free_callback;
-	void *userdata;
-	int prio;
-	SDL_Mutex *mutex;
-	SDL_Condition *cond;
-	TaskStatus status;
-	void *result;
-	uint disowned : 1;
-	uint in_queue : 1;
-};
+static_assert(offsetof(Task, next) == offsetof(MemPoolObjectHeader, next));
 
 static TaskManager *g_taskmgr;
 
 static void taskmgr_free(TaskManager *mgr) {
+	for(Task *t = mgr->task_pool.free_objects.as_specific; t; t = t->next) {
+		SDL_DestroyMutex(t->mutex);
+		SDL_DestroyCondition(t->cond);
+	}
+
+	SDL_DestroyMutex(mgr->task_pool_lock);
 	SDL_DestroySemaphore(mgr->queue_sem);
+	marena_deinit(&mgr->task_pool_arena);
 	mem_free(mgr);
 }
 
-static void task_free(Task *task) {
-	assert(!task->in_queue);
-	assert(task->disowned);
-
+static void task_free_userdata(Task *task) {
 	if(task->userdata_free_callback != NULL) {
 		task->userdata_free_callback(task->userdata);
 	}
+}
 
-	if(task->mutex != NULL) {
-		SDL_DestroyMutex(task->mutex);
+static void task_release(TaskManager *mgr, Task *task) {
+	assert(!task->in_queue);
+	assert(task->disowned);
+	assert(task->manager == mgr);
+
+	task_free_userdata(task);
+
+	*task = (Task) {
+		.manager = mgr,
+		.mutex = task->mutex,
+		.cond = task->cond,
+	};
+
+	SDL_LockMutex(mgr->task_pool_lock);
+	mempool_release(&mgr->task_pool, task);
+	SDL_UnlockMutex(mgr->task_pool_lock);
+}
+
+static Task *task_acquire(TaskManager *mgr) {
+	SDL_LockMutex(mgr->task_pool_lock);
+	auto task = mempool_acquire_nowipe(&mgr->task_pool, &mgr->task_pool_arena);
+	task->manager = mgr;
+
+	SDL_UnlockMutex(mgr->task_pool_lock);
+
+	if(!task->mutex) {
+		if(UNLIKELY(!(task->mutex = SDL_CreateMutex()))) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateMutex");
+			goto fail;
+		}
 	}
 
-	if(task->cond != NULL) {
-		SDL_DestroyCondition(task->cond);
+	if(!task->cond) {
+		if(UNLIKELY(!(task->cond = SDL_CreateCondition()))) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateCondition");
+			goto fail;
+		}
 	}
 
-	mem_free(task);
+	return task;
+
+fail:
+	task_release(mgr, task);
+	return NULL;
 }
 
 static Task *taskmgr_pop_queue(TaskManager *mgr) {
@@ -123,7 +170,7 @@ static void *taskmgr_thread(void *arg) {
 
 			if(task->disowned) {
 				SDL_UnlockMutex(task->mutex);
-				task_free(task);
+				task_release(mgr, task);
 			} else {
 				task->status = TASK_FINISHED;
 				SDL_BroadcastCondition(task->cond);
@@ -141,7 +188,7 @@ static void *taskmgr_thread(void *arg) {
 			SDL_UnlockMutex(task->mutex);
 
 			if(task_disowned) {
-				task_free(task);
+				task_release(mgr, task);
 			}
 		} else {
 			UNREACHABLE;
@@ -174,6 +221,13 @@ TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *na
 		log_sdl_error(LOG_ERROR, "SDL_CreateSemaphore");
 		goto fail;
 	}
+
+	if(!(mgr->task_pool_lock = SDL_CreateMutex())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateMutex");
+		goto fail;
+	}
+
+	marena_init(&mgr->task_pool_arena, sizeof(Task) * 64);
 
 	mgr->numthreads = numthreads;
 	mgr->state = TMGR_STATE_RUNNING;
@@ -220,23 +274,17 @@ Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	assert(params.callback != NULL);
 	assert(mgr->state == TMGR_STATE_RUNNING);
 
-	auto task = ALLOC(Task, {
-		.callback = params.callback,
-		.userdata_free_callback = params.userdata_free_callback,
-		.userdata = params.userdata,
-		.prio = params.prio,
-		.status = TASK_PENDING,
-	});
+	auto task = task_acquire(mgr);
 
-	if(!(task->mutex = SDL_CreateMutex())) {
-		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
-		goto fail;
+	if(UNLIKELY(!task)) {
+		return NULL;
 	}
 
-	if(!(task->cond = SDL_CreateCondition())) {
-		log_sdl_error(LOG_WARN, "SDL_CreateCondition");
-		goto fail;
-	}
+	task->callback = params.callback;
+	task->userdata_free_callback = params.userdata_free_callback;
+	task->userdata = params.userdata;
+	task->prio = params.prio;
+	task->status = TASK_PENDING;
 
 	SDL_LockSpinlock(&mgr->queue_lock);
 	if(params.topmost) {
@@ -251,10 +299,6 @@ Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	SDL_SignalSemaphore(mgr->queue_sem);
 
 	return task;
-
-fail:
-	task_free(task);
-	return NULL;
 }
 
 uint taskmgr_remaining(TaskManager *mgr) {
@@ -389,7 +433,12 @@ bool task_detach(Task *task) {
 	SDL_UnlockMutex(task->mutex);
 
 	if(!task_in_queue) {
-		task_free(task);
+		if(task->manager) {
+			task_release(task->manager, task);
+		} else {
+			task_free_userdata(task);
+			mem_free(task);
+		}
 	}
 
 	return success;
