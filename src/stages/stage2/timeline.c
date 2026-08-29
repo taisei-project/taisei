@@ -137,9 +137,10 @@ TASK(spinshot_fairy_attack, {
 	}
 }
 
-TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
-	e->move = ARGS.move_enter;
+TASK(spinshot_fairy, { cmplx pos; MoveParams move_exit; }) {
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_summon(fairy, 120);
 
 	int count = difficulty_value(8, 10, 12, 14);
 	int charge_time = difficulty_value(100, 80, 60, 60);
@@ -786,9 +787,8 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(1100 + time_ofs, post-midboss-ideal);
 
-	INVOKE_TASK_DELAYED(1360 + time_ofs, spinshot_fairy,
-		.pos = VIEWPORT_W/2,
-		.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+	INVOKE_TASK_DELAYED(1140 + time_ofs, spinshot_fairy,
+		.pos = VIEWPORT_W/2+VIEWPORT_H/3*I,
 		.move_exit = move_accelerated(0, 0.1*I)
 	);
 
@@ -822,21 +822,18 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	STAGE_BOOKMARK_DELAYED(400, twin-spinshots);
 
 	if(global.diff > D_Normal) {
-		INVOKE_TASK_DELAYED(420, spinshot_fairy,
-			.pos = 0,
-			.move_enter = move_towards(0, VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+		INVOKE_TASK_DELAYED(300, spinshot_fairy,
+			.pos = VIEWPORT_W/3+VIEWPORT_H/3*I,
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 
-		INVOKE_TASK_DELAYED(480, spinshot_fairy,
-			.pos = VIEWPORT_W,
-			.move_enter = move_towards(0, 2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+		INVOKE_TASK_DELAYED(360, spinshot_fairy,
+			.pos = 2*VIEWPORT_W/3+VIEWPORT_H/3*I,
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	} else {
-		INVOKE_TASK_DELAYED(420, spinshot_fairy,
-			.pos = VIEWPORT_W/2,
-			.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+		INVOKE_TASK_DELAYED(300, spinshot_fairy,
+			.pos = VIEWPORT_W/2+VIEWPORT_H/3*I,
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	}
