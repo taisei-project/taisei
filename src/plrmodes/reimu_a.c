@@ -226,7 +226,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	stage_shake_view(200);
 
 	real damage = 2000;
-	real range = 300;
+	real range = 200;
 
 	ent_area_damage(pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB}, NULL, NULL);
 	stage_clear_hazards_at(pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
@@ -247,7 +247,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 			.color = color_mul_scalar(base_colors[i], 2),
 			.pos = pos + 30 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
 			.timeout = 40,
-			.draw_rule = pdraw_timeout_scalefade(0, 7.5, 1, 0),
+			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
 			.layer = LAYER_BOSS + 2,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
