@@ -249,12 +249,12 @@ TASK(lightburst_fairy_2, {
 
 TASK(lightburst_fairy_1, {
 	cmplx pos;
-	MoveParams move_enter;
 	MoveParams move_exit;
 }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
+	auto fairy = ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2));
+	auto e = TASK_BIND(fairy.entity);
+	ecls_fairy_summon(fairy, 120);
 
-	e->move = ARGS.move_enter;
 	INVOKE_SUBTASK_DELAYED(200, lightburst_fairy_move, {
 		.e = ENT_BOX(e),
 		.move = ARGS.move_exit
@@ -291,7 +291,6 @@ TASK(lightburst_fairies_1, {
 		cmplx pos = ARGS.pos + ARGS.offset * i;
 		INVOKE_TASK(lightburst_fairy_1,
 			.pos = pos,
-			.move_enter = move_from_towards(pos, pos + ARGS.exit * 70, 0.05),
 			.move_exit = move_linear(ARGS.exit)
 		);
 		WAIT(40);
@@ -378,9 +377,9 @@ TASK(sine_swirl, { cmplx pos; cmplx velocity; int fire_delay; }) {
 		for(int i = 0; i < nshots; ++i) {
 			if(rng_chance(shot_chance)) {
 				PROJECTILE(
-					.proto = pp_thickrice,
+					.proto = pp_droplet,
 					.pos = e->pos,
-					.color = RGB(0.3, 0.4, 0.5),
+					.color = RGB(0.3, 0.6, 1.0),
 					.move = move_asymptotic_simple(
 						3 * aim, 1 + i),
 				);
@@ -910,18 +909,18 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.num = 7,
 	});
 
-	INVOKE_TASK_DELAYED(210, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(90, lightburst_fairies_1, {
 		.num = 2,
-		.pos = VIEWPORT_W/4,
+		.pos = VIEWPORT_W/4 + 140i,
 		.offset = VIEWPORT_W/2,
 		.exit = 2.0 * I,
 	});
 
 	INVOKE_TASK_DELAYED(270, sine_swirls, 30);
 
-	INVOKE_TASK_DELAYED(400, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(280, lightburst_fairies_1, {
 		.num = 2,
-		.pos = VIEWPORT_W/4 - 60,
+		.pos = VIEWPORT_W/4 - 60 + 175i,
 		.offset = VIEWPORT_W/2 + 120,
 		.exit = 2.5 * I,
 	});
@@ -986,19 +985,17 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.velocity = 3.0 * I,
 	});
 
-	INVOKE_TASK_DELAYED(2500, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(2380, lightburst_fairies_1, {
 		.num = 1,
-		.pos = VIEWPORT_W/2,
+		.pos = VIEWPORT_W/2 + 140i,
 		.offset = 0,
-		.exit = 2.0 * I,
 	});
 
 	if(global.diff > D_Easy) {
-		INVOKE_TASK_DELAYED(2700, lightburst_fairies_1, {
+		INVOKE_TASK_DELAYED(2580, lightburst_fairies_1, {
 			.num = 1,
-			.pos = (VIEWPORT_W - 20) + (120 * I),
+			.pos = (VIEWPORT_W - 160) + 120i,
 			.offset = 0,
-			.exit = -2.0,
 		});
 	}
 
@@ -1049,9 +1046,9 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.velocity = -3*I,
 	});
 
-	INVOKE_TASK_DELAYED(2000, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(1880, lightburst_fairies_1, {
 		.num = 1,
-		.pos = VIEWPORT_W/2,
+		.pos = VIEWPORT_W/2 + 140i,
 		.offset = 0,
 		.exit = 2.0 * I,
 	});
@@ -1094,18 +1091,18 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.acceleration = 2 + I,
 	});
 
-	INVOKE_TASK_DELAYED(2500, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(2380, lightburst_fairies_1, {
 		.num = 1,
-		.pos = VIEWPORT_W+20 + VIEWPORT_H * 0.6 * I,
+		.pos = VIEWPORT_W + 120 + VIEWPORT_H * 0.6i - 140i,
 		.offset = 0,
-		.exit = -2 * I - 2,
+		.exit = -2 - 2i,
 	});
 
-	INVOKE_TASK_DELAYED(2500, lightburst_fairies_1, {
+	INVOKE_TASK_DELAYED(2380, lightburst_fairies_1, {
 		.num = 1,
-		.pos = -20 + VIEWPORT_H * 0.6 * I,
+		.pos = -120 + VIEWPORT_H * 0.6i - 140i,
 		.offset = 0,
-		.exit = -2 * I + 2,
+		.exit = 2 - 2i,
 	});
 
 	INVOKE_TASK_DELAYED(2620, loop_swirls, {
