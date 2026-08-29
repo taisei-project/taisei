@@ -226,7 +226,9 @@ static void log_system_specs(void) {
 	log_info("LSX: %d", SDL_HasLSX());
 	log_info("LASX: %d", SDL_HasLASX());
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
+	#if SDL_MINOR_VERSION >= 4
 	log_info("Page size: %d", SDL_GetSystemPageSize());
+	#endif
 	log_info("Cacheline size: %d", SDL_GetCPUCacheLineSize());
 }
 
