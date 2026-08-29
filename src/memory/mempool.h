@@ -54,13 +54,17 @@ void *mempool_generic_acquire(MemPool *pool, MemArena *arena, size_t size, size_
 void mempool_generic_release(MemPool *pool, void *object)
 	attr_hot attr_nonnull(1, 2);
 
-#define mempool_acquire(mpool, arena) ({ \
+#define mempool_acquire_nowipe(mpool, arena) ({ \
 	auto _mpool = mpool; \
-	MEMPOOL_OBJTYPE(_mpool) *_obj = mempool_generic_acquire(\
+	(MEMPOOL_OBJTYPE(_mpool)*)mempool_generic_acquire(\
 		MEMPOOL_CAST_TO_BASE(_mpool), \
 		(arena), \
 		sizeof(MEMPOOL_OBJTYPE(_mpool)), \
 		alignof(MEMPOOL_OBJTYPE(_mpool))); \
+})
+
+#define mempool_acquire(mpool, arena) ({ \
+	auto _obj = mempool_acquire_nowipe((mpool), (arena)); \
 	*_obj = (typeof(*_obj)) {} ; \
 	_obj; \
 })
