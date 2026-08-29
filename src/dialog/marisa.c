@@ -878,7 +878,7 @@ DIALOG_TASK(marisa, StageExPostBoss) {
 	FACE(yumemi, sad);
 	MSG(yumemi, "This was all a mistake. It was never going to solve anything.");
 	MSG(yumemi, "And… this isn’t what she—…");
-	MSG(yumemi, "… ugh."):
+	MSG(yumemi, "… ugh.");
 
 	FACE(marisa, normal);
 	MSG(marisa, "Tragically stupid smart people are a dime a dozen in these parts.");
