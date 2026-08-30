@@ -9,13 +9,16 @@
 #include "geometry.h"
 #include "miscmath.h"
 
-Rect ellipse_bbox(Ellipse e) {
-	double largest_radius = max(re(e.axes), im(e.axes)) * 0.5;
-	cmplx d = CMPLX(largest_radius, largest_radius);
+Rect circle_bbox(Circle c) {
+	cmplx d = CMPLX(c.radius, c.radius);
 	return (Rect) {
-		.top_left     = e.origin - d,
-		.bottom_right = e.origin + d,
+		.top_left     = c.origin - d,
+		.bottom_right = c.origin + d,
 	};
+}
+
+Rect ellipse_bbox(Ellipse e) {
+	return circle_bbox((Circle) { .origin = e.origin, max(re(e.axes), im(e.axes)) * 0.5 });
 }
 
 bool point_in_ellipse(cmplx p, Ellipse e) {
@@ -41,15 +44,6 @@ Rect lineseg_bbox(LineSegment seg) {
 		.top_left     = CMPLX(re(rmm), re(imm)),
 		.bottom_right = CMPLX(im(rmm), im(imm))
 	};
-}
-
-// If segment_ellipse_nonintersection_heuristic returns true, then the
-// segment and ellipse do not intersect. However, **the converse is not true**.
-// Used for quick returning false in real intersection functions.
-static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e) {
-	Rect seg_bbox = lineseg_bbox(seg);
-	Rect e_bbox = ellipse_bbox(e);
-	return !rect_rect_intersect(seg_bbox, e_bbox, true, true);
 }
 
 static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
@@ -95,7 +89,17 @@ static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
 }
 
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
-	if(segment_ellipse_nonintersection_heuristic(seg, e)) {
+	if(re(e.axes) == im(e.axes)) {
+		return lineseg_circle_intersect(seg, (Circle) {
+			.origin = e.origin,
+			.radius = re(e.axes) * 0.5,
+		});
+	}
+
+	Rect seg_bbox = lineseg_bbox(seg);
+	Rect e_bbox = ellipse_bbox(e);
+
+	if(!rect_rect_intersect(seg_bbox, e_bbox, true, true)) {
 		return false;
 	}
 
@@ -125,11 +129,14 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 }
 
 double lineseg_circle_intersect(LineSegment seg, Circle c) {
-	Ellipse e = { .origin = c.origin, .axes = 2*c.radius + I*2*c.radius };
-	if(segment_ellipse_nonintersection_heuristic(seg, e)) {
-		return -1;
+	Rect seg_bbox = lineseg_bbox(seg);
+	Rect c_bbox = circle_bbox(c);
+
+	if(rect_rect_intersect(seg_bbox, c_bbox, true, true)) {
+		return lineseg_circle_intersect_fallback(seg, c) >= 0;
 	}
-	return lineseg_circle_intersect_fallback(seg, c);
+
+	return false;
 }
 
 bool point_in_rect(cmplx p, Rect r) {

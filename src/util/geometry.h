@@ -91,6 +91,7 @@ typedef struct UnevenCapsule {
 	} radius;
 } UnevenCapsule;
 
+Rect circle_bbox(Circle e) attr_const;
 Rect ellipse_bbox(Ellipse e) attr_const;
 Rect lineseg_bbox(LineSegment seg) attr_const;
 bool point_in_ellipse(cmplx p, Ellipse e) attr_const;
