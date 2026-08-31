@@ -203,11 +203,14 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 
 	r_flush_sprites();
 
-	IntExtent size = r_framebuffer_get_size(dst);
-	GLint X0 = 0;
-	GLint X1 = size.w;
-	GLint Y0 = 0;
-	GLint Y1 = size.h;
+	IntExtent src_size = r_framebuffer_get_size(src);
+	IntExtent dst_size = r_framebuffer_get_size(dst);
+	GLint SW = src_size.w;
+	GLint DW = dst_size.w;
+	GLint SH = src_size.h;
+	GLint DH = dst_size.h;
+
+	bool size_mismatch = SW != DW || SH != DH;
 
 	Framebuffer *fb_saved = r_framebuffer_current();
 	r_framebuffer(dst);
@@ -215,7 +218,7 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 	gl33_sync_scissor();
 	// TODO track this?
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->gl_fbo);
-	glBlitFramebuffer(X0, Y0, X1, Y1, X0, Y0, X1, Y1, glflags, GL_NEAREST);
+	glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags, size_mismatch ? GL_LINEAR : GL_NEAREST);
 	r_framebuffer(fb_saved);
 }
 
