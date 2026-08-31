@@ -59,7 +59,10 @@ bool sdlgpu_texture_sampler_compatible(Texture *tex, UniformType sampler_type) a
 bool sdlgpu_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
 bool sdlgpu_texture_transfer(Texture *dst, Texture *src);
 
+typedef enum CommandBufferID CommandBufferID;
+
 SDL_GPUCopyPass *sdlgpu_texture_copy(
+	CommandBufferID cbuf_id,
 	SDL_GPUCopyPass *copy_pass,
 	TextureSlice *dst,
 	TextureSlice *src,

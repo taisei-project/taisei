@@ -146,7 +146,7 @@ static SDL_GPUCopyPass *sdlgpu_framebuffer_copy_attachment(
 	auto a_src = &src->attachments[attachment];
 
 	if(a_dst->texture && a_src->texture) {
-		copy_pass = sdlgpu_texture_copy(copy_pass, a_dst, a_src, true);
+		copy_pass = sdlgpu_texture_copy(CBUF_DRAW, copy_pass, a_dst, a_src, true);
 	}
 
 	return copy_pass;

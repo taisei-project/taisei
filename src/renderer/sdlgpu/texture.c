@@ -796,49 +796,59 @@ bool sdlgpu_texture_transfer(Texture *dst, Texture *src) {
 	return true;
 }
 
-static SDL_GPUCopyPass *sdlgpu_texture_copy_blit(
-	SDL_GPUCopyPass *copy_pass,
-	TextureSlice *dst,
-	TextureSlice *src,
-	bool cycle
-) {
-	UNREACHABLE;  // TODO
-}
-
 SDL_GPUCopyPass *sdlgpu_texture_copy(
+	CommandBufferID cbuf_id,
 	SDL_GPUCopyPass *copy_pass,
 	TextureSlice *dst,
 	TextureSlice *src,
 	bool cycle
 ) {
-	if(src->texture->gpu_format != dst->texture->gpu_format) {
-		return sdlgpu_texture_copy_blit(copy_pass, dst, src, cycle);
-	}
-
 	uint dw, dh, sw, sh;
 	r_texture_get_size(dst->texture, dst->mip_level, &dw, &dh);
 	r_texture_get_size(src->texture, src->mip_level, &sw, &sh);
-
-	if(dw != sw || dh != sh) {
-		return sdlgpu_texture_copy_blit(copy_pass, dst, src, cycle);
-	}
-
-	if(!copy_pass) {
-		copy_pass = sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
-	}
-
 	assert(src->texture->params.layers == dst->texture->params.layers);
+	uint layers = src->texture->params.layers;
 
-	SDL_CopyGPUTextureToTexture(copy_pass,
-		&(SDL_GPUTextureLocation) {
-			.texture = src->texture->gpu_texture,
-			.mip_level = src->mip_level,
-			.layer = 0,
-		}, &(SDL_GPUTextureLocation) {
-			.texture = dst->texture->gpu_texture,
-			.mip_level = dst->mip_level,
-			.layer = 0,
-		}, dw, dh, dst->texture->params.layers, cycle);
+	bool size_mismatch = dw != sw || dh != sh;
 
-	return copy_pass;
+	if(size_mismatch || src->texture->gpu_format != dst->texture->gpu_format) {
+		for(uint layer = 0; layer < layers; ++layer) {
+			SDL_BlitGPUTexture(sdlgpu.frame.command_buffers[CBUF_DRAW], &(SDL_GPUBlitInfo) {
+				.cycle = cycle,
+				.source = {
+					.texture = src->texture->gpu_texture,
+					.mip_level = src->mip_level,
+					.layer_or_depth_plane = layer,
+					.w = sw,
+					.h = sh,
+				},
+				.destination = {
+					.texture = dst->texture->gpu_texture,
+					.mip_level = dst->mip_level,
+					.layer_or_depth_plane = layer,
+					.w = dw,
+					.h = dh,
+				},
+				.filter = size_mismatch ? SDL_GPU_FILTER_LINEAR : SDL_GPU_FILTER_NEAREST,
+				.load_op = SDL_GPU_LOADOP_DONT_CARE,
+				.flip_mode = SDL_FLIP_NONE,
+			});
+		}
+		return copy_pass;
+	} else {
+		copy_pass = copy_pass ?: sdlgpu_begin_or_resume_copy_pass(CBUF_UPLOAD);
+
+		SDL_CopyGPUTextureToTexture(copy_pass,
+			&(SDL_GPUTextureLocation) {
+				.texture = src->texture->gpu_texture,
+				.mip_level = src->mip_level,
+				.layer = 0,
+			}, &(SDL_GPUTextureLocation) {
+				.texture = dst->texture->gpu_texture,
+				.mip_level = dst->mip_level,
+				.layer = 0,
+			}, dw, dh, layers, cycle);
+
+		return copy_pass;
+	}
 }
