@@ -22,9 +22,9 @@
 		{},
 	}},
 	{ "cutscenes/youmu_bad/01", {
-		T_YOUMU("Thus, I must assumed I have caused their demise in some way, despite my best intentions."),
+		T_YOUMU("Thus, I must assume I have caused their demise in some way, despite my best intentions."),
 		T_YOUMU("That woman, Elly… we knew each other for such a short time, yet her passion and fury affected me so deeply."),
-		T_YUYUKO("Hmm… I don’t sense any lost souls here, and nobody liked that passed through the Netherworld."),
+		T_YUYUKO("Hmm… I don’t sense any lost souls here, and nobody like that passed through the Netherworld."),
 		T_YUYUKO("I doubt she has truly died, then… ah, but all this ‘parallel universes’ stuff is beyond me, hehehe."),
 		{},
 	}},
