@@ -109,13 +109,13 @@ TASK(spam, { BoxedBoss boss; }) {
 	for(;;) {
 		PROJECTILE(
 			.pos = boss->pos + dir * 64 * sin(p),
-			.proto = pp_wave,
+			.proto = pp_pointer,
 			.color = RGB(0.2, 0.4, 1),
 			.move = move_linear(dir * 1),
 		);
 		PROJECTILE(
 			.pos = boss->pos + dir * -64 * sin(p),
-			.proto = pp_wave,
+			.proto = pp_pointer,
 			.color = RGB(0.2, 0.4, 1),
 			.move = move_linear(dir * -1),
 		);
