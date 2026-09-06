@@ -167,8 +167,7 @@ TASK(animate_light, { StageXDrawData *draw_data; }) {
 		c.b = lerpf(c.b, 0.8f*b, w);
 		c.a = 1.0f;
 
-		color_lerp(&c, RGBA(1, 0.5, 0.6, 1), 0.1);
-		draw_data->fog.color = c;
+		draw_data->fog.color = color_lerp(c, RGBA(1, 0.5, 0.6, 1), 0.1);
 
 		YIELD;
 		draw_data->fog.t += rate;

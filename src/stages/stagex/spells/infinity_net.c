@@ -203,7 +203,7 @@ static void emit_particle(Infnet *infnet, int index, Projectile *dot, Sprite *sp
 	PARTICLE(
 		.sprite_ptr = spr,
 		.pos = dot->pos,
-		.color = color_mul_scalar(COLOR_COPY(&dot->color), 0.75),
+		.color = color_mul_scalar(dot->color, 0.75),
 		.timeout = 10,
 		.draw_rule = pdraw_timeout_scalefade(0.5, 1, 1, 0),
 		.angle = rng_angle(),
@@ -273,8 +273,11 @@ TASK(infnet_lasers, { Infnet *infnet; int start_idx; }) {
 						emit_particle(infnet, index1, b, stardust_spr);
 					}
 
-					l->color = *RGBA(1.0, 0.1, 0.4, 0);
-					color_lerp(&l->color, RGBA(1, 0.4, 0.1, 0), (l->width - 3)/7);
+					l->color = color_lerp(
+						RGBA(1.0, 0.1, 0.4, 0),
+						RGBA(1, 0.4, 0.1, 0),
+						(l->width - 3)/7
+					);
 				}
 			} else {
 				Laser *l = lasers[i].ent ? ENT_UNBOX(lasers[i]) : NULL;
@@ -353,7 +356,7 @@ TASK(animate_infnet, { Infnet *infnet; }) {
 			real d = glm_ease_sine_inout(min(1, t / mid_time));
 			real dphase = (global.frames - dot->birthtime - t) * 0.0025 * d;
 
-			dot->color = *color_lerp(
+			dot->color = color_lerp(
 				RGBA(1, 0, 0, 0), RGBA(0, 1, 0, 0), pcos(rot_phase - 2*dphase));
 
 			cmplx pivot = intro_factor * (0.03 - dphase) * cdir(rot_phase + 0.05);

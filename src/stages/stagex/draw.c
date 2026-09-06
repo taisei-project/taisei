@@ -72,9 +72,7 @@ static void stagex_bg_setup_pbr_lighting(Camera3D *cam, vec3 seg_pos) {
 
 	float p = 150;
 	float f = 10000 * draw_data->fog.opacity;
-
-	Color c = draw_data->fog.color;
-	color_mul_scalar(&c, f);
+	Color c = color_mul_scalar(draw_data->fog.color, f);
 
 	float l = 500;
 
@@ -275,12 +273,11 @@ static bool bg_effect_fog(Framebuffer *fb) {
 		return false;
 	}
 
-	Color c = draw_data->fog.color;
-	color_mul_scalar(&c, draw_data->fog.opacity);
+	Color c = color_mul_scalar(draw_data->fog.color, draw_data->fog.opacity);
 
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4_rgba("fog_color", &c);
+	r_uniform_vec4_rgba("fog_color", c);
 	r_uniform_float("start", 0.0);
 	r_uniform_float("end", 1.0);
 	r_uniform_float("exponent", draw_data->fog.exponent);

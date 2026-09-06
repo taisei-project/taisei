@@ -6,9 +6,9 @@
 #include "extra_bg.glslh"
 
 void spriteMain(out vec4 fragColor) {
-	float time = customParams.x;
-	vec2 code_aspect = customParams.yz;
-	float num_segs = customParams.w;
+	float time = customVec0.x;
+	vec2 code_aspect = customVec0.yz;
+	float num_segs = customVec0.w;
 	float inv_num_segs = 1.0 / num_segs;
 
 	vec4 mask = texture(tex, texCoord);

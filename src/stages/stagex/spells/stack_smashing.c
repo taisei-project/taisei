@@ -38,11 +38,11 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *ani = res_anim("boss/wriggle");
 	AniSequence *seq = get_ani_sequence(ani, "fly");
  	r_draw_sprite(&(SpriteParams){
-		.shader_ptr = res_shader("sprite_default"),
+		.shader = res_shader("sprite_default"),
 		.pos.as_cmplx = p->pos,
 		.scale.as_cmplx = p->scale,
-		.sprite_ptr = animation_get_frame(ani, seq, global.frames),
-		.color = &p->color,
+		.sprite = animation_get_frame(ani, seq, global.frames),
+		.color = p->color,
 		.rotation.angle = p->angle+M_PI/2,
  	});
 }
@@ -82,7 +82,7 @@ TASK(stack_smash_bullet, { ProjPrototype *proto; cmplx origin; float *pos; float
 
 	auto p = TASK_BIND(PROJECTILE(.proto = ARGS.proto, .pos = p0, .max_viewport_dist = 20));
 
-	p->color = *color_lerp(RGBA(1,0,0,0), RGBA(0,0,1,0), 0.5 + 0.5 * tanh(ARGS.pos[2]/100));
+	p->color = color_lerp(RGBA(1,0,0,0), RGBA(0,0,1,0), 0.5 + 0.5 * tanh(ARGS.pos[2]/100));
 
 	WAIT(ARGS.delay);
 
@@ -93,7 +93,7 @@ TASK(stack_smash_bullet, { ProjPrototype *proto; cmplx origin; float *pos; float
 		vec3 pos = {};
 		glm_vec3_copy(pos0, pos);
 		glm_vec3_rotate(pos, 0.1*f, axis);
-		p->color = *color_lerp(RGBA(1,0,0,0), RGBA(0,0,1,0), 0.5 + 0.5 * tanh(pos[2]/100));
+		p->color = color_lerp(RGBA(1,0,0,0), RGBA(0,0,1,0), 0.5 + 0.5 * tanh(pos[2]/100));
 
 		cmplx cp = stack_smash_bullet_pos(perspective, pos);
 		prevp = p->pos;
@@ -182,7 +182,7 @@ DEFINE_EXTERN_TASK(stagex_spell_stack_smashing) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(boss->move.velocity, CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
 
-	INVOKE_SUBTASK(common_charge, .anchor = &boss->pos, .time = BEATS, .sound = COMMON_CHARGE_SOUNDS, .color = *RGBA(0,0,1,0));
+	INVOKE_SUBTASK(common_charge, .anchor = &boss->pos, .time = BEATS, .sound = COMMON_CHARGE_SOUNDS, .color = RGBA(0,0,1,0));
 	WAIT(BEATS);
 
     vec3 octahedron[] = {
@@ -210,7 +210,7 @@ DEFINE_EXTERN_TASK(stagex_spell_stack_smashing) {
 		WAIT( BEATS);
 		boss->move = move_towards(0,boss->pos * 0.3 + 0.7 *pos, 0.07);
 
-		INVOKE_SUBTASK(common_charge, .anchor = &boss->pos, .time = 2*BEATS, .sound = COMMON_CHARGE_SOUNDS, .color = *RGBA(0,0,1,0));
+		INVOKE_SUBTASK(common_charge, .anchor = &boss->pos, .time = 2*BEATS, .sound = COMMON_CHARGE_SOUNDS, .color = RGBA(0,0,1,0));
 
 		WAIT(2*BEATS);
 	}

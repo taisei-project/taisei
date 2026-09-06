@@ -12,11 +12,11 @@ static void draw_scuttle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *ani = res_anim("boss/scuttle");
 	AniSequence *seq = get_ani_sequence(ani, "main");
  	r_draw_sprite(&(SpriteParams){
-		.shader_ptr = res_shader("sprite_default"),
+		.shader = res_shader("sprite_default"),
+		.sprite = animation_get_frame(ani, seq, global.frames),
 		.pos.as_cmplx = p->pos,
 		.scale.as_cmplx = p->scale,
-		.sprite_ptr = animation_get_frame(ani, seq, global.frames),
-		.color = &p->color,
+		.color = p->color,
 		.rotation.angle = p->angle+M_PI/2,
 	});
 }
@@ -149,7 +149,7 @@ DEFINE_EXTERN_TASK(stagex_spell_fork_bomb) {
 					   .gy = gy
 		});
 		WAIT(5*split_time);
-		INVOKE_SUBTASK(common_charge, {boss->pos, *RGBA(0.5, 0.6, 2.0, 0.0), 3*split_time, .sound = COMMON_CHARGE_SOUNDS});
+		INVOKE_SUBTASK(common_charge, {boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), 3*split_time, .sound = COMMON_CHARGE_SOUNDS});
 		WAIT(3*split_time);
 	}
 }

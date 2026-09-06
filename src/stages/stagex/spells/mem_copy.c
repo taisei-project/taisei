@@ -25,7 +25,7 @@ TASK(cell_proj_aim, { BoxedProjectile pbox; }) {
 	p->move = move_accelerated(0,0.01*aim);
 	projectile_set_prototype(p, pp_ball);
 	spawn_projectile_highlight_effect(p);
-	p->color = *RGBA(0.2, 0, 1, 1);
+	p->color = RGBA(0.2, 0, 1, 1);
 }
 
 typedef enum {
@@ -133,14 +133,14 @@ TASK(cell_proj_colors, { BoxedProjectile *projs; int cell_idx; int *highlighted_
 	static Color inactive_color  = { 0.2, 0.2, 0.3, 0.2 };
 
 	for(;;YIELD) {
-		Color *target_color;
+		Color target_color;
 
 		if(*ARGS.highlighted_cell == -1) {
-			target_color = &normal_color;
+			target_color = normal_color;
 		} else if(*ARGS.highlighted_cell == ARGS.cell_idx) {
-			target_color = &highlight_color;
+			target_color = highlight_color;
 		} else {
-			target_color = &inactive_color;
+			target_color = inactive_color;
 		}
 
 		for(int i = 0; i < CELL_H*CELL_W; ++i) {
@@ -150,7 +150,7 @@ TASK(cell_proj_colors, { BoxedProjectile *projs; int cell_idx; int *highlighted_
 				continue;
 			}
 
-			color_lerp(&p->color, target_color, 0.05);
+			p->color = color_lerp(p->color, target_color, 0.05);
 		}
 	}
 }
@@ -223,7 +223,7 @@ TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_
 				if(p != NULL) {
 					projectile_set_prototype(p, pp_flea);
 					spawn_projectile_highlight_effect(p);
-					p->color = *RGBA(1, 0.5, 0, 1);
+					p->color = RGBA(1, 0.5, 0, 1);
 				}
 			}
 			play_sfx("warp");
@@ -250,7 +250,7 @@ TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_
 	}
 }
 
-TASK(clearing_laser_rect, { int start_cell; int end_cell; int start_delay; int move_duration; int end_delay; bool collide; const Color *color; }) {
+TASK(clearing_laser_rect, { int start_cell; int end_cell; int start_delay; int move_duration; int end_delay; bool collide; Color color; }) {
 	cmplx topleft0 = cell_topleft(ARGS.start_cell);
 	cmplx topleft1 = cell_topleft(ARGS.end_cell);
 
@@ -366,7 +366,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 			.color = RGBA(0,0,1,0.5)
 		);
 
-		INVOKE_SUBTASK_DELAYED(180, common_charge, boss->pos, *RGBA(0.5, 0.6, 2.0, 0.0), 60, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK_DELAYED(180, common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), 60, .sound = COMMON_CHARGE_SOUNDS);
 
 		int delay = 240;
 		int pinginterval = 40;

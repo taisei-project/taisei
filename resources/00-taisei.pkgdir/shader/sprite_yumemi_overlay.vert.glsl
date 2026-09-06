@@ -13,5 +13,5 @@ void main(void) {
     // texCoordOverlay = (spriteTexTransform * vec4(vertTexCoord, 0.0, 1.0)).xy;
     // texRegion       = spriteTexRegion;
     // dimensions      = spriteDimensions;
-    customParams    = spriteCustomParams;
+    customVec0    = spriteCustomVec;
 }
