@@ -593,14 +593,14 @@ static void fill_sampler_bindings(ShaderObject *shader, SDL_GPUTextureSamplerBin
 		Texture *tex = shader->sampler_bindings[i];
 		assert(tex != NULL);
 
+		sdlgpu_texture_update_sampler(tex);
+		sdlgpu_texture_prepare(tex);
+
 		if(tex->is_virgin) {
 			log_error("%p (%s) is a virgin texture! Used as sampler %i for shader %s",
 				tex, tex->debug_label, i, shader->debug_label);
 			// assert(0);
 		}
-
-		sdlgpu_texture_update_sampler(tex);
-		sdlgpu_texture_prepare(tex);
 
 		bindings[i] = (SDL_GPUTextureSamplerBinding) {
 			.texture = tex->gpu_texture,

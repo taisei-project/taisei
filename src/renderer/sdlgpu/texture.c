@@ -711,6 +711,33 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 }
 
 void sdlgpu_texture_prepare(Texture *tex) {
+	if(tex->load.op == SDL_GPU_LOADOP_CLEAR && tex->needs_clear_before_sampling) {
+		// FIXME is there a better way to do this?
+
+		log_debug("Clearing texture %s before sampling", tex->debug_label);
+		sdlgpu_stop_current_pass(CBUF_DRAW);
+
+		for(uint mip = 0; mip < tex->params.mipmaps; ++mip) {
+			for(uint layer = 0; layer < tex->params.layers; ++layer) {
+				SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.cbuf,
+					&(SDL_GPUColorTargetInfo) {
+						.clear_color = tex->load.clear.color.sdl_fcolor,
+						.load_op = SDL_GPU_LOADOP_CLEAR,
+						.store_op = SDL_GPU_STOREOP_STORE,
+						.texture = tex->gpu_texture,
+						.mip_level = mip,
+						.layer_or_depth_plane = layer,
+						.cycle = false,
+					}, 1, NULL)
+				);
+			}
+		}
+
+		sdlgpu_texture_taint(tex);
+		tex->mipmaps_outdated = false;
+		tex->needs_clear_before_sampling = false;
+	}
+
 	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
 		log_debug("Generating mipmaps for %p (%s)", tex, tex->debug_label);
 		sdlgpu_stop_current_pass(CBUF_DRAW);
@@ -726,16 +753,12 @@ void sdlgpu_texture_taint(Texture *tex) {
 
 void sdlgpu_texture_clear(Texture *tex, const Color *clr) {
 	// FIXME add depth parameter
-	tex->load.op = SDL_GPU_LOADOP_CLEAR;
-	tex->load.clear.color = *clr;
 
-#if 0
-	Framebuffer *temp_fb = sdlgpu_framebuffer_create();
-	sdlgpu_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	sdlgpu_framebuffer_clear(temp_fb, BUFFER_COLOR, clr, 1);
-	sdlgpu_framebuffer_destroy(temp_fb);
-	tex->mipmaps_outdated = true;
-#endif
+	if(tex->load.op != SDL_GPU_LOADOP_CLEAR || memcmp(clr, &tex->load.clear.color, sizeof(*clr))) {
+		tex->needs_clear_before_sampling = true;
+		tex->load.op = SDL_GPU_LOADOP_CLEAR;
+		tex->load.clear.color = *clr;
+	}
 }
 
 void sdlgpu_texture_destroy(Texture *tex) {

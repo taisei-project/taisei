@@ -35,6 +35,7 @@ struct Texture {
 	bool sampler_is_outdated;
 	bool mipmaps_outdated;
 	bool is_virgin;
+	bool needs_clear_before_sampling;
 	uint number;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };

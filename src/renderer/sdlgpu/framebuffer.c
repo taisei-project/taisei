@@ -118,8 +118,7 @@ void sdlgpu_framebuffer_clear(
 	if(flags & BUFFER_DEPTH) {
 		auto a = &framebuffer->attachments[FRAMEBUFFER_ATTACH_DEPTH];
 		if(a->texture) {
-			a->texture->load.op = SDL_GPU_LOADOP_CLEAR;
-			a->texture->load.clear.depth = depthval;
+			sdlgpu_texture_clear(a->texture, &RGBA(depthval, 0, 0, 0));
 		}
 	}
 
@@ -131,8 +130,7 @@ void sdlgpu_framebuffer_clear(
 				auto a = &framebuffer->attachments[target];
 
 				if(a->texture) {
-					a->texture->load.op = SDL_GPU_LOADOP_CLEAR;
-					a->texture->load.clear.color = *colorval;
+					sdlgpu_texture_clear(a->texture, colorval);
 				}
 			}
 		}
