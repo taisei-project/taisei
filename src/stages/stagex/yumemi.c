@@ -63,20 +63,21 @@ static void draw_yumemi_slave(EntityInterface *ent) {
 	scale *= 0.5f;
 
 	SpriteParams sp = {
+		.sprite = NULL,
 		.pos.as_cmplx = slave->pos,
 		.scale = scale,
 		.color = color_mul_scalar(RGBA(1, 1, 1, 0.5), opacity),
 	};
 
-	sp.sprite_ptr = slave->sprites.frame;
+	sp.sprite = slave->sprites.frame;
 	sp.rotation.angle = -M_PI/73 * time * s;
 	r_draw_sprite(&sp);
 
-	sp.sprite_ptr = slave->sprites.outer;
+	sp.sprite = slave->sprites.outer;
 	sp.rotation.angle = +M_PI/73 * time * s;
 	r_draw_sprite(&sp);
 
-	sp.sprite_ptr = slave->sprites.core;
+	sp.sprite = slave->sprites.core;
 	sp.rotation.angle = 0;
 	sp.color = color_mul_scalar(RGBA(0.4, 0.4, 0.4, 0.1), opacity);
 	sp.pos.as_cmplx += 3 * cdir(M_PI/72 * time * s);
@@ -216,8 +217,8 @@ TASK(yumemi_bombshield_controller, { BoxedBoss boss; }) {
 Boss *stagex_spawn_yumemi(cmplx pos) {
 	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos - 400 * I);
 	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
-	yumemi->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
-	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
+	yumemi->shadowcolor = RGBA(0.5, 0.0, 0.22, 1);
+	yumemi->glowcolor = RGBA(0.30, 0.0, 0.12, 0);
 	yumemi->move = move_towards(0, pos, 0.01);
 	yumemi->pos = pos;
 
@@ -317,7 +318,7 @@ void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target) {
 		cmplx o = 32 * cdir(s * x * M_TAU + g + M_PI/2 + angle_ofs);
 		cmplx pos = slave->pos + o;
 		cmplx aim = cnormalize(target - pos + o);
-		Color *c = RGBA(0.1 + 0.9 * x * x, 1 - 0.9 * (1 - pow(1 - x, 2)), 0.1, 0);
+		Color c = RGBA(0.1 + 0.9 * x * x, 1 - 0.9 * (1 - pow(1 - x, 2)), 0.1, 0);
 		create_laserline(pos, 40 * aim, 60 + i, 80 + i, c);
 		WAIT(1);
 	}
@@ -328,14 +329,16 @@ void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target) {
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
-	sp->sprite_ptr = res_sprite("dialog/yumemi_misc_code_mask");
-	sp->shader_ptr = res_shader("sprite_yumemi_overlay");
+	sp->sprite = res_sprite("dialog/yumemi_misc_code_mask");
+	sp->shader = res_shader("sprite_yumemi_overlay");
 	sp->aux_textures[0] = res_texture("stagex/code");
-	sp->shader_params = &(ShaderCustomParams) {
-		global.frames / 60.0,
-		draw_data->codetex_aspect[0],
-		draw_data->codetex_aspect[1],
-		draw_data->codetex_num_segments,
+	sp->shader_params = (SpriteShaderCustomParams) {
+		.vec = {
+			global.frames / 60.0,
+			draw_data->codetex_aspect[0],
+			draw_data->codetex_aspect[1],
+			draw_data->codetex_num_segments,
+		}
 	};
 
 	r_draw_sprite(sp);

@@ -239,8 +239,8 @@ TASK(ngoner_fairy, { cmplx pos; }) {
 static Boss *stagex_spawn_scuttle(cmplx pos0) {
 	Boss *scuttle = create_boss("Scutƫle", "scuttle", pos0);
 	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
-	scuttle->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
-	scuttle->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
+	scuttle->shadowcolor = RGBA(0.5, 0.0, 0.22, 1);
+	scuttle->glowcolor = RGBA(0.30, 0.0, 0.12, 0);
 
 	return scuttle;
 }
@@ -576,7 +576,7 @@ static int midboss_section(StageXCorruption *C) {
 	return t;
 }
 
-TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; int d0; int d1;}) {
+TASK(laser45, { cmplx origin; cmplx dir; cmplx r; Color clr; int d0; int d1;}) {
 	play_sfx("laser1");
 
 	MoveParams *move;
@@ -592,12 +592,12 @@ TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; int d0; int 
 	for(int i = 0; i < 4; i++) {
 		WAIT(ARGS.d0);
 		cmplx aim = cnormalize(global.plr.pos - pos);
-		PROJECTILE(pp_ball, &l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
+		PROJECTILE(pp_ball, l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
 		play_sfx("shot3");
 		move->velocity *= r;
 		WAIT(ARGS.d1);
 		aim = cnormalize(global.plr.pos - pos);
-		PROJECTILE(pp_ball, &l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
+		PROJECTILE(pp_ball, l->color, .pos = pos, .move = move_accelerated(0, 0.01*aim));
 		play_sfx("shot3");
 		move->velocity *= r;
 	}
@@ -774,7 +774,7 @@ TASK(square_fairy, { StageXCorruption *corruption; cmplx origin; int distort; })
 	e->move.retention = 1;
 
 	for(;;) {
-		INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,0.3,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
 
 		int num = 5;
@@ -948,7 +948,7 @@ TASK(wheat_laser_proj, { cmplx pos; cmplx dir; cmplx turn; int delay; }) {
 	// WAIT(2*BEATS);
 
 	play_sfx("redirect");
-	p->color = *RGBA(1, 0.3, 0,0.5);
+	p->color = RGBA(1, 0.3, 0,0.5);
 	spawn_projectile_highlight_effect(p);
 	p->move.attraction = 0;
 	// p->move.retention = 1;
@@ -976,7 +976,7 @@ TASK(wheat_fairy, { StageXCorruption *corruption; cmplx pos; MoveParams move; })
 	};
 
 	for(int t = 0; t < 2; t++) {
-		INVOKE_SUBTASK(common_charge, .anchor = &e->pos, .color = *RGBA(1.0,0.1,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, .anchor = &e->pos, .color = RGBA(1.0,0.1,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(BEATS/2);
 		int points = 8;
 		real length = 100;
@@ -1036,10 +1036,10 @@ TASK(amaranth_fairy, { StageXCorruption *corruption; cmplx pos; MoveParams move;
 	auto e = TASK_BIND(fairy.entity);
 	stagex_fairy_enter(fairy, ARGS.corruption);
 
-	// INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	// INVOKE_SUBTASK_DELAYED(BEATS/2, common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	//
 	e->move = ARGS.move;
-	common_charge(120, &e->pos, 0, *RGBA(0.0, 0.0, 1.0, 0.0));
+	common_charge(120, &e->pos, 0, RGBA(0.0, 0.0, 1.0, 0.0));
 
 
 	WAIT(5);
@@ -1113,7 +1113,7 @@ TASK(octahedron_fairy, { StageXCorruption *corruption; cmplx origin; }) {
 	auto e = TASK_BIND(fairy.entity);
 	stagex_fairy_enter(fairy, ARGS.corruption);
 
-	common_charge(120, &e->pos, 0, *RGB(2.0, 1.0, 0.0));
+	common_charge(120, &e->pos, 0, RGB(2.0, 1.0, 0.0));
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 	for(int t = 0; t < 600; t += WAIT(BEATS/8)) {
@@ -1190,7 +1190,7 @@ TASK(scissor_fairy, { StageXCorruption *corruption; cmplx origin; MoveParams mov
 	stagex_fairy_enter(fairy, ARGS.corruption);
 	// ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS/2);
 
-	// INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	// INVOKE_SUBTASK(common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS/2, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
 	real scissor = 0;
 	for(int t = 0; t < BEATS; t++) {
@@ -1274,7 +1274,7 @@ TASK(funk_fairy, { cmplx pos; MoveParams move; }) {
 	auto e = TASK_BIND(fairy.entity);
 	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
-	INVOKE_SUBTASK(common_charge, 0, *RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0,0.0,1.0,0.0), BEATS, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS);
 	int count = 4;
 
@@ -1307,7 +1307,7 @@ TASK(drum_fairy, { cmplx pos; }) {
 	auto e = TASK_BIND(fairy.entity);
 	ecls_fairy_3d_move_in(fairy, &stage_3d_context.cam, (vec3) { 0, 0, stage_3d_context.cam.pos[2] - 150 }, BEATS);
 
-	INVOKE_SUBTASK(common_charge, e->pos, *RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
+	INVOKE_SUBTASK(common_charge, e->pos, RGBA(1.0,1.0,0.0,0.5), BEATS/2, .sound = COMMON_CHARGE_SOUNDS);
 	WAIT(BEATS/2);
 
 	for(int t = 0; t < 20; t++) {
@@ -1398,8 +1398,7 @@ TASK(staircase_swirls, { bool cross; }) {
 	AWAIT_SUBTASKS;
 }
 
-TASK(aimed_laser45, { cmplx origin; cmplx dir; int delay; int warpid; const Color *clr;}) {
-
+TASK(aimed_laser45, { cmplx origin; cmplx dir; int delay; int warpid; Color clr;}) {
 	MoveParams *move;
 
 	real offset = 9;
@@ -1444,7 +1443,7 @@ TASK(aimed_laser45, { cmplx origin; cmplx dir; int delay; int warpid; const Colo
 	}
 }
 
-TASK(aimed_laser45_warp, { cmplx origin; cmplx dir; int delay; const Color *clr; }) {
+TASK(aimed_laser45_warp, { cmplx origin; cmplx dir; int delay; Color clr; }) {
 	play_sfx("laser1");
 
 	for(int i = -2; i <= 2; i++) {

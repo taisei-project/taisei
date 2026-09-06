@@ -39,8 +39,7 @@ TASK(grid_lasers) {
 		ENT_ARRAY_FOREACH(&lasers, Laser *l, {
 			++alive;
 
-			l->color = *RGBA(0.7, 0, 0, 0);
-			color_lerp(&l->color, RGBA(1, 0.7, 0, 0), (l->width - 3) / 7);
+			l->color = color_lerp(RGBA(0.7, 0, 0, 0), RGBA(1, 0.7, 0, 0), (l->width - 3) / 7);
 
 			if(l->collision_active) {
 				auto rd = NOT_NULL(laser_get_ruledata_linear(l));

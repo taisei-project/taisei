@@ -47,14 +47,14 @@ TASK(ring, {
 	real o = T * rng_real() * s;
 
 	for(int i = 0; i < num_segs; ++i) {
-		auto l = create_laser(ARGS.pos, f * ARGS.gap_factor, expand_time + spawn_interval, &color0,
+		auto l = create_laser(ARGS.pos, f * ARGS.gap_factor, expand_time + spawn_interval, color0,
 			laser_rule_arc(0, s*M_TAU/T, o+i*f));
 		l->width = width;
 		l->width_exponent = 0;
 		laser_make_static(l);
 		ENT_ARRAY_ADD(&segs, l);
 
-		auto lwall = create_laser(0, 4, expand_time + spawn_interval, &color0,
+		auto lwall = create_laser(0, 4, expand_time + spawn_interval, color0,
 			laser_rule_linear(0));
 		lwall->width = width;
 		lwall->width_exponent = 0;
@@ -74,7 +74,7 @@ TASK(ring, {
 			auto rd = NOT_NULL(laser_get_ruledata_arc(l));
 			rd->radius = radius;
 			rd->time_ofs -= 0.5 * T/radius;
-			color_lerp(&l->color, &color1, 0.0025);
+			l->color = color_lerp(l->color, color1, 0.0025);
 		});
 
 		ENT_ARRAY_FOREACH_COUNTER(&walls, int i, Laser *lwall, {
@@ -107,7 +107,7 @@ DEFINE_EXTERN_TASK(stagex_spell_rings) {
 	real dir = rng_sign();
 
 	for(;;) {
-		common_charge(spawn_interval, &boss->pos, 0, *RGBA(1, 0.5, 0, 0));
+		common_charge(spawn_interval, &boss->pos, 0, RGBA(1, 0.5, 0, 0));
 		play_sfx("redirect");
 		INVOKE_TASK(ring,
 			.pos = boss->pos,
