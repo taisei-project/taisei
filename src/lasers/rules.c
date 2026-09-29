@@ -122,10 +122,10 @@ static cmplx laser_rule_dynamic_impl(Laser *l, real t, void *ruledata) {
 
 	cmplx v0 = *NOT_NULL(ringbuf_peek_ptr(&td->history, -i0));
 	cmplx v1 = *NOT_NULL(ringbuf_peek_ptr(&td->history, -i1));
-	return clerp(v0, v1, ifract);
+	return clerp(v0, v1, ifract) + td->offset;
 }
 
-static LaserRule laser_rule_dynamic(
+LaserRule laser_rule_dynamic(
 	BoxedTask control_task, LaserRuleDynamicTaskData *task_data
 ) {
 	LaserRuleDynamicData rd = {

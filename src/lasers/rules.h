@@ -60,6 +60,7 @@ LaserRuleArcData *laser_get_ruledata_arc(Laser *l);
 typedef struct LaserRuleDynamicTaskData {
 	MoveParams move;
 	RING_BUFFER(cmplx) history;
+	cmplx offset;
 } LaserRuleDynamicTaskData;
 
 typedef struct LaserRuleDynamicData {
@@ -69,6 +70,10 @@ typedef struct LaserRuleDynamicData {
 
 Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, Color color, MoveParams **out_move);
 LaserRuleDynamicData *laser_get_ruledata_dynamic(Laser *l);
+
+LaserRule laser_rule_dynamic(
+	BoxedTask control_task, LaserRuleDynamicTaskData *task_data
+);
 
 #define MAKE_LASER_RULE(func, data) ({ \
     union { \
