@@ -66,6 +66,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_rings),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.dataflow = {
+			{-1, -1, -1, 9}, AT_Spellcard, "Data Flow “Full-Duplex Transmission”", 120, 100000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_dataflow),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
+		},
 	},
 };
 
