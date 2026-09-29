@@ -112,7 +112,7 @@ static cmplx laser_rule_dynamic_impl(Laser *l, real t, void *ruledata) {
 
 	assert(td->history.num_elements > 0);
 
-	real tbase = (global.frames - l->birthtime) * l->speed;
+	real tbase = (global.frames - l->birthtime) * l->speed + l->timeshift;
 	real tofsraw = t - tbase;
 	real tofs = clamp(tofsraw, 1 - td->history.num_elements, 0);
 
