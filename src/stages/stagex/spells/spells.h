@@ -20,3 +20,4 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_mem_copy, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_pipe_dream, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_alignment, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_rings, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_dataflow, BossAttack);

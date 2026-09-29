@@ -5,6 +5,7 @@ stagex_src = files(
     'draw.c',
     'nonspells/boss_nonspells.c',
     'spells/alignment.c',
+    'spells/dataflow.c',
     'spells/fork_bomb.c',
     'spells/infinity_net.c',
     'spells/mem_copy.c',

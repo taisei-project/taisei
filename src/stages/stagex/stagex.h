@@ -27,6 +27,7 @@ extern struct stagex_spells_s {
 		AttackInfo pipe_dream;
 		AttackInfo alignment;
 		AttackInfo rings;
+		AttackInfo dataflow;
 	} boss;
 
 	// required for iteration
