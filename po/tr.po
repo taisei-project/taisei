@@ -73,7 +73,7 @@ msgstr "Bilinmeyen"
 msgid "Mouse input disabled "
 msgstr "Fare devre dışı bırakıldı "
 
-#: src/credits.c:71
+#: src/credits.c:73
 msgid ""
 "Taisei Project\n"
 "brought to you by…"
