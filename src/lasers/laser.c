@@ -403,12 +403,14 @@ static int quantize_laser(Laser *l) {
 	// Sample all points now
 	fill_samples(&lasers.samples, &sp, l);
 
-	auto sample0 = dynarray_get_ptr(&lasers.samples, 0);
-
 	LaserBBox *bbox = &l->_internal.bbox;
-	bbox->top_left.as_cmplx = bbox->bottom_right.as_cmplx = sample0->p;
+	bbox->top_left.x = FLT_MAX;
+	bbox->top_left.y = FLT_MAX;
+	bbox->bottom_right.x = -FLT_MAX;
+	bbox->bottom_right.y = -FLT_MAX;
 
 	if(UNLIKELY(lasers.samples.num_elements == 1)) {
+		auto sample0 = dynarray_get_ptr(&lasers.samples, 0);
 		cmplxf p = sample0->p;
 
 		if(segment_is_visible(p, p, &viewbounds)) {
