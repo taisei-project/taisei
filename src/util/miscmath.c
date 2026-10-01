@@ -240,6 +240,11 @@ double smoothstep(double edge0, double edge1, double x) {
 	return x * x * (3 - 2 * x);
 }
 
+double smootherstep(double edge0, double edge1, double x) {
+	x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+	return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
+}
+
 double smoothmin(double a, double b, double k) {
 	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 	return lerp(b, a, h) - k * h * (1.0 - h);
