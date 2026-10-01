@@ -52,6 +52,7 @@ uintmax_t umax(uintmax_t, uintmax_t) attr_const attr_deprecated("Use max() inste
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const attr_deprecated("Use clamp() instead");
 float clampf(float, float, float) attr_const attr_deprecated("Use clamp() instead");
 double smoothstep(double edge0, double edge1, double x) attr_const;
+double smootherstep(double edge0, double edge1, double x) attr_const;
 double smoothmin(double a, double b, double k) attr_const;
 double approach(double v, double t, double d) attr_const;
 float fapproach(float v, float t, float d) attr_const;
