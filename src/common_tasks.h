@@ -173,16 +173,30 @@ typedef struct RadialLoop {
 	int cnt, i;
 } RadialLoop;
 
-INLINE RadialLoop _radial_loop_init(int cnt, cmplx dir) {
+INLINE RadialLoop _radial_loop_init(int cnt, cmplx dir, real arc_angle) {
 	return (RadialLoop) {
 		.dir = dir,
 		.cnt = abs(cnt),
-		.turn = cdir(M_TAU/cnt),
+		.turn = cdir(arc_angle / cnt),
+	};
+}
+
+INLINE RadialLoop _radial_loop_init_centered(int cnt, cmplx dir, real arc_angle) {
+	return (RadialLoop) {
+		.dir = dir * cdir(arc_angle * -0.5),
+		.cnt = abs(cnt),
+		.turn = cdir(arc_angle / (cnt - 1)),
 	};
 }
 
 #define RADIAL_LOOP(_loop_var, _cnt_init, _dir_init) \
 	for( \
-		RadialLoop _loop_var = _radial_loop_init(_cnt_init, _dir_init); \
+		RadialLoop _loop_var = _radial_loop_init(_cnt_init, _dir_init, M_TAU); \
+		_loop_var.i < _loop_var.cnt; \
+		++_loop_var.i, _loop_var.dir *= _loop_var.turn)
+
+#define ARC_LOOP(_loop_var, _cnt_init, _dir_init, arc_angle) \
+	for( \
+		RadialLoop _loop_var = _radial_loop_init_centered(_cnt_init, _dir_init, arc_angle); \
 		_loop_var.i < _loop_var.cnt; \
 		++_loop_var.i, _loop_var.dir *= _loop_var.turn)
