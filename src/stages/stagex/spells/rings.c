@@ -8,6 +8,8 @@
 
 #include "spells.h"
 
+#define BOSS_MAX_OFFSET 90
+
 TASK(ring, {
 	cmplx pos;
 	real spawn_interval;
@@ -22,7 +24,7 @@ TASK(ring, {
 	// This affects the quantization sample count (~2x this number of samples taken for the full circle)
 	// In other words: bigger number = smoother arcs = slower
 	const real T = 53;
-	const real target_radius = hypot(VIEWPORT_W, VIEWPORT_H) * 0.5;
+	const real target_radius = hypot(VIEWPORT_W, VIEWPORT_H) * 0.5 + BOSS_MAX_OFFSET;
 	const real width = 15;
 
 	real radius = 0;
@@ -30,7 +32,7 @@ TASK(ring, {
 	real spawn_interval = ARGS.spawn_interval;
 	real wlen = spawn_interval * target_radius / expand_time;
 
-	auto louter = create_laser(ARGS.pos, T, expand_time, RGB(0.5, 0.25, 0),
+	auto louter = create_laser(ARGS.pos, T, expand_time, RGB(0.5, 0.5, 0),
 		laser_rule_arc(0, M_TAU/T, 0));
 	louter->width = 2;
 	louter->width_exponent = 0;
@@ -68,13 +70,15 @@ TASK(ring, {
 		if((louter = ENT_UNBOX(b_louter))) {
 			auto rd = NOT_NULL(laser_get_ruledata_arc(louter));
 			rd->radius = radius;
+			louter->pos = global.boss->pos;
 		}
 
 		ENT_ARRAY_FOREACH(&segs, Laser *l, {
 			auto rd = NOT_NULL(laser_get_ruledata_arc(l));
 			rd->radius = radius;
-			rd->time_ofs -= 0.5 * T/radius;
+			rd->time_ofs -= 0.25 * T/radius;
 			l->color = color_lerp(l->color, color1, 0.0025);
+			l->pos = global.boss->pos;
 		});
 
 		ENT_ARRAY_FOREACH_COUNTER(&walls, int i, Laser *lwall, {
@@ -88,10 +92,25 @@ TASK(ring, {
 			lwall->color = ref->color;
 
 			cmplx a = laser_pos_at(ref, 0);
-			cmplx v = cnormalize(ARGS.pos - a);
+			cmplx v = cnormalize(ref->pos - a);
 			cmplx ofs = v * width * 0.25;
 			laserline_set_ab(lwall, a + ofs, a - ofs + min(wlen, radius) * v);
 		});
+	}
+}
+
+TASK(boss_move, { BoxedBoss boss; }) {
+	auto boss = TASK_BIND(ARGS.boss);
+
+	cmplx o = boss->pos;
+	int tmax = 3000;
+	real rmax = BOSS_MAX_OFFSET;
+	real phase = rng_angle();
+
+	for(int t = 0;; ++t, YIELD) {
+		real r = rmax * smootherstep(0, tmax, t);
+		log_debug("%i :: %f", t, r);
+		boss->pos = o + r * cdir(M_PI * sin(0.01 * t + phase));
 	}
 }
 
@@ -105,6 +124,8 @@ DEFINE_EXTERN_TASK(stagex_spell_rings) {
 	const real gap_factor = 0.8;
 
 	real dir = rng_sign();
+
+	INVOKE_SUBTASK(boss_move, ENT_BOX(boss));
 
 	for(;;) {
 		common_charge(spawn_interval, &boss->pos, 0, RGBA(1, 0.5, 0, 0));
