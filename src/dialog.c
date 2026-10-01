@@ -368,14 +368,20 @@ void dialog_draw(Dialog *dialog) {
 		r_mat_mv_translate(ofs, ofs, 0);
 		float brightness = 0.5 + 0.5 * a->focus;
 
-		r_flush_sprites();
-		r_draw_sprite(&(SpriteParams) {
+		SpriteParams sp = {
 			.blend = BLEND_PREMUL_ALPHA,
 			.color = color_mul_scalar(RGB(brightness, brightness, brightness), a->opacity),
 			.pos.x = (dialog_width - portrait->w) / 2 + 32 + a->offset.x,
 			.pos.y = VIEWPORT_H - portrait->h / 2 + a->offset.y,
 			.sprite = portrait,
-		});
+		};
+
+		// r_flush_sprites();
+		r_draw_sprite(&sp);
+
+		if(a->draw_dynamic_overlay) {
+			a->draw_dynamic_overlay(&sp);
+		}
 
 		r_mat_mv_pop();
 	}
