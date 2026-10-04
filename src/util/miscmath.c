@@ -175,6 +175,10 @@ cmplxf csortf(cmplxf z) {
 	return b > a ? CMPLXF(a, b) : CMPLXF(b, a);
 }
 
+cmplx creflect(cmplx v, cmplx n) {
+	return v - 2 * cdot(v, n) * n;
+}
+
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
