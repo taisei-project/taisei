@@ -71,6 +71,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_dataflow),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.garbage = {
+			{-1, -1, -1, 10}, AT_Spellcard, "Memory “Tracing Garbage Collector”", 90, 150000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_garbage),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+80.0*I, 7,
+		},
 	},
 };
 
@@ -99,6 +104,14 @@ static void stagex_spellpractice_begin(void) {
 
 static void stagex_end(void) {
 	stagex_drawsys_shutdown();
+}
+
+Boss *stagex_init_boss_attack(StageXBossAttackTaskArgs *args) {
+	if(!args->corruption) {
+		args->corruption = stagex_corruption_create();
+	}
+
+	return INIT_BOSS_ATTACK(&args->base);
 }
 
 static void stagex_preload(ResourceGroup *rg) {
