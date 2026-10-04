@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "corruption.h"
+
 #include "stageinfo.h"
 
 extern struct stagex_spells_s {
@@ -28,6 +30,7 @@ extern struct stagex_spells_s {
 		AttackInfo alignment;
 		AttackInfo rings;
 		AttackInfo dataflow;
+		AttackInfo garbage;
 	} boss;
 
 	// required for iteration
@@ -39,3 +42,10 @@ extern StageProcs stagex_spell_procs;
 
 Boss *stagex_spawn_yumemi(cmplx pos);
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp);
+
+DEFINE_TASK_INTERFACE_WITH_BASE(StageXBossAttack, BossAttack, {
+	StageXCorruption *corruption;
+});
+
+typedef TASK_IFACE_ARGS_TYPE(StageXBossAttack) StageXBossAttackTaskArgs;
+Boss *stagex_init_boss_attack(StageXBossAttackTaskArgs *args);
