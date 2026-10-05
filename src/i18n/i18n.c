@@ -200,7 +200,7 @@ const char *i18n_get_locale_name(const char *locale_id) {
 }
 
 const char *i18n_get_current_locale_id(void) {
-	if(i18n.active_locale_idx > 0) {
+	if(i18n.active_locale_idx > -1) {
 		return i18n.known_locales[i18n.active_locale_idx];
 	}
 
