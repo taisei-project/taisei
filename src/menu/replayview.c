@@ -14,10 +14,12 @@
 
 #include "audio/audio.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "plrmodes.h"
 #include "replay/struct.h"
 #include "resource/font.h"
 #include "stageinfo.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 // Type of MenuData.context
@@ -89,19 +91,22 @@ static void start_replay(MenuData *menu, void *arg) {
 	}
 
 	ReplayStage *stg = dynarray_get_ptr(&rpy->stages, stagenum);
-	char buf[64];
 
 	if(!stageinfo_get_by_id(stg->stage)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), F_("Can't replay this stage: unknown stage ID %X"), stg->stage);
-		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_printf(&buf, F_("Can't replay this stage: unknown stage ID %X"), stg->stage);
+		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf.start));
+		release_scratch_arena(buf.arena);
 		return;
 	}
 
 	if(!plrmode_find(stg->plr_char, stg->plr_shot)) {
 		replay_destroy_events(rpy);
-		snprintf(buf, sizeof(buf), F_("Can't replay this stage: unknown player character/mode %X/%X"), stg->plr_char, stg->plr_shot);
-		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
+		StringBuffer buf = { acquire_scratch_arena() };
+		strbuf_printf(&buf, F_("Can't replay this stage: unknown player character/mode %X/%X"), stg->plr_char, stg->plr_shot);
+		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf.start));
+		release_scratch_arena(buf.arena);
 		return;
 	}
 
