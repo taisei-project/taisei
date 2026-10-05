@@ -279,6 +279,18 @@ double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) {
 	return m - ucap.radius.a;
 }
 
+Rect ucapsule_bbox(UnevenCapsule ucap) {
+	Rect a_bbox = circle_bbox((Circle) { ucap.pos.a, ucap.radius.a });
+	Rect b_bbox = circle_bbox((Circle) { ucap.pos.b, ucap.radius.b });
+
+	return (Rect) {
+		.left   = min(a_bbox.left,   b_bbox.left),
+		.right  = max(a_bbox.right,  b_bbox.right),
+		.top    = min(a_bbox.top,    b_bbox.top),
+		.bottom = max(a_bbox.bottom, b_bbox.bottom),
+	};
+}
+
 bool lineseg_lineseg_intersection(LineSegment seg0, LineSegment seg1, cmplx *out) {
 	// Based on an answer from https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 
