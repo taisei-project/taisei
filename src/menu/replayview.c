@@ -144,8 +144,10 @@ static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 			stagetitle_format_localized(&stg->title, sizeof(tmp), tmp);
 			add_menu_entry(m, tmp, start_replay, ictx);
 		} else {
-			snprintf(tmp, sizeof(tmp), F_("Unknown stage %X"), stage_id);
-			add_menu_entry(m, tmp, menu_action_close, NULL);
+			StringBuffer buf = { acquire_scratch_arena() };
+			strbuf_printf(&buf, F_("Unknown stage %X"), stage_id);
+			add_menu_entry(m, buf.start, menu_action_close, NULL);
+			release_scratch_arena(buf.arena);
 		}
 	});
 

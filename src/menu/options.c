@@ -14,6 +14,7 @@
 #include "mainmenu.h"
 
 #include "memory/memory.h"
+#include "memory/scratch.h"
 #include "menu.h"
 
 #include "i18n/i18n.h"
@@ -22,6 +23,7 @@
 #include "renderer/api.h"
 #include "resource/font.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 #define OPTIONS_ACTIVE_X_OFFSET 20   /* FIXME hardcoded in draw_menu_list */
@@ -1003,24 +1005,26 @@ static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
 	r_draw_quad();
 	r_mat_mv_pop();
 
-	char buf[128];
+	StringBuffer buf = { acquire_scratch_arena() };
 	GamepadButton test_btn = options_gamepad_testing_button();
 
 	if(ctx->gamepad_testmode.active) {
-		snprintf(buf, sizeof(buf),
+		strbuf_printf(&buf,
 			F_("Press any button on your gamepad to exit joystick testing mode"));
 	} else {
-		snprintf(buf, sizeof(buf),
+		strbuf_printf(&buf,
 			F_("Press %s on your gamepad to enter joystick testing mode"),
 			_(gamepad_button_name(test_btn)));
 	}
 
-	text_draw(buf, &(TextParams) {
+	text_draw(buf.start, &(TextParams) {
 		.pos = { SCREEN_W/2.0f, SCREEN_H - OPTIONS_Y_MARGIN },
 		.align = ALIGN_CENTER,
 		.shader = "text_default",
 		.color = RGBA(0.7, 0.7, 0.7, 0.7),
 	});
+
+	release_scratch_arena(buf.arena);
 }
 
 static MenuData* create_options_menu_gamepad(MenuData *parent) {

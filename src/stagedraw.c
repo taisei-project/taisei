@@ -12,6 +12,7 @@
 #include "events.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "replay/struct.h"
 #include "resource/postprocess.h"
 #include "stageobjects.h"
@@ -20,6 +21,7 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 #ifdef DEBUG
@@ -2007,10 +2009,11 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 		stagetext_table_add_numeric_nonzero(&tbl, _("All Clear bonus"), bonus->all_clear.base);
 
 		if(bonus->all_clear.diff_bonus) {
-			char tmp[128];
+			StringBuffer tmp = { acquire_scratch_arena() };
 			int percent = (bonus->all_clear.diff_multiplier - 1.0) * 100;
-			snprintf(tmp, sizeof(tmp), F_("Difficulty bonus (+%i%%)"), percent);
-			stagetext_table_add_numeric_nonzero(&tbl, tmp, bonus->all_clear.diff_bonus);
+			strbuf_printf(&tmp, F_("Difficulty bonus (+%i%%)"), percent);
+			stagetext_table_add_numeric_nonzero(&tbl, tmp.start, bonus->all_clear.diff_bonus);
+			release_scratch_arena(tmp.arena);
 		}
 	}
 

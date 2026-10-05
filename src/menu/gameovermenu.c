@@ -11,8 +11,10 @@
 #include "global.h"
 #include "ingamemenu.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 #include "menu.h"
 #include "stats.h"
+#include "util/strbuf.h"
 
 typedef struct GameoverMenuContext {
 	IngameMenuContext base;
@@ -68,17 +70,18 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 	} else {
 		ctx->base.title = _("Game Over");
 
-		char s[64];
+		StringBuffer s = { acquire_scratch_arena() };
 		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
 		bool have_continues = c > 0;
 
 		if(have_continues) {
-			snprintf(s, sizeof(s), F_("Continue (%i)"), c);
+			strbuf_printf(&s, F_("Continue (%i)"), c);
 		} else {
-			snprintf(s, sizeof(s), F_("Continue"));
+			strbuf_printf(&s, F_("Continue"));
 		}
 
-		add_action_entry(m, s, GAMEOVERMENU_ACTION_CONTINUE, have_continues);
+		add_action_entry(m, s.start, GAMEOVERMENU_ACTION_CONTINUE, have_continues);
+		release_scratch_arena(s.arena);
 		add_action_entry(m, _("Restart the Game"), GAMEOVERMENU_ACTION_RESTART, true)
 			->transition = TransFadeBlack;
 		add_action_entry(m, have_continues ? _("Give up") : _("Return to Title"), GAMEOVERMENU_ACTION_QUIT, true)
