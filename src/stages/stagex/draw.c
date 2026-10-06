@@ -352,27 +352,6 @@ ShaderRule stagex_postprocess_effects[] = {
  */
 
 /*
- * BEGIN camera update loop
- */
-
-TASK(update_camera) {
-	for(;;) {
-		stage3d_update(&stage_3d_context);
-		stage_3d_context.cam.rot.roll += draw_data->tower_spin;
-		float p = draw_data->plr_influence;
-		float yaw   = 10.0f * (re(global.plr.pos) / VIEWPORT_W - 0.5f) * p;
-		float pitch = 10.0f * (im(global.plr.pos) / VIEWPORT_H - 0.5f) * p;
-		fapproach_asymptotic_p(&draw_data->plr_yaw,   yaw,   0.03, 1e-4);
-		fapproach_asymptotic_p(&draw_data->plr_pitch, pitch, 0.03, 1e-4);
-		YIELD;
-	}
-}
-
-/*
- * END camera update loop
- */
-
-/*
  * BEGIN init/shutdown
  */
 
@@ -467,8 +446,6 @@ void stagex_drawsys_init(void) {
 	draw_data->env_map = res_texture("stage5/envmap");
 
 	COEVENT_INIT_ARRAY(draw_data->events);
-
-	INVOKE_TASK(update_camera);
 }
 
 void stagex_drawsys_shutdown(void) {

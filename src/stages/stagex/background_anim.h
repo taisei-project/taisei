@@ -10,5 +10,8 @@
 #include "taisei.h"
 
 void stagex_bg_init_fullstage(void);
+void stagex_bg_init_practice_midboss(void);
+void stagex_bg_init_practice_boss(void);
+
 void stagex_bg_trigger_next_phase(void);
 void stagex_bg_trigger_tower_dissolve(void);

@@ -9,9 +9,25 @@
 #include "background_anim.h"   // IWYU pragma: keep
 #include "draw.h"
 
+#include "global.h"
 #include "random.h"
 #include "stageutils.h"
 #include "util/glm.h"
+
+TASK(update_camera, { StageXDrawData *draw_data; }) {
+	auto draw_data = ARGS.draw_data;
+
+	for(;;) {
+		stage3d_update(&stage_3d_context);
+		stage_3d_context.cam.rot.roll += draw_data->tower_spin;
+		float p = draw_data->plr_influence;
+		float yaw   = 10.0f * (re(global.plr.pos) / VIEWPORT_W - 0.5f) * p;
+		float pitch = 10.0f * (im(global.plr.pos) / VIEWPORT_H - 0.5f) * p;
+		fapproach_asymptotic_p(&draw_data->plr_yaw,   yaw,   0.03, 1e-4);
+		fapproach_asymptotic_p(&draw_data->plr_pitch, pitch, 0.03, 1e-4);
+		YIELD;
+	}
+}
 
 TASK(animate_value, { float *val; float target; float rate; }) {
 	while(*ARGS.val != ARGS.target) {
@@ -203,6 +219,25 @@ TASK(animate_bg, { StageXDrawData *draw_data; }) {
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[1], 0, 0.02, 1e-4);
 }
 
+TASK(animate_bg_practice_midboss, { StageXDrawData *draw_data; }) {
+	auto draw_data = ARGS.draw_data;
+	auto cam = &stage_3d_context.cam;
+
+	draw_data->fog.exponent = 42.0f;
+	draw_data->fog.opacity = 1.0f;
+	draw_data->fog.red_flash_intensity = 1.0f;
+
+	// just don't question the magic numbers
+	draw_data->tower_spin = -0.544950f;
+	glm_vec3_copy((vec3) { -0.831649f, -2.402241f, -1468.406982f }, cam->pos);
+	glm_vec3_copy((vec3) { 30.0f, 0.0f, -400.0f }, cam->rot.v);
+	cam->vel[2] = -0.36f;
+
+	INVOKE_TASK(animate_light, draw_data);
+
+	animate_bg_midboss(draw_data, &draw_data->events.next_phase);
+}
+
 void stagex_bg_trigger_next_phase(void) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 	coevent_signal(&draw_data->events.next_phase);
@@ -224,4 +259,18 @@ void stagex_bg_init_fullstage(void) {
 // 	cam->rot.v[0] = 0;
 
 	INVOKE_TASK(animate_bg, draw_data);
+	INVOKE_TASK(update_camera, draw_data);
+}
+
+void stagex_bg_init_practice_midboss(void) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+	INVOKE_TASK(animate_bg_practice_midboss, draw_data);
+	INVOKE_TASK(update_camera, draw_data);
+}
+
+void stagex_bg_init_practice_boss(void) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+	draw_data->tower_global_dissolution = 1;
+	draw_data->tower_partial_dissolution = 1;
+	INVOKE_TASK(update_camera, draw_data);
 }

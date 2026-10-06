@@ -13,6 +13,7 @@
 #include "spells/spells.h"
 #include "timeline.h"   // IWYU pragma: keep
 #include "yumemi.h"
+#include "scuttle.h""
 
 #include "global.h"
 #include "stage.h"
@@ -27,12 +28,12 @@ struct stagex_spells_s stagex_spells = {
 		.stack_smashing = {
 			{-1, -1, -1, 3}, AT_Spellcard, "“TODO Stack Smashing”", 60, 20000,
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_stack_smashing),
-			stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
+			stagex_draw_scuttle_spellbg, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
 		},
 		.fork_bomb = {
 			{-1, -1, -1, 4}, AT_Spellcard, "IEEE 1003.1-1988 “fork()”", 60, 20000,
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_fork_bomb),
-			stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
+			stagex_draw_scuttle_spellbg, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
 		},
 	},
 	.boss = {
@@ -90,16 +91,19 @@ static void stagex_begin(void) {
 static void stagex_spellpractice_begin(void) {
 	stagex_drawsys_init();
 
-	StageXDrawData *draw_data = stagex_get_draw_data();
-	draw_data->tower_global_dissolution = 1;
-	draw_data->tower_partial_dissolution = 1;
+	if(global.stage->spell->draw_rule == stagex_draw_scuttle_spellbg) {
+		global.boss = stagex_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
+		stage_unlock_bgm("scuttle");
+		stage_start_bgm("scuttle");
+		stagex_bg_init_practice_midboss();
+	} else {
+		global.boss = stagex_spawn_yumemi(BOSS_DEFAULT_SPAWN_POS);
+		stage_start_bgm("stagexboss");
+		stagex_bg_init_practice_boss();
+	}
 
-	Boss *boss = stagex_spawn_yumemi(BOSS_DEFAULT_SPAWN_POS);
-	boss_add_attack_from_info(boss, global.stage->spell, true);
-	boss_engage(boss);
-	global.boss = boss;
-
-	stage_start_bgm("stagexboss");
+	boss_add_attack_from_info(global.boss, global.stage->spell, true);
+	boss_engage(global.boss);
 }
 
 static void stagex_end(void) {

@@ -10,6 +10,7 @@
 #include "background_anim.h"
 #include "corruption.h"
 #include "nonspells/nonspells.h"
+#include "scuttle.h"
 #include "spells/spells.h"
 #include "stagex.h"
 
@@ -234,15 +235,6 @@ TASK(ngoner_fairy, { cmplx pos; }) {
 		}
 	}
 	e->move = move_linear(I);
-}
-
-static Boss *stagex_spawn_scuttle(cmplx pos0) {
-	Boss *scuttle = create_boss("Scutƫle", "scuttle", pos0);
-	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
-	scuttle->shadowcolor = RGBA(0.5, 0.0, 0.22, 1);
-	scuttle->glowcolor = RGBA(0.30, 0.0, 0.12, 0);
-
-	return scuttle;
 }
 
 TASK(scuttle_appear, { cmplx pos; }) {
