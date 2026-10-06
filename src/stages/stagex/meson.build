@@ -4,6 +4,7 @@ stagex_src = files(
     'corruption.c',
     'draw.c',
     'nonspells/boss_nonspells.c',
+    'scuttle.c',
     'spells/alignment.c',
     'spells/dataflow.c',
     'spells/fork_bomb.c',
