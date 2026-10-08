@@ -1,7 +1,7 @@
 ==============
 Taisei Project 
 ==============
-（`中文版 <README_CN.rst>`__）
+（`中文版 <README_CN.rst>`__ | `日本語版 <README_JA.rst>`__）
 
 .. image:: misc/icons/taisei.ico
    :width: 150
