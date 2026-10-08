@@ -54,6 +54,7 @@ if rst2html5.found()
         'README.txt',
         'STORY.txt',
         'STORY_CN.txt',
+        'STORY_JA.txt',
     ]
 
     foreach f : txt_docs
