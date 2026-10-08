@@ -47,6 +47,7 @@ if rst2html5.found()
         'ENVIRON_CN.rst',
         'GAME.rst',
         'GAME_CN.rst',
+        'GAME_JA.rst',
         # 'ANIMATION_FORMAT.rst'
     ]
 
