@@ -10,6 +10,7 @@ endif
 vfs_platform_paths_src += files('storage_sdl.c')
 
 xdg_systems = [
+    'ironclad',
     'linux',
     'freebsd',
     'openbsd',
