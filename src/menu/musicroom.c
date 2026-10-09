@@ -95,7 +95,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	}
 
 	char buf[16];
-	const char *title = p->state & MSTATE_TITLE_VISIBLE ? e->name : "???????";
+	const char *title = p->state & MSTATE_TITLE_VISIBLE ? _(e->name) : "???????";
 	Color clr = r_color_current();
 	TextParams tparams = {
 		.pos = { 20 - e->drawdata, 20 * i },
@@ -238,7 +238,7 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 	const char *title = bgm ? bgm_get_title(bgm) : NULL;
 
 	if(!title) {
-		title = _("Unknown track");
+		title = N_("Unknown track");
 	}
 
 	auto p = ALLOC(MusicEntryParam, {

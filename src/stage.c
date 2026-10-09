@@ -18,6 +18,7 @@
 #include "i18n/i18n.h"
 #include "lasers/draw.h"
 #include "log.h"
+#include "memory/scratch.h"
 #include "menu/gameovermenu.h"
 #include "menu/ingamemenu.h"
 #include "player.h"
@@ -31,6 +32,7 @@
 #include "stageobjects.h"
 #include "stagetext.h"
 #include "util/env.h"
+#include "util/strbuf.h"
 #include "watchdog.h"
 
 typedef struct StageFrameState {
@@ -628,9 +630,10 @@ static void display_bgm_title(void) {
 	const char *title = bgm ? _(bgm_get_title(bgm)) : NULL;
 
 	if(title) {
-		char txt[strlen(title) + 6];
-		snprintf(txt, sizeof(txt), F_("BGM: %s"), title);
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+		StringBuffer txt = { acquire_scratch_arena() };
+		strbuf_printf(&txt, F_("BGM: %s"), title);
+		stagetext_add(txt.start, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+		release_scratch_arena(txt.arena);
 	}
 }
 

@@ -795,11 +795,27 @@ static const char *detect_broken_norm16(void) {
 	return NULL;
 }
 
+static const char *detect_software_decoded_compression(void) {
+	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
+
+	if(!strncmp(gl_renderer, "llvmpipe", 8) || !strncmp(gl_renderer, "softpipe", 8)) {
+		return "Mesa's software rasterizers decode compressed textures at every sample";
+	}
+
+	return NULL;
+}
+
 static void glcommon_check_issues(void) {
 	glext.issues.disable_norm16 = glcommon_check_workaround(
 		"disable normalized 16bpc pixel formats",
 		"TAISEI_GL_WORKAROUND_DISABLE_NORM16",
 		detect_broken_norm16
+	);
+
+	glext.issues.disable_compressed_textures = glcommon_check_workaround(
+		"disable compressed texture formats",
+		"TAISEI_GL_WORKAROUND_DISABLE_COMPRESSED_TEXTURES",
+		detect_software_decoded_compression
 	);
 }
 
@@ -928,21 +944,23 @@ bool glcommon_check_capabilities(void) {
 	glcommon_ext_texture_format_r8_srgb();
 	glcommon_ext_texture_format_rg8_srgb();
 	glcommon_ext_texture_format_rgb8_rgba8_srgb();
-	glcommon_ext_texture_format_s3tc_dx1();
-	glcommon_ext_texture_format_s3tc_dx5();
-	glcommon_ext_texture_format_s3tc_srgb();
-	glcommon_ext_texture_format_rgtc();
-	glcommon_ext_texture_format_etc1();
-	glcommon_ext_texture_format_etc1_srgb();
-	glcommon_ext_texture_format_etc2_eac();
-	glcommon_ext_texture_format_etc2_eac_srgb();
-	glcommon_ext_texture_format_bptc();
-	glcommon_ext_texture_format_pvrtc();
-	glcommon_ext_texture_format_pvrtc2();
-	glcommon_ext_texture_format_pvrtc_srgb();
-	glcommon_ext_texture_format_astc();
-	glcommon_ext_texture_format_atc();
-	glcommon_ext_texture_format_fxt1();
+	if(!glext.issues.disable_compressed_textures) {
+		glcommon_ext_texture_format_s3tc_dx1();
+		glcommon_ext_texture_format_s3tc_dx5();
+		glcommon_ext_texture_format_s3tc_srgb();
+		glcommon_ext_texture_format_rgtc();
+		glcommon_ext_texture_format_etc1();
+		glcommon_ext_texture_format_etc1_srgb();
+		glcommon_ext_texture_format_etc2_eac();
+		glcommon_ext_texture_format_etc2_eac_srgb();
+		glcommon_ext_texture_format_bptc();
+		glcommon_ext_texture_format_pvrtc();
+		glcommon_ext_texture_format_pvrtc2();
+		glcommon_ext_texture_format_pvrtc_srgb();
+		glcommon_ext_texture_format_astc();
+		glcommon_ext_texture_format_atc();
+		glcommon_ext_texture_format_fxt1();
+	}
 
 	glcommon_build_shader_lang_table();
 	glcommon_init_texture_formats();

@@ -15,12 +15,14 @@
 #include "difficulty.h"
 #include "options.h"
 #include "i18n/i18n.h"
+#include "memory/scratch.h"
 
 #include "plrmodes.h"
 #include "progress.h"
 #include "renderer/api.h"
 #include "resource/font.h"
 #include "stageinfo.h"
+#include "util/strbuf.h"
 #include "video.h"
 
 static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
@@ -59,17 +61,19 @@ static void spell_menu_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 		clr = RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.8);
 	}
 
-	char title[128];
+	StringBuffer title = { acquire_scratch_arena() };
 	assert(stg->title.type == STAGE_TITLE_SPELL);
-	snprintf(title, sizeof(title), F_("№ %d"), stg->title.numeral);
+	strbuf_printf(&title, F_("№ %d"), stg->title.numeral);
 
 	Color second_clr = color_mul_scalar(clr, 0.7);
 
-	text_draw(title, &(TextParams) {
-		.pos = { 0 - text_width(res_font("standard"), title, 0), y },
+	text_draw(title.start, &(TextParams) {
+		.pos = { 0 - text_width(res_font("standard"), title.start, 0), y },
 		.color = second_clr,
 		.shader_ptr = text_shader,
 	});
+
+	release_scratch_arena(title.arena);
 
 	if(p && p->unlocked) {
 		text_draw(_(stg->subtitle), &(TextParams) {
@@ -141,15 +145,19 @@ static void draw_spell_menu_summary(MenuData *m) {
 			_("Duration"),
 			_("Bonus Rank"),
 		};
-		char bufs[ARRAY_SIZE(labels)][256];
-		strlcpy(bufs[0], attacktype_name(stg->spell->type), sizeof(bufs[0]));
+		StringBuffer buf = { acquire_scratch_arena() };
+		const char *values[ARRAY_SIZE(labels)];
+		values[0] = attacktype_name(stg->spell->type);
 		if(stg->spell->type == AT_SurvivalSpell) {
-			snprintf(bufs[1], sizeof(bufs[1]), "∞");
+			values[1] = "∞";
 		} else {
-			snprintf(bufs[1], sizeof(bufs[1]), "%g", stg->spell->hp);
+			strbuf_printf(&buf, "%g", stg->spell->hp);
+			values[1] = strbuf_commit(&buf);
 		}
-		snprintf(bufs[2], sizeof(bufs[2]), F_("%g s"), stg->spell->timeout);
-		snprintf(bufs[3], sizeof(bufs[3]), "%d", stg->spell->bonus_rank);
+		strbuf_printf(&buf, F_("%g s"), stg->spell->timeout);
+		values[2] = strbuf_commit(&buf);
+		strbuf_printf(&buf, "%d", stg->spell->bonus_rank);
+		values[3] = strbuf_commit(&buf);
 
 		for(int i = 0; i < ARRAY_SIZE(labels); i++) {
 			int y = 25 + 20 * i;
@@ -158,11 +166,13 @@ static void draw_spell_menu_summary(MenuData *m) {
 				.pos = { -5 - text_width(font, labels[i], 0), y },
 				.color = clr,
 			});
-			text_draw(bufs[i], &(TextParams) {
+			text_draw(values[i], &(TextParams) {
 				.pos = { 5, y },
 				.color = clr,
 			});
 		}
+
+		release_scratch_arena(buf.arena);
 	}
 
 	r_mat_mv_translate(0, 180, 0);

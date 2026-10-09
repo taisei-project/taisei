@@ -269,8 +269,10 @@ void dialog_show_title(Dialog *dialog, DialogActor *actor, char *name, char *tit
 static void dialog_title_draw(Dialog *dialog) {
 	auto main_font = res_font("big");
 	auto sub_font = res_font("standard");
-	float main_width = text_width(main_font, dialog->title.name, 0);
-	float sub_width = text_width(sub_font, dialog->title.text, 0);
+	const char *title_name = _(dialog->title.name);
+	const char *title_text = _(dialog->title.text);
+	float main_width = text_width(main_font, title_name, 0);
+	float sub_width = text_width(sub_font, title_text, 0);
 
 	float a = (global.frames - dialog->title.activated_time) / (float)DIALOG_TITLE_TIMEOUT;
 	a = tanhf(2.0f * a);
@@ -314,11 +316,11 @@ static void dialog_title_draw(Dialog *dialog) {
 		.overlay_projection = &title_bg_rect,
 	};
 
-	text_draw(dialog->title.name, &p);
+	text_draw(title_name, &p);
 	p.pos.y += font_get_lineskip(main_font) * 0.75;
 	p.font_ptr = sub_font;
 	sp.vector[0] = dialog->opacity * dialog->title.sub_alpha;
-	text_draw(dialog->title.text, &p);
+	text_draw(title_text, &p);
 }
 
 void dialog_draw(Dialog *dialog) {

@@ -670,11 +670,12 @@ static bool laser_collision(Laser *l, Player *plr) {
 	double graze_maxdist = 42;
 	double graze_dist = graze_maxdist;
 	cmplx graze_pos = 0;
+	cmplx graze_bbox_ofs = 0;
 
 	Rect bbox = laser_bbox_rect(l);
 
 	if(graze) {
-		cmplx graze_bbox_ofs = graze_dist * (1 + I);
+		graze_bbox_ofs = CMPLX(graze_dist, graze_dist);
 		bbox.top_left -= graze_bbox_ofs;
 		bbox.bottom_right += graze_bbox_ofs;
 	}
@@ -685,30 +686,39 @@ static bool laser_collision(Laser *l, Player *plr) {
 
 	LaserSegment *segs = dynarray_get_ptr(&lintern.segments, l->_internal.segments_ofs);
 
-	LineSegment plrmotion;
 	cmplx plrpos = plr->pos;
+	LineSegment plrmotion = { plrpos, plrpos };
 	bool player_moved = false;
 
 	if(plr->velocity != 0) {
 		player_moved = true;
 		plrmotion.a = plrpos - plr->velocity;
-		plrmotion.b = plrpos;
 	}
+
+	Rect plrmotion_bbox = lineseg_bbox(plrmotion);
 
 	for(int i = 0; i < num_segs; ++i) {
 		LaserSegment *lseg = segs + i;
 		LineSegment s = { lseg->pos.a, lseg->pos.b };
-
-		if(player_moved && lineseg_lineseg_intersection(plrmotion, s, NULL)) {
-			// Prevent phasing through laser beams
-			return true;
-		}
 
 		UnevenCapsule c = {
 			.pos = s,
 			.radius.a = max(lseg->width.a * 0.5 - 4, 2),
 			.radius.b = max(lseg->width.b * 0.5 - 4, 2),
 		};
+
+		Rect seg_bbox = ucapsule_bbox(c);
+		seg_bbox.top_left -= graze_bbox_ofs;
+		seg_bbox.bottom_right += graze_bbox_ofs;
+
+		if(!rect_rect_intersect(plrmotion_bbox, seg_bbox, true, true)) {
+			continue;
+		}
+
+		if(player_moved && lineseg_lineseg_intersection(plrmotion, s, NULL)) {
+			// Prevent phasing through laser beams
+			return true;
+		}
 
 		double d = ucapsule_dist_from_point(plrpos, c);
 
