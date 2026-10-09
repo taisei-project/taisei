@@ -151,7 +151,16 @@ static int opus_rwops_read(void *_stream, unsigned char *_ptr, int _nbytes) {
 
 static int opus_rwops_seek(void *_stream, opus_int64 _offset, int _whence) {
 	SDL_IOStream *rw = _stream;
-	return SDL_SeekIO(rw, _offset, _whence) < 0 ? -1 : 0;
+	SDL_IOWhence whence;
+
+	switch(_whence) {
+		case SEEK_SET: whence = SDL_IO_SEEK_SET; break;
+		case SEEK_CUR: whence = SDL_IO_SEEK_CUR; break;
+		case SEEK_END: whence = SDL_IO_SEEK_END; break;
+		default: return -1;
+	}
+
+	return SDL_SeekIO(rw, _offset, whence) < 0 ? -1 : 0;
 }
 
 static opus_int64 opus_rwops_tell(void *_stream) {
