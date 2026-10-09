@@ -159,6 +159,7 @@ struct glext_s {
 
 	struct {
 		bool disable_norm16 : 1;
+		bool disable_compressed_textures : 1;
 	} issues;
 
 	ext_flag_t clear_texture;
