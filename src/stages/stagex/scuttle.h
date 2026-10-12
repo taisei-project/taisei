@@ -6,8 +6,10 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "extra.h"
+#pragma once
+#include "taisei.h"
 
-// NOTE: See the 'yumemi' branch for the work-in-progress extra stage
+#include "entity.h"
 
-StageProcs extra_procs = { };
+Boss *stagex_spawn_scuttle(cmplx pos);
+void stagex_draw_scuttle_spellbg(Boss *boss, int time);
