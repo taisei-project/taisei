@@ -22,10 +22,9 @@
  * https://github.com/facebook/zstd/tree/v1.5.7/contrib/seekable_format
  *
  * If a seekable stream is requested, we'll try to locate and parse the seek table at the
- * end of the compressed content. If successful, it'll be used to implemet seeking efficiently.
- * A cache of 4 last recently used frames is kept to minimize wasted decompression for random
- * reads. The cache is only populated when seeking, so purely streaming access patterns are not
- * affected.
+ * end of the compressed content. If successful, it'll be used to implement seeking efficiently.
+ * A cache of 4 recently used frames is kept to minimize wasted decompression for random reads.
+ * The cache is only populated when seeking, so purely streaming access patterns are not affected.
  *
  * NOTE: When a seek is performed, the entire frame it lands on will be decompressed and cached.
  * Usually this is desirable, but sometimes it can be worse than decompressing up to the requested
