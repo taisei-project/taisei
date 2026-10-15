@@ -625,6 +625,7 @@ static void *_cotask_malloc(CoTaskData *task_data, size_t size, bool allow_heap_
 		// log_debug("Allocated %zu from task stack; arena used/allocated: %zu/%zu",
 		// 	size, task_data->mem.arena.total_used, task_data->mem.arena.total_allocated);
 	} else {
+		assert(allow_heap_fallback);
 		log_warn("Allocated %zu from the heap; arena used/allocated: %zu/%zu",
 			size, task_data->mem.arena.total_used, task_data->mem.arena.total_allocated);
 	}
