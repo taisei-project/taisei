@@ -39,7 +39,6 @@
 
 #define MEM_AREA_SIZE (1 << 12)
 #define MEM_ALLOC_ALIGNMENT alignof(max_align_t)
-#define MEM_ALIGN_SIZE(x) (x + (MEM_ALLOC_ALIGNMENT - 1)) & ~(MEM_ALLOC_ALIGNMENT - 1)
 
 enum {
 	COTASK_WAIT_NONE,
