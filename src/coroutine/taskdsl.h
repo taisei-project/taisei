@@ -362,7 +362,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define INVOKE_TASK_INDIRECT(_iface, _handle, ...) \
 	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_task, _iface, _handle, ##__VA_ARGS__)
 #define INVOKE_SUBTASK_INDIRECT(_iface, _handle, ...) \
-	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_subtask, iface, _handle, ##__VA_ARGS__)
+	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_subtask, _iface, _handle, ##__VA_ARGS__)
 
 #define THIS_TASK         cotask_box(cotask_active_unsafe())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
