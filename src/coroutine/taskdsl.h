@@ -217,7 +217,7 @@
  * args struct, so it's possible to use designated initializer syntax to emulate
  * "keyword arguments", etc.
  *
- * INVOKE_SUBTASK is identical INVOKE_TASK, except the spawned task will attach
+ * INVOKE_SUBTASK is identical to INVOKE_TASK, except the spawned task will attach
  * to the currently executing task, becoming its "sub-task" or "slave". When a
  * task finishes executing, all of its sub-tasks are also terminated recursively.
  *
