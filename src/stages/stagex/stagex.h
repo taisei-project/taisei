@@ -20,6 +20,7 @@ extern struct stagex_spells_s {
 	struct {
 		AttackInfo stack_smashing;
 		AttackInfo fork_bomb;
+		AttackInfo heartbleed;
 	} midboss;
 
 	struct {

@@ -35,6 +35,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_fork_bomb),
 			stagex_draw_scuttle_spellbg, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
 		},
+		.heartbleed = {
+			{-1, -1, -1, 11}, AT_Spellcard, "CVE-2014-0160 “Heartbleed”", 120, 80000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_heartbleed),
+			stagex_draw_scuttle_spellbg, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
+		},
 	},
 	.boss = {
 		.infinity_network = {

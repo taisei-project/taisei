@@ -15,6 +15,7 @@
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_stack_smashing, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_fork_bomb, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_heartbleed, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_sierpinski, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_mem_copy, BossAttack);

@@ -243,6 +243,7 @@ TASK(scuttle_appear, { cmplx pos; }) {
 
 	boss_add_attack_from_info(boss, &stagex_spells.midboss.stack_smashing, false);
 	boss_add_attack_from_info(boss, &stagex_spells.midboss.fork_bomb, false);
+	boss_add_attack_from_info(boss, &stagex_spells.midboss.heartbleed, false);
 	boss_engage(global.boss);
 }
 

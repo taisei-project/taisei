@@ -9,6 +9,7 @@ stagex_src = files(
     'spells/dataflow.c',
     'spells/fork_bomb.c',
     'spells/garbage.c',
+    'spells/heartbleed.c',
     'spells/infinity_net.c',
     'spells/mem_copy.c',
     'spells/pipe_dream.c',
