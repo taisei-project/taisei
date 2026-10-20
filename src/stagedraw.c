@@ -645,6 +645,11 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 		}
 	}
 
+	if(ent->type == ENT_TYPE_ID(Projectile)) {
+		Projectile *p = ENT_CAST(ent, Projectile);
+		return p->flags & PFLAG_SURGEEFFECT;
+	}
+
 	if(ent->type == ENT_TYPE_ID(Item)) {
 		Item *i = ENT_CAST(ent, Item);
 		return i->type == ITEM_VOLTAGE;

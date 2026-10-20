@@ -73,12 +73,13 @@ typedef enum ProjFlags {
 	PFLAG_NOMOVE = (1 << 8),                // [ALL] Don't call move_update for this projectile.
 	PFLAG_NOREFLECT = (1 << 9),             // [ALL] Don't render a "reflection" of this on the Stage 1 water surface.
 	PFLAG_REQUIREDPARTICLE = (1 << 10),     // [PROJ_PARTICLE] Visible at "minimal" particles setting.
-	PFLAG_PLRSPECIALPARTICLE = (1 << 11),   // [PROJ_PARTICLE] Apply Power Surge effect to this particle, as if it was a PROJ_PLAYER.
+	PFLAG_PLRSPECIALPARTICLE = (1 << 11),   // [PROJ_PARTICLE] Apply Power Surge effect to this particle (only when Power Surge is active), as if it was a PROJ_PLAYER.
 	PFLAG_NOCOLLISION = (1 << 12),          // [PROJ_ENEMY, PROJ_PLAYER] Disable collision detection.
 	PFLAG_INTERNAL_DEAD = (1 << 13),        // [ALL] Delete as soon as processed. (internal flag, do not use)
 	PFLAG_MANUALANGLE = (1 << 14),          // [ALL] Don't automatically update the angle.
 	PFLAG_NOAUTOREMOVE = (1 << 15),         // [ALL] Don't automatically remove when outside viewport.
 	PFLAG_INDESTRUCTIBLE = (1 << 16),       // [PROJ_ENEMY, PROJ_PLAYER] Projectile doesn't get destroyed on collision.
+	PFLAG_SURGEEFFECT = (1 << 17),          // [ALL] Apply Power Surge effect to this projectile, even when Power Surge is not active
 
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
