@@ -1656,13 +1656,13 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		switch(target->type) {
 			case ENT_TYPE_ID(Enemy): {
 				pos = ENT_CAST(target, Enemy)->pos;
-				player_add_points(&global.plr, damage->amount * 0.5, pos);
+				player_add_points(&global.plr, damage->amount, pos);
 				break;
 			}
 
 			case ENT_TYPE_ID(Boss): {
 				pos = ENT_CAST(target, Boss)->pos;
-				player_add_points(&global.plr, damage->amount * 0.2, pos);
+				player_add_points(&global.plr, damage->amount, pos);
 				break;
 			}
 
