@@ -953,6 +953,10 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
 
+	if(a->type == AT_ExtraSpell) {
+		base *= (1.0 + global.plr.voltage / 1000.0);
+	}
+
 	bonus->clear = bonus->failed ? 0 : base;
 	bonus->time = survival ? 0 : 0.5 * base * (time_left / (double)a->timeout);
 	bonus->endurance = 0;
