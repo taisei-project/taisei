@@ -217,11 +217,7 @@ size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
 }
 
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]) {
-	if(digits == 0) {
-		digits = digitcnt(num);
-	}
-
-	num = min(upow10(digits) - 1, num);
+	digits = max(digits, digitcnt(num));
 
 	div_t separators = div(digits, 3);
 	attr_unused uint len = digits + (separators.quot + !!separators.rem);
