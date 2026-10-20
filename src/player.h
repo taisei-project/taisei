@@ -32,7 +32,7 @@ enum {
 	PLR_MAX_POWER_EFFECTIVE = 400,
 	PLR_MAX_POWER_STORED = 600,
 	PLR_MAX_LIVES = 8,
-	PLR_MAX_BOMBS = 8,
+	PLR_MAX_BOMBS = 5,
 
 	// -Wpedantic doesn't like this
 	// PLR_MAX_PIV = UINT32_MAX,
