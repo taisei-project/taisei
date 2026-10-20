@@ -1781,8 +1781,9 @@ void stage_draw_hud(void) {
 		Sprite *spr_bomb = res_sprite("hud/star");
 
 		float spacing = 1;
-		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (PLR_MAX_LIVES - 0.5) - spacing * (PLR_MAX_LIVES - 1);
-		float pos_bombs = HUD_EFFECTIVE_WIDTH - spr_bomb->w * (PLR_MAX_BOMBS - 0.5) - spacing * (PLR_MAX_BOMBS - 1);
+		float limit = max(PLR_MAX_LIVES, PLR_MAX_BOMBS);
+		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (limit - 0.5) - spacing * (limit - 1);
+		float pos_bombs = HUD_EFFECTIVE_WIDTH - spr_bomb->w * (limit - 0.5) - spacing * (limit - 1);
 
 		labels.y_ofs.lives_display = 0 /* spr_life->h * -0.25 */;
 		labels.y_ofs.bombs_display = 0 /* spr_bomb->h * -0.25 */;
