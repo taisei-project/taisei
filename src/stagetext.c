@@ -35,7 +35,9 @@ StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *fon
 }
 
 static void stagetext_numeric_update(StageText *txt, int t, float a) {
-	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(txt->text), txt->text);
+	float f = clamp(t / (float)txt->time.fadein, 0.0f, 1.0f);
+	f = 1.0f - (1.0f - f) * (1.0f - f);
+	format_huge_num(0, (uintptr_t)txt->custom.data1 * f, sizeof(txt->text), txt->text);
 }
 
 StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
