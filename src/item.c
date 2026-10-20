@@ -173,7 +173,9 @@ Item *create_clear_item(cmplx pos, uint clear_flags) {
 			.layer = LAYER_BULLET+1
 		);
 
-		collect_item(i, 1);
+		if(!(clear_flags & CLEAR_HAZARDS_NO_AUTOCOLLECT)) {
+			collect_item(i, 1);
+		}
 	}
 
 	return i;
