@@ -713,7 +713,8 @@ static bool player_powersurge(Player *plr) {
 		!player_is_alive(plr) ||
 		player_is_bomb_active(plr) ||
 		player_is_powersurge_active(plr) ||
-		plr->power_stored < PLR_POWERSURGE_POWERCOST
+		plr->power_stored < PLR_POWERSURGE_POWERCOST ||
+		global.frames - plr->powersurge.time.expired <= PLR_POWERSURGE_EXPIRED_COOLDOWN
 	) {
 		return false;
 	}
