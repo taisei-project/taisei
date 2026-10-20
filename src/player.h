@@ -54,6 +54,7 @@ enum {
 
 	PLR_POWERSURGE_POWERCOST = 200,
 	PLR_POWERSURGE_EXPIRED_COOLDOWN = 30,
+	PLR_POWERSURGE_DISCHARGE_RECOVERY_TIME = 8,
 
 	PLR_RESPAWN_TIME = 60,
 	PLR_RECOVERY_TIME = 210,
@@ -229,7 +230,8 @@ void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
-void player_cancel_powersurge(Player *plr);
+bool player_cancel_powersurge(Player *plr);
+bool player_break_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
 bool player_is_recovering(Player *plr);

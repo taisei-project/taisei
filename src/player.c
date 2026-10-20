@@ -379,6 +379,18 @@ static void player_draw_indicators(EntityInterface *ent) {
 			.align = ALIGN_LEFT,
 		});
 
+		x = re(pos);
+		y += font_get_lineskip(fnt);
+		format_huge_num(0, plr->powersurge.bonus.score, sizeof(buf), buf);
+
+		x += text_draw(buf, &(TextParams) {
+			.shader = "text_hud",
+			.font_ptr = fnt,
+			.pos = { x, y },
+			.color = RGBA_MUL_ALPHA(1.0, 0.5, 0.2, text_opacity),
+			.align = ALIGN_CENTER,
+		});
+
 		r_shader("sprite_filled_circle");
 		r_uniform_vec4("color_inner", 0, 0, 0, 0);
 		r_uniform_vec4("color_outer", 0, 0, 0.1 * ps_opacity, 0.1 * ps_opacity);
@@ -415,7 +427,7 @@ DEFINE_TASK(player_indicators) {
 static void player_fail_spell(Player *plr) {
 	Boss *boss = global.boss;
 
-	if(!boss || global.stage->type == STAGE_SPELL) {
+	if(!boss) {
 		return;
 	}
 
@@ -459,7 +471,7 @@ void player_placeholder_bomb_logic(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 }
 
-static void player_powersurge_expired(Player *plr);
+static void player_powersurge_expired(Player *plr, bool is_break);
 
 static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	float nt = t / p->timeout;
@@ -553,7 +565,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
 	b->gain_rate = round(1000 * plr->powersurge.negative * plr->powersurge.negative);
 	b->baseline = plr->powersurge.total_charge + plr->powersurge.damage_done * 0.4;
-	b->score = b->baseline;
+	b->score = ((1.0 + plr->voltage / 1000.0) * (plr->point_item_value * b->baseline)) / PLR_START_PIV;
 	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
 	b->discharge_range = 1.2 * b->discharge_power;
 	b->discharge_damage = 10 * pow(b->discharge_power, 1.1);
@@ -573,7 +585,7 @@ static void player_powersurge_logic(Player *plr) {
 	}
 
 	if(plr->powersurge.positive <= plr->powersurge.negative) {
-		player_powersurge_expired(plr);
+		player_powersurge_expired(plr, false);
 		return;
 	}
 
@@ -789,22 +801,161 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 	stage_draw_end_noshake();
 }
 
-TASK(powersurge_discharge_clearhazards, { cmplx pos; real range; int timeout; }) {
-	for(int t = 0; t < ARGS.timeout; ++t, YIELD) {
-		stage_clear_hazards_at(ARGS.pos, ARGS.range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+static void powersurge_damage_effect(cmplx pos) {
+	PARTICLE(
+		.sprite = "smoke",
+		.pos = pos,
+		.color = RGBA(1, 1, 1, 0.1),
+		.timeout = 23,
+		.draw_rule = pdraw_timeout_scalefade_exp(0.2, 1, 1, 0, 2),
+		.angle = rng_angle(),
+		.move = move_linear(rng_dir() * 0.5),
+		.layer = LAYER_PARTICLE_HIGH,
+		.flags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT,
+	);
+
+	PARTICLE(
+		.sprite = "blast_huge_halo",
+		.pos = pos,
+		.color = RGBA(0.8, 0.2, 1.0, 0.0),
+		.timeout = 13,
+		.draw_rule = pdraw_timeout_scalefade_exp(4, 0.1, 0.8, 0.0, 2),
+		.angle = rng_angle(),
+		.flags = PFLAG_MANUALANGLE | PFLAG_NOMOVE | PFLAG_NOREFLECT,
+		.layer = LAYER_PARTICLE_HIGH,
+		.scale = 0.1,
+	);
+
+	const char *parts[] = { "lightning0", "lightning1" };
+
+	for(int i = 0; i < ARRAY_SIZE(parts); ++i) {
+		PARTICLE(
+			.sprite = parts[i],
+			.pos = pos,
+			.color = color_lerp(
+				RGBA(1.0, 0.5, 0.0, 0.0),
+				RGBA(0.0, 0.5, 1.0, 0.0), rng_real()),
+			.timeout = rng_range(9, 12),
+			.draw_rule = pdraw_timeout_scalefade(3, 0.1, 0.8, 0.0),
+			.angle = rng_angle(),
+			.flags = PFLAG_MANUALANGLE | PFLAG_NOMOVE | PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_HIGH,
+		);
 	}
 }
 
-static void player_powersurge_expired(Player *plr) {
+static void powersurge_damage_callback(EntityInterface *ent, cmplx pos, void *arg) {
+	powersurge_damage_effect(pos);
+}
+
+TASK(powersurge_discharge, { cmplx pos; real radius; real damage; bool is_break; }) {
+	cmplx pos = ARGS.pos;
+	real radius = ARGS.radius;
+	int duration = 30;
+	int shrink_time = 2 * duration / 3;
+	real damage = ARGS.damage / duration;
+
+	Sprite *field_sprite = res_sprite("part/powersurge_field");
+	Sprite *blast_sprite = res_sprite("part/blast_huge_rays");
+	Sprite *blast_halo_sprite = res_sprite("part/blast_huge_halo");
+	Sprite *smoke_sprite = res_sprite("part/smoke");
+	float field_scale = 2 / field_sprite->w;
+	float blast_scale = 2 / blast_sprite->w;
+	float halo_scale = 2 / blast_halo_sprite->w;
+	float smoke_scale = 2 / smoke_sprite->w;
+
+	Color colors[] = {
+		color_mul_scalar(RGBA(1.5, 0.5, 0.0, 0.1), 2),
+		color_mul_scalar(RGBA(0.0, 0.5, 1.5, 0.1), 2),
+	};
+
+	ClearHazardsFlags clear_flags = CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE;
+
+	if(ARGS.is_break) {
+		clear_flags |= CLEAR_HAZARDS_NO_AUTOCOLLECT;
+	}
+
+	for(int t = 0; t < duration; ++t, YIELD) {
+		real f = max(0, (t - (real)shrink_time) / (duration - (real)shrink_time));
+		real r = radius * lerp(1, 0.25, glm_ease_quad_in(f));
+
+		stage_clear_hazards_at(pos, r, clear_flags);
+		ent_area_damage(pos, r, &(DamageInfo) { damage, DMG_PLAYER_DISCHARGE }, powersurge_damage_callback, NULL);
+
+		Color color = colors[t & 1];
+
+		PARTICLE(
+			.sprite_ptr = field_sprite,
+			.pos = pos,
+			.color = color,
+			.draw_rule = pdraw_timeout_fade(1, 0),
+			.timeout = 3,
+			.angle = rng_angle(),
+			.layer = LAYER_PLAYER - 1,
+			.flags = PFLAG_NOREFLECT | PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_SURGEEFFECT | PFLAG_MANUALANGLE,
+			.scale = r * field_scale,
+		);
+
+		cmplx blast_ofs = 10 * rng_dir();
+		blast_ofs *= sqrt(rng_real());
+
+		PARTICLE(
+			.sprite_ptr = blast_sprite,
+			.pos = pos + blast_ofs,
+			.color = color_mul_scalar(color, 0.5f),
+			.draw_rule = pdraw_timeout_scalefade(0.01, 2, 1, 0),
+			.timeout = 5,
+			.angle = rng_angle(),
+			.scale = r * blast_scale,
+			.layer = LAYER_PARTICLE_LOW + 1,
+			.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
+		);
+
+		if(t % 10 == 0) {
+			PARTICLE(
+				.sprite_ptr = blast_halo_sprite,
+				.pos = pos + blast_ofs,
+				.color = color_mul_scalar(colors[rng_bool()], 0.5f),
+				.draw_rule = pdraw_timeout_scalefade(2, 0.01, 1, 0),
+				.timeout = 20,
+				.angle = rng_angle(),
+				.scale = r * halo_scale,
+				.layer = LAYER_PARTICLE_LOW + 1,
+				.flags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT | PFLAG_NOMOVE,
+			);
+		}
+
+		if(t % 7 == 0) {
+			PARTICLE(
+				.sprite_ptr = smoke_sprite,
+				.pos = pos + blast_ofs,
+				.color = color,
+				.timeout = 30,
+				.draw_rule = pdraw_timeout_scalefade(0.01, 2, 1, 0),
+				.angle = rng_angle(),
+				.layer = LAYER_PARTICLE_LOW,
+				.flags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT,
+				.scale = r * smoke_scale,
+			);
+		}
+	}
+}
+
+static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args);
+
+static void player_powersurge_expired(Player *plr, bool is_break) {
 	plr->powersurge.time.expired = global.frames;
+	plr->recoverytime = max(
+		plr->recoverytime, plr->powersurge.time.expired + PLR_POWERSURGE_DISCHARGE_RECOVERY_TIME);
 
 	PowerSurgeBonus bonus;
 	player_powersurge_calc_bonus(plr, &bonus);
 
 	Sprite *blast = res_sprite("part/blast_huge_halo");
-	float scale = 2 * bonus.discharge_range / blast->w;
+	float scale = 2 * max(64, bonus.discharge_range) / blast->w;
 
 	play_sfx("powersurge_end");
+	play_sfx("shot_special1");
 
 	PARTICLE(
 		.size = 1+I,
@@ -826,13 +977,25 @@ static void player_powersurge_expired(Player *plr) {
 		.timeout = 20,
 		.angle = rng_angle(),
 		.scale = scale,
-		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOREFLECT,
 	);
 
-	player_add_points(&global.plr, bonus.score, plr->pos);
-	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
+	if(!is_break) {
+		player_add_points(&global.plr, bonus.score, plr->pos);
+	} else {
+		play_sfx("noise1");
+		stagetext_add(_("Surge Break!"), plr->pos - 64 * I, ALIGN_CENTER,
+			res_font("standard"), RGBA(1.0, 0.75, 0.75, 0.75), 0, 45, 10, 20);
+	}
 
-	INVOKE_TASK(powersurge_discharge_clearhazards, plr->pos, bonus.discharge_range, 10);
+	if(bonus.discharge_range > 1) {
+		INVOKE_TASK(powersurge_discharge,
+			.pos = plr->pos,
+			.damage = bonus.discharge_damage,
+			.radius = bonus.discharge_range,
+			.is_break = is_break,
+		);
+	}
 
 	log_debug(
 		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
@@ -848,11 +1011,27 @@ static void player_powersurge_expired(Player *plr) {
 	plr->powersurge.damage_done = 0;
 }
 
-void player_cancel_powersurge(Player *plr) {
+static bool _player_cancel_powersurge(Player *plr, bool is_break) {
 	if(player_is_powersurge_active(plr)) {
 		plr->powersurge.positive = plr->powersurge.negative;
-		player_powersurge_expired(plr);
+		player_powersurge_expired(plr, is_break);
+		return true;
 	}
+
+	return false;
+}
+
+bool player_cancel_powersurge(Player *plr) {
+	return _player_cancel_powersurge(plr, false);
+}
+
+bool player_break_powersurge(Player *plr) {
+	if(_player_cancel_powersurge(plr, true)) {
+		player_fail_spell(plr);
+		return true;
+	}
+
+	return false;
 }
 
 void player_extend_powersurge(Player *plr, float pos, float neg) {
@@ -861,7 +1040,7 @@ void player_extend_powersurge(Player *plr, float pos, float neg) {
 		plr->powersurge.negative = clamp(plr->powersurge.negative + neg, 0, 1);
 
 		if(plr->powersurge.positive <= plr->powersurge.negative) {
-			player_powersurge_expired(plr);
+			player_powersurge_expired(plr, false);
 		}
 	}
 }
@@ -966,6 +1145,10 @@ TASK(player_death_blastspam, { cmplx pos; }) {
 
 void player_death(Player *plr) {
 	if(!player_is_vulnerable(plr) || stage_is_cleared()) {
+		return;
+	}
+
+	if(player_break_powersurge(plr) && global.stage->type != STAGE_SPELL) {
 		return;
 	}
 
@@ -1142,8 +1325,7 @@ PlayerEventResult player_event(
 					useful = player_powersurge(plr);
 
 					if(!useful/* && plr->iddqd*/) {
-						player_cancel_powersurge(plr);
-						useful = true;
+						useful = player_cancel_powersurge(plr);
 					}
 
 					break;
