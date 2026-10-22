@@ -345,6 +345,7 @@ config.set('TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN',
     host_machine.system() != 'nx' and cc.has_function('posix_memalign'))
 config.set('TAISEI_BUILDCONF_HAVE_ALIGNED_MALLOC_FREE',
     cc.has_function('_aligned_malloc') and cc.has_function('_aligned_free'))
+config.set('TAISEI_BUILDCONF_HAVE_LIBPNG', dep_png.found())
 
 config.set('TAISEI_BUILDCONF_HAVE_ATTR_DESIGNATED_INIT', cc.compiles(
     'struct { int dummy; } __attribute__((designated_init)) x;',
