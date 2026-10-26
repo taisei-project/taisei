@@ -82,6 +82,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_garbage),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+80.0*I, 7,
 		},
+		.entropy = {
+			{-1, -1, -1, 12}, AT_Spellcard, "Entropy “Danmaku Compression”", 90, 150000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_entropy),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2+VIEWPORT_H/2*I, 7,
+		},
 	},
 };
 

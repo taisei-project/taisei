@@ -32,6 +32,7 @@ extern struct stagex_spells_s {
 		AttackInfo rings;
 		AttackInfo dataflow;
 		AttackInfo garbage;
+		AttackInfo entropy;
 	} boss;
 
 	// required for iteration
