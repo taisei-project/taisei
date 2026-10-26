@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2025, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "memory/scratch.h"
 #include "test_common.h"
 
 #include "renderer/common/shaderlib/shaderlib.h"
@@ -106,6 +107,23 @@ static bool test_shader(const char *path) {
 		if(!spirv_transpile(&src, &transpiled, &G.arena, &transpile_opts)) {
 			log_fatal("%s: Transpile to %s failed", path, lang->name);
 		}
+
+		if(lang->lang_info.lang == SHLANG_WGSL || lang->lang_info.lang == SHLANG_SPIRV) {
+			StringBuffer buf = { acquire_scratch_arena() };
+
+			if(lang->lang_info.lang == SHLANG_WGSL) {
+				strbuf_printf(&buf, "tmp/%s.wgsl", path);
+			} else {
+				strbuf_printf(&buf, "tmp/%s.spv", path);
+			}
+
+			char *dump_path = strbuf_commit(&buf);
+
+			vfs_mkparents(dump_path);
+			SDL_SaveFile_IO(vfs_open(dump_path, VFS_MODE_WRITE), transpiled.content, transpiled.content_size, true);
+
+			release_scratch_arena(buf.arena);
+		}
 	}
 
 	return true;
@@ -123,6 +141,7 @@ static void *walker(const char *path, void *unused) {
 
 static void on_vfs_up(CallChainResult ccr) {
 	vfs_unmount("cache");
+	(void)vfs_mount_syspath("tmp", "/tmp/taisei-wglsl", VFS_SYSPATH_MOUNT_MKDIR);
 	marena_init(&G.arena, 0);
 	spirv_init_compiler();
 	vfs_dir_walk("res/shader", walker, NULL);
