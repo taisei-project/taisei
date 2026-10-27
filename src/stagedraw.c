@@ -641,7 +641,7 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 
 		if(ent->type == ENT_TYPE_ID(Projectile)) {
 			Projectile *p = ENT_CAST(ent, Projectile);
-			return p->flags & PFLAG_PLRSPECIALPARTICLE;
+			return p->flags & (PFLAG_PLRSPECIALPARTICLE | PFLAG_SURGEEFFECT);
 		}
 	}
 
