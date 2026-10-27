@@ -93,8 +93,8 @@ enum {
 };
 
 typedef struct PowerSurgeBonus {
-	uint baseline;
-	uint score;
+	uint64_t baseline;
+	uint64_t score;
 	uint gain_rate;
 	float discharge_power;
 	float discharge_range;
@@ -222,7 +222,7 @@ void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
-void player_add_points(Player *plr, uint points, cmplx location);
+void player_add_points(Player *plr, uint64_t points, cmplx location);
 void player_add_piv(Player *plr, uint piv, cmplx location);
 void player_add_voltage(Player *plr, uint voltage);
 bool player_drain_voltage(Player *plr, uint voltage);

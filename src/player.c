@@ -998,11 +998,11 @@ static void player_powersurge_expired(Player *plr, bool is_break) {
 	}
 
 	log_debug(
-		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
+		"Power Surge expired at %i (duration: %i); baseline = %llu; score = %llu; discharge = %g, dmg = %g, range = %g",
 		plr->powersurge.time.expired,
 		plr->powersurge.time.expired - plr->powersurge.time.activated,
-		bonus.baseline,
-		bonus.score,
+		(unsigned long long)bonus.baseline,
+		(unsigned long long)bonus.score,
 		bonus.discharge_power,
 		bonus.discharge_damage,
 		bonus.discharge_range
@@ -1781,7 +1781,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 	}
 }
 
-void player_add_points(Player *plr, uint points, cmplx location) {
+void player_add_points(Player *plr, uint64_t points, cmplx location) {
 	plr->points += points;
 
 	while(plr->points >= plr->extralife_threshold) {
