@@ -965,7 +965,7 @@ static void player_powersurge_expired(Player *plr, bool is_break) {
 			powersurge_distortion_draw,
 			.args[0].as_float = { bonus.discharge_range },
 		},
-		.layer = LAYER_PLAYER,
+		.layer = LAYER_OVERLAY,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
 
