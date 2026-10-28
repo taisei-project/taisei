@@ -1,0 +1,20 @@
+
+#ifndef I_EXTRA_TOWER_MASK_H
+#define I_EXTRA_TOWER_MASK_H
+
+#include "standard.glslh"
+
+UNIFORM(1) sampler2D tex_noise;
+UNIFORM(2) sampler2D tex_mask;
+UNIFORM(3) sampler2D tex_mod;
+
+UNIFORM(4) float time;
+UNIFORM(5) sampler2D tex2;
+UNIFORM(6) float dissolve;
+UNIFORM(7) mat4 world_from_model;
+
+VARYING(3) vec3 camPos;
+VARYING(4) vec3 worldPos;
+VARYING(5) vec3 modelPos;
+
+#endif
