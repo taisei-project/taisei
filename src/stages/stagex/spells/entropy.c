@@ -9,8 +9,15 @@
 #include "spells.h"
 #include "bitarray.h"
 
-#define FULL_PERIOD 1200
-#define PARTS 128
+enum {
+	PARTS = 128,
+	FULL_PERIOD = 1200,
+	NUM_WAVES = 8,
+	WAVE_DELAY = FULL_PERIOD / NUM_WAVES,
+	OMIT_WAVES = 3,
+};
+
+static_assert(NUM_WAVES * WAVE_DELAY == FULL_PERIOD);
 
 const static struct {
 	struct {
@@ -305,12 +312,7 @@ DEFINE_EXTERN_TASK(stagex_spell_entropy) {
 	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.04);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	const int num_waves = 8;
-	const int delay = FULL_PERIOD / num_waves;
-	const int omit_waves = 3;
-	static_assert(num_waves * delay == FULL_PERIOD);
-
-	for(int wave = 0; wave < num_waves - omit_waves; wave++) {
-		INVOKE_TASK_DELAYED(wave * delay, spawn_wave, ENT_BOX(boss), wave);
+	for(int wave = 0; wave < NUM_WAVES - OMIT_WAVES; wave++) {
+		INVOKE_TASK_DELAYED(wave * WAVE_DELAY, spawn_wave, ENT_BOX(boss), wave);
 	}
 }

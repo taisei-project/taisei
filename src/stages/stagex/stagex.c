@@ -13,7 +13,7 @@
 #include "spells/spells.h"
 #include "timeline.h"   // IWYU pragma: keep
 #include "yumemi.h"
-#include "scuttle.h""
+#include "scuttle.h"
 
 #include "global.h"
 #include "stage.h"
