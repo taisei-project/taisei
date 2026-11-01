@@ -67,6 +67,10 @@ bool sdlgpu_shader_language_supported(const ShaderLangInfo *lang, SPIRVTranspile
 		transpile_opts->compile.optimization_level = SPIRV_OPTIMIZE_NONE;
 		transpile_opts->decompile.lang = want_lang;
 		transpile_opts->decompile.reflect = true;
+
+		if(want_lang == &lang_wgsl) {
+			transpile_opts->decompile.wgsl.flags = WGSL_TFLAG_ALLOW_NON_UNIFORM_DERIVATIVES;
+		}
 	}
 
 	return false;

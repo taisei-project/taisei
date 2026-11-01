@@ -19,5 +19,6 @@ shaderc
 SPIRV-Cross
 SPIRV-Headers
 SPIRV-Tools
+taint
 vorbis
 zlib

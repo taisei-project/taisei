@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "defs.h"
+#include "lang_wgsl.h"
 
 #include "memory/arena.h"
 
@@ -50,6 +51,8 @@ typedef struct SPIRVDecompileOptions {
 		struct {
 			bool vulkan_semantics;
 		} glsl;
+
+		WGSLTranslateOptions wgsl;
 	};
 } SPIRVDecompileOptions;
 

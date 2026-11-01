@@ -12,7 +12,8 @@
 bool wgsl_translate_from_spirv(
 	const ShaderSource *in,
 	ShaderSource *out,
-	MemArena *arena
+	MemArena *arena,
+	const WGSLTranslateOptions *options
 ) {
 	log_error("Compiled without WGSL support");
 	return false;

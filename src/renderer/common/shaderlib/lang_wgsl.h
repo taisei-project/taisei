@@ -13,10 +13,22 @@
 
 #include "memory/arena.h"
 
+typedef enum WGSLTranslateFlag {
+	WGSL_TFLAG_ALLOW_NON_UNIFORM_DERIVATIVES          = (1 << 0),
+	WGSL_TFLAG_ALLOW_NON_UNIFORM_SUBGROUP_OPERATIONS  = (1 << 1),
+	WGSL_TFLAG_DISABLE_UNREACHABLE_CODE_WARNING       = (1 << 2),
+	WGSL_TFLAG_MINIFY                                 = (1 << 3),
+} WGSLTranslateFlag;
+
+typedef struct WGSLTranslateOptions {
+	uint8_t flags;
+} WGSLTranslateOptions;
+
 bool wgsl_supported(void);
 
 bool wgsl_translate_from_spirv(
 	const ShaderSource *in,
 	ShaderSource *out,
-	MemArena *arena
+	MemArena *arena,
+	const WGSLTranslateOptions *options
 ) attr_nonnull(1, 2, 3);

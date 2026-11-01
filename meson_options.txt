@@ -121,7 +121,7 @@ option(
 option(
     'shader_transpiler_wgsl',
     type : 'feature',
-    description : 'Enable translations of shaders into WGSL; required for the WebGPU backend of SDL_GPU; requires Rust and Cargo'
+    description : 'Enable translations of shaders into WGSL; required for the WebGPU backend of SDL_GPU; requires Taint'
 )
 
 option(

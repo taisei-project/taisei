@@ -100,6 +100,10 @@ static bool test_shader(const char *path) {
 		auto lang = langs + i;
 		transpile_opts.decompile.lang = &lang->lang_info;
 
+		if(lang->lang_info.lang == SHLANG_WGSL) {
+			transpile_opts.decompile.wgsl.flags = WGSL_TFLAG_ALLOW_NON_UNIFORM_DERIVATIVES;
+		}
+
 		log_debug("%s: testing %s", path, lang->name);
 		log_sync(true);
 

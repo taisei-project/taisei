@@ -8,6 +8,7 @@
 
 #include "lang_spirv_private.h"
 #include "lang_dxbc.h"
+#include "lang_wgsl.h"
 #include "shaderlib.h"
 #include "cache.h"
 
@@ -37,6 +38,7 @@ typedef struct CacheEntryMetadata {
 		} dxbc;
 
 		struct {
+			const WGSLTranslateOptions *translate_options;
 		} wgsl;
 	};
 } CacheEntryMetadata;
@@ -119,6 +121,7 @@ static size_t shader_cache_serialize_entry_metadata_wgsl(
 	uint8_t data[] = {
 		meta->stage,
 		meta->reflection,
+		meta->wgsl.translate_options->flags,
 	};
 
 	assume(sizeof(data) <= size);
@@ -272,7 +275,7 @@ static bool spirv_decompile_internal(
 	const SPIRVDecompileOptions *options
 ) {
 	if(options->lang->lang == SHLANG_WGSL) {
-		bool ok = wgsl_translate_from_spirv(in, out, arena);
+		bool ok = wgsl_translate_from_spirv(in, out, arena, &options->wgsl);
 
 		if(ok && options->reflect) {
 			out->reflection = NOT_NULL(in->reflection);
@@ -293,6 +296,10 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, MemArena *arena,
 	};
 
 	assume(m.lang.lang != SHLANG_SPIRV);
+
+	if(m.lang.lang == SHLANG_WGSL) {
+		m.wgsl.translate_options = &options->wgsl;
+	}
 
 	if(!shader_cache_entry_name(&m, sizeof(name), name)) {
 		return spirv_decompile_internal(in, out, arena, options);

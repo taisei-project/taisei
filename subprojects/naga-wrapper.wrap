@@ -1,5 +1,0 @@
-[wrap-file]
-directory=naga-wrapper
-
-[provide]
-dependency_names = wgslcrap
