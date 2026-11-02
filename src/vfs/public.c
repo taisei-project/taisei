@@ -408,7 +408,7 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 		snprintf(fullpath, sizeof(fullpath), "%s%c%s", npath, VFS_PATH_SEPARATOR, e);
 
 		if((result = visit(fullpath, arg))) {
-			return result;
+			break;
 		}
 
 		if(!vfs_query(fullpath).is_dir) {
@@ -416,7 +416,7 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 		}
 
 		if((result = vfs_dir_walk(fullpath, visit, arg))) {
-			return result;
+			break;
 		}
 	}
 
