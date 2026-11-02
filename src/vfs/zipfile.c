@@ -260,6 +260,7 @@ VFSNode *vfs_zipfile_create(VFSNode *source) {
 	znode->ctx.log_prefix = marena_strdup(&znode->arena, znode->ctx.log_prefix);
 	release_scratch_arena(buf.arena);
 
+	znode->num_entries = ctx.i;
 	qsort(znode->entries, znode->num_entries, sizeof(*znode->entries), zip_entry_name_cmp);
 
 	return &znode->as_generic;
