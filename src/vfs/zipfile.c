@@ -31,12 +31,39 @@ static void vfs_zipfile_repr(VFSNode *node, StringBuffer *buf) {
 	vfs_node_repr(znode->source, false, buf);
 }
 
+static int zip_name_cmp(const char *a, size_t a_len, const char *b, size_t b_len) {
+	/*
+	 * Custom name sorting function that prioritizes path separators, so that a directory's contents always immediately
+	 * follow the directory itself. The listing code relies on this property.
+	 *
+	 * Fixes some edge cases like gfx/hud (directory) followed by gfx/hud.basis (file)
+	 */
+
+	for(size_t i = 0; i < min(a_len, b_len); ++i) {
+		uchar ca = a[i], cb = b[i];   // strcmp treats chars as unsigned
+
+		if(ca == cb) {
+			continue;
+		}
+
+		if(ca == '/') {
+			return -1;
+		}
+
+		if(cb == '/') {
+			return 1;
+		}
+
+		return (int)ca - (int)cb;
+	}
+
+	return (a_len > b_len) - (a_len < b_len);
+}
+
 static int zip_entry_name_cmp(const void *a, const void *b) {
 	const ZipEntry *e0 = a;
 	const ZipEntry *e1 = b;
-	auto common_len = min(e0->name_len, e1->name_len);
-	int r = strncmp(e0->name, e1->name, common_len);
-	return r ?: (int)e0->name_len - (int)e1->name_len;
+	return zip_name_cmp(e0->name, e0->name_len, e1->name, e1->name_len);
 }
 
 typedef struct ZipSearchKey {
@@ -47,9 +74,7 @@ typedef struct ZipSearchKey {
 static int zip_entry_name_search_cmp(const void *a, const void *b) {
 	const ZipSearchKey *key = a;
 	const ZipEntry *e = b;
-	auto common_len = min(key->len, e->name_len);
-	int r = strncmp(key->name, e->name, common_len);
-	return r ?: (int)key->len - (int)e->name_len;
+	return zip_name_cmp(key->name, key->len, e->name, e->name_len);
 }
 
 static const ZipEntry *vfs_zipfile_find_entry(VFSZipNode *znode, const char *name, size_t name_len) {
