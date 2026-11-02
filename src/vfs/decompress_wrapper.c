@@ -145,6 +145,7 @@ static const char *_vfs_decomp_iter(VFSNode *wrapped, struct decomp_iter_data *i
 		if(i->clear_buffer) {
 			i->temp_buf.start[0] = 0;
 			strbuf_clear(&i->temp_buf);
+			i->clear_buffer = false;
 		} else {
 			i->clear_buffer = true;
 			return i->temp_buf.start;
