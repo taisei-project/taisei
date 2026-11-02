@@ -1341,7 +1341,7 @@ void boss_death(Boss **boss) {
 
 	if(!a) {
 		// XXX: why does this happen?
-		log_debug("FIXME: boss had no final attacK?");
+		log_debug("FIXME: boss had no final attack?");
 	} else {
 		fled = a->type == AT_Move;
 	}
