@@ -153,7 +153,7 @@ char *vfs_syspath_normalize_inplace(char *path) {
 char *vfs_syspath_normalize_buffer(const char *path, StringBuffer *buf) {
 	char temp[strlen(path)+1];
 	vfs_syspath_normalize(temp, sizeof(temp), path);
-	int n = strbuf_cat(buf, path);
+	int n = strbuf_cat(buf, temp);
 	return buf->pos - n;
 }
 
