@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-// XXX: these headers trips some of these deprecation warnings; include early as a workaround
+// XXX: these headers trip some of these deprecation warnings; include early as a workaround
 #include <stdio.h>
 #include <SDL3/SDL_cpuinfo.h>
 
