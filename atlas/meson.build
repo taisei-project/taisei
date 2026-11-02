@@ -44,8 +44,8 @@ atlas_common_args = [
 atlases = [
     ['common',      []],
     ['common_ui',   []],
-    ['huge',        []],
     ['portraits',   ['--tsatlas-sort=perimeter']],
+    ['special',     []],
 ]
 
 atlas_profiles = [
