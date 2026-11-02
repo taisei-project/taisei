@@ -9,6 +9,7 @@
 #include "enemy.h"
 
 #include "audio/audio.h"
+#include "common_tasks.h"
 #include "entity.h"
 #include "global.h"
 #include "list.h"
@@ -82,6 +83,18 @@ static inline void enemy_update(Enemy *e, int t) {
 	e->dir = re(v) < 0;
 }
 
+TASK(hitbox_warning_helper, { BoxedEnemy e; }) {
+	auto e = TASK_BIND(ARGS.e);
+
+	real radius = 0;
+
+	INVOKE_SUBTASK(common_hitbox_warning, &e->pos, &radius);
+
+	for(;;YIELD) {
+		radius = enemy_get_hurt_radius(e);
+	}
+}
+
 Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
@@ -107,6 +120,8 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp) {
 	COEVENT_INIT_ARRAY(e->events);
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_TYPE_ID(Enemy));
+
+	INVOKE_TASK(hitbox_warning_helper, ENT_BOX(e));
 
 	return e;
 }
@@ -316,11 +331,12 @@ void enemies_preload(ResourceGroup *rg) {
 	NULL);
 
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
+		"enemy/swirl",
 		"fairy_circle",
-		"fairy_circle_red",
 		"fairy_circle_big",
 		"fairy_circle_big_and_mean",
-		"enemy/swirl",
+		"fairy_circle_red",
+		"part/warning",
 	NULL);
 
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,

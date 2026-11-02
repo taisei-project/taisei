@@ -9,6 +9,7 @@
 #include "boss.h"
 
 #include "audio/audio.h"
+#include "common_tasks.h"
 #include "dynstage.h"
 #include "entity.h"
 #include "global.h"
@@ -54,6 +55,22 @@ TASK(boss_damage_to_power, { BoxedBoss boss; }) {
 	}
 }
 
+TASK(hitbox_warning_helper, { BoxedBoss boss; }) {
+	auto boss = TASK_BIND(ARGS.boss);
+
+	real radius = 0;
+
+	INVOKE_SUBTASK(common_hitbox_warning, &boss->pos, &radius);
+
+	for(;;YIELD) {
+		if(boss_is_player_collision_active(boss)) {
+			radius = BOSS_HURT_RADIUS;
+		} else {
+			radius = 0;
+		}
+	}
+}
+
 Boss *create_boss(const char *name, char *ani, cmplx pos) {
 	auto boss = STAGE_ACQUIRE_OBJ(Boss);
 
@@ -81,6 +98,7 @@ Boss *create_boss(const char *name, char *ani, cmplx pos) {
 	COEVENT_INIT_ARRAY(boss->events);
 	INVOKE_TASK(boss_particles, ENT_BOX(boss));
 	INVOKE_TASK(boss_damage_to_power, ENT_BOX(boss));
+	INVOKE_TASK(hitbox_warning_helper, ENT_BOX(boss));
 
 	return boss;
 }
@@ -1640,6 +1658,7 @@ void boss_preload(ResourceGroup *rg) {
 		"part/arc",
 		"part/blast_huge_rays",
 		"part/boss_shadow",
+		"part/warning",
 		"spell",
 	NULL);
 
