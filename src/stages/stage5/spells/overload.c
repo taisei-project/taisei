@@ -202,9 +202,7 @@ static void explode_circuit(Node *head) {
 
 		Laser *l = ENT_UNBOX(head->power_laser);
 		if(l != NULL) {
-			// FIXME why does this not work?
-			// clear_laser(l, CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
-			l->deathtime = global.frames - l->birthtime + 20;
+			clear_laser(l, CLEAR_HAZARDS_LASERS | CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
 		}
 
 		stage_shake_view(16);
