@@ -25,26 +25,6 @@ VFS_NODE_TYPE(VFSSysPathNode, {
 
 char *vfs_syspath_separators = "\\/";
 
-static char *WIN_StringToUTF8(WCHAR *s) {
-	size_t slen = SDL_wcslen(s);
-	size_t utf16_size = (slen + 1) * sizeof(WCHAR);
-	size_t utf8_size = slen + 1;
-	char *temp = SDL_iconv_string("UTF-8", "UTF-16LE", (char*)s, utf16_size);
-	char *buf = memdup(temp, utf8_size);
-	SDL_free(temp);
-	return buf;
-}
-
-static WCHAR *WIN_UTF8ToString(char *s) {
-	size_t slen = strlen(s);
-	size_t utf16_size = (slen + 1) * sizeof(WCHAR);
-	size_t utf8_size = slen + 1;
-	WCHAR *temp = (void*)SDL_iconv_string("UTF-16LE", "UTF-8", s, utf8_size);
-	WCHAR *buf = memdup(temp, utf16_size);
-	SDL_free(temp);
-	return buf;
-}
-
 static VFSNode *vfs_syspath_create_internal(char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
@@ -68,10 +48,17 @@ static void _vfs_set_error_win32(const char *file, int line) {
 		0, NULL
 	);
 
-	char *errstr = WIN_StringToUTF8(buf);
-	LocalFree(buf);
-	vfs_set_error("Win32 error %lu: %s [%s:%i]", err, errstr, file, line);
-	mem_free(errstr);
+	StringBuffer errstr = { acquire_scratch_arena() };
+
+	if(buf) {
+		utf16_to_utf8(SDL_wcslen(buf), buf, &errstr);
+		LocalFree(buf);
+	} else {
+		strbuf_cat(&errstr, "windows sucks");
+	}
+
+	vfs_set_error("Win32 error %lu: %s [%s:%i]", err, errstr.start, file, line);
+	release_scratch_arena(errstr.arena);
 }
 
 #define vfs_set_error_win32() _vfs_set_error_win32(_TAISEI_SRC_FILE, __LINE__)
@@ -128,61 +115,49 @@ static VFSNode *vfs_syspath_locate(VFSNode *node, const char *path) {
 
 typedef struct VFSWin32IterData {
 	HANDLE search_handle;
-	char *last_result;
+	StringBuffer name_buf;
 } VFSWin32IterData;
 
 static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	VFSWin32IterData *idata;
+	VFSWin32IterData *idata = *opaque;
 	WIN32_FIND_DATA fdata;
-	HANDLE search_handle;
 
-	if(!*opaque) {
+	if(!idata) {
 		StringBuffer buf = { acquire_scratch_arena() };
 		strbuf_cat(&buf, pnode->path);
 		strbuf_cat(&buf, "\\*.*");
-		wchar_t *wpattern = WIN_UTF8ToString(buf.start);
+		const char *pattern = strbuf_commit(&buf);
+		size_t wpattern_size = strlen(pattern) + 1;
+		wchar_t *wpattern = ARENA_ALLOC_ARRAY(buf.arena, wpattern_size, wchar_t);
+		utf8_to_utf16(pattern, wpattern_size, wpattern);
+		HANDLE search_handle = FindFirstFile(wpattern, &fdata);
 		release_scratch_arena(buf.arena);
-		search_handle = FindFirstFile(wpattern, &fdata);
-		mem_free(wpattern);
 
 		if(search_handle == INVALID_HANDLE_VALUE) {
 			vfs_set_error_win32();
 			return NULL;
 		}
 
-		idata = ALLOC(VFSWin32IterData, {
+		*opaque = idata = ALLOC(VFSWin32IterData, {
 			.search_handle = search_handle,
-			.last_result = WIN_StringToUTF8(fdata.cFileName),
+			.name_buf.arena = acquire_scratch_arena(),
 		});
-		*opaque = idata;
-
-		if(!strcmp(idata->last_result, ".") || !strcmp(idata->last_result, "..")) {
-			return vfs_syspath_iter(node, opaque);
+	} else if(!FindNextFile(idata->search_handle, &fdata)) {
+		if(GetLastError() != ERROR_NO_MORE_FILES) {
+			vfs_set_error_win32();
 		}
 
-		return idata->last_result;
+		return NULL;
 	}
 
-	idata = *opaque;
-	mem_free(idata->last_result);
-	idata->last_result = NULL;
-
-	if(FindNextFile(idata->search_handle, &fdata)) {
-		idata->last_result = WIN_StringToUTF8(fdata.cFileName);
-
-		if(!strcmp(idata->last_result, ".") || !strcmp(idata->last_result, "..")) {
-			return vfs_syspath_iter(node, opaque);
-		}
-
-		return idata->last_result;
+	if(!SDL_wcscmp(fdata.cFileName, L".") || !SDL_wcscmp(fdata.cFileName, L"..")) {
+		return vfs_syspath_iter(node, opaque);
 	}
 
-	if(GetLastError() != ERROR_NO_MORE_FILES) {
-		vfs_set_error_win32();
-	}
-
-	return NULL;
+	strbuf_clear(&idata->name_buf);
+	utf16_to_utf8(SDL_wcslen(fdata.cFileName), fdata.cFileName, &idata->name_buf);
+	return idata->name_buf.start;
 }
 
 static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
@@ -193,7 +168,7 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 			vfs_set_error_win32();
 		}
 
-		mem_free(idata->last_result);
+		release_scratch_arena(idata->name_buf.arena);
 		mem_free(idata);
 	}
 }
@@ -220,8 +195,10 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	strbuf_cat(&buf, pnode->path);
 	strbuf_cat(&buf, "\\");
 	strbuf_cat(&buf, subdir);
-	char *p = buf.start;
-	wchar_t *wp = WIN_UTF8ToString(p);
+	char *p = strbuf_commit(&buf);
+	size_t wp_size = strlen(p) + 1;
+	wchar_t *wp = ARENA_ALLOC_ARRAY(buf.arena, wp_size, wchar_t);
+	utf8_to_utf16(p, wp_size, wp);
 	bool ok = CreateDirectory(wp, NULL);
 	DWORD err = GetLastError();
 
@@ -241,7 +218,6 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		vfs_set_error("Can't create directory %s (win32 error: %lu)", p, err);
 	}
 
-	mem_free(wp);
 	release_scratch_arena(buf.arena);
 	return ok;
 }
@@ -464,9 +440,14 @@ static VFSNode *vfs_syspath_create_internal(char *path) {
 		return NULL;
 	}
 
+	// UTF-16 never needs more code units than UTF-8 needs bytes
+	size_t wpath_size = strlen(path) + 1;
+	wchar_t *wpath = ALLOC_ARRAY(wpath_size, wchar_t);
+	utf8_to_utf16(path, wpath_size, wpath);
+
 	return &VFS_ALLOC(VFSSysPathNode, {
 		.path = path,
-		.wpath = WIN_UTF8ToString(path),
+		.wpath = wpath,
 	})->as_generic;
 }
 
