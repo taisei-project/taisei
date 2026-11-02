@@ -126,9 +126,14 @@ static const char *vfs_union_iter(VFSNode *node, void **opaque) {
 }
 
 static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
 	VFSUnionIterData *i = *opaque;
 
 	if(i) {
+		if(i->idx >= 0) {
+			vfs_node_iter_stop(dynarray_get(&unode->members, i->idx), &i->opaque);
+		}
+
 		ht_destroy(&i->visited);
 		mem_free(i);
 	}
