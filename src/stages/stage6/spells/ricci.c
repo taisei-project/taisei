@@ -9,7 +9,7 @@
 #include "spells.h"
 
 /* !!! You are entering Akari danmaku code !!! (rejuvenated by lao) */
-// FIXME: This awful timing system is an relic of a shameful coroutine-less past; rewrite this.
+// FIXME: This awful timing system is a relic of a shameful coroutine-less past; rewrite this.
 #define SAFE_RADIUS_DELAY 300
 #define SAFE_RADIUS_MIN 60
 #define SAFE_RADIUS_MAX 150
