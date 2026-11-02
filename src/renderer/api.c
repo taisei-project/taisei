@@ -273,7 +273,7 @@ VertexAttribFormat* r_vertex_attrib_format_interleaved(
 // For now though, enjoy this degeneracy since the internal backend interface is
 // nearly identical to the public API currently.
 //
-// A more realisic TODO would be to put assertions/argument validation here.
+// A more realistic TODO would be to put assertions/argument validation here.
 
 SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
 	return B.create_window(title, x, y, w, h, flags);

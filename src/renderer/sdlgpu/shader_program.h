@@ -32,7 +32,7 @@ struct ShaderProgram {
 struct Uniform {
 	ShaderProgram *shader;
 
-	// XXX: We have have to set uniforms separately per each stage.
+	// XXX: We have to set uniforms separately per each stage.
 	// We could've stored pointers to the relevant ShaderObjectUniform pointers here directly,
 	// but that would required special handling in case of a dynamic shader reload.
 	// Make it a stupid wrapper around the string key for now.
