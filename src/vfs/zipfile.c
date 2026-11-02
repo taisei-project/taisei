@@ -250,6 +250,7 @@ VFSNode *vfs_zipfile_create(VFSNode *source) {
 
 	if(!zipfile_parse(&znode->ctx, vfs_zipfile_parse_callback, &ctx)) {
 		strbuf_printf(&buf, "%s: Failed to parse ZIP file", znode->ctx.log_prefix);
+		vfs_incref(source);
 		vfs_decref(znode);
 		vfs_set_error("%s", buf.start);
 		release_scratch_arena(buf.arena);

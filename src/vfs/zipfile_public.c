@@ -25,11 +25,5 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
 		return false;
 	}
 
-	if(!vfs_mount(vfs_root, mountpoint, znode)) {
-		vfs_decref(znode);
-		vfs_decref(node);
-		return false;
-	}
-
-	return true;
+	return vfs_mount_or_decref(vfs_root, mountpoint, znode);
 }
