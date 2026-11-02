@@ -60,7 +60,6 @@ void stage1_bg_init_fullstage(void) {
 	stage_3d_context.cam.pos[2] = 700;
 	stage_3d_context.cam.vel[1] = 8;
 
-	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
 	stage_3d_context.cam.near = 500;
 	stage_3d_context.cam.far = 10000;
 
