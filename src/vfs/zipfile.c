@@ -138,7 +138,7 @@ static const char *vfs_zipfile_iter(VFSNode *node, void **opaque) {
 			return NULL;
 		}
 
-		uint32_t buf_size = znode->max_name_len;
+		uint32_t buf_size = znode->max_name_len + 1;
 		*opaque = idata = ALLOC_FLEX(VFSZipFileIterData, buf_size);
 		idata->entry = znode->entries;
 		idata->prefix = "";
