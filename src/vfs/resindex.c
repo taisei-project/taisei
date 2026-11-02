@@ -33,10 +33,10 @@ static const RIdxFileEntry ridx_files[] = {
 };
 
 #define RIDX_IS_DIR(p) \
-	((RIdxDirEntry*)(p) >= ridx_dirs && (RIdxDirEntry*)(p) <= ridx_dirs + ARRAY_SIZE(ridx_dirs))
+	((RIdxDirEntry*)(p) >= ridx_dirs && (RIdxDirEntry*)(p) < ridx_dirs + ARRAY_SIZE(ridx_dirs))
 
 #define RIDX_IS_FILE(p) \
-	((RIdxFileEntry*)(p) >= ridx_files && (RIdxFileEntry*)(p) <= ridx_files + ARRAY_SIZE(ridx_files))
+	((RIdxFileEntry*)(p) >= ridx_files && (RIdxFileEntry*)(p) < ridx_files + ARRAY_SIZE(ridx_files))
 
 #define RIDX_AS_DIR(p) ({ \
 	assert(RIDX_IS_DIR(p)); \
