@@ -272,7 +272,8 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 
 	SpriteParams sp = {
 		.sprite = res_sprite("part/smoothdot"),
-		.shader = res_shader("sprite_default"),
+		.shader = res_shader("sprite_particle"),
+		.shader_params.vec = { 1.0f },
 		.color = RGB(1, 1, 1),
 	};
 

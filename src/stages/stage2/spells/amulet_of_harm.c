@@ -20,6 +20,7 @@ TASK(amulet_draw, { BoxedEnemy e; }) {
 
 	auto spr_circle = res_sprite("fairy_circle_big");
 	auto spr_swirl = res_sprite("enemy/swirl");
+	auto shader = res_shader("sprite_particle");
 
 	for(int t = 0;; ++t) {
 		WAIT_EVENT_OR_DIE(&e->events.draw);
@@ -29,6 +30,8 @@ TASK(amulet_draw, { BoxedEnemy e; }) {
 		r_draw_sprite(&(SpriteParams) {
 			.color = RGBA(2, 1, 1, 0),
 			.sprite = spr_circle,
+			.shader = shader,
+			.shader_params.vec = { 1.0f },
 			.pos.as_cmplx = p,
 			.rotation.angle = t * 5 * DEG2RAD,
 		});
@@ -36,6 +39,8 @@ TASK(amulet_draw, { BoxedEnemy e; }) {
 		r_draw_sprite(&(SpriteParams) {
 			.color = RGBA(1, 1, 1, 1),
 			.sprite = spr_swirl,
+			.shader = shader,
+			.shader_params.vec = { 1.0f },
 			.pos.as_cmplx = p,
 			.rotation.angle = t * -10 * DEG2RAD,
 		});

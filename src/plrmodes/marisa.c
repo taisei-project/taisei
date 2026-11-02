@@ -85,7 +85,8 @@ static void draw_masterspark_ring(int t, float width) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = res_sprite("masterspark_ring"),
-		.shader = res_shader("sprite_default"),
+		.shader = res_shader("sprite_particle"),
+		.shader_params.vec = { 1.0f },
 		.pos = { 0, -t*t*0.4 + 2 },
 		.color = RGBA(0.5, 0.5, 0.5, 0.0),
 		.scale = { .x = sx, .y = sy * sy * 1.5 },

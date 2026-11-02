@@ -312,6 +312,8 @@ static void player_draw_indicators(EntityInterface *ent) {
 
 		SpriteParams sp = {
 			.sprite = indicators->sprites.focus,
+			.shader = res_shader("sprite_particle"),
+			.shader_params.vec = { 1.0f },
 			.rotation.angle = rot_speed,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, focus_opacity),
 			.pos.as_cmplx = pos,

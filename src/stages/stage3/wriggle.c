@@ -41,6 +41,8 @@ static void wriggle_slave_draw(EntityInterface *e) {
 	r_draw_sprite(&(SpriteParams) {
 		.pos.as_cmplx = slave->pos,
 		.sprite = slave->sprites.circle,
+		.shader = res_shader("sprite_particle"),
+		.shader_params.vec = { 1.0f },
 		.rotation.angle = DEG2RAD * 7 * time,
 		.scale.as_cmplx = slave->scale,
 		.color = slave->color,

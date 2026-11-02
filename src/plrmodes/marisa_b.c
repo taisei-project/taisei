@@ -288,6 +288,8 @@ static void marisa_star_draw_orbiter(EntityInterface *ent) {
 		.color = color_mul_scalar(orbiter->circle_color, ctrl->bomb.beams_alpha),
 		.rotation.angle = global.frames * 10 * DEG2RAD,
 		.sprite = ctrl->sprites.fairy_circle,
+		.shader = res_shader("sprite_particle"),
+		.shader_params.vec = { 1.0f },
 	};
 
 	r_draw_sprite(&sp);

@@ -300,13 +300,14 @@ static void baryons_bg_fill(Stage6DrawData *draw_data, int t, EllyBaryons *baryo
 	});
 
 	if(baryons) {
-		ShaderProgram *shader = res_shader("sprite_default");
+		ShaderProgram *shader = res_shader("sprite_particle");
 		Sprite *sprite = res_sprite("part/myon");
 
 		for(int i = 0; i < NUM_BARYONS; ++i) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite = sprite,
 				.shader = shader,
+				.shader_params.vec = { 1.0f },
 				.color = RGBA(1, 0.2, 1.0, 0.7),
 				.pos.as_cmplx = baryons->poss[i], //+10*frand()*cexp(2.0*I*M_PI*frand());
 				.rotation.angle = (i - t) / 16.0, // frand()*M_PI*2,

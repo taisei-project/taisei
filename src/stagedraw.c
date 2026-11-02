@@ -572,7 +572,8 @@ static void draw_spellbg(int t) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = res_sprite("boss_spellcircle0"),
-		.shader = res_shader("sprite_default"),
+		.shader = res_shader("sprite_particle"),
+		.shader_params.vec = { 1.0f },
 		.pos = { re(b->pos), im(b->pos) },
 		.rotation.angle = global.frames * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
