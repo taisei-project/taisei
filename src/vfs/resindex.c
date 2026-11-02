@@ -232,8 +232,8 @@ static SDL_IOStream *vfs_resindex_open(VFSNode *node, VFSOpenMode mode) {
 
 	auto rinode = VFS_NODE_CAST(VFSResIndexNode, node);
 
-	if(RIDX_IS_DIR(rinode->root_node)) {
-		vfs_set_error("Is a directory: %s", RIDX_AS_DIR(rinode->root_node)->name);
+	if(RIDX_IS_DIR(rinode->index_entry)) {
+		vfs_set_error("Is a directory: %s", ridx_node_name(rinode));
 		return NULL;
 	}
 
