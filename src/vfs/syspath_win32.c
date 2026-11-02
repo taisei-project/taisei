@@ -418,7 +418,7 @@ static bool is_absolute(const char *path, size_t len) {
 	// starts with drive letter or path separator?
 	return
 		(len >= 1 && strchr(vfs_syspath_separators, path[0])) ||
-		(len >= 2 && path[1] == ':' && isalpha(path[0]));
+		(len >= 2 && path[1] == ':' && isalpha((uchar)path[0]));
 }
 
 void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child) {
@@ -444,7 +444,7 @@ void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char 
 static bool vfs_syspath_validate(char *path) {
 	char *c = strchr(path, ':');
 
-	if(c && c == (path + 1) && isalpha(*path)) {
+	if(c && c == (path + 1) && isalpha((uchar)*path)) {
 		// drive letters are OK
 		c = strchr(c + 1, ':');
 	}
