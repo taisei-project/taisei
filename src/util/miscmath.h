@@ -98,6 +98,8 @@ uint digitcnt(uint64_t x) attr_const;
 uint64_t uceildiv64(uint64_t x, uint64_t y) attr_const;
 int popcnt32(uint32_t) attr_const;
 int popcnt64(uint64_t) attr_const;
+int log2_u32(uint32_t) attr_const;
+int log2_u64(uint64_t) attr_const;
 
 // Compute (a*b)/c with 128-bit intermediate precision.
 // If the final result would not fit into 64 bits, the return value is undefined.

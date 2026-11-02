@@ -507,3 +507,11 @@ int popcnt64(uint64_t x) {
 	return (x * 0x0101010101010101) >> 56;
 	#endif
 }
+
+int log2_u32(uint32_t x) {
+	return x > 0 ? 31 - __builtin_clz(x) : -1;
+}
+
+int log2_u64(uint64_t x) {
+	return x > 0 ? 63 - __builtin_clzll(x) : -1;
+}
