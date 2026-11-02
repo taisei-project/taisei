@@ -320,7 +320,7 @@ DEFINE_EXTERN_TASK(common_easing_animate) {
 	for(int t = 1; t <= ARGS.duration; t++) {
 		YIELD;
 		*ARGS.value = from + scale * ARGS.ease(t / ftime);
-    }
+	}
 }
 
 DEFINE_EXTERN_TASK(common_easing_animate_vec3) {
@@ -380,9 +380,69 @@ DEFINE_EXTERN_TASK(common_easing_animated) {
 	for(int t = 1; t <= ARGS.duration; t++) {
 		YIELD;
 		*ARGS.value = from + scale * ARGS.ease(t / ftime);
-    }
+	}
 }
 
 DEFINE_EXTERN_TASK(common_play_sfx) {
 	play_sfx(ARGS.name);
+}
+
+DEFINE_EXTERN_TASK(common_hitbox_warning) {
+	NOT_NULL(ARGS.pos);
+	NOT_NULL(ARGS.radius);
+
+	if(ARGS.bind_to_entity.ent) {
+		TASK_BIND(ARGS.bind_to_entity);
+	}
+
+	const real threshold = 32;
+	float alpha = 0.0f;
+	BoxedProjectile visual_box = {};
+
+	auto sprite = res_sprite("part/warning");
+	auto shader = res_shader("sprite_particle");
+	real scale = 2.0 / sprite->w;
+
+	for(;;YIELD) {
+		if(*ARGS.radius > 0) {
+			real maxdist = *ARGS.radius + threshold;
+			real dist2 = cabs2(*ARGS.pos - global.plr.pos);
+
+			if(dist2 < maxdist * maxdist) {
+				fapproach_asymptotic_p(&alpha, 1.0f, 0.15f, 1e-4);
+			} else {
+				fapproach_asymptotic_p(&alpha, 0.0f, 0.05f, 1e-4);
+			}
+		} else {
+			fapproach_asymptotic_p(&alpha, 0.0f, 0.05f, 1e-4);
+		}
+
+		auto visual = ENT_UNBOX(visual_box);
+
+		if(alpha > 0.0f) {
+			if(!visual) {
+				visual = PARTICLE(
+					.sprite_ptr = sprite,
+					.shader_ptr = shader,
+					.layer = LAYER_PLAYER_FOCUS - 1,
+					.color = RGBA(2, 2, 2, 1),
+					.flags =
+						PFLAG_MANUALANGLE |
+						PFLAG_REQUIREDPARTICLE |
+						PFLAG_NOMOVE |
+						PFLAG_MANUALANGLE |
+						PFLAG_NOREFLECT,
+					.angle = -0.5 * M_PI,
+				);
+				visual_box = ENT_BOX(visual);
+			}
+
+			visual->timeout = 2;
+			visual->opacity = alpha * alpha * 0.75f;
+			visual->pos = *ARGS.pos;
+			visual->scale = (1 + I) * (scale * *ARGS.radius) * (1.0 + 0.5 * (1 - alpha));
+		} else if(visual) {
+			kill_projectile(visual);
+		}
+	}
 }

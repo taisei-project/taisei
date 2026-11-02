@@ -166,6 +166,15 @@ DECLARE_EXTERN_TASK(
 
 DECLARE_EXTERN_TASK(common_play_sfx, { const char *name; });
 
+DECLARE_EXTERN_TASK(
+	common_hitbox_warning,
+	{
+		cmplx *pos;
+		real *radius;
+		BoxedEntity bind_to_entity;
+	}
+);
+
 // TODO: move this elsewhere?
 
 typedef struct RadialLoop {
