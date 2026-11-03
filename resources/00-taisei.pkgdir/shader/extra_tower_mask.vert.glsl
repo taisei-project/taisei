@@ -1,11 +1,17 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-#include "interface/tower_light.glslh"
+#include "lib/util.glslh"
+#include "interface/extra_tower_mask.glslh"
 
 void main(void) {
-	gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(position, 1.0);
-	texCoord = (r_textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
-	normal = normalIn;
-	l = lightvec - (r_modelViewMatrix*vec4(position,1.0)).xyz;
+	vec4 pos4 = vec4(position, 1.0);
+	vec4 camPos4 = r_modelViewMatrix * pos4;
+	camPos = camPos4.xyz;
+	worldPos = (world_from_model * pos4).xyz;
+
+	gl_Position = r_projectionMatrix * camPos4;
+	texCoord = texCoordRawIn;
+
+	modelPos = position;
 }

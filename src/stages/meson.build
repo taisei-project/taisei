@@ -10,16 +10,13 @@ stages = [
     'stage4',
     'stage5',
     'stage6',
+    'stagex',
 ]
 
 foreach stage : stages
     subdir(stage)
     stages_src += get_variable('@0@_src'.format(stage))
 endforeach
-
-stages_src += files(
-    'extra.c',  # stub
-)
 
 if use_testing_stages
     stages_src += files(
