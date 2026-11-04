@@ -980,7 +980,7 @@ static inline void end_viewport_shake(void) {
  * Small helpers for entities draw code that might want to suppress viewport shake temporarily.
  * This is mostly useful when multiple framebuffers are involved.
  */
-static int shake_suppressed = 0;
+attr_unused static int shake_suppressed = 0;
 
 void stage_draw_begin_noshake(void) {
 	assert(!shake_suppressed);
