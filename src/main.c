@@ -81,10 +81,10 @@ static void taisei_shutdown(void) {
 
 	watchdog_shutdown();
 	demoplayer_shutdown();
-	progress_unload();
 	stage_objpools_shutdown();
 	gamemode_shutdown();
 	taskmgr_global_shutdown();
+	progress_unload();
 	audio_shutdown();
 	r_models_shutdown();
 	r_sprite_batch_shutdown();
