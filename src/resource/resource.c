@@ -1241,7 +1241,16 @@ static InternalResLoadState *make_persistent_loadstate(InternalResLoadState *st_
 
 static void load_resource_async(InternalResLoadState *st_transient) {
 	InternalResLoadState *st = make_persistent_loadstate(st_transient);
-	st->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, st });
+	InternalResource *ires = st->ires;
+	Task *task = taskmgr_global_submit((TaskParams) { load_resource_async_task, st });
+
+	if(ires->load == st) {
+		st->async_task = task;
+	} else {
+		// Task completed synchronously and free'd the load state.
+		// This can happen on threadless builds (e.g. emscripten)
+		task_detach(task);
+	}
 }
 
 attr_nonnull(1)
