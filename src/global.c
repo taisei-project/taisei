@@ -92,15 +92,19 @@ static void *sync_task(void *arg) {
 	return NULL;
 }
 
-void taisei_commit_persistent_data(void) {
+void taisei_commit_persistent_data(bool async) {
 	if(!SDL_CompareAndSwapAtomicInt(&syncing_data, 0, 1)) {
 		log_warn("Commit already in progress");
 		return;
 	}
 
-	log_debug("Begin committing persistent data");
+	if(async) {
+		log_debug("Begin committing persistent data");
 
-	task_detach(taskmgr_global_submit((TaskParams) {
-		.callback = sync_task,
-	}));
+		task_detach(taskmgr_global_submit((TaskParams) {
+			.callback = sync_task,
+		}));
+	} else {
+		sync_task(NULL);
+	}
 }

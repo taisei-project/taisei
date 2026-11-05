@@ -68,8 +68,7 @@ static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
 	if(!global.is_replay_verification) {
-		config_save();
-		progress_save();
+		taisei_commit_persistent_data(false);
 	}
 
 	i18n_shutdown();
@@ -505,7 +504,7 @@ static void main_mainmenu(CallChainResult ccr) {
 	MainContext *ctx = ccr.ctx;
 
 	if(ctx->commit_persistent_data) {
-		taisei_commit_persistent_data();
+		taisei_commit_persistent_data(true);
 	}
 
 	demoplayer_init();

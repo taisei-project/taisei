@@ -23,7 +23,7 @@ static void on_leave_options(CallChainResult ccr) {
 	MenuData *m = ccr.result;
 
 	if(m && m->state == MS_Dead) {
-		taisei_commit_persistent_data();
+		taisei_commit_persistent_data(true);
 	}
 }
 

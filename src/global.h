@@ -109,7 +109,7 @@ void init_global(CLIAction *cli);
 void taisei_quit(void);
 bool taisei_quit_requested(void);
 bool taisei_is_quit_hidden(void);
-void taisei_commit_persistent_data(void);
+void taisei_commit_persistent_data(bool async);
 
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key);

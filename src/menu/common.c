@@ -135,7 +135,7 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 		return;
 	}
 
-	taisei_commit_persistent_data();
+	taisei_commit_persistent_data(true);
 	kill_aux_menus(ctx);
 	reset_game(ctx);
 	enter_stage_now(ctx);

@@ -1330,7 +1330,7 @@ void stage_end_loop(void *ctx) {
 	rng_make_active(&global.rand_visual);
 	stop_all_sfx();
 
-	taisei_commit_persistent_data();
+	taisei_commit_persistent_data(true);
 	skipstate_shutdown();
 
 	if(taisei_quit_requested()) {
