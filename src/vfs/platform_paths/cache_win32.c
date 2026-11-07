@@ -9,6 +9,10 @@
 #include "platform_paths.h"
 #include "../public.h"
 
+#include "memory/scratch.h"
+#include "util/strbuf.h"
+#include "util/stringops.h"
+
 typedef struct tagLOGFONTW LOGFONTW;  /* broken piece of shit garbage windows headers */
 
 #include <shlobj.h>
@@ -25,14 +29,11 @@ const char *vfs_platformpath_cache(void) {
 			SUCCEEDED(SHGetKnownFolderPath(&FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &w_localappdata)) &&
 			w_localappdata != NULL
 		) {
-			char *localappdata = SDL_iconv_string(
-				"UTF-8", "UTF-16LE", (char*)w_localappdata, (SDL_wcslen(w_localappdata) + 1) * sizeof(WCHAR));
+			StringBuffer buf = { acquire_scratch_arena() };
+			utf16_to_utf8(SDL_wcslen(w_localappdata), w_localappdata, &buf);
 			CoTaskMemFree(w_localappdata);
-
-			if(localappdata) {
-				cached = vfs_syspath_join_alloc(localappdata, "taisei\\cache");
-				SDL_free(localappdata);
-			}
+			cached = vfs_syspath_join_alloc(buf.start, "taisei\\cache");
+			release_scratch_arena(buf.arena);
 		}
 	}
 
