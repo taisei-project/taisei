@@ -26,10 +26,12 @@
 	char _var_name[sizeof(CACHE_PATH) + strlen(_content_id) + 1]; \
 	snprintf(_var_name, sizeof(_var_name), CACHE_PATH "/%s", (_content_id))
 
+#define MAKE_FETCH_URL(_var_name, _content_id) \
+	char _var_name[sizeof(TAISEI_BUILDCONF_DATA_PATH) + strlen(_content_id) + 1]; \
+	snprintf(_var_name, sizeof(_var_name), TAISEI_BUILDCONF_DATA_PATH "/%s", (_content_id))
+
 #define FETCH_CONTENT_ID(_fetch) \
 	((_fetch)->url + sizeof(TAISEI_BUILDCONF_DATA_PATH))
-
-#define PROP_FETCHIO_POINTER "taisei.fetchio.ptr"
 
 typedef struct FetchFSContext {
 	VFSResIndexFSContext resindex_ctx;
@@ -37,7 +39,7 @@ typedef struct FetchFSContext {
 	uint prefetch_iter;
 } FetchFSContext;
 
-static emscripten_fetch_t *fetch_begin_request(FetchFSContext *ctx, const char *content_id);
+static void fetch_begin_request(FetchFSContext *ctx, const char *url, const char *content_id);
 
 EM_JS(void, update_dl_status, (int done, int total), {
 	Module["setStatus"](
@@ -63,7 +65,8 @@ static void prefetch_next(FetchFSContext *ctx) {
 			continue;
 		}
 
-		fetch_begin_request(ctx, content_id);
+		MAKE_FETCH_URL(url, content_id);
+		fetch_begin_request(ctx, url, content_id);
 	}
 }
 
@@ -75,33 +78,30 @@ static void fetch_finalize(emscripten_fetch_t *fetch) {
 }
 
 static void fetch_onsuccess(emscripten_fetch_t *fetch) {
-	fetch_finalize(fetch);
-
 	MAKE_CACHED_PATH(path, FETCH_CONTENT_ID(fetch));
 
-	SDL_IOStream *rw = SDL_IOFromFile(path, "w");
-	SDL_WriteIO(rw, fetch->data, fetch->numBytes);
-	SDL_CloseIO(rw);
+	if(!SDL_SaveFile(path, fetch->data, fetch->numBytes)) {
+		log_sdl_error(LOG_ERROR, "SDL_SaveFile");
+	} else {
+		log_info("Cached %s as %s", fetch->url, path);
+	}
 
-	log_info("Cached %s as %s", fetch->url, path);
+	fetch_finalize(fetch);
+	emscripten_fetch_close(fetch);
 }
 
 static void fetch_onerror(emscripten_fetch_t *fetch) {
-	log_error(
-		"Failed to download %s (status %i: %s)",
+	log_error("Failed to download %s (status %i: %s)",
 		fetch->url, fetch->status, fetch->statusText
 	);
+
 	fetch_finalize(fetch);
+	emscripten_fetch_close(fetch);
 }
 
-static emscripten_fetch_t *fetch_begin_request(FetchFSContext *ctx, const char *content_id) {
-	emscripten_fetch_t *fetch;
-
-	char url[sizeof(TAISEI_BUILDCONF_DATA_PATH) + strlen(content_id) + 1];
-	snprintf(url, sizeof(url), TAISEI_BUILDCONF_DATA_PATH "/%s", content_id);
-
-	if(ht_lookup(&ctx->requests, url, (void**)&fetch)) {
-		return fetch;
+static void fetch_begin_request(FetchFSContext *ctx, const char *url, const char *content_id) {
+	if(ht_lookup(&ctx->requests, url, NULL)) {
+		return;
 	}
 
 	emscripten_fetch_attr_t attr;
@@ -114,53 +114,32 @@ static emscripten_fetch_t *fetch_begin_request(FetchFSContext *ctx, const char *
 	attr.onsuccess = fetch_onsuccess;
 	attr.onerror = fetch_onerror;
 
-	fetch = emscripten_fetch(&attr, url);
-	ht_set(&ctx->requests, url, fetch);
-
+	ht_set(&ctx->requests, url, emscripten_fetch(&attr, url));
 	log_info("Downloading %s", url);
-	return fetch;
-}
-
-static void fetch_wait(emscripten_fetch_t *fetch) {
-	// cursed
-	while(fetch->readyState < 4 /* DONE */) {
-		emscripten_sleep(10);
-	}
-}
-
-static void fetch_io_cleanup(void *userdata, void *value) {
-	emscripten_fetch_close(value);
 }
 
 static SDL_IOStream *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char *content_id, VFSOpenMode mode) {
 	assert(!(mode & VFS_MODE_WRITE));
 
 	FetchFSContext *ctx = UNION_CAST(VFSResIndexFSContext*, FetchFSContext*, resindex_ctx);
-	emscripten_fetch_t *fetch;
 
 	MAKE_CACHED_PATH(cached_path, content_id);
 
-	SDL_IOStream *cached_rw = SDL_IOFromFile(cached_path, "r");
-	if(cached_rw) {
-		return cached_rw;
-	}
-
 	for(;;) {
-		fetch = fetch_begin_request(ctx, content_id);
-		fetch_wait(fetch);
+		SDL_IOStream *cached_io = SDL_IOFromFile(cached_path, "r");
 
-		if(fetch->status == 200) {
-			break;
+		if(cached_io) {
+			return cached_io;
 		}
 
-		emscripten_fetch_close(fetch);
+		MAKE_FETCH_URL(url, content_id);
+		fetch_begin_request(ctx, url, content_id);
+
+		// cursed
+		while(ht_lookup(&ctx->requests, url, NULL)) {
+			emscripten_sleep(10);
+		}
 	}
-
-	SDL_IOStream *memrw = NOT_NULL(SDL_IOFromConstMem(fetch->data, fetch->numBytes));
-	SDL_SetPointerPropertyWithCleanup(SDL_GetIOProperties(memrw),
-		PROP_FETCHIO_POINTER, fetch, fetch_io_cleanup, NULL);
-
-	return memrw;
 }
 
 static void vfs_fetch_free(VFSResIndexFSContext *resindex_ctx) {
