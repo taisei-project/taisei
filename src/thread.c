@@ -86,16 +86,12 @@ void thread_incref(Thread *thrd) {
 	SDL_AtomicIncRef(&thrd->refcount);
 }
 
-static void thread_decref_internal(Thread *thrd, bool try_detach) {
+void thread_decref(Thread *thrd) {
 	int prev_refcount = SDL_AddAtomicInt(&thrd->refcount, -1);
 	assert(prev_refcount > 0);
 	if(prev_refcount == 1) {
 		thread_try_finalize(thrd);
 	}
-}
-
-void thread_decref(Thread *thrd) {
-	thread_decref_internal(thrd, true);
 }
 
 typedef struct ThreadCreateData {
@@ -210,7 +206,7 @@ void *thread_wait(Thread *thrd) {
 	}
 
 	void *r = thrd->data;
-	thread_decref_internal(thrd, false);
+	thread_decref(thrd);
 	return r;
 }
 
