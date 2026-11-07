@@ -1,6 +1,5 @@
 
 em_preamble = files('preamble.js')
-em_postamble = files('postamble.js')
 em_shell = files('shell.html')
 
 if host_machine.system() == 'emscripten'

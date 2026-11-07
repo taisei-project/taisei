@@ -21,6 +21,15 @@ glContext.getSupportedExtensions().forEach(function(ext) {
     glContext.getExtension(ext);
 });
 
+Module['preRun'] = function() {
+    // env is snapshotted by libc, so this must be done early
+    // TODO investigate if TAISEI_NOUNLOAD is even useful here; technically none of this is necessary
+    ENV["TAISEI_NOASYNC"] = "1";
+    ENV["TAISEI_NOUNLOAD"] = "1";
+    ENV["TAISEI_PREFER_SDL_VIDEODRIVERS"] = "emscripten";
+    ENV["TAISEI_RENDERER"] = "gles30";
+};
+
 function SyncFS(is_load, ccptr) {
     FS.syncfs(is_load, function(err) {
         Module['ccall'](

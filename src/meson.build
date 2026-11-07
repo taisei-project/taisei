@@ -401,7 +401,6 @@ if host_machine.system() == 'emscripten'
             meson.get_compiler('cpp').cmd_array(),
             taisei,
             '--pre-js', em_preamble,
-            '--post-js', em_postamble,
             get_option('c_args'),
             taisei_link_args,
             get_option('c_link_args'),
