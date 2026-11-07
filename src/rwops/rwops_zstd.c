@@ -626,7 +626,8 @@ static bool rwzstd_reader_init_seektable(ZstdData *zdata) {
 
 	ZstdSeekTableFooter footer;
 
-	int64_t footer_ofs = SDL_SeekIO(src, -sizeof(footer), SDL_IO_SEEK_END);
+	// NOTE: explicit cast needed because -sizeof(footer) zero-extends into a huge value on 32-bit (ugh, emscripten)
+	int64_t footer_ofs = SDL_SeekIO(src, -(int64_t)sizeof(footer), SDL_IO_SEEK_END);
 	if(footer_ofs < 0) {
 		log_sdl_error(LOG_ERROR, "SDL_SeekIO");
 		goto fail;
