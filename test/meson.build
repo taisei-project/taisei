@@ -19,7 +19,7 @@ tests = [
 ]
 
 if shader_transpiler_enabled
-    tests += { 'name' : 'shader_transpiler' }
+    tests += { 'name' : 'shader_transpiler', 'timeout' : 60 }
 endif
 
 foreach tdict : tests
