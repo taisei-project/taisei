@@ -243,7 +243,10 @@ TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *na
 
 			for(uint j = 0; j < i; ++j) {
 				SDL_SignalSemaphore(mgr->queue_sem);
-				thread_decref(mgr->threads[j]);
+			}
+
+			for(uint j = 0; j < i; ++j) {
+				thread_wait(mgr->threads[j]);
 				mgr->threads[j] = NULL;
 			}
 
