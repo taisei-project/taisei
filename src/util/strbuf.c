@@ -87,10 +87,15 @@ void strbuf_clear(StringBuffer *strbuf) {
 }
 
 char *strbuf_commit(StringBuffer *strbuf) {
-	char *s = strbuf->start;
+	if(UNLIKELY(!strbuf->start)) {
+		assume(!strbuf->pos);
+		strbuf_reserve(strbuf, 0);
+	}
+
+	char *s = NOT_NULL(strbuf->start);
 
 	int64_t align = alignof(max_align_t);
-	int64_t reserve = strbuf->pos - s + 1;
+	int64_t reserve = NOT_NULL(strbuf->pos) - s + 1;
 	int64_t ofs = ((align - reserve) & (align - 1));
 	reserve += ofs;
 
