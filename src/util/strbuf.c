@@ -39,6 +39,7 @@ size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 		strbuf->pos = strbuf->start + offset;
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
+		*strbuf->pos = 0;
 	}
 
 	return size_available;
