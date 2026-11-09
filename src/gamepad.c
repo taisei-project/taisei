@@ -55,52 +55,44 @@ static struct {
 
 static bool gamepad_event_handler(SDL_Event *event, void *arg);
 
-static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
-	StringBuffer buf = { acquire_scratch_arena() };
+static int gamepad_load_mappings(const char *vpath, int warn_noexist, MemArena *scratch) {
+	auto buf = STRBUF(scratch);
 
-	char *repr = vfs_repr(vpath, true);
-	const char *errstr = NULL;
+	const char *repr = vfs_repr(vpath, true, &buf);
+	strbuf_commit(&buf);
 
 	SDL_IOStream *mappings = vfs_open(vpath, VFS_MODE_READ);
-	int num_loaded = -1;
-	LogLevel loglvl = LOG_WARN;
-
 
 	if(!mappings) {
 		if(!warn_noexist) {
 			VFSInfo vinfo = vfs_query(vpath);
 
 			if(!vinfo.error && !vinfo.exists && !vinfo.is_dir) {
-				loglvl = LOG_INFO;
-				strbuf_printf(&buf, "Custom mappings file '%s' does not exist (this is ok)", repr);
-				errstr = strbuf_commit(&buf);
-				goto cleanup;
+				log_info("Custom mappings file '%s' does not exist (this is ok)", repr);
+				return 0;
 			}
 		}
 
-		errstr = vfs_get_error();
-		goto cleanup;
+		log_error("VFS error: %s", vfs_get_error());
+		return 0;
 	}
 
-	if((num_loaded = SDL_AddGamepadMappingsFromIO(mappings, true)) < 0) {
-		errstr = SDL_GetError();
+	int num_loaded = SDL_AddGamepadMappingsFromIO(mappings, true /* closes io */);
+
+	if(num_loaded < 0) {
+		log_sdl_error(LOG_ERROR, "SDL_AddGamepadMappingsFromIO");
+		return 0;
 	}
 
-cleanup:
-	if(errstr) {
-		log_custom(loglvl, "Couldn't load mappings: %s", errstr);
-	} else if(num_loaded >= 0) {
-		log_info("Loaded %i mappings from '%s'", num_loaded, repr);
-	}
-
-	release_scratch_arena(buf.arena);
-	mem_free(repr);
+	log_info("Loaded %i mappings from '%s'", num_loaded, repr);
 	return num_loaded;
 }
 
 static void gamepad_load_all_mappings(void) {
-	gamepad_load_mappings("res/gamecontrollerdb.txt", true);
-	gamepad_load_mappings("storage/gamecontrollerdb.txt", false);
+	WITH_SCRATCH(s) {
+		gamepad_load_mappings("res/gamecontrollerdb.txt", true, s);
+		gamepad_load_mappings("storage/gamecontrollerdb.txt", false, s);
+	}
 }
 
 static inline GamepadDevice* gamepad_get_device(int num) {

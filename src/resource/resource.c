@@ -25,6 +25,7 @@
 #include "eventloop/eventloop.h"
 #include "events.h"
 #include "filewatch/filewatch.h"
+#include "memory/scratch.h"
 #include "taskmanager.h"
 #include "util.h"
 #include "util/env.h"
@@ -600,16 +601,17 @@ static void cleanup_watched_path(InternalResource *ires, WatchedPath *wp) {
 static void refresh_watched_path(InternalResource *ires, WatchedPath *wp) {
 	FileWatch *old_watch = wp->watch;
 
-	// FIXME: we probably need a better API to obtain the underlying syspath
-	// the returned path here may not actually be valid (e.g. in case it's inside a zip package)
-	char *syspath = vfs_repr(NOT_NULL(wp->vfs_path), true);
+	WITH_SCRATCH(s) {
+		// FIXME: we probably need a better API to obtain the underlying syspath
+		// the returned path here may not actually be valid (e.g. in case it's inside a zip package)
+		char *syspath = vfs_repr(NOT_NULL(wp->vfs_path), true, &STRBUF(s));
 
-	if(syspath != NULL) {
-		wp->watch = filewatch_watch(syspath);
-		mem_free(syspath);
-		associate_ires_watch(ires, wp->watch);
-	} else {
-		wp->watch = NULL;
+		if(syspath) {
+			wp->watch = filewatch_watch(syspath);
+			associate_ires_watch(ires, wp->watch);
+		} else {
+			wp->watch = NULL;
+		}
 	}
 
 	if(old_watch) {
@@ -733,14 +735,7 @@ SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode
 	}
 
 	// FIXME: we probably need a better API to obtain the underlying syspath
-	char *syspath = vfs_repr(path, true);
-
-	if(syspath == NULL) {
-		return rw;
-	}
-
-	FileWatch *w = filewatch_watch(syspath);
-	mem_free(syspath);
+	FileWatch *w = WITH_SCRATCH(s, filewatch_watch(vfs_repr(path, true, &STRBUF(s))));
 
 	if(w == NULL) {
 		return rw;
@@ -1415,36 +1410,40 @@ static void load_resource_finish(InternalResLoadState *st) {
 		}
 	}
 
-	const char *name = NOT_NULL(st->st.name);
-	const char *path = st->st.path ? st->st.path : "<path unknown>";
-	char *allocated_source = vfs_repr(path, true);
-	const char *source = allocated_source ? allocated_source : path;
 	const char *typename = type_name(ires->res.type);
+	bool success;
 
-	ires->res.flags = st->st.flags;
-	ires->res.data = raw;
+	WITH_SCRATCH(s) {
+		auto buf = STRBUF(s);
 
-	if(ires->res.type == RES_MODEL || res_gstate.env.no_unload) {
-		// FIXME: models can't be safely unloaded at runtime yet
-		res_group_add_ires(NULL, ires, true);
-	}
+		const char *name = NOT_NULL(st->st.name);
+		const char *path = st->st.path ? st->st.path : "<path unknown>";
+		const char *source = vfs_repr(path, true, &buf) ?: path;
 
-	bool success = ires->res.data;
+		ires->res.flags = st->st.flags;
+		ires->res.data = raw;
 
-	if(success) {
-		ires->status = RES_STATUS_LOADED;
-		log_info("Loaded %s '%s' from '%s'", typename, name, source);
-	} else {
-		ires->status = RES_STATUS_FAILED;
+		if(ires->res.type == RES_MODEL || res_gstate.env.no_unload) {
+			// FIXME: models can't be safely unloaded at runtime yet
+			res_group_add_ires(NULL, ires, true);
+		}
 
-		if(ires->res.flags & RESF_OPTIONAL) {
-			log_error("Failed to load %s '%s' from '%s'", typename, name, source);
+		success = ires->res.data;
+
+		if(success) {
+			ires->status = RES_STATUS_LOADED;
+			log_info("Loaded %s '%s' from '%s'", typename, name, source);
 		} else {
-			log_fatal("Required %s '%s' couldn't be loaded from '%s'", typename, name, source);
+			ires->status = RES_STATUS_FAILED;
+
+			if(ires->res.flags & RESF_OPTIONAL) {
+				log_error("Failed to load %s '%s' from '%s'", typename, name, source);
+			} else {
+				log_fatal("Required %s '%s' couldn't be loaded from '%s'", typename, name, source);
+			}
 		}
 	}
 
-	mem_free(allocated_source);
 	mem_free((char*)st->st.path);
 
 	assume(!ires->load || ires->load == st);

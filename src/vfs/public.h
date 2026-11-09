@@ -15,6 +15,7 @@
 #include "readonly_wrapper_public.h"  // IWYU pragma: export
 
 #include "util/callchain.h"
+#include "util/strbuf.h"
 
 #include <SDL3/SDL.h>
 
@@ -67,7 +68,7 @@ void vfs_dir_list_free(char **list, size_t size);
 int vfs_dir_list_order_ascending(const void *a, const void *b);
 int vfs_dir_list_order_descending(const void *a, const void *b);
 
-char *vfs_repr(const char *path, bool try_syspath) attr_nonnull(1) attr_nodiscard;
+char *vfs_repr(const char *path, bool try_syspath, StringBuffer *buf) attr_nonnull(1, 3);
 bool vfs_print_tree(SDL_IOStream *dest, const char *path) attr_nonnull(1, 2);
 
 // these are defined in private.c, but need to be accessible from external code

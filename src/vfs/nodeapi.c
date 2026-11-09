@@ -123,10 +123,12 @@ void (vfs_node_repr)(VFSNode *node, bool try_syspath, StringBuffer *buf) {
 		strbuf_cat(buf, ") ");
 	}
 
+	attr_unused ptrdiff_t pre_repr = strbuf_ofs(buf);
 	node->funcs->repr(node, buf);
+	attr_unused ptrdiff_t raw_repr_len = strbuf_ofs(buf) - pre_repr;
+	assert(raw_repr_len > 0);
 
 	strbuf_cat(buf, "]");
-	return;
 }
 
 bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) {

@@ -254,23 +254,23 @@ bool vfs_delete(const char *path) {
 	return result;
 }
 
-char* vfs_repr(const char *path, bool try_syspath) {
+char *vfs_repr(const char *path, bool try_syspath, StringBuffer *buf) {
 	if(UNLIKELY(!vfs_initialized())) {
-		return false;
+		assert(0);
+		return NULL;
 	}
 
-	char buf[strlen(path)+1];
-	path = vfs_path_normalize(path, buf);
+	char npath[strlen(path)+1];
+	path = vfs_path_normalize(path, npath);
 	VFSNode *node = vfs_locate(vfs_root, path);
 
 	if(node) {
-		auto p = WITH_SCRATCH(scratch, ({
-			StringBuffer buf = { scratch };
-			vfs_node_repr(node, try_syspath, &buf);
-			mem_strdup(buf.start);
-		}));
+		strbuf_reserve(buf, 0);
+		ptrdiff_t begin = strbuf_ofs(buf);
+		vfs_node_repr(node, try_syspath, buf);
+		assert(strbuf_ofs(buf) >= begin);
 		vfs_decref(node);
-		return p;
+		return buf->start + begin;
 	}
 
 	vfs_set_error("Node '%s' does not exist", path);

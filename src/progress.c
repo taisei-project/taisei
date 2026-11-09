@@ -11,6 +11,7 @@
 #include "stageinfo.h"
 #include "util.h"
 #include "version.h"
+#include "memory/scratch.h"
 #include "rwops/rwops_zstd.h"
 
 #include <zlib.h>
@@ -1061,14 +1062,12 @@ void progress_save(void) {
 
 	if(!vfs_rename(PROGRESS_FILE_TMP, PROGRESS_FILE)) {
 		log_error("Rename failed: VFS error: %s", vfs_get_error());
-	} else {
-		char *sp = vfs_repr(PROGRESS_FILE, true);
-		log_info("Saved progress to %s", sp);
-		mem_free(sp);
+	} else WITH_SCRATCH(s) {
+		log_info("Saved progress to %s", vfs_repr(PROGRESS_FILE, true, &STRBUF(s)));
 	}
 }
 
-static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
+static void *delete_unknown_cmd(List **dest, List *elem, void *arg) {
 	UnknownCmd *cmd = (UnknownCmd*)elem;
 	mem_free(cmd->data);
 	mem_free(list_unlink(dest, elem));

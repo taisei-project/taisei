@@ -25,10 +25,10 @@ typedef struct VFSNodeFuncs VFSNodeFuncs;
 typedef void (*VFSShutdownHandler)(void *arg);
 
 struct VFSNodeFuncs {
-	void        (*repr)(VFSNode *node, StringBuffer *buf) attr_nonnull(1);
+	void        (*repr)(VFSNode *node, StringBuffer *buf) attr_nonnull(1, 2);
 	void        (*free)(VFSNode *node) attr_nonnull(1);
 	VFSInfo     (*query)(VFSNode *node) attr_nonnull(1);
-	bool        (*syspath)(VFSNode *node, StringBuffer *buf) attr_nonnull(1);
+	bool        (*syspath)(VFSNode *node, StringBuffer *buf) attr_nonnull(1, 2);
 	bool        (*mount)(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
 	bool        (*unmount)(VFSNode *mountroot, const char *subname) attr_nonnull(1);
 	VFSNode*    (*locate)(VFSNode *dirnode, const char* path) attr_nonnull(1, 2);
@@ -125,7 +125,7 @@ VFSNode *vfs_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nod
 // be no reason to call it. It wouldn't do what you'd expect anyway; use vfs_decref.
 void vfs_node_repr(VFSNode *node, bool try_syspath, StringBuffer *buf) attr_nonnull(1, 3);
 VFSInfo vfs_node_query(VFSNode *node) attr_nonnull(1) attr_nodiscard attr_nonnull(1);
-bool vfs_node_syspath(VFSNode *node, StringBuffer *buf) attr_nonnull(1) attr_nodiscard attr_nonnull(1, 2);
+bool vfs_node_syspath(VFSNode *node, StringBuffer *buf) attr_nonnull(1, 2) attr_nodiscard;
 bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) attr_nonnull(1, 3);
 bool vfs_node_unmount(VFSNode *mountroot, const char *subname) attr_nonnull(1);
 VFSNode *vfs_node_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) attr_nodiscard;

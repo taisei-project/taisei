@@ -57,15 +57,16 @@ int main(int argc, char **argv) {
 		}
 
 		strbuf_printf(&sbuf, "zips/%s", fname);
+
 		if(!vfs_mount_zipfile("mnt", sbuf.start)) {
-			log_fatal("Failed to mount %s: %s", vfs_repr(sbuf.start, true), vfs_get_error());
+			log_fatal("Failed to mount %s: %s", vfs_repr(strbuf_commit(&sbuf), true, &sbuf), vfs_get_error());
 		}
 
 		strbuf_cat(&sbuf, ".sha256");
 		auto sha256list_io = vfs_open(sbuf.start, VFS_MODE_READ);
 
 		if(!sha256list_io) {
-			log_fatal("Failed to open %s: %s", vfs_repr(sbuf.start, true), vfs_get_error());
+			log_fatal("Failed to open %s: %s", vfs_repr(strbuf_commit(&sbuf), true, &sbuf), vfs_get_error());
 		}
 
 		size_t sha256list_data_size;
@@ -93,7 +94,7 @@ int main(int argc, char **argv) {
 			auto file_io = vfs_open(inner_filename, VFS_MODE_READ);
 
 			if(!file_io) {
-				log_fatal("Failed to open %s: %s", vfs_repr(inner_filename, true), vfs_get_error());
+				log_fatal("Failed to open %s: %s", vfs_repr(inner_filename, true, &sbuf), vfs_get_error());
 			}
 
 			auto sha256 = sha256_new();

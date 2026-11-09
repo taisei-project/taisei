@@ -7,11 +7,11 @@
  */
 
 #include "replay.h"
-#include "memory/scratch.h"
-#include "struct.h"
-#include "stage.h"
 
+#include "memory/scratch.h"
 #include "rwops/rwops_stdiofp.h"
+#include "stage.h"
+#include "struct.h"
 #include "util/strbuf.h"
 
 void replay_destroy_events(Replay *rpy) {
@@ -27,25 +27,24 @@ void replay_reset(Replay *rpy) {
 	*rpy = (typeof(*rpy)) {};
 }
 
-static char *replay_getpath(const char *name, bool ext, StringBuffer *buf) {
+static int replay_getpath(const char *name, bool ext, StringBuffer *buf) {
 	if(ext) {
-		strbuf_printf(buf, "storage/replays/%s." REPLAY_EXTENSION, name);
+		return strbuf_printf(buf, "storage/replays/%s." REPLAY_EXTENSION, name);
 	} else {
-		strbuf_printf(buf, "storage/replays/%s", name);
+		return strbuf_printf(buf, "storage/replays/%s", name);
 	}
-
-	return strbuf_commit(buf);
 }
 
 bool replay_save(Replay *rpy, const char *name) {
-	StringBuffer buf = { acquire_scratch_arena() };
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
-	char *sp = vfs_repr(p, true);
-	log_info("Saving %s", sp);
-	mem_free(sp);
+	auto file = WITH_SCRATCH(scratch, ({
+		auto buf = STRBUF(scratch);
+		replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
 
-	SDL_IOStream *file = vfs_open(p, VFS_MODE_WRITE);
-	release_scratch_arena(buf.arena);
+		char *p = strbuf_commit(&buf);
+		log_info("Saving %s", vfs_repr(p, true, &buf));
+
+		vfs_open(p, VFS_MODE_WRITE);
+	}));
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -74,31 +73,34 @@ static const char *replay_mode_string(ReplayReadMode mode) {
 	log_fatal("Bad mode %i", mode);
 }
 
-bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
-	char *sp = vfs_repr(path, true);
+static bool replay_load_vfspath_scratch(Replay *rpy, const char *path, ReplayReadMode mode, MemArena *scratch) {
+	auto buf = STRBUF(scratch);
+
+	char *sp = vfs_repr(path, true, &buf);
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
 	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
-		mem_free(sp);
 		return false;
 	}
 
 	bool result = replay_read(rpy, file, mode, sp);
-
-	mem_free(sp);
 	SDL_CloseIO(file);
 	return result;
 }
 
+bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
+	return WITH_SCRATCH(s, replay_load_vfspath_scratch(rpy, path, mode, s));
+}
+
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
-	StringBuffer buf = { acquire_scratch_arena() };
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
-	bool result = replay_load_vfspath(rpy, p, mode);
-	release_scratch_arena(buf.arena);
-	return result;
+	return WITH_SCRATCH(s, ({
+		auto buf = STRBUF(s);
+		replay_getpath(name, !strendswith(name, REPLAY_EXTENSION), &buf);
+		replay_load_vfspath(rpy, buf.start, mode);
+	}));
 }
 
 bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
@@ -119,9 +121,7 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 		}
 	}
 
-
 	bool result = replay_read(rpy, file, mode, path);
-
 	SDL_CloseIO(file);
 	return result;
 }

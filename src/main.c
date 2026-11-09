@@ -114,25 +114,21 @@ static void init_log(void) {
 	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false), log_formatter_console);
 }
 
-static void init_log_file(void) {
+static void init_log_file(MemArena *scratch) {
+	const char *log_path = "storage/log.txt";
+
 	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", ""));
-	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE), log_formatter_file);
+	log_add_output(lvls_file, vfs_open(log_path, VFS_MODE_WRITE), log_formatter_file);
 
-	char *logpath = vfs_repr("storage/log.txt", true);
+	auto buf = STRBUF(scratch);
 
-	if(logpath != NULL) {
-		StringBuffer buf = { acquire_scratch_arena() };
-		strbuf_printf(&buf,
-			"For more information, see the log file at %s\n\n"
-			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
-			logpath
-		);
-		mem_free(logpath);
-		log_set_gui_error_appendix(buf.start);
-		release_scratch_arena(buf.arena);
-	} else {
-		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
+	if(vfs_query(log_path).exists && vfs_repr(log_path, true, &buf)) {
+		strbuf_printf(&buf, "For more information, see the log file at %s\n\n", strbuf_commit(&buf));
 	}
+
+	strbuf_cat(&buf, "Please report the problem to the developers at https://taisei-project.org/ if it persists.");
+
+	log_set_gui_error_appendix(buf.start);
 }
 
 static void init_log_filter(void) {
@@ -390,8 +386,8 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		env_set("SDL_VIDEODRIVER", "dummy", true);
 		env_set("TAISEI_AUDIO_BACKEND", "null", true);
 		env_set("TAISEI_RENDERER", "null", true);
-	} else {
-		init_log_file();
+	} else WITH_SCRATCH(s) {
+		init_log_file(s);
 	}
 
 	init_log_filter();

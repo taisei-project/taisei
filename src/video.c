@@ -670,12 +670,10 @@ static void *video_screenshot_task(void *arg) {
 	if(tdata->dest_path) {
 		opts.zlib_compression_level = 9;
 
-		bool ok = pixmap_save_file(tdata->dest_path, &tdata->image, &opts.base);
-
-		if(LIKELY(ok)) {
-			char *syspath = vfs_repr(tdata->dest_path, true);
-			log_info("Saved screenshot as %s", syspath);
-			mem_free(syspath);
+		if(LIKELY(pixmap_save_file(tdata->dest_path, &tdata->image, &opts.base))) {
+			WITH_SCRATCH(s) {
+				log_info("Saved screenshot as %s", vfs_repr(tdata->dest_path, true, &STRBUF(s)));
+			}
 		}
 	} else {  // framedump mode
 		char buf[video.framedump.name_prefix_len + FRAMEDUMP_FILENAME_EXTRA_BUFSIZE];
