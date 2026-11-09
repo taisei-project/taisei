@@ -41,3 +41,9 @@ size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required)
 
 char *strbuf_commit(StringBuffer *strbuf)
 	attr_nonnull(1) attr_returns_nonnull;
+
+INLINE ptrdiff_t strbuf_ofs(StringBuffer *strbuf) {
+	ptrdiff_t ofs = strbuf->pos - strbuf->start;
+	assume(ofs >= 0);
+	return ofs;
+}
