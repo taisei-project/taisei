@@ -209,7 +209,6 @@ VFS_NODE_FUNCS(VFSZipNode, {
 typedef struct ZipParseContext {
 	VFSZipNode *znode;
 	uint i;
-	StringBuffer name_buf;
 } ZipParseContext;
 
 static bool vfs_zipfile_parse_callback(void *userdata, const ZipEntry *e, uint32_t entry_idx, uint32_t num_entries) {
@@ -222,7 +221,6 @@ static bool vfs_zipfile_parse_callback(void *userdata, const ZipEntry *e, uint32
 		marena_init(&znode->arena, num_entries * (sizeof(*znode->entries) + avg_name_len));
 		znode->entries = marena_alloc_array(&znode->arena, num_entries, sizeof(*znode->entries));
 		znode->num_entries = num_entries;
-		pctx->name_buf = (StringBuffer) { &znode->arena };
 	}
 
 	assert(num_entries == znode->num_entries);
