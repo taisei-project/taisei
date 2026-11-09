@@ -7,9 +7,6 @@
  */
 
 #include "strbuf.h"
-#include "util/miscmath.h"
-
-#include <stdio.h>
 
 int strbuf_printf(StringBuffer *strbuf, const char *format, ...) {
 	va_list va;
@@ -34,11 +31,12 @@ size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 
 	if(size_required >= size_available) {
 		ptrdiff_t offset = strbuf->pos - strbuf->start;
-		size_t new_size = topow2_u64(strbuf->buf_size + (size_required - size_available + 1));
+		size_t new_size = strbuf->buf_size + (size_required - size_available + 1);
 		strbuf->start = marena_realloc(strbuf->arena, strbuf->start, strbuf->buf_size, new_size);
 		strbuf->pos = strbuf->start + offset;
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
+		assert_nolog(size_available == strbuf_size_available(strbuf));
 		*strbuf->pos = 0;
 	}
 
