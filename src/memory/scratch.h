@@ -30,15 +30,32 @@ void release_scratch_arena(MemArena *arena)
 	_result; \
 })
 
+typedef struct ScratchGuard {
+	MemArena *arena;
+	bool pass;
+} ScratchGuard;
+
+INLINE void _scratch_guard_cleanup(ScratchGuard *_sg) {
+	release_scratch_arena(_sg->arena);
+}
+
 /*
  * Statement form:
  *
  * WITH_SCRATCH(s) {
- * 	do_foo(s);
+ * 	if(!do_foo(s)) {
+ * 		return;  // returns are fine
+ * 	}
+ *
+ * 	do_bar(s);
  * }
+ *
+ * WARNING: break and continue will not behave as expected. non-returning calls will leak the arena
  */
 #define WITH_SCRATCH_0(_scratch) \
-	for(MemArena *_scratch = acquire_scratch_arena(); _scratch; release_scratch_arena(_scratch), _scratch = NULL)
+	for(attr_cleanup(_scratch_guard_cleanup) ScratchGuard _sg = { acquire_scratch_arena(), true }; \
+		_sg.pass; _sg.pass = false) \
+	for(MemArena *_scratch = _sg.arena; _scratch; _scratch = NULL)
 
 #define WITH_SCRATCH(_scratch, ...) \
 	MACROHAX_OVERLOAD_HASARGS(WITH_SCRATCH_, __VA_ARGS__)(_scratch, ##__VA_ARGS__)
