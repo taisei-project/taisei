@@ -32,6 +32,7 @@ foreach tdict : tests
         ),
         depends : tdict.get('depends', []),
         args :  tdict.get('args', []),
+        timeout : tdict.get('timeout', 30),
     )
 endforeach
 
