@@ -349,6 +349,10 @@ typedef _Complex double cmplx;
 #define attr_alloc_align(arg_index) \
 	__attribute__ ((alloc_align(arg_index)))
 
+// func(&x) will be called on annotated variable x when it goes out of scope
+#define attr_cleanup(func) \
+	__attribute__ ((cleanup(func)))
+
 
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
