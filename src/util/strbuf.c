@@ -69,11 +69,12 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 
 int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[]) {
 	if(UNLIKELY(!datasize)) {
+		strbuf_reserve(strbuf, 0);
 		return 0;
 	}
 
 	assert(datasize < INT32_MAX);
-	strbuf_reserve(strbuf, datasize + 1);
+	strbuf_reserve(strbuf, datasize);
 	assert_nolog(strbuf_size_available(strbuf) >= datasize + 1);
 	memcpy(strbuf->pos, data, datasize);
 	strbuf->pos += datasize;
