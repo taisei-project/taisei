@@ -300,7 +300,7 @@ bool vfs_print_tree(SDL_IOStream *dest, const char *path) {
 		vfs_path_root_prefix(p);
 	}
 
-	WITH_SCRATCH(scratch, (vfs_print_tree_recurse(dest, node, p, "", scratch), 0));
+	WITH_SCRATCH(scratch, vfs_print_tree_recurse(dest, node, p, "", scratch));
 	vfs_decref(node);
 	return true;
 }
