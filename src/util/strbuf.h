@@ -47,3 +47,5 @@ INLINE ptrdiff_t strbuf_ofs(StringBuffer *strbuf) {
 	assume(ofs >= 0);
 	return ofs;
 }
+
+#define STRBUF(_arena) ((StringBuffer) { .arena = _arena })
