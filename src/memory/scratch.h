@@ -18,18 +18,6 @@ MemArena *acquire_scratch_arena(void)
 void release_scratch_arena(MemArena *arena)
 	attr_nonnull_all;
 
-/*
- * Expression form:
- *
- * auto foo = WITH_SCRATCH(s, make_foo(s));
- */
-#define WITH_SCRATCH_1(_scratch, ...) ({ \
-	auto _scratch = acquire_scratch_arena(); \
-	auto _result = __VA_ARGS__; \
-	release_scratch_arena(_scratch); \
-	_result; \
-})
-
 typedef struct ScratchGuard {
 	MemArena *arena;
 	bool pass;
@@ -38,6 +26,17 @@ typedef struct ScratchGuard {
 INLINE void _scratch_guard_cleanup(ScratchGuard *_sg) {
 	release_scratch_arena(_sg->arena);
 }
+
+/*
+ * Expression form:
+ *
+ * auto foo = WITH_SCRATCH(s, make_foo(s));
+ */
+#define WITH_SCRATCH_1(_scratch, ...) ({ \
+	attr_cleanup(_scratch_guard_cleanup) ScratchGuard _sg = { acquire_scratch_arena() }; \
+	auto _scratch = _sg.arena; \
+	__VA_ARGS__; \
+})
 
 /*
  * Statement form:
