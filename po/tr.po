@@ -306,7 +306,7 @@ msgstr "Ruhlarda Yōkai dağına bağlanmış durumda."
 
 #: src/cutscenes/intro.inc.h:74
 msgid "I see. Shall I investigate as well?"
-msgstr "Anladım. Şimdi bende mi geleyim?"
+msgstr "Anladım. Şimdi ben demi geleyim?"
 
 #: src/cutscenes/intro.inc.h:75
 msgid "Please do."
