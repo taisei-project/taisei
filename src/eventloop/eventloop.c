@@ -18,9 +18,12 @@
 
 struct evloop_s evloop;
 
-void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps) {
+void eventloop_enter(
+	void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps
+) {
 	assert(thread_current_is_main());
 	assume(evloop.stack_ptr < evloop.stack + EVLOOP_STACK_SIZE - 1);
+	assert(target_fps > 0);
 
 	LoopFrame *frame;
 
@@ -34,7 +37,7 @@ void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc 
 	frame->logic = frame_logic;
 	frame->render = frame_render;
 	frame->on_leave = on_leave;
-	frame->frametime = HRTIME_RESOLUTION / target_fps;
+	frame->target_fps = target_fps;
 	frame->prev_logic_action = LFRAME_WAIT;
 
 	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);

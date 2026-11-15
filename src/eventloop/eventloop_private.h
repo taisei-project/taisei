@@ -21,7 +21,7 @@ struct LoopFrame {
 	LogicFrameFunc logic;
 	RenderFrameFunc render;
 	PostLoopFunc on_leave;
-	hrtime_t frametime;
+	uint target_fps;
 	LogicFrameAction prev_logic_action;
 };
 

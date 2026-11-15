@@ -28,9 +28,9 @@ typedef RenderFrameAction (*RenderFrameFunc)(void *context);
 typedef void (*PostLoopFunc)(void *context);
 
 typedef struct FrameTimes {
-	hrtime_t target;
 	hrtime_t start;
 	hrtime_t next;
+	uint target_fps;
 } FrameTimes;
 
 void eventloop_enter(

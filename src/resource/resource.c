@@ -1142,8 +1142,9 @@ static bool should_defer_load(InternalResLoadState *st) {
 	}
 
 	FrameTimes ft = eventloop_get_frame_times();
-	shrtime_t tnext = ft.start + ft.target;
-	shrtime_t tmin = ft.target / 2;
+	shrtime_t target = HRTIME_RESOLUTION / ft.target_fps;
+	shrtime_t tnext = ft.start + target;
+	shrtime_t tmin = target / 2;
 
 	if(ft.next != res_gstate.frame_threshold) {
 		res_gstate.frame_threshold = ft.next;
