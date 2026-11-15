@@ -123,10 +123,10 @@ RenderFrameAction run_render_frame(LoopFrame *frame) {
 	RenderFrameAction a = frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
 
-	if(a == RFRAME_SWAP) {
-		video_swap_buffers();
-	}
+	// TODO remove these, only a jank debug feature uses this, and it should be rewritten differently
+	assert(a != RFRAME_DROP);
 
-	fpscounter_update(&global.fps.render);
+	video_finish_frame();
+	r_end_frame();
 	return a;
 }

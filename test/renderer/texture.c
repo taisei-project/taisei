@@ -85,12 +85,14 @@ int main(int argc, char **argv) {
 	hrtime_t last_print_time = 0;
 
 	while(!taisei_quit_requested()) {
+		r_await_frame(false);
+		events_poll(NULL, 0);
 		r_begin_frame();
 		r_clear(BUFFER_COLOR, RGB(0, 0, 0), 1);
 		r_uniform_sampler(u_sampler, tex);
 		r_draw_model_ptr(&triangle, 1, 0);
-		events_poll(NULL, 0);
-		video_swap_buffers();
+		r_end_frame();
+		r_present_frame();
 
 		fpscounter_update(&fps);
 

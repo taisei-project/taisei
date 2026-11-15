@@ -62,6 +62,7 @@ begin_main_loop:
 		SLEEP_DEBUG("Error: %lli", (long long)error);
 
 begin_frame:
+		r_await_frame(true);
 		global.fps.busy.last_update_time = time_get();
 		evloop.frame_times.target = frame->frametime;
 		++frame_num;
@@ -107,6 +108,8 @@ begin_frame:
 
 		if((uncapped_rendering || !(frame_num % get_effective_frameskip())) && !global.is_replay_verification) {
 			run_render_frame(frame);
+			r_present_frame();
+			fpscounter_update(&global.fps.render);
 		}
 
 		fpscounter_update(&global.fps.busy);

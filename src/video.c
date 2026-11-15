@@ -8,6 +8,8 @@
 
 #include "video.h"
 
+#include "coroutine/coroutine.h"
+#include "debug_text.h"
 #include "dynarray.h"
 #include "events.h"
 #include "global.h"
@@ -16,7 +18,6 @@
 #include "memory/scratch.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
-#include "stageinfo.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/fbmgr.h"
@@ -825,6 +826,7 @@ static void video_take_framedump(void) {
 	auto tdata = ALLOC(ScreenshotTaskData);
 	tdata->frame_num = video.framedump.frame_count++;
 
+	// TODO/FIXME: somehow make sure we aren't reading a stale frame here?
 	video_read_framebuffer(fb, attachment, tdata, video_take_screenshot_callback);
 }
 
@@ -1084,15 +1086,11 @@ Framebuffer *video_get_screen_framebuffer(void) {
 	return video_postprocess_get_framebuffer(video.postprocess);
 }
 
-void video_swap_buffers(void) {
+void video_finish_frame(void) {
 	Framebuffer *pp_fb = video_postprocess_render(video.postprocess);
 
 	if(pp_fb) {
-		r_flush_sprites();
-
-		Framebuffer *prev_fb = r_framebuffer_current();
-		r_framebuffer(NULL);
-
+		// TODO make this a blit (the API is a silly)
 		r_state_push();
 		r_mat_proj_push_ortho(SCREEN_W, SCREEN_H);
 		r_shader_standard();
@@ -1101,12 +1099,12 @@ void video_swap_buffers(void) {
 		r_framebuffer_clear(pp_fb, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 		r_mat_proj_pop();
 		r_state_pop();
-
-		r_swap(video.window);
-		r_framebuffer(prev_fb);
-	} else {
-		r_swap(video.window);
 	}
+
+	// TODO maybe a generic hook system for this
+	coroutines_draw_stats();
+	debug_text_draw();
+	r_flush_sprites();
 
 	if(video.framedump.name_prefix) {
 		video_take_framedump();

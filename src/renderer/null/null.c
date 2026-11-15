@@ -185,7 +185,10 @@ static void null_scissor_current(IntRect *scissor) { *scissor = (IntRect) {}; }
 static void null_vsync(VsyncMode mode) { }
 static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
-static void null_swap(SDL_Window *window) { }
+static void null_await_frame(bool low_latency) { }
+static void null_begin_frame(void) { }
+static void null_end_frame(void) { }
+static bool null_present_frame(void) { return false; }
 
 RendererBackend _r_backend_null = {
 	.name = "null",
@@ -282,6 +285,9 @@ RendererBackend _r_backend_null = {
 		.scissor_current = null_scissor_current,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
-		.swap = null_swap,
+		.await_frame = null_await_frame,
+		.begin_frame = null_begin_frame,
+		.end_frame = null_end_frame,
+		.present_frame = null_present_frame,
 	},
 };

@@ -837,8 +837,10 @@ const Model *r_model_get_quad(void) attr_returns_nonnull;
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
 
+void r_await_frame(bool low_latency);
 void r_begin_frame(void);
-void r_swap(SDL_Window *window);
+void r_end_frame(void);
+bool r_present_frame(void);
 
 void r_mat_mv_push(void);
 void r_mat_mv_push_premade(mat4 mat);

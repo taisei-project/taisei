@@ -78,6 +78,8 @@ int main(int argc, char **argv) {
 	float a = 0;
 
 	while(!taisei_quit_requested()) {
+		r_await_frame(false);
+		events_poll(NULL, 0);
 		r_begin_frame();
 
 		r_mat_mv_push();
@@ -87,8 +89,8 @@ int main(int argc, char **argv) {
 		r_draw_model_ptr(&cube, 1, 0);
 		r_mat_mv_pop();
 
-		events_poll(NULL, 0);
-		video_swap_buffers();
+		r_end_frame();
+		r_present_frame();
 
 		fpscounter_update(&fps);
 

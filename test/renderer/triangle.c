@@ -69,11 +69,13 @@ int main(int argc, char **argv) {
 	r_shader_ptr(prog);
 
 	while(!taisei_quit_requested()) {
+		r_await_frame(false);
+		events_poll(NULL, 0);
 		r_begin_frame();
 		r_clear(BUFFER_COLOR, RGB(0, 0, 0), 1);
 		r_draw_model_ptr(&triangle, 1, 0);
-		events_poll(NULL, 0);
-		video_swap_buffers();
+		r_end_frame();
+		r_present_frame();
 	}
 
 	r_vertex_buffer_destroy(vert_buf);

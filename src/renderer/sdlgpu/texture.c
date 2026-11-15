@@ -670,7 +670,7 @@ void sdlgpu_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, u
 
 	if(!covers_whole && tex->load.op == SDL_GPU_LOADOP_CLEAR) {
 		sdlgpu_stop_current_pass(CBUF_UPLOAD);
-		SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.upload_cbuf,
+		SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.command_buffers.upload,
 			&(SDL_GPUColorTargetInfo) {
 				.clear_color = tex->load.clear.color.sdl_fcolor,
 				.load_op = SDL_GPU_LOADOP_CLEAR,
@@ -719,7 +719,7 @@ void sdlgpu_texture_prepare(Texture *tex) {
 
 		for(uint mip = 0; mip < tex->params.mipmaps; ++mip) {
 			for(uint layer = 0; layer < tex->params.layers; ++layer) {
-				SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.cbuf,
+				SDL_EndGPURenderPass(SDL_BeginGPURenderPass(sdlgpu.frame.command_buffers.draw,
 					&(SDL_GPUColorTargetInfo) {
 						.clear_color = tex->load.clear.color.sdl_fcolor,
 						.load_op = SDL_GPU_LOADOP_CLEAR,
@@ -741,7 +741,7 @@ void sdlgpu_texture_prepare(Texture *tex) {
 	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
 		log_debug("Generating mipmaps for %p (%s)", tex, tex->debug_label);
 		sdlgpu_stop_current_pass(CBUF_DRAW);
-		SDL_GenerateMipmapsForGPUTexture(sdlgpu.frame.cbuf, tex->gpu_texture);
+		SDL_GenerateMipmapsForGPUTexture(sdlgpu.frame.command_buffers.draw, tex->gpu_texture);
 		tex->mipmaps_outdated = false;
 	}
 }
@@ -836,7 +836,7 @@ SDL_GPUCopyPass *sdlgpu_texture_copy(
 
 	if(size_mismatch || src->texture->gpu_format != dst->texture->gpu_format) {
 		for(uint layer = 0; layer < layers; ++layer) {
-			SDL_BlitGPUTexture(sdlgpu.frame.command_buffers[CBUF_DRAW], &(SDL_GPUBlitInfo) {
+			SDL_BlitGPUTexture(sdlgpu.frame.command_buffers.draw, &(SDL_GPUBlitInfo) {
 				.cycle = cycle,
 				.source = {
 					.texture = src->texture->gpu_texture,

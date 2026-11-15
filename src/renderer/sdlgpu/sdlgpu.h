@@ -21,10 +21,13 @@
 typedef uint16_t sdlgpu_id_t;
 
 typedef enum CommandBufferID {
+	// NOTE ORDER MATTERS: UPLOAD BEFORE DRAW, and CBUFS_FOR_RENDERING go FIRST
 	CBUF_UPLOAD,
 	CBUF_DRAW,
+	CBUF_PRESENT,
 
-	NUM_CBUFS,
+	NUM_CBUFS_TOTAL,
+	NUM_CBUFS_FOR_RENDERING = 2,
 } CommandBufferID;
 
 typedef struct SDLGPUGlobal {
@@ -36,11 +39,16 @@ typedef struct SDLGPUGlobal {
 	struct {
 		union {
 			struct {
-				SDL_GPUCommandBuffer *upload_cbuf;
-				SDL_GPUCommandBuffer *cbuf;
+				// NOTE matches enum order!
+				SDL_GPUCommandBuffer *upload;
+				SDL_GPUCommandBuffer *draw;
+				SDL_GPUCommandBuffer *present;
 			};
-			SDL_GPUCommandBuffer *command_buffers[NUM_CBUFS];
-		};
+			union {
+				SDL_GPUCommandBuffer *all[NUM_CBUFS_TOTAL];
+				SDL_GPUCommandBuffer *for_rendering[NUM_CBUFS_FOR_RENDERING];
+			};
+		} command_buffers;
 
 		struct {
 			SDL_GPUTexture *tex;
@@ -59,6 +67,8 @@ typedef struct SDLGPUGlobal {
 		} faux_backbuffer;
 
 		uint counter;
+
+		bool low_latency;
 	} frame;
 
 	struct {
@@ -80,7 +90,7 @@ typedef struct SDLGPUGlobal {
 	} render_pass;
 
 	struct {
-		SDL_GPUCopyPass *for_cbuf[NUM_CBUFS];
+		SDL_GPUCopyPass *for_cbuf[NUM_CBUFS_TOTAL];
 	} copy_pass;
 
 	struct {

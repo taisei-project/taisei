@@ -134,8 +134,10 @@ typedef struct RendererFuncs {
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);
 
+	void (*await_frame)(bool low_latency);
 	void (*begin_frame)(void);
-	void (*swap)(SDL_Window *window);
+	void (*end_frame)(void);
+	bool (*present_frame)(void);
 } RendererFuncs;
 
 typedef struct RendererBackend {

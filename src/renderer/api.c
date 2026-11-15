@@ -849,23 +849,21 @@ VsyncMode r_vsync_current(void) {
 	return B.vsync_current();
 }
 
-void r_begin_frame(void) {
-	if(R.frames == 0) {
-		R.begin_time = time_get();
-	}
-
-	if(B.begin_frame) {
-		B.begin_frame();
-	}
+void r_await_frame(bool low_latency) {
+	B.await_frame(low_latency);
 }
 
-void r_swap(SDL_Window *window) {
-	coroutines_draw_stats();
-	debug_text_draw();
-	_r_sprite_batch_end_frame();
-	B.swap(window);
+void r_begin_frame(void) {
+	B.begin_frame();
+}
 
-	R.frames++;
+void r_end_frame(void) {
+	_r_sprite_batch_end_frame();
+	B.end_frame();
+}
+
+bool r_present_frame(void) {
+	return B.present_frame();
 }
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this

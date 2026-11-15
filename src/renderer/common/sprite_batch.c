@@ -390,6 +390,7 @@ void _r_sprite_batch_end_frame(void) {
 	});
 
 	_r_sprite_batch.frame_stats = (typeof(_r_sprite_batch.frame_stats)) {};
+	r_flush_sprites();
 #endif
 }
 

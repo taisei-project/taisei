@@ -268,6 +268,9 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
+	r_await_frame(false);
+	r_begin_frame();
+
 	ResourceGroup rg;
 	res_group_init(&rg);
 	res_group_preload(&rg, RES_TEXTURE, RESF_DEFAULT, "loading", NULL);
@@ -283,7 +286,8 @@ void draw_loading_screen(void) {
 		.color = RGBA(0.35, 0.35, 0.35, 0.35),
 	});
 
-	video_swap_buffers();
+	r_end_frame();
+	r_present_frame();
 	res_group_release(&rg);
 }
 

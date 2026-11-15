@@ -76,6 +76,8 @@ Framebuffer *video_postprocess_render(VideoPostProcess *vpp) {
 		return NULL;
 	}
 
+	r_flush_sprites();
+
 	postprocess(
 		vpp->pp_pipeline,
 		&vpp->framebuffers,

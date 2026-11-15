@@ -30,6 +30,13 @@
 // #define GL33_DEBUG_TEXUNITS
 // #define GL33_DRAW_STATS
 
+typedef enum FrameStatus {
+	FRAME_STATUS_UNDEFINED,
+	FRAME_STATUS_ACQUIRED,
+	FRAME_STATUS_BEGUN,
+	FRAME_STATUS_RENDERED,
+} FrameStatus;
+
 typedef struct TextureUnit {
 	LIST_INTERFACE(struct TextureUnit);
 
@@ -111,14 +118,16 @@ static struct {
 		bool active_enabled;
 	} scissor;
 
+	SDL_GLContext gl_context;
+	SDL_Window *window;
+
 	Color color;
 	Color clear_color;
 	float clear_depth;
 	r_feature_bits_t features;
+	FrameStatus frame_status;
 	VsyncMode vsync_mode;
-
-	SDL_GLContext gl_context;
-	SDL_Window *window;
+	bool low_latency;
 
 #ifndef STATIC_GLES3
 	bool fb_sRGB_state;
@@ -1449,25 +1458,64 @@ void gl33_set_clear_depth(float depth) {
 	}
 }
 
-static void gl33_swap(SDL_Window *window) {
-	r_flush_sprites();
-
-	Framebuffer *prev_fb = r_framebuffer_current();
-	r_framebuffer(NULL);
-	gl33_sync_framebuffer();
-#ifndef __EMSCRIPTEN__
-	SDL_GL_SwapWindow(window);
-#endif
-	r_framebuffer(prev_fb);
+static void gl33_await_frame(bool low_latency) {
+	assert(
+		R.frame_status == FRAME_STATUS_UNDEFINED ||
+		R.frame_status == FRAME_STATUS_RENDERED ||
+		R.frame_status == FRAME_STATUS_ACQUIRED);
 
 	gl33_framebuffer_process_read_requests();
-	gl33_stats_post_frame();
+
+	if(low_latency) {
+		// on some drivers this stalls until the flip from SwapBuffers happens
+		glFinish();
+
+		// some implementations acquire the backbuffer lazily
+		// hopefully this will trick one into doing it early
+		// doesn't hurt anything if it doesn't work
+		gl33_framebuffer_clear(NULL, BUFFER_ALL, &RGBA(0, 0, 0, 1), 1);
+		glFlush();
+	}
+
+	R.low_latency = low_latency;
+	R.frame_status = FRAME_STATUS_ACQUIRED;
+}
+
+static void gl33_begin_frame(void) {
+	assert(R.frame_status== FRAME_STATUS_ACQUIRED);
+	R.frame_status = FRAME_STATUS_BEGUN;
+}
+
+static void gl33_end_frame(void) {
+	assert(R.frame_status== FRAME_STATUS_BEGUN);
+
+	if(R.low_latency) {
+		glFinish();
+	}
 
 	// We can't rely on viewport being preserved across frames,
 	// so force the next frame to set one on the first draw call.
 	// The viewport might get updated externally when e.g. going
 	// fullscreen, and we can't catch that in the resize event.
 	R.viewport.active = (typeof(R.viewport.active)) {};
+
+	R.frame_status = FRAME_STATUS_RENDERED;
+
+	gl33_stats_post_frame();
+}
+
+static bool gl33_present_frame(void) {
+	assert(R.frame_status == FRAME_STATUS_RENDERED || R.frame_status == FRAME_STATUS_ACQUIRED);
+
+	Framebuffer *prev_fb = r_framebuffer_current();
+	r_framebuffer(NULL);
+	gl33_sync_framebuffer();   // some crappy drivers freak out without this, and i forgot which ones
+#ifndef __EMSCRIPTEN__   // FIXME maybe we can use explicit swap control on Emscripten somehow?
+	SDL_GL_SwapWindow(R.window);
+#endif
+	r_framebuffer(prev_fb);
+
+	return true;
 }
 
 static void gl33_blend(BlendMode mode) {
@@ -1598,7 +1646,10 @@ RendererBackend _r_backend_gl33 = {
 		.scissor_current = gl33_scissor_current,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
-		.swap = gl33_swap,
+		.await_frame = gl33_await_frame,
+		.begin_frame = gl33_begin_frame,
+		.end_frame = gl33_end_frame,
+		.present_frame = gl33_present_frame,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
