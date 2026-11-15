@@ -142,6 +142,8 @@ void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc);
 bool log_add_filter_string(const char *fstr);
 void log_remove_filters(void);
 
+size_t log_util_module_name(const char *filename, size_t filename_len, char *mod, size_t mod_buffer_size);
+
 #if defined(DEBUG)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
 #else

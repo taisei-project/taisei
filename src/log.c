@@ -152,9 +152,7 @@ static void add_debug_info(StringBuffer *buf) {
 	});
 }
 
-#define MODULE_BUFFER_SIZE 128
-
-static size_t modname(const char *filename, size_t filename_len, char *mod) {
+size_t log_util_module_name(const char *filename, size_t filename_len, char *mod, size_t mod_buffer_size) {
 	size_t mlen = filename_len;
 
 	const char *dot = memchr(filename, '.', mlen);
@@ -162,8 +160,8 @@ static size_t modname(const char *filename, size_t filename_len, char *mod) {
 		mlen = dot - filename;
 	}
 
-	if(mlen >= MODULE_BUFFER_SIZE) {
-		mlen = MODULE_BUFFER_SIZE - 1;
+	if(mlen >= mod_buffer_size) {
+		mlen = mod_buffer_size - 1;
 	}
 
 	memcpy(mod, filename, mlen);
@@ -230,12 +228,12 @@ static void log_dispatch(LogEntry *entry, StringBuffer *fmt_buf) {
 	bool init = false;
 	LogLevel filter_lvlmask = LOG_ALL;
 
-	char mbuf[MODULE_BUFFER_SIZE];
+	char mbuf[128];
 
 	for(Logger *l = logging.outputs; l; l = l->next) {
 		if(l->levels & entry->level) {
 			if(!init) {
-				modname(entry->file, strlen(entry->file), mbuf);
+				log_util_module_name(entry->file, strlen(entry->file), mbuf, sizeof(mbuf));
 
 				DIAGNOSTIC_GCC(push)
 				DIAGNOSTIC_GCC(ignored "-Wpragmas")
