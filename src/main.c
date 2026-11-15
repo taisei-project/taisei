@@ -42,10 +42,11 @@
 #include "watchdog.h"
 
 #include <cglm/version.h>
+#include <errno.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <unibreakbase.h>
 #include <locale.h>
+#include <unibreakbase.h>
 #include <webp/decode.h>
 #include <zlib.h>
 #include <zstd.h>
@@ -114,16 +115,46 @@ static void init_log(void) {
 	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false), log_formatter_console);
 }
 
+static SDL_IOStream *open_log_file(const char *log_path) {
+	auto io = vfs_open(log_path, VFS_MODE_WRITE);
+
+	if(!io) {
+		log_error("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	auto prop = SDL_GetIOProperties(io);
+	if(prop) {
+		auto fp = SDL_GetPointerProperty(prop, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, NULL);
+		if(fp) {
+			errno = 0;
+			int r = setvbuf(fp, NULL, _IOLBF, BUFSIZ);
+			if(r) {
+				if(errno) {
+					log_warn("setvbuf() failed: %s", strerror(errno));
+				} else {
+					log_warn("setvbuf() failed");
+				}
+			}
+		}
+	}
+
+	return io;
+}
+
 static void init_log_file(MemArena *scratch) {
 	const char *log_path = "storage/log.txt";
-
-	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", ""));
-	log_add_output(lvls_file, vfs_open(log_path, VFS_MODE_WRITE), log_formatter_file);
-
 	auto buf = STRBUF(scratch);
 
-	if(vfs_query(log_path).exists && vfs_repr(log_path, true, &buf)) {
-		strbuf_printf(&buf, "For more information, see the log file at %s\n\n", strbuf_commit(&buf));
+	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", ""));
+
+	auto log_io = open_log_file(log_path);
+	if(log_io) {
+		log_add_output(lvls_file, log_io, log_formatter_file);
+
+		if(vfs_repr(log_path, true, &buf)) {
+			strbuf_printf(&buf, "For more information, see the log file at %s\n\n", strbuf_commit(&buf));
+		}
 	}
 
 	strbuf_cat(&buf, "Please report the problem to the developers at https://taisei-project.org/ if it persists.");
