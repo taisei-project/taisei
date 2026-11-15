@@ -507,6 +507,11 @@ static bool sdlgpu_init(RendererBackend *backend, const RendererInitParams *para
 		shader_formats |= SDL_GPU_SHADERFORMAT_DXBC;
 	}
 
+	// HACK: ask Mesa nicely to not inject extra input lag.
+	// Must be done before the device is created, and must use SDL_setenv_unsafe to affect
+	// the real environment table, not just SDL's copy.
+	SDL_setenv_unsafe("vk_x11_override_min_image_count", "2", false);
+
 	sdlgpu.debug = env_get("TAISEI_SDLGPU_DEBUG", false);
 	bool lowpower = env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false);
 	SDL_PropertiesID props = SDL_CreateProperties();
