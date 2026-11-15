@@ -218,7 +218,18 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 	gl33_sync_scissor();
 	// TODO track this?
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->gl_fbo);
-	glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags, size_mismatch ? GL_LINEAR : GL_NEAREST);
+
+	if(size_mismatch) {
+		if(glflags & GL_DEPTH_BUFFER_BIT) {
+			// mesa yelled at me
+			glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		}
+
+		glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags & ~GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+	} else {
+		glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags, GL_NEAREST);
+	}
+
 	r_framebuffer(fb_saved);
 }
 
