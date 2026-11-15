@@ -542,23 +542,38 @@ static void sdlgpu_unclaim_window(SDL_Window *window) {
 	sdlgpu.window = NULL;
 }
 
+static SDL_GPUPresentMode pick_present_mode(size_t num_modes, SDL_GPUPresentMode modes[num_modes]) {
+	for(int i = 0; i < num_modes; ++i) {
+		if(SDL_WindowSupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, modes[i])) {
+			return modes[i];
+		}
+	}
+
+	return SDL_GPU_PRESENTMODE_VSYNC;  // always supported
+}
+
 static void sdlgpu_vsync(VsyncMode mode) {
 	SDL_GPUPresentMode present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 
 	switch(mode) {
 		case VSYNC_NONE:
-			present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
-
-			if(!SDL_WindowSupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
-				present_mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
-
-				if(!SDL_WindowSupportsGPUPresentMode(sdlgpu.device, sdlgpu.window, present_mode)) {
-					present_mode = SDL_GPU_PRESENTMODE_VSYNC;
-				}
-			}
+			present_mode = ({
+				// prefer immediate for lowest latency despite possible tearing
+				SDL_GPUPresentMode m[] = { SDL_GPU_PRESENTMODE_IMMEDIATE, SDL_GPU_PRESENTMODE_MAILBOX };
+				pick_present_mode(countof(m), m);
+			});
+			break;
 
 		case VSYNC_NORMAL:
+			present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+			break;
+
 		case VSYNC_ADAPTIVE:
+			present_mode = ({
+				// prefer mailbox for zero tearing, at the cost of slight latency
+				SDL_GPUPresentMode m[] = { SDL_GPU_PRESENTMODE_MAILBOX, SDL_GPU_PRESENTMODE_IMMEDIATE };
+				pick_present_mode(countof(m), m);
+			});
 			break;
 	}
 
@@ -570,8 +585,9 @@ static VsyncMode sdlgpu_vsync_current(void) {
 		case SDL_GPU_PRESENTMODE_VSYNC:
 			return VSYNC_NORMAL;
 		case SDL_GPU_PRESENTMODE_IMMEDIATE:
-		case SDL_GPU_PRESENTMODE_MAILBOX:
 			return VSYNC_NONE;
+		case SDL_GPU_PRESENTMODE_MAILBOX:
+			return VSYNC_ADAPTIVE;
 		default: UNREACHABLE;
 	}
 }
