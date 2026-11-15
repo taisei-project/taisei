@@ -9,6 +9,19 @@
 #pragma once
 #include "taisei.h"
 
+typedef struct IntRatio {
+	int num;
+	int den;
+} IntRatio;
+
+INLINE double int_ratio_to_double(IntRatio r) {
+	return (double)r.num / r.den;
+}
+
+INLINE bool int_ratio_equals(IntRatio a, IntRatio b) {
+	return a.num == b.num && a.den == b.den;
+}
+
 #define DEG2RAD (M_PI / 180.0)
 #define RAD2DEG (180.0 / M_PI)
 #define GOLDEN_RATIO 1.618033988749895
