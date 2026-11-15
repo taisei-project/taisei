@@ -115,6 +115,7 @@ static struct {
 	Color clear_color;
 	float clear_depth;
 	r_feature_bits_t features;
+	VsyncMode vsync_mode;
 
 	SDL_GLContext gl_context;
 	SDL_Window *window;
@@ -1295,8 +1296,7 @@ static void gl33_vsync(VsyncMode mode) {
 		case VSYNC_NONE:     interval =  0; break;
 		case VSYNC_NORMAL:   interval =  1; break;
 		case VSYNC_ADAPTIVE: interval = -1; break;
-		default:
-			log_fatal("Unknown mode 0x%x", mode);
+		default: UNREACHABLE;
 	}
 
 set_interval:
@@ -1311,17 +1311,20 @@ set_interval:
 			goto set_interval;
 		}
 	}
-}
 
-static VsyncMode gl33_vsync_current(void) {
-	int interval = 0;
 	SDL_GL_GetSwapInterval(&interval);
 
 	if(interval == 0) {
-		return VSYNC_NONE;
+		R.vsync_mode = VSYNC_NONE;
+	} else if(interval > 0) {
+		R.vsync_mode = VSYNC_NORMAL;
+	} else {
+		R.vsync_mode = VSYNC_ADAPTIVE;
 	}
+}
 
-	return interval > 0 ? VSYNC_NORMAL : VSYNC_ADAPTIVE;
+static VsyncMode gl33_vsync_current(void) {
+	return R.vsync_mode;
 }
 
 static void gl33_color4(float r, float g, float b, float a) {
