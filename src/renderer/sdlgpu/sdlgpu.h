@@ -64,7 +64,7 @@ typedef struct SDLGPUGlobal {
 			SDL_GPUTextureFormat fmt;
 			uint32_t width;
 			uint32_t height;
-		} faux_backbuffer;
+		} faux_backbuffer, old_faux_backbuffer;
 
 		uint counter;
 

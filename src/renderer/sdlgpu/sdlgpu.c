@@ -153,7 +153,13 @@ static void sdlgpu_update_faux_backbuffer(void) {
 			sdlgpu.frame.faux_backbuffer.height != sdlgpu.frame.swapchain.height
 		) && sdlgpu.frame.faux_backbuffer.tex != NULL
 	) {
-		SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);
+		// SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);
+
+		if(sdlgpu.frame.old_faux_backbuffer.tex) {
+			SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.old_faux_backbuffer.tex);
+		}
+
+		sdlgpu.frame.old_faux_backbuffer = sdlgpu.frame.faux_backbuffer;
 		sdlgpu.frame.faux_backbuffer.tex = NULL;
 	}
 
@@ -320,6 +326,11 @@ static void sdlgpu_begin_frame(void) {
 		ensure_command_buffer(i);
 		sdlgpu_cmdbuf_debug(sdlgpu.frame.command_buffers.for_rendering[i], "Begin frame %u", sdlgpu.frame.counter);
 	}
+
+	if(sdlgpu.frame.old_faux_backbuffer.tex) {
+		SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.old_faux_backbuffer.tex);
+		sdlgpu.frame.old_faux_backbuffer.tex = NULL;
+	}
 }
 
 static SDL_GPUFence *submit_command_buffer(CommandBufferID id, bool with_fence) {
@@ -409,6 +420,28 @@ static bool sdlgpu_present_frame(void) {
 	assert(sdlgpu.frame.swapchain.width == sdlgpu.frame.faux_backbuffer.width);
 	assert(sdlgpu.frame.swapchain.height == sdlgpu.frame.faux_backbuffer.height);
 	assert(sdlgpu.frame.swapchain.fmt == sdlgpu.frame.faux_backbuffer.fmt);
+
+	// Backbuffer was recreated and never drawn into, so its contents are invalid
+	// Blit the previous image as a fallback
+	if(sdlgpu.frame.old_faux_backbuffer.tex) {
+		SDL_BlitGPUTexture(sdlgpu.frame.command_buffers.present, &(SDL_GPUBlitInfo) {
+			.filter = SDL_GPU_FILTER_LINEAR,
+			.load_op = SDL_GPU_LOADOP_DONT_CARE,
+			.source = {
+				.texture = sdlgpu.frame.old_faux_backbuffer.tex,
+				.w = sdlgpu.frame.old_faux_backbuffer.width,
+				.h = sdlgpu.frame.old_faux_backbuffer.height,
+			},
+			.destination = {
+				.texture = sdlgpu.frame.faux_backbuffer.tex,
+				.w = sdlgpu.frame.faux_backbuffer.width,
+				.h = sdlgpu.frame.faux_backbuffer.height,
+			},
+		});
+
+		SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.old_faux_backbuffer.tex);
+		sdlgpu.frame.old_faux_backbuffer.tex = NULL;
+	}
 
 	SDL_CopyGPUTextureToTexture(sdlgpu_begin_or_resume_copy_pass(CBUF_PRESENT),
 		&(SDL_GPUTextureLocation) { .texture = sdlgpu.frame.faux_backbuffer.tex, },
@@ -584,6 +617,7 @@ static void sdlgpu_shutdown(void) {
 	}
 
 	SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.faux_backbuffer.tex);
+	SDL_ReleaseGPUTexture(sdlgpu.device, sdlgpu.frame.old_faux_backbuffer.tex);
 
 	sdlgpu_pipecache_deinit();
 	SDL_ReleaseWindowFromGPUDevice(sdlgpu.device, sdlgpu.window);
