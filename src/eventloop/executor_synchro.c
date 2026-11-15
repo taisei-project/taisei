@@ -122,15 +122,76 @@ typedef struct Unlagger {
 	uint misses;
 } Unlagger;
 
+// SDL's reported refresh rate can fucking lie apparently, e.g. gamescope on steam deck always reports something north
+// of ~90 Hz even if the real rate is different (changed by the menu slider). Which means we have to do this annoying
+// shit to estimate the real rate, thank Valve love you too.
+
+#define RATE_ESTIMATOR_MAX_SPREAD	0.015
+#define RATE_ESTIMATOR_MIN_BLOCK	SDL_US_TO_NS(100)
+
+typedef struct RateEstimator {
+	hrtime_t samples[67];  //  SIX SEVEN!!!! SIX SEVEEEEN!!!!!!!!!! XDDDDDDDDDDDDDDDDDDDDDDDDXDDDXDDDDDDDDDD!!!!!!!!
+	hrtime_t threshold;
+	uint num_samples;
+	uint next_sample;
+} RateEstimator;
+
 typedef struct DisplayPacer {
 	hrtime_t last_sync_time;
 	hrtime_t vblank_period;
 	IntRatio display_rate;
 	IntRatio paced_rate;
 	uint64_t accum;
+	uint64_t raw_accum;
 	uint logic_rate;
+	uint nonblocking_vsync_streak;
+	RateEstimator rate_estimator;
 	Unlagger unlagger;
 } DisplayPacer;
+
+static void rate_estimator_add_sample(RateEstimator *e, hrtime_t sample) {
+	e->samples[e->next_sample] = sample;
+	e->next_sample = (e->next_sample + 1) % countof(e->samples);
+	e->num_samples = min(e->num_samples + 1, countof(e->samples));
+}
+
+static int hrtime_cmp(const void *pa, const void *pb) {
+	hrtime_t a = *(const hrtime_t*)pa;
+	hrtime_t b = *(const hrtime_t*)pb;
+	return (a > b) - (a < b);
+}
+
+static hrtime_t rate_estimator_median_period(const RateEstimator *e) {
+	if(e->num_samples < countof(e->samples)) {
+		return 0;
+	}
+
+	hrtime_t sorted[countof(e->samples)];
+	memcpy(sorted, e->samples, sizeof(sorted));
+	qsort(sorted, countof(sorted), sizeof(*sorted), hrtime_cmp);
+
+	hrtime_t q1 = sorted[countof(e->samples) / 4];
+	hrtime_t q2 = sorted[countof(e->samples) / 2];
+	hrtime_t q3 = sorted[countof(e->samples) * 3 / 4];
+
+	attr_unused auto spread = (double)(q3 - q1)/q2;
+	bool ok = q3 - q1 <= q2 * RATE_ESTIMATOR_MAX_SPREAD;
+
+	debug_text("Median: %0.2f Hz  q3~q1: %.02f Hz ~ %.02f Hz  spread: %.05f %s",
+		HRTIME_RESOLUTION / (double)q2,
+		HRTIME_RESOLUTION / (double)q3,
+		HRTIME_RESOLUTION / (double)q1,
+		spread, ok ? "(good)" : "(bad)"
+	);
+
+	if(!ok) {
+		debug_text("%zu > %g (spread: %0.8f)", q3 - q1, q2 * RATE_ESTIMATOR_MAX_SPREAD, spread);
+		// too much noise; rate possibly just changed
+		return 0;
+	}
+
+	return q2;
+}
 
 static IntRatio snap_refresh_rate(IntRatio refresh_rate, uint logic_rate) {
 	if(UNLIKELY(refresh_rate.num <= 0)) {
@@ -171,13 +232,24 @@ static hrtime_t rate_to_period(IntRatio rate) {
 	return HRTIME_RESOLUTION * rate.den / rate.num;
 }
 
+static double periods_mismatch(hrtime_t a, hrtime_t b) {
+	return fabs((double)a / (double)b - 1.0);
+}
+
 static DisplayPacer display_pacer_init(uint logic_rate) {
+	// We'll be optimistic and trust the reported rate initially, if it's known.
+	// We'll still measure it in the background and adjust it if it differs significantly.
+	// The measurement is not always reliable, sometimes the iqr spread is too high and it just never converges.
+	// This can happen in windowed mode on my Linux Wayland system (niri), although fullscreen converges fine (probably
+	// when the game gets unredirected by the compositor, which is what you want).
+	// On most setups the reported rate should, hopefully, be correct, so a failed measurement won't be a problem.
 	IntRatio display_rate = video_get_refresh_rate();
 
 	return (DisplayPacer) {
 		.last_sync_time = time_get(),
 		.logic_rate = logic_rate,
 		.unlagger.min_block_time = INT64_MAX,
+		.rate_estimator.threshold = RATE_ESTIMATOR_MIN_BLOCK,
 		.display_rate = display_rate,
 		.paced_rate = snap_refresh_rate(display_rate, logic_rate),
 		.vblank_period = display_rate.den > 0 ? rate_to_period(display_rate) : 0,
@@ -193,9 +265,62 @@ static void display_pacer_reset(DisplayPacer *p, uint logic_rate) {
 
 	p->logic_rate = logic_rate;
 	p->accum = 0;
+	p->raw_accum = 0;
 	p->unlagger.delay = 0;
 	p->unlagger.hold_frames = 0;
 	p->unlagger.window_frames = 0;
+}
+
+static bool display_pacer_update_rate(DisplayPacer *p) {
+	hrtime_t measured_period = rate_estimator_median_period(&p->rate_estimator);
+
+	if(!measured_period) {
+		// not enough data, keep the last known rate for now
+		return p->vblank_period > 0;
+	}
+
+	double snap_tolerance = 0.01;
+	double drift_tolerance = 0.015;
+
+	if(p->vblank_period > 0) {
+		auto mismatch = periods_mismatch(measured_period, p->vblank_period);
+		debug_text("Rate mismatch: %0.04f  /  %0.04f", mismatch, drift_tolerance);
+		if(mismatch <= drift_tolerance) {
+			return true;
+		}
+	}
+
+	IntRatio reported_rate = video_get_refresh_rate();
+	IntRatio rate;
+
+	if(reported_rate.num > 0 && periods_mismatch(measured_period, rate_to_period(reported_rate)) <= snap_tolerance) {
+		// close enough, trust the reported rate
+		rate = reported_rate;
+	} else {
+		// fucking liar
+		rate = (IntRatio) { lround(1e12 / measured_period), 1000 };
+	}
+
+	if(int_ratio_equals(p->display_rate, rate)) {
+		return true;
+	}
+
+	p->display_rate = rate;
+	p->paced_rate = snap_refresh_rate(rate, p->logic_rate);
+	p->vblank_period = rate_to_period(rate);
+	p->unlagger = (Unlagger) {
+		.min_block_time = INT64_MAX,
+		.target_slack = p->unlagger.target_slack,
+	};
+	p->accum = 0;
+
+	log_info("Display refresh rate: reported %g Hz, measured %g Hz; pacing as if %g Hz",
+		int_ratio_to_double(reported_rate),
+		(double)HRTIME_RESOLUTION / measured_period,
+		int_ratio_to_double(p->paced_rate)
+	);
+
+	return true;
 }
 
 static void display_pacer_unlagger_update(
@@ -273,16 +398,41 @@ static uint display_pacer_update(
 	hrtime_t elapsed = now - p->last_sync_time;
 	p->last_sync_time = now;
 
+	bool blocked = blocked_time >= p->rate_estimator.threshold;
+
+	if(blocked && !p->nonblocking_vsync_streak) {
+		rate_estimator_add_sample(&p->rate_estimator, elapsed);
+		debug_text("Vsync blocked: YES");
+	} else {
+		debug_text("Vsync blocked: NO");
+	}
+
+	if(blocked) {
+		p->nonblocking_vsync_streak = 0;
+	} else {
+		++p->nonblocking_vsync_streak;
+	}
+
+	debug_text("Non-blocking vsyncs: %u", p->nonblocking_vsync_streak);
+
 	// TODO: detect non-blocking presentation and sleep
 	// Can happen when e.g. the window is minimized or the driver is dogshit
 
-	IntRatio display_rate = video_get_refresh_rate();
+	if(!display_pacer_update_rate(p)) {
+		debug_text("Display: measuring refresh rate (%u/%zu)",
+			p->rate_estimator.num_samples, countof(p->rate_estimator.samples));
 
-	if(!int_ratio_equals(p->display_rate, display_rate)) {
-		p->display_rate = display_rate;
-		p->paced_rate = snap_refresh_rate(display_rate, p->logic_rate);
-		p->vblank_period = rate_to_period(display_rate);
-		p->accum = 0;
+		p->raw_accum += elapsed * p->logic_rate;
+		auto ticks = p->raw_accum / HRTIME_RESOLUTION;
+
+		if(ticks > MAX_LAG_FRAMES) {
+			display_pacer_lag_report(p, elapsed);
+			p->raw_accum = 0;
+			return 1;
+		}
+
+		p->raw_accum -= ticks * HRTIME_RESOLUTION;
+		return ticks;
 	}
 
 	debug_text("Display: %g Hz, pacing: %g Hz",
@@ -305,6 +455,7 @@ static uint display_pacer_update(
 	const hrtime_t jitter = SDL_US_TO_NS(1000);
 	bool late = (elapsed > p->vblank_period + jitter || vblanks > 1) && prev_work_time < p->vblank_period;
 	display_pacer_unlagger_update(p, wait, vblanks, blocked_time, prev_work_time, late);
+	p->rate_estimator.threshold = p->unlagger.target_slack;// - (p->unlagger.target_slack >> 2);
 
 	return ticks;
 }
