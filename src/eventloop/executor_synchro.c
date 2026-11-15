@@ -103,6 +103,25 @@ static hrtime_t timer_pacer_update(TimerPacer *p, WaitState *wait) {
 	return timer_pacer_deadline(p, p->frames + 1);
 }
 
+#define UNLAGGER_WINDOW				 			20
+#define UNLAGGER_HOLD_FRAMES		 			120
+#define UNLAGGER_DELAY_BACKOFF		 			SDL_US_TO_NS(400)
+#define UNLAGGER_DELAY_GAIN			 			0.1
+#define UNLAGGER_DELAY_TARGET_SLACK_MIN			SDL_US_TO_NS(500)
+#define UNLAGGER_DELAY_TARGET_SLACK_MAX			SDL_US_TO_NS(3000)
+#define UNLAGGER_DELAY_TARGET_SLACK_BACKOFF		SDL_US_TO_NS(100)
+#define UNLAGGER_DELAY_TARGET_SLACK_RECOVER		0.0005
+
+typedef struct Unlagger {
+	hrtime_t delay;
+	hrtime_t min_block_time;
+	hrtime_t max_block_time;
+	hrtime_t target_slack;
+	uint hold_frames;
+	uint window_frames;
+	uint misses;
+} Unlagger;
+
 typedef struct DisplayPacer {
 	hrtime_t last_sync_time;
 	hrtime_t vblank_period;
@@ -110,6 +129,7 @@ typedef struct DisplayPacer {
 	IntRatio paced_rate;
 	uint64_t accum;
 	uint logic_rate;
+	Unlagger unlagger;
 } DisplayPacer;
 
 static IntRatio snap_refresh_rate(IntRatio refresh_rate, uint logic_rate) {
@@ -157,6 +177,7 @@ static DisplayPacer display_pacer_init(uint logic_rate) {
 	return (DisplayPacer) {
 		.last_sync_time = time_get(),
 		.logic_rate = logic_rate,
+		.unlagger.min_block_time = INT64_MAX,
 		.display_rate = display_rate,
 		.paced_rate = snap_refresh_rate(display_rate, logic_rate),
 		.vblank_period = display_rate.den > 0 ? rate_to_period(display_rate) : 0,
@@ -172,6 +193,72 @@ static void display_pacer_reset(DisplayPacer *p, uint logic_rate) {
 
 	p->logic_rate = logic_rate;
 	p->accum = 0;
+	p->unlagger.delay = 0;
+	p->unlagger.hold_frames = 0;
+	p->unlagger.window_frames = 0;
+}
+
+static void display_pacer_unlagger_update(
+	DisplayPacer *p, WaitState *wait,
+	uint vblanks, hrtime_t blocked_time, hrtime_t prev_work_time, bool late
+) {
+	// Here we play chicken with the vblank interval.
+	// Try to delay doing any work as much as possible so we can land the frame just in
+	// time for the refresh. This reduces input latency, because the input gets sampled
+	// much closer to the actual time the frame gets displayed on the screen. Otherwise
+	// backpressure builds up and we get at least one full frame of latency. See also the
+	// comment in eventloop_run() below.
+
+	auto u = &p->unlagger;
+	u->min_block_time = min(u->min_block_time, blocked_time);
+	u->max_block_time = max(u->max_block_time, blocked_time);
+	u->target_slack = max(u->target_slack, UNLAGGER_DELAY_TARGET_SLACK_MIN);
+
+	const hrtime_t min_work_time = SDL_US_TO_NS(500);
+
+	if(late) {
+		u->delay = max(0, (shrtime_t)u->delay - (shrtime_t)UNLAGGER_DELAY_BACKOFF);
+		u->target_slack = min(u->target_slack + UNLAGGER_DELAY_TARGET_SLACK_BACKOFF, UNLAGGER_DELAY_TARGET_SLACK_MAX);
+		u->hold_frames = UNLAGGER_HOLD_FRAMES;
+		++u->misses;
+	} else if(++u->window_frames == UNLAGGER_WINDOW) {
+		if(!u->hold_frames) {
+			// shrtime_t t = lerp(u->min_block_time, u->max_block_time, 0.05);
+			shrtime_t t = u->min_block_time;
+
+			auto gain = t - (shrtime_t)u->target_slack;
+			gain *= UNLAGGER_DELAY_GAIN;
+
+			if(LIKELY(min_work_time < p->vblank_period)) {
+				u->delay = clamp((shrtime_t)u->delay + gain, 0, (shrtime_t)(p->vblank_period - min_work_time));
+			} else {
+				u->delay = 0;
+			}
+		}
+
+		u->min_block_time = INT64_MAX;
+		u->max_block_time = 0;
+		u->window_frames = 0;
+	}
+
+	if(u->hold_frames) {
+		--u->hold_frames;
+	} else {
+		u->target_slack = lerp(u->target_slack, UNLAGGER_DELAY_TARGET_SLACK_MIN, UNLAGGER_DELAY_TARGET_SLACK_RECOVER);
+	}
+
+	debug_text("Unlagger delay: %.2fms  %zuns", SDL_NS_TO_MS((double)u->delay), u->delay);
+	debug_text("Unlagger min block: %.2fms", SDL_NS_TO_MS((double)u->min_block_time));
+	debug_text("Unlagger slack: %.2fms", SDL_NS_TO_MS((double)u->target_slack));
+	debug_text("Unlagger window: %i / %i", u->window_frames, UNLAGGER_WINDOW);
+	debug_text("Unlagger hold: %i / %i", u->hold_frames, UNLAGGER_HOLD_FRAMES);
+	debug_text("Unlagger total misses: %i", u->misses);
+	debug_text("Prev work time: %.2fms  (avg: %.2fms)",
+		SDL_NS_TO_MS((double)prev_work_time), SDL_NS_TO_MS((double)global.fps.busy.frametime));
+
+	if(u->delay) {
+		wait_until(wait, p->last_sync_time + u->delay);
+	}
 }
 
 static void display_pacer_lag_report(const DisplayPacer *p, hrtime_t elapsed) {
@@ -179,7 +266,9 @@ static void display_pacer_lag_report(const DisplayPacer *p, hrtime_t elapsed) {
 	log_debug("Lagged by %g frames (limit %d), not catching up", lag_frames, MAX_LAG_FRAMES);
 }
 
-static uint display_pacer_update(DisplayPacer *p) {
+static uint display_pacer_update(
+	DisplayPacer *p, WaitState *wait, hrtime_t blocked_time, hrtime_t prev_work_time
+) {
 	hrtime_t now = time_get();
 	hrtime_t elapsed = now - p->last_sync_time;
 	p->last_sync_time = now;
@@ -212,6 +301,10 @@ static uint display_pacer_update(DisplayPacer *p) {
 	} else {
 		p->accum -= ticks * p->paced_rate.num;
 	}
+
+	const hrtime_t jitter = SDL_US_TO_NS(1000);
+	bool late = (elapsed > p->vblank_period + jitter || vblanks > 1) && prev_work_time < p->vblank_period;
+	display_pacer_unlagger_update(p, wait, vblanks, blocked_time, prev_work_time, late);
 
 	return ticks;
 }
@@ -298,6 +391,7 @@ void eventloop_run(void) {
 
 	uint frame_num = 0;
 
+	hrtime_t prev_work_time = 0;	// times only what happens in the logic and render callbacks
 	hrtime_t prev_present_start_time = time_get();
 
 	hrtime_t scene_start_time = 0;
@@ -345,7 +439,7 @@ void eventloop_run(void) {
 		} else if(pace_mode == PMODE_TIMER) {
 			next_deadline = timer_pacer_update(&timer_pacer, &wait_state);
 		} else if(pace_mode == PMODE_DISPLAY) {
-			logic_ticks = display_pacer_update(&display_pacer);
+			logic_ticks = display_pacer_update(&display_pacer, &wait_state, blocked_time, prev_work_time);
 			next_deadline = display_pacer.last_sync_time + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
 		} else if(pace_mode == PMODE_NONE) {
 			next_deadline = time_get() + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
@@ -413,6 +507,7 @@ void eventloop_run(void) {
 
 		if(laction == LFRAME_STOP) {
 			prev_present_start_time = time_get();
+			prev_work_time = prev_present_start_time - work_begin_time;
 			continue;
 		}
 
@@ -422,13 +517,17 @@ void eventloop_run(void) {
 			hrtime_t work_end_time = time_get();
 			fpscounter_update(&global.fps.busy);
 
+			prev_work_time = work_end_time - work_begin_time;
 			prev_present_start_time = work_end_time;
 
 			r_present_frame();
 			fpscounter_update(&global.fps.render);
 		} else {
 			prev_present_start_time = time_get();
+			prev_work_time = prev_present_start_time - work_begin_time;
 			fpscounter_update(&global.fps.busy);
 		}
 	}
 }
+
+// get me the fuck out of this file holy shit what a rabbit hole
