@@ -120,6 +120,7 @@ static struct {
 
 	SDL_GLContext gl_context;
 	SDL_Window *window;
+	Framebuffer *faux_backbuffer;
 
 	Color color;
 	Color clear_color;
@@ -128,6 +129,7 @@ static struct {
 	FrameStatus frame_status;
 	VsyncMode vsync_mode;
 	bool low_latency;
+	bool redirect_to_faux_backbuffer;   // stupid awful hack
 
 #ifndef STATIC_GLES3
 	bool fb_sRGB_state;
@@ -311,6 +313,66 @@ static SDL_GLContext gl33_create_context(RendererBackend *backend, SDL_Window *w
 	return ctx;
 }
 
+static IntExtent gl33_get_default_framebuffer_size(void) {
+	IntExtent s;
+	// TODO: cache this at window creation time and refresh on resize events?
+	SDL_GetWindowSizeInPixels(R.window, &s.w, &s.h);
+	return s;
+}
+
+static Framebuffer *gl33_create_faux_backbuffer(IntExtent size) {
+	Framebuffer *fb = gl33_framebuffer_create();
+	gl33_framebuffer_set_debug_label(fb, "Faux backbuffer");
+
+	Texture *tex = gl33_texture_create(&(TextureParams) {
+		.filter.min = TEX_FILTER_NEAREST,
+		.filter.mag = TEX_FILTER_NEAREST,
+		.class  = TEXTURE_CLASS_2D,
+		.type = TEX_TYPE_RGBA_8,  // can't query the actual backbuffer format on opengl
+		.width = size.w,
+		.height = size.h,
+		.wrap.s = TEX_WRAP_CLAMP,
+		.wrap.t = TEX_WRAP_CLAMP,
+		.mipmap_mode = TEX_MIPMAP_MANUAL,
+	});
+
+	gl33_texture_set_debug_label(tex, "Faux backbuffer texture");
+	gl33_framebuffer_attach(fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+
+	return fb;
+}
+
+static void gl33_destroy_faux_backbuffer(Framebuffer *fb) {
+	if(fb) {
+		assert(R.framebuffer.active != fb);
+		assert(R.framebuffer.pending != fb);
+		gl33_texture_destroy(fb->attachments[FRAMEBUFFER_ATTACH_COLOR0]);
+		gl33_framebuffer_destroy(fb);
+	}
+}
+
+static void gl33_update_faux_backbuffer(void) {
+	Framebuffer *old = R.faux_backbuffer;
+	IntExtent size = gl33_get_default_framebuffer_size();
+
+	if(old) {
+		IntExtent old_size = gl33_framebuffer_get_effective_size(old);
+
+		if(old_size.w == size.w && old_size.h == size.h) {
+			return;
+		}
+	}
+
+	Framebuffer *new = gl33_create_faux_backbuffer(size);
+
+	if(old) {
+		r_framebuffer_copy(new, old, BUFFER_COLOR);  // must be r_ for the webgl workaround to work
+		gl33_destroy_faux_backbuffer(old);
+	}
+
+	R.faux_backbuffer = new;
+}
+
 static bool gl33_init_context(RendererBackend *backend, SDL_Window *window) {
 	auto vtable = &GLVT_OF(*backend);
 	R.window = window;
@@ -434,11 +496,6 @@ static int get_framebuffer_height(Framebuffer *fb) {
 	return fb_height;
 }
 
-static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
-	// int fb_height = get_framebuffer_height(fb);
-	// vp->y = fb_height - vp->y - vp->h;
-}
-
 static inline FloatRect* get_framebuffer_viewport(Framebuffer *fb) {
 	if(fb == NULL) {
 		return &R.viewport.default_framebuffer;
@@ -483,13 +540,6 @@ void gl33_sync_scissor(void) {
 		glScissor(scissor.x, scissor.y, scissor.w, scissor.h);
 		R.scissor.active = scissor;
 	}
-}
-
-static IntExtent gl33_get_default_framebuffer_size(void) {
-	IntExtent s;
-	// TODO: cache this at window creation time and refresh on resize events?
-	SDL_GetWindowSizeInPixels(SDL_GL_GetCurrentWindow(), &s.w, &s.h);
-	return s;
 }
 
 static void gl33_get_output_size(Framebuffer *fb, FramebufferAttachment a, vec2_noalign out) {
@@ -608,7 +658,7 @@ static void gl33_sync_state(void) {
 		gl33_sync_depth_test_func();
 	}
 
-	gl33_set_framebuffer_sRGB_write(R.framebuffer.active != NULL);
+	gl33_set_framebuffer_sRGB_write(R.framebuffer.pending != NULL);
 }
 
 /*
@@ -940,9 +990,15 @@ static inline GLuint fbo_num(Framebuffer *fb) {
 }
 
 void gl33_sync_framebuffer(void) {
-	if(fbo_num(R.framebuffer.active) != fbo_num(R.framebuffer.pending)) {
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_num(R.framebuffer.pending));
-		R.framebuffer.active = R.framebuffer.pending;
+	Framebuffer *pending = R.framebuffer.pending;
+
+	if(pending == NULL && R.redirect_to_faux_backbuffer) {
+		pending = R.faux_backbuffer;
+	}
+
+	if(fbo_num(R.framebuffer.active) != fbo_num(pending)) {
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_num(pending));
+		R.framebuffer.active = pending;
 	}
 
 	if(R.framebuffer.active) {
@@ -1201,6 +1257,14 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
 	}
 }
 
+Framebuffer *gl33_get_faux_backbuffer(void) {
+	return R.faux_backbuffer;
+}
+
+Framebuffer *gl33_get_active_framebuffer(void) {
+	return R.framebuffer.active;
+}
+
 /*
  * Renderer interface implementation
  */
@@ -1282,6 +1346,8 @@ static void gl33_unclaim_window(SDL_Window *window) {
 
 	// needs to be here because opengl sucks: gl33_shutdown has no "current" context
 	gl33_framebuffer_finalize_read_requests();
+	gl33_destroy_faux_backbuffer(R.faux_backbuffer);
+	R.faux_backbuffer = NULL;
 
 	R.window = NULL;
 }
@@ -1413,13 +1479,11 @@ static Framebuffer *gl33_framebuffer_current(void) {
 }
 
 static void gl33_framebuffer_viewport(Framebuffer *fb, FloatRect vp) {
-	transform_viewport_origin(fb, &vp);
 	memcpy(get_framebuffer_viewport(fb), &vp, sizeof(vp));
 }
 
 static void gl33_framebuffer_viewport_current(Framebuffer *fb, FloatRect *out_rect) {
 	*out_rect = *get_framebuffer_viewport(fb);
-	transform_viewport_origin(fb, out_rect);
 }
 
 static IntExtent gl33_framebuffer_get_size(Framebuffer *fb) {
@@ -1477,12 +1541,15 @@ static void gl33_await_frame(bool low_latency) {
 		glFlush();
 	}
 
+	gl33_update_faux_backbuffer();
+
 	R.low_latency = low_latency;
 	R.frame_status = FRAME_STATUS_ACQUIRED;
 }
 
 static void gl33_begin_frame(void) {
 	assert(R.frame_status== FRAME_STATUS_ACQUIRED);
+	R.redirect_to_faux_backbuffer = true;
 	R.frame_status = FRAME_STATUS_BEGUN;
 }
 
@@ -1499,6 +1566,7 @@ static void gl33_end_frame(void) {
 	// fullscreen, and we can't catch that in the resize event.
 	R.viewport.active = (typeof(R.viewport.active)) {};
 
+	R.redirect_to_faux_backbuffer = false;
 	R.frame_status = FRAME_STATUS_RENDERED;
 
 	gl33_stats_post_frame();
@@ -1506,6 +1574,10 @@ static void gl33_end_frame(void) {
 
 static bool gl33_present_frame(void) {
 	assert(R.frame_status == FRAME_STATUS_RENDERED || R.frame_status == FRAME_STATUS_ACQUIRED);
+
+	gl33_set_framebuffer_sRGB_write(false);
+	gl33_framebuffer_clear(NULL, BUFFER_ALL, &RGBA(0, 0, 0, 1), 1);
+	gl33_framebuffer_copy(NULL, R.faux_backbuffer, BUFFER_COLOR);
 
 	Framebuffer *prev_fb = r_framebuffer_current();
 	r_framebuffer(NULL);

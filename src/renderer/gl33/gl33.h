@@ -87,4 +87,7 @@ void gl33_shader_deleted(ShaderProgram *prog);
 
 void gl33_texture_pointer_renamed(Texture *pold, Texture *pnew);
 
+Framebuffer *gl33_get_faux_backbuffer(void);
+Framebuffer *gl33_get_active_framebuffer(void);
+
 extern RendererBackend _r_backend_gl33;

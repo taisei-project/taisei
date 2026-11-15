@@ -210,6 +210,14 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 	GLint SH = src_size.h;
 	GLint DH = dst_size.h;
 
+	GLint DY0, DY1;
+
+	if(gl33_get_active_framebuffer() == NULL) {
+		DY0 = DH, DY1 = 0;
+	} else {
+		DY0 = 0, DY1 = DH;
+	}
+
 	bool size_mismatch = SW != DW || SH != DH;
 
 	Framebuffer *fb_saved = r_framebuffer_current();
@@ -222,12 +230,12 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 	if(size_mismatch) {
 		if(glflags & GL_DEPTH_BUFFER_BIT) {
 			// mesa yelled at me
-			glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glBlitFramebuffer(0, 0, SW, SH, 0, DY0, DW, DY1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		}
 
-		glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags & ~GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+		glBlitFramebuffer(0, 0, SW, SH, 0, DY0, DW, DY1, glflags & ~GL_DEPTH_BUFFER_BIT, GL_LINEAR);
 	} else {
-		glBlitFramebuffer(0, 0, SW, SH, 0, 0, DW, DH, glflags, GL_NEAREST);
+		glBlitFramebuffer(0, 0, SW, SH, 0, DY0, DW, DY1, glflags, GL_NEAREST);
 	}
 
 	r_framebuffer(fb_saved);

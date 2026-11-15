@@ -7,7 +7,9 @@
  */
 
 #include "framebuffer_async_read.h"
+
 #include "framebuffer.h"
+#include "gl33.h"
 
 void gl33_framebuffer_read_async(
 	Framebuffer *framebuffer,
@@ -16,6 +18,19 @@ void gl33_framebuffer_read_async(
 	void *userdata,
 	FramebufferReadAsyncCallback callback
 ) {
+	if(!framebuffer) {
+		framebuffer = gl33_get_faux_backbuffer();
+
+		if(attachment == FRAMEBUFFER_ATTACH_NONE) {
+			attachment = FRAMEBUFFER_ATTACH_COLOR0;
+		}
+	}
+
+	if(!framebuffer) {
+		callback(NULL, userdata);
+		return;
+	}
+
 	GLTextureFormatInfo *fmtinfo = gl33_framebuffer_get_format(framebuffer, attachment);
 
 	Pixmap pxm = {
