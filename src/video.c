@@ -41,6 +41,7 @@ static struct {
 	VideoMode current;
 	VideoBackend backend;
 	double scaling_factor;
+	IntRatio refresh_rate;
 
 	struct {
 		char *name_prefix;
@@ -466,6 +467,43 @@ static void video_update_vsync(void) {
 	}
 }
 
+static void video_update_refresh_rate(void) {
+	auto mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(NOT_NULL(video.window)));
+
+	if(UNLIKELY(mode == NULL)) {
+		log_sdl_error(LOG_WARN, "SDL_GetCurrentDisplayMode");
+		return;
+	}
+
+	attr_unused auto old = video.refresh_rate;
+
+	if(mode->refresh_rate_numerator > 0 && mode->refresh_rate_denominator > 0) {
+		video.refresh_rate = (IntRatio) { mode->refresh_rate_numerator, mode->refresh_rate_denominator };
+	} else if(mode->refresh_rate > 0) {
+		// TODO: figure out if this can even happen, and if it can, approximate the ratio
+		log_warn("No accurate monitor refresh rate ratio available");
+		video.refresh_rate = (IntRatio) { max(1, lroundf(mode->refresh_rate)), 1 };
+	} else {
+		log_warn("Unknown monitor refresh rate");
+		// keep old value
+	}
+
+	if(!int_ratio_equals(old, video.refresh_rate)) {
+		double old_hz = int_ratio_to_double(old);
+		double new_hz = int_ratio_to_double(video.refresh_rate);
+
+		log_debug("%gHz (%d/%d) -> %gHz (%d/%d)",
+			old_hz, old.num, old.den,
+			new_hz, video.refresh_rate.num, video.refresh_rate.den
+		);
+	}
+}
+
+IntRatio video_get_refresh_rate(void) {
+	video_update_refresh_rate();
+	return video.refresh_rate;
+}
+
 static void video_update_mode_settings(void) {
 	if(video_is_fullscreen()) {
 		SDL_HideCursor();
@@ -477,6 +515,7 @@ static void video_update_mode_settings(void) {
 
 	video_update_vsync();
 	video_update_scaling_factor();
+	video_update_refresh_rate();
 	video_set_viewport();
 
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
@@ -847,9 +886,13 @@ static bool video_handle_event(SDL_Event *event, void *arg) {
 			video_update_mode_settings();
 			break;
 
+		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
-			log_debug("SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED");
 			video_update_mode_settings();
+			break;
+
+		case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+			video_update_refresh_rate();
 			break;
 
 		case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
