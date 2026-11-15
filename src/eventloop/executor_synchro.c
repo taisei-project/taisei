@@ -482,7 +482,10 @@ static LogicFrameAction run_logic(LoopFrame **frame, uint logic_ticks) {
 	return lframe_action;
 }
 
-static PacingMode decide_pacing_mode(PacingMode forced_mode) {
+static PacingMode decide_pacing_mode(
+	PacingMode forced_mode, PacingMode current_mode,
+	TimerPacer *timer_pacer, DisplayPacer *display_pacer
+) {
 #ifdef DEBUG
 	if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
 		return PMODE_NONE;
@@ -506,6 +509,20 @@ static PacingMode decide_pacing_mode(PacingMode forced_mode) {
 
 	if(refresh_rate.num <= 0) {
 		return PMODE_TIMER;
+	}
+
+	if(display_pacer->vblank_period) {
+		hrtime_t worktime = global.fps.busy.frametime;  // average
+
+		// Display-driven pacing only works if we can update and draw within the vblank interval.
+		// Turn it off temporarily if we're overloaded, and don't switch back until the load fits
+		// comfortably within vblank range.
+		if(
+			(current_mode == PMODE_DISPLAY && worktime >= display_pacer->vblank_period * 0.95) ||
+			(current_mode == PMODE_TIMER   && worktime >= display_pacer->vblank_period * 0.75)
+		) {
+			return PMODE_TIMER;
+		}
 	}
 
 	return PMODE_DISPLAY;
@@ -570,7 +587,7 @@ void eventloop_run(void) {
 		// debug_text("r_present_frame time: %.02fms", SDL_NS_TO_MS((double)prev_present_time));
 		debug_text("Await+present block time: %.02fms", SDL_NS_TO_MS((double)blocked_time));
 
-		pace_mode = decide_pacing_mode(forced_pace_mode);
+		pace_mode = decide_pacing_mode(forced_pace_mode, pace_mode, &timer_pacer, &display_pacer);
 
 		debug_text("Vsync: %s (want: %s)", vsync_names[r_vsync_current()], vsync_names[config_get_int(CONFIG_VSYNC)]);
 		debug_text("Pacing mode: %s", pacing_mode_name(pace_mode));
