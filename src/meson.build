@@ -63,6 +63,7 @@ taisei_src = files(
     'common_tasks.c',
     'config.c',
     'credits.c',
+    'debug_text.c',
     'dialog.c',
     'difficulty.c',
     'dynarray.c',

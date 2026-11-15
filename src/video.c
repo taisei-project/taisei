@@ -315,9 +315,9 @@ void video_get_viewport_size(float *width, float *height) {
 void video_get_viewport(FloatRect *vp) {
 	IntExtent fb = video_get_screen_framebuffer_size();
 	video_get_viewport_for_framebuffer(vp, fb);
-	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
-	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
-	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
+	// log_debug("current w/h: %dx%d", video.current.width, video.current.height);
+	// log_debug("viewport x/y: %fx%f", vp->x, vp->y);
+	// log_debug("viewport w/h: %fx%f", vp->w, vp->h);
 }
 
 static void video_set_viewport(void) {

@@ -14,6 +14,7 @@
 #include "common/state.h"
 
 #include "coroutine/coroutine.h"
+#include "debug_text.h"
 #include "hirestime.h"
 #include "resource/resource.h"
 #include "resource/texture.h"
@@ -860,6 +861,7 @@ void r_begin_frame(void) {
 
 void r_swap(SDL_Window *window) {
 	coroutines_draw_stats();
+	debug_text_draw();
 	_r_sprite_batch_end_frame();
 	B.swap(window);
 

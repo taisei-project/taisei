@@ -11,6 +11,7 @@
 #include "coroutine/coroutine.h"
 #include "credits.h"
 #include "cutscenes/cutscene.h"
+#include "debug_text.h"
 #include "dynstage.h"
 #include "eventloop/eventloop.h"
 #include "filewatch/filewatch.h"
@@ -73,6 +74,7 @@ static void taisei_shutdown(void) {
 	}
 
 	i18n_shutdown();
+	debug_text_shutdown();
 	r_release_resources();
 	res_shutdown();
 
@@ -454,6 +456,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	r_models_init();
 	r_sprite_batch_init();
 	r_post_init();
+	debug_text_init();
 
 	res_group_init(&ctx->rg);
 	i18n_init();

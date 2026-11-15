@@ -9,6 +9,7 @@
 #include "eventloop.h"
 #include "eventloop_private.h"
 
+#include "debug_text.h"
 #include "global.h"
 #include "thread.h"
 #include "util.h"
@@ -62,6 +63,7 @@ FrameTimes eventloop_get_frame_times(void) {
 
 LogicFrameAction run_logic_frame(LoopFrame *frame) {
 	assert(frame == evloop.stack_ptr);
+	debug_text_rollback();
 
 	if(frame->prev_logic_action == LFRAME_STOP) {
 		return LFRAME_STOP;
