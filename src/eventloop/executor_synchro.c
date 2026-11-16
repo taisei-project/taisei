@@ -206,9 +206,10 @@ static double periods_mismatch(hrtime_t a, hrtime_t b) {
 	return fabs((double)a / (double)b - 1.0);
 }
 
-#define CLOCK_CHECK_TOLERANCE 0.012
+#define CLOCK_CHECK_TOLERANCE 0.015
 
 static_assert(CLOCK_CHECK_TOLERANCE >= RATE_ESTIMATOR_SNAP_TOLERANCE);
+static_assert(CLOCK_CHECK_TOLERANCE >= RATE_ESTIMATOR_DRIFT_TOLERANCE);
 
 typedef struct ClockCheck {
 	struct {
