@@ -103,32 +103,17 @@ static hrtime_t timer_pacer_update(TimerPacer *p, WaitState *wait) {
 	return timer_pacer_deadline(p, p->frames + 1);
 }
 
-#define UNLAGGER_WINDOW				 			20
-#define UNLAGGER_HOLD_FRAMES		 			120
-#define UNLAGGER_DELAY_BACKOFF		 			SDL_US_TO_NS(400)
-#define UNLAGGER_DELAY_GAIN			 			0.1
-#define UNLAGGER_DELAY_TARGET_SLACK_MIN			SDL_US_TO_NS(500)
-#define UNLAGGER_DELAY_TARGET_SLACK_MAX			SDL_US_TO_NS(3000)
-#define UNLAGGER_DELAY_TARGET_SLACK_BACKOFF		SDL_US_TO_NS(100)
-#define UNLAGGER_DELAY_TARGET_SLACK_RECOVER		0.0005
-
-typedef struct Unlagger {
-	hrtime_t delay;
-	hrtime_t min_block_time;
-	hrtime_t max_block_time;
-	hrtime_t target_slack;
-	uint hold_frames;
-	uint window_frames;
-	uint misses;
-	uint failure_streak;
-} Unlagger;
-
 // SDL's reported refresh rate can fucking lie apparently, e.g. gamescope on steam deck always reports something north
 // of ~90 Hz even if the real rate is different (changed by the menu slider). Which means we have to do this annoying
 // shit to estimate the real rate, thank Valve love you too.
 
-#define RATE_ESTIMATOR_MAX_SPREAD	0.015
-#define RATE_ESTIMATOR_MIN_BLOCK	SDL_US_TO_NS(100)
+#define RATE_ESTIMATOR_MAX_SPREAD		0.015
+#define RATE_ESTIMATOR_MIN_BLOCK		SDL_US_TO_NS(100)
+// Maximum game speed deviation fraction.
+// The weirdest mode on my monitor refreshes at ~60.32 Hz, which is ~0.5% too fast.
+// This is roughly ~double that amount.
+#define RATE_ESTIMATOR_SNAP_TOLERANCE	0.01
+#define RATE_ESTIMATOR_DRIFT_TOLERANCE	0.015
 
 typedef struct RateEstimator {
 	hrtime_t samples[67];  //  SIX SEVEN!!!! SIX SEVEEEEN!!!!!!!!!! XDDDDDDDDDDDDDDDDDDDDDDDDXDDDXDDDDDDDDDD!!!!!!!!
@@ -136,19 +121,6 @@ typedef struct RateEstimator {
 	uint num_samples;
 	uint next_sample;
 } RateEstimator;
-
-typedef struct DisplayPacer {
-	hrtime_t last_sync_time;
-	hrtime_t vblank_period;
-	IntRatio display_rate;
-	IntRatio paced_rate;
-	uint64_t accum;
-	uint64_t raw_accum;
-	uint logic_rate;
-	uint nonblocking_vsync_streak;
-	RateEstimator rate_estimator;
-	Unlagger unlagger;
-} DisplayPacer;
 
 static void rate_estimator_add_sample(RateEstimator *e, hrtime_t sample) {
 	e->samples[e->next_sample] = sample;
@@ -207,10 +179,7 @@ static IntRatio snap_refresh_rate(IntRatio refresh_rate, uint logic_rate) {
 	// slightly over long stages. That could be dealt with by resampling the audio, but that's
 	// probably overkill. Buy a VRR monitor if you want the best of all worlds.
 
-	// Maximum game speed deviation fraction.
-	// The weirdest mode on my monitor refreshes at ~60.32 Hz, which is ~0.5% too fast.
-	// This is roughly ~double that amount.
-	const double tolerance = 0.01;
+	const double tolerance = RATE_ESTIMATOR_SNAP_TOLERANCE;
 
 	double hz = int_ratio_to_double(refresh_rate);
 	int vblanks_per_tick = lround(hz / logic_rate);
@@ -236,6 +205,93 @@ static hrtime_t rate_to_period(IntRatio rate) {
 static double periods_mismatch(hrtime_t a, hrtime_t b) {
 	return fabs((double)a / (double)b - 1.0);
 }
+
+#define CLOCK_CHECK_TOLERANCE 0.012
+
+static_assert(CLOCK_CHECK_TOLERANCE >= RATE_ESTIMATOR_SNAP_TOLERANCE);
+
+typedef struct ClockCheck {
+	struct {
+		hrtime_t actual;
+		hrtime_t expected;
+	} samples[20];
+	double rate;
+	uint num_samples;
+	uint next_sample;
+	uint fail_streak;
+} ClockCheck;
+
+static bool clock_check_update(ClockCheck *cc, hrtime_t actual, hrtime_t expected) {
+	uint i = cc->next_sample;
+	uint max_samples = countof(cc->samples);
+
+	cc->samples[i].actual = actual;
+	cc->samples[i].expected = expected;
+
+	cc->next_sample = (cc->next_sample + 1) % max_samples;
+	cc->num_samples = min(cc->num_samples + 1, max_samples);
+
+	if(cc->num_samples < max_samples) {
+		return false;
+	}
+
+	hrtime_t actual_sum = cc->samples[0].actual;
+	hrtime_t expected_sum = cc->samples[0].expected;
+
+	for(uint i = 1; i < max_samples; ++i) {
+		actual_sum += cc->samples[i].actual;
+		expected_sum += cc->samples[i].expected;
+	}
+
+	double actual_avg = actual_sum / (double)max_samples;
+	double expected_avg = expected_sum / (double)max_samples;
+
+	cc->rate = actual_avg / expected_avg;
+	bool good = fabs(cc->rate - 1) <= CLOCK_CHECK_TOLERANCE;
+
+	if(good) {
+		cc->fail_streak = 0;
+	} else {
+		++cc->fail_streak;
+	}
+
+	debug_text("Clock rate: %.02f (%s) fail streak: %u", cc->rate, good ? "good" : "bad", cc->fail_streak);
+
+	return true;
+}
+
+#define UNLAGGER_WINDOW				 			20
+#define UNLAGGER_HOLD_FRAMES		 			120
+#define UNLAGGER_DELAY_BACKOFF		 			SDL_US_TO_NS(400)
+#define UNLAGGER_DELAY_GAIN			 			0.1
+#define UNLAGGER_DELAY_TARGET_SLACK_MIN			SDL_US_TO_NS(500)
+#define UNLAGGER_DELAY_TARGET_SLACK_MAX			SDL_US_TO_NS(3000)
+#define UNLAGGER_DELAY_TARGET_SLACK_BACKOFF		SDL_US_TO_NS(100)
+#define UNLAGGER_DELAY_TARGET_SLACK_RECOVER		0.0005
+
+typedef struct Unlagger {
+	hrtime_t delay;
+	hrtime_t min_block_time;
+	hrtime_t max_block_time;
+	hrtime_t target_slack;
+	uint hold_frames;
+	uint window_frames;
+	uint misses;
+} Unlagger;
+
+typedef struct DisplayPacer {
+	hrtime_t last_sync_time;
+	hrtime_t vblank_period;
+	IntRatio display_rate;
+	IntRatio paced_rate;
+	uint64_t accum;
+	uint64_t raw_accum;
+	uint logic_rate;
+	uint nonblocking_vsync_streak;
+	RateEstimator rate_estimator;
+	Unlagger unlagger;
+	ClockCheck clock_check;
+} DisplayPacer;
 
 static DisplayPacer display_pacer_init(uint logic_rate) {
 	// We'll be optimistic and trust the reported rate initially, if it's known.
@@ -270,8 +326,9 @@ static void display_pacer_reset(DisplayPacer *p, uint logic_rate) {
 	p->unlagger.delay = 0;
 	p->unlagger.hold_frames = 0;
 	p->unlagger.window_frames = 0;
-	p->unlagger.failure_streak = 0;
 	p->unlagger.misses = 0;
+	p->clock_check.num_samples = 0;
+	p->clock_check.fail_streak = 0;
 }
 
 static bool display_pacer_update_rate(DisplayPacer *p) {
@@ -282,8 +339,8 @@ static bool display_pacer_update_rate(DisplayPacer *p) {
 		return p->vblank_period > 0;
 	}
 
-	double snap_tolerance = 0.01;
-	double drift_tolerance = 0.015;
+	double snap_tolerance = RATE_ESTIMATOR_SNAP_TOLERANCE;
+	double drift_tolerance = RATE_ESTIMATOR_DRIFT_TOLERANCE;
 
 	if(p->vblank_period > 0) {
 		auto mismatch = periods_mismatch(measured_period, p->vblank_period);
@@ -316,6 +373,7 @@ static bool display_pacer_update_rate(DisplayPacer *p) {
 		.target_slack = p->unlagger.target_slack,
 	};
 	p->accum = 0;
+	p->clock_check = (ClockCheck) {};
 
 	log_info("Display refresh rate: reported %g Hz, measured %g Hz; pacing as if %g Hz",
 		int_ratio_to_double(reported_rate),
@@ -347,13 +405,6 @@ static void display_pacer_unlagger_update(
 	if(late) {
 		u->delay = max(0, (shrtime_t)u->delay - (shrtime_t)UNLAGGER_DELAY_BACKOFF);
 		u->target_slack = min(u->target_slack + UNLAGGER_DELAY_TARGET_SLACK_BACKOFF, UNLAGGER_DELAY_TARGET_SLACK_MAX);
-
-		if(u->delay == 0 && u->target_slack == UNLAGGER_DELAY_TARGET_SLACK_MAX && u->hold_frames) {
-			// The unlagger is completely inert and we're still missing?
-			// Something is wrong, the display is probably not a reliable clock.
-			++u->failure_streak;
-		}
-
 		u->hold_frames = UNLAGGER_HOLD_FRAMES;
 		++u->misses;
 	} else {
@@ -376,10 +427,6 @@ static void display_pacer_unlagger_update(
 			u->max_block_time = 0;
 			u->window_frames = 0;
 		}
-
-		if(!u->hold_frames) {
-			u->failure_streak = 0;
-		}
 	}
 
 	if(u->hold_frames) {
@@ -393,7 +440,7 @@ static void display_pacer_unlagger_update(
 	debug_text("Unlagger slack: %.2fms", SDL_NS_TO_MS((double)u->target_slack));
 	debug_text("Unlagger window: %i / %i", u->window_frames, UNLAGGER_WINDOW);
 	debug_text("Unlagger hold: %i", u->hold_frames);
-	debug_text("Unlagger total misses: %i; total failures: %i", u->misses, u->failure_streak);
+	debug_text("Unlagger total misses: %i", u->misses);
 	debug_text("Prev work time: %.2fms  (avg: %.2fms)",
 		SDL_NS_TO_MS((double)prev_work_time), SDL_NS_TO_MS((double)global.fps.busy.frametime));
 
@@ -451,14 +498,19 @@ static uint display_pacer_update(
 		return ticks;
 	}
 
-	debug_text("Display: %g Hz, pacing: %g Hz",
-		int_ratio_to_double(p->display_rate), int_ratio_to_double(p->paced_rate));
+	attr_unused IntRatio reported_rate = video_get_refresh_rate();
+
+	debug_text("Display: %g Hz, pacing: %g Hz, reported: %g Hz",
+		int_ratio_to_double(p->display_rate),
+		int_ratio_to_double(p->paced_rate),
+		int_ratio_to_double(reported_rate));
 	debug_text("elapsed/vblank: %0.2f", (double)elapsed / p->vblank_period);
 
 	auto vblanks = (elapsed + p->vblank_period / 2) / p->vblank_period;
-
 	p->accum += vblanks * p->logic_rate * p->paced_rate.den;
 	auto ticks = p->accum / p->paced_rate.num;
+
+	clock_check_update(&p->clock_check, elapsed, vblanks * p->vblank_period);
 
 	if(ticks > MAX_LAG_FRAMES) {
 		display_pacer_lag_report(p, elapsed);
@@ -552,7 +604,7 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 		}
 	}
 
-	if(pacer->display.unlagger.failure_streak >= 30) {
+	if(pacer->display.clock_check.fail_streak >= 4 * countof(pacer->display.clock_check.samples)) {
 		log_warn("Display is not a stable clock, disabled display-driven frame pacing");
 		pacer->display_pacer_failed = true;
 		return PMODE_TIMER;
@@ -703,10 +755,13 @@ void eventloop_run(void) {
 		debug_text(" Real time: %.02fms", SDL_NS_TO_MS((double)(actual_time)));
 		debug_text("Time drift: %.02fms", SDL_NS_TO_MS((double)(logic_time - actual_time)));
 
+		if(laction == LFRAME_STOP || prev_frame != frame) {
+			pacer.display_pacer_failed = false;  // try again
+		}
+
 		if(laction == LFRAME_STOP) {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
-			pacer.display_pacer_failed = false;  // try again
 			continue;
 		}
 
