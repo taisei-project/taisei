@@ -501,7 +501,6 @@ static void video_update_refresh_rate(void) {
 }
 
 IntRatio video_get_refresh_rate(void) {
-	video_update_refresh_rate();
 	return video.refresh_rate;
 }
 
