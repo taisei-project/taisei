@@ -120,6 +120,7 @@ typedef struct Unlagger {
 	uint hold_frames;
 	uint window_frames;
 	uint misses;
+	uint failure_streak;
 } Unlagger;
 
 // SDL's reported refresh rate can fucking lie apparently, e.g. gamescope on steam deck always reports something north
@@ -269,6 +270,8 @@ static void display_pacer_reset(DisplayPacer *p, uint logic_rate) {
 	p->unlagger.delay = 0;
 	p->unlagger.hold_frames = 0;
 	p->unlagger.window_frames = 0;
+	p->unlagger.failure_streak = 0;
+	p->unlagger.misses = 0;
 }
 
 static bool display_pacer_update_rate(DisplayPacer *p) {
@@ -344,26 +347,39 @@ static void display_pacer_unlagger_update(
 	if(late) {
 		u->delay = max(0, (shrtime_t)u->delay - (shrtime_t)UNLAGGER_DELAY_BACKOFF);
 		u->target_slack = min(u->target_slack + UNLAGGER_DELAY_TARGET_SLACK_BACKOFF, UNLAGGER_DELAY_TARGET_SLACK_MAX);
-		u->hold_frames = UNLAGGER_HOLD_FRAMES;
-		++u->misses;
-	} else if(++u->window_frames == UNLAGGER_WINDOW) {
-		if(!u->hold_frames) {
-			// shrtime_t t = lerp(u->min_block_time, u->max_block_time, 0.05);
-			shrtime_t t = u->min_block_time;
 
-			auto gain = t - (shrtime_t)u->target_slack;
-			gain *= UNLAGGER_DELAY_GAIN;
-
-			if(LIKELY(min_work_time < p->vblank_period)) {
-				u->delay = clamp((shrtime_t)u->delay + gain, 0, (shrtime_t)(p->vblank_period - min_work_time));
-			} else {
-				u->delay = 0;
-			}
+		if(u->delay == 0 && u->target_slack == UNLAGGER_DELAY_TARGET_SLACK_MAX && u->hold_frames) {
+			// The unlagger is completely inert and we're still missing?
+			// Something is wrong, the display is probably not a reliable clock.
+			++u->failure_streak;
 		}
 
-		u->min_block_time = INT64_MAX;
-		u->max_block_time = 0;
-		u->window_frames = 0;
+		u->hold_frames = UNLAGGER_HOLD_FRAMES;
+		++u->misses;
+	} else {
+		if(++u->window_frames == UNLAGGER_WINDOW) {
+			if(!u->hold_frames) {
+				// shrtime_t t = lerp(u->min_block_time, u->max_block_time, 0.05);
+				shrtime_t t = u->min_block_time;
+
+				auto gain = t - (shrtime_t)u->target_slack;
+				gain *= UNLAGGER_DELAY_GAIN;
+
+				if(LIKELY(min_work_time < p->vblank_period)) {
+					u->delay = clamp((shrtime_t)u->delay + gain, 0, (shrtime_t)(p->vblank_period - min_work_time));
+				} else {
+					u->delay = 0;
+				}
+			}
+
+			u->min_block_time = INT64_MAX;
+			u->max_block_time = 0;
+			u->window_frames = 0;
+		}
+
+		if(!u->hold_frames) {
+			u->failure_streak = 0;
+		}
 	}
 
 	if(u->hold_frames) {
@@ -376,8 +392,8 @@ static void display_pacer_unlagger_update(
 	debug_text("Unlagger min block: %.2fms", SDL_NS_TO_MS((double)u->min_block_time));
 	debug_text("Unlagger slack: %.2fms", SDL_NS_TO_MS((double)u->target_slack));
 	debug_text("Unlagger window: %i / %i", u->window_frames, UNLAGGER_WINDOW);
-	debug_text("Unlagger hold: %i / %i", u->hold_frames, UNLAGGER_HOLD_FRAMES);
-	debug_text("Unlagger total misses: %i", u->misses);
+	debug_text("Unlagger hold: %i", u->hold_frames);
+	debug_text("Unlagger total misses: %i; total failures: %i", u->misses, u->failure_streak);
 	debug_text("Prev work time: %.2fms  (avg: %.2fms)",
 		SDL_NS_TO_MS((double)prev_work_time), SDL_NS_TO_MS((double)global.fps.busy.frametime));
 
@@ -486,6 +502,7 @@ typedef struct FramePacer {
 	PacingMode forced_mode;
 	PacingMode current_mode;
 	PacingMode prev_mode;
+	bool display_pacer_failed;
 	TimerPacer timer;
 	DisplayPacer display;
 	WaitState wait;
@@ -504,6 +521,10 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 
 	if(pacer->forced_mode != PMODE_UNDEFINED) {
 		return pacer->forced_mode;
+	}
+
+	if(pacer->display_pacer_failed) {
+		return PMODE_TIMER;
 	}
 
 	if(r_vsync_current() != VSYNC_NORMAL) {
@@ -529,6 +550,12 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 		) {
 			return PMODE_TIMER;
 		}
+	}
+
+	if(pacer->display.unlagger.failure_streak >= 30) {
+		log_warn("Display is not a stable clock, disabled display-driven frame pacing");
+		pacer->display_pacer_failed = true;
+		return PMODE_TIMER;
 	}
 
 	return PMODE_DISPLAY;
@@ -679,6 +706,7 @@ void eventloop_run(void) {
 		if(laction == LFRAME_STOP) {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
+			pacer.display_pacer_failed = false;  // try again
 			continue;
 		}
 
