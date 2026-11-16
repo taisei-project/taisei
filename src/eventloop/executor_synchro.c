@@ -555,6 +555,8 @@ typedef struct FramePacer {
 	PacingMode current_mode;
 	PacingMode prev_mode;
 	bool display_pacer_failed;
+	bool want_low_latency;
+	schar force_latency_mode;
 	TimerPacer timer;
 	DisplayPacer display;
 	WaitState wait;
@@ -613,6 +615,33 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 	return PMODE_DISPLAY;
 }
 
+static bool decide_low_latency(FramePacer *pacer, hrtime_t max_frametime) {
+	if(pacer->force_latency_mode >= 0) {
+		return pacer->force_latency_mode;
+	}
+
+	if(pacer->current_mode == PMODE_NONE) {
+		return false;
+	}
+
+	if(pacer->display.vblank_period && !pacer->display_pacer_failed) {
+		max_frametime = min(max_frametime, pacer->display.vblank_period);
+	}
+
+	hrtime_t worktime = global.fps.busy.frametime;  // average
+
+	// Ask for more throughput if we don't have enough slack
+	// TODO tune these
+	if(
+		( pacer->want_low_latency && worktime >= max_frametime * 0.9) ||
+		(!pacer->want_low_latency && worktime >= max_frametime * 0.7)
+	) {
+		return false;
+	}
+
+	return true;
+}
+
 void eventloop_run(void) {
 	assert(thread_current_is_main());
 
@@ -633,6 +662,7 @@ void eventloop_run(void) {
 		},
 		.forced_mode = env_get("TAISEI_FRAMELIMITER_PACE_MODE", PMODE_UNDEFINED),
 		.prev_mode = PMODE_UNDEFINED,
+		.force_latency_mode = env_get("TAISEI_LOW_LATENCY", -1),
 	};
 
 	if(pacer.forced_mode < PMODE_UNDEFINED || pacer.forced_mode >= NUM_PMODES) {
@@ -650,14 +680,13 @@ void eventloop_run(void) {
 	uint scene_logic_ticks = 0;
 
 	pacer.display = display_pacer_init(evloop.frame_times.target_fps);
-	bool want_low_latency = true;
 
 	while(frame != NULL) {
 		// In VSYNC mode, this call may block to wait for a swapchain.
 		// Alternatively, r_present_frame (called at the very end, after rendering) may block instead.
 		// We don't care which one of them blocks, because they are right next to each other in the cycle.
 		// What's important is that all waits happen before the logic, immediately followed by rendering.
-		r_await_frame(want_low_latency);
+		r_await_frame(pacer.want_low_latency);
 
 		// Measure how much time we just spent blocked on vsync, for the display pacer.
 		// With vsync, every presented frame goes into a FIFO queue of N images. N can be as low as 2 if we're lucky,
@@ -668,6 +697,7 @@ void eventloop_run(void) {
 		debug_text_clear();
 
 		debug_text("Await+present block time: %.02fms", SDL_NS_TO_MS((double)blocked_time));
+		debug_text("Low latency mode: %s", pacer.want_low_latency ? "YES" : "NO");
 
 		pacer.current_mode = decide_pacing_mode(&pacer);
 
@@ -676,6 +706,7 @@ void eventloop_run(void) {
 		debug_text("FPS:  L:%.2f  R:%.2f", global.fps.logic.fps, global.fps.render.fps);
 
 		hrtime_t next_deadline;
+		hrtime_t approx_frametime = HRTIME_RESOLUTION / evloop.frame_times.target_fps;
 		uint logic_ticks = 1;
 
 		if(pacer.current_mode != pacer.prev_mode || evloop.frame_times.target_fps != frame->target_fps) {
@@ -690,12 +721,14 @@ void eventloop_run(void) {
 			next_deadline = timer_pacer_update(&pacer.timer, &pacer.wait);
 		} else if(pacer.current_mode == PMODE_DISPLAY) {
 			logic_ticks = display_pacer_update(&pacer.display, &pacer.wait, blocked_time, prev_work_time);
-			next_deadline = pacer.display.last_sync_time + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
+			next_deadline = pacer.display.last_sync_time + approx_frametime;
 		} else if(pacer.current_mode == PMODE_NONE) {
-			next_deadline = time_get() + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
+			next_deadline = time_get() + approx_frametime;
 		} else {
 			UNREACHABLE;
 		}
+
+		pacer.want_low_latency = decide_low_latency(&pacer, approx_frametime);
 
 		attr_unused auto prev_start = evloop.frame_times.start;
 		evloop.frame_times.start = time_get();
