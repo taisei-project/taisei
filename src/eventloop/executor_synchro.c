@@ -482,10 +482,16 @@ static LogicFrameAction run_logic(LoopFrame **frame, uint logic_ticks) {
 	return lframe_action;
 }
 
-static PacingMode decide_pacing_mode(
-	PacingMode forced_mode, PacingMode current_mode,
-	TimerPacer *timer_pacer, DisplayPacer *display_pacer
-) {
+typedef struct FramePacer {
+	PacingMode forced_mode;
+	PacingMode current_mode;
+	PacingMode prev_mode;
+	TimerPacer timer;
+	DisplayPacer display;
+	WaitState wait;
+} FramePacer;
+
+static PacingMode decide_pacing_mode(FramePacer *pacer) {
 #ifdef DEBUG
 	if(gamekeypressed(KEY_FPSLIMIT_OFF)) {
 		return PMODE_NONE;
@@ -496,8 +502,8 @@ static PacingMode decide_pacing_mode(
 		return PMODE_NONE;
 	}
 
-	if(forced_mode != PMODE_UNDEFINED) {
-		return forced_mode;
+	if(pacer->forced_mode != PMODE_UNDEFINED) {
+		return pacer->forced_mode;
 	}
 
 	if(r_vsync_current() != VSYNC_NORMAL) {
@@ -511,15 +517,15 @@ static PacingMode decide_pacing_mode(
 		return PMODE_TIMER;
 	}
 
-	if(display_pacer->vblank_period) {
+	if(pacer->display.vblank_period) {
 		hrtime_t worktime = global.fps.busy.frametime;  // average
 
 		// Display-driven pacing only works if we can update and draw within the vblank interval.
 		// Turn it off temporarily if we're overloaded, and don't switch back until the load fits
 		// comfortably within vblank range.
 		if(
-			(current_mode == PMODE_DISPLAY && worktime >= display_pacer->vblank_period * 0.95) ||
-			(current_mode == PMODE_TIMER   && worktime >= display_pacer->vblank_period * 0.75)
+			(pacer->current_mode == PMODE_DISPLAY && worktime >= pacer->display.vblank_period * 0.95) ||
+			(pacer->current_mode == PMODE_TIMER   && worktime >= pacer->display.vblank_period * 0.75)
 		) {
 			return PMODE_TIMER;
 		}
@@ -541,21 +547,20 @@ void eventloop_run(void) {
 	evloop.frame_times.target_fps = frame->target_fps;
 	evloop.frame_times.start = time_get();
 
-	WaitState wait_state = {
-		.sleep_enabled = env_get("TAISEI_FRAMELIMITER_SLEEP", true),
-		.sleep_margin = HRTIME_RESOLUTION / (3 * evloop.frame_times.target_fps),
+	FramePacer pacer = {
+		.wait = {
+			.sleep_enabled = env_get("TAISEI_FRAMELIMITER_SLEEP", true),
+			.sleep_margin = HRTIME_RESOLUTION / (3 * evloop.frame_times.target_fps),
+		},
+		.forced_mode = env_get("TAISEI_FRAMELIMITER_PACE_MODE", PMODE_UNDEFINED),
+		.prev_mode = PMODE_UNDEFINED,
 	};
 
-	PacingMode forced_pace_mode = env_get("TAISEI_FRAMELIMITER_PACE_MODE", PMODE_UNDEFINED);
-
-	if(forced_pace_mode < PMODE_UNDEFINED || forced_pace_mode >= NUM_PMODES) {
-		forced_pace_mode = PMODE_UNDEFINED;
+	if(pacer.forced_mode < PMODE_UNDEFINED || pacer.forced_mode >= NUM_PMODES) {
+		pacer.forced_mode = PMODE_UNDEFINED;
 	}
 
-	PacingMode pace_mode = forced_pace_mode;
-	PacingMode prev_pace_mode = PMODE_UNDEFINED;
-	TimerPacer timer_pacer;
-	DisplayPacer display_pacer;
+	pacer.current_mode = pacer.forced_mode;
 
 	uint frame_num = 0;
 
@@ -565,7 +570,7 @@ void eventloop_run(void) {
 	hrtime_t scene_start_time = 0;
 	uint scene_logic_ticks = 0;
 
-	display_pacer = display_pacer_init(evloop.frame_times.target_fps);
+	pacer.display = display_pacer_init(evloop.frame_times.target_fps);
 	bool want_low_latency = true;
 
 	while(frame != NULL) {
@@ -583,33 +588,31 @@ void eventloop_run(void) {
 
 		debug_text_clear();
 
-		// debug_text("  r_await_frame time: %.02fms", SDL_NS_TO_MS((double)await_time));
-		// debug_text("r_present_frame time: %.02fms", SDL_NS_TO_MS((double)prev_present_time));
 		debug_text("Await+present block time: %.02fms", SDL_NS_TO_MS((double)blocked_time));
 
-		pace_mode = decide_pacing_mode(forced_pace_mode, pace_mode, &timer_pacer, &display_pacer);
+		pacer.current_mode = decide_pacing_mode(&pacer);
 
 		debug_text("Vsync: %s (want: %s)", vsync_names[r_vsync_current()], vsync_names[config_get_int(CONFIG_VSYNC)]);
-		debug_text("Pacing mode: %s", pacing_mode_name(pace_mode));
+		debug_text("Pacing mode: %s", pacing_mode_name(pacer.current_mode));
 		debug_text("FPS:  L:%.2f  R:%.2f", global.fps.logic.fps, global.fps.render.fps);
 
 		hrtime_t next_deadline;
 		uint logic_ticks = 1;
 
-		if(pace_mode != prev_pace_mode || evloop.frame_times.target_fps != frame->target_fps) {
+		if(pacer.current_mode != pacer.prev_mode || evloop.frame_times.target_fps != frame->target_fps) {
 			evloop.frame_times.target_fps = frame->target_fps;
 
-			timer_pacer = timer_pacer_init(evloop.frame_times.target_fps);
-			display_pacer_reset(&display_pacer, evloop.frame_times.target_fps);
+			pacer.timer = timer_pacer_init(evloop.frame_times.target_fps);
+			display_pacer_reset(&pacer.display, evloop.frame_times.target_fps);
 
-			next_deadline = timer_pacer_deadline(&timer_pacer, 1);
-			prev_pace_mode = pace_mode;
-		} else if(pace_mode == PMODE_TIMER) {
-			next_deadline = timer_pacer_update(&timer_pacer, &wait_state);
-		} else if(pace_mode == PMODE_DISPLAY) {
-			logic_ticks = display_pacer_update(&display_pacer, &wait_state, blocked_time, prev_work_time);
-			next_deadline = display_pacer.last_sync_time + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
-		} else if(pace_mode == PMODE_NONE) {
+			next_deadline = timer_pacer_deadline(&pacer.timer, 1);
+			pacer.prev_mode = pacer.current_mode;
+		} else if(pacer.current_mode == PMODE_TIMER) {
+			next_deadline = timer_pacer_update(&pacer.timer, &pacer.wait);
+		} else if(pacer.current_mode == PMODE_DISPLAY) {
+			logic_ticks = display_pacer_update(&pacer.display, &pacer.wait, blocked_time, prev_work_time);
+			next_deadline = pacer.display.last_sync_time + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
+		} else if(pacer.current_mode == PMODE_NONE) {
 			next_deadline = time_get() + HRTIME_RESOLUTION / evloop.frame_times.target_fps;
 		} else {
 			UNREACHABLE;
@@ -624,7 +627,7 @@ void eventloop_run(void) {
 		debug_text("Elapsed: %.02fms ~= %.2f FPS", SDL_NS_TO_MS((double)elapsed), (double)HRTIME_RESOLUTION / elapsed);
 
 		if(logic_ticks == 0) {
-			assert(pace_mode == PMODE_DISPLAY);
+			assert(pacer.current_mode == PMODE_DISPLAY);
 
 			// We're running at an integer multiple of the logic FPS.
 			// We don't have interpolation yet, so we have nothing new to draw,
