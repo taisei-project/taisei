@@ -1086,10 +1086,6 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	if(stage_is_skip_mode()) {
-		return RFRAME_DROP;
-	}
-
 	rng_lock(&global.rand_game);
 	rng_make_active(&global.rand_visual);
 	BEGIN_DRAW_CODE();
