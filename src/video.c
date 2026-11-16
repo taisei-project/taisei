@@ -469,6 +469,27 @@ static void video_update_vsync(void) {
 }
 
 static void video_update_refresh_rate(void) {
+	const char *fake_rate_str = env_get("TAISEI_FAKE_REFRESH_RATE", "");
+
+	if(*fake_rate_str) {
+		IntRatio fake_rate = { 0, 1 };
+		char *end = NULL;
+		fake_rate.num = strtol(fake_rate_str, &end, 10);
+		log_debug("fake_rate.num = %i", fake_rate.num);
+
+		if(end && *end == '/') {
+			fake_rate.den = strtol(end + 1, NULL, 10);
+			log_debug("fake_rate.den = %i", fake_rate.den);
+		}
+
+		if(fake_rate.num > 0 && fake_rate.den > 0) {
+			log_info("Refresh rate faked by environment: %.02f (%d/%d)",
+				int_ratio_to_double(fake_rate), fake_rate.num, fake_rate.den);
+			video.refresh_rate = fake_rate;
+			return;
+		}
+	}
+
 	auto mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(NOT_NULL(video.window)));
 
 	if(UNLIKELY(mode == NULL)) {
