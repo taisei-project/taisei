@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 		r_end_frame();
 		r_present_frame();
 
-		fpscounter_update(&fps);
+		fpscounter_update(&fps, time_get());
 
 		hrtime_t t = time_get();
 		if(t - last_print_time > HRTIME_RESOLUTION) {

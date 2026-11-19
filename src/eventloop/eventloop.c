@@ -75,7 +75,7 @@ LogicFrameAction run_logic_frame(LoopFrame *frame) {
 	LogicFrameAction a = frame->logic(frame->context);
 
 	if(a != LFRAME_SKIP_ALWAYS) {
-		fpscounter_update(&global.fps.logic);
+		fpscounter_update(&global.fps.logic, time_get());
 	}
 
 	if(taisei_quit_requested()) {

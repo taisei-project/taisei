@@ -805,17 +805,17 @@ void eventloop_run(void) {
 			run_render_frame(frame);
 
 			hrtime_t work_end_time = time_get();
-			fpscounter_update(&global.fps.busy);
+			fpscounter_update(&global.fps.busy, work_end_time);
 
 			prev_work_time = work_end_time - work_begin_time;
 			prev_present_start_time = work_end_time;
 
 			r_present_frame();
-			fpscounter_update(&global.fps.render);
+			fpscounter_update(&global.fps.render, time_get());
 		} else {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
-			fpscounter_update(&global.fps.busy);
+			fpscounter_update(&global.fps.busy, prev_present_start_time);
 		}
 	}
 }

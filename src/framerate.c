@@ -22,9 +22,9 @@ void fpscounter_reset(FPSCounter *fps) {
 	fps->last_update_time = time_get();
 }
 
-void fpscounter_update(FPSCounter *fps) {
+void fpscounter_update(FPSCounter *fps, hrtime_t when) {
 	const int log_size = ARRAY_SIZE(fps->frametimes);
-	hrtime_t update_time = time_get();
+	hrtime_t update_time = when;
 	hrtime_t frametime = update_time - fps->last_update_time;
 
 	memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(hrtime_t));
