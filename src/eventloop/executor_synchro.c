@@ -69,7 +69,9 @@ static void wait_until(WaitState *s, hrtime_t deadline) {
 		s->sleep_margin -= s->sleep_margin >> 10;
 	}
 
-	while(time_get() < deadline);
+	while(time_get() < deadline) {
+		SDL_CPUPauseInstruction();
+	}
 }
 
 static TimerPacer timer_pacer_init(uint fps) {
