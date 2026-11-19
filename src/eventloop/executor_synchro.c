@@ -557,12 +557,14 @@ typedef struct FramePacer {
 	PacingMode forced_mode;
 	PacingMode current_mode;
 	PacingMode prev_mode;
+	uint lag_streak;
 	bool display_pacer_failed;
 	bool want_low_latency;
 	schar force_latency_mode;
 	TimerPacer timer;
 	DisplayPacer display;
 	WaitState wait;
+	FPSCounter raw_fps;
 } FramePacer;
 
 static PacingMode decide_pacing_mode(FramePacer *pacer) {
@@ -618,7 +620,7 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 	return PMODE_DISPLAY;
 }
 
-static bool decide_low_latency(FramePacer *pacer, hrtime_t max_frametime) {
+static bool decide_low_latency(FramePacer *pacer, uint target_fps) {
 	if(pacer->force_latency_mode >= 0) {
 		return pacer->force_latency_mode;
 	}
@@ -627,21 +629,34 @@ static bool decide_low_latency(FramePacer *pacer, hrtime_t max_frametime) {
 		return false;
 	}
 
-	if(pacer->display.vblank_period && !pacer->display_pacer_failed) {
-		max_frametime = min(max_frametime, pacer->display.vblank_period);
+	if(pacer->current_mode == PMODE_DISPLAY) {
+		return true;
 	}
 
-	hrtime_t worktime = global.fps.busy.frametime;  // average
+	hrtime_t max_frametime = HRTIME_RESOLUTION / target_fps;
+	hrtime_t worktime = global.fps.busy.frametime;
+	hrtime_t frametime = pacer->raw_fps.frametime;
+	bool lagging = false;
 
-	// Ask for more throughput if we don't have enough slack
-	// TODO tune these
-	if(
-		( pacer->want_low_latency && worktime >= max_frametime * 0.9) ||
-		(!pacer->want_low_latency && worktime >= max_frametime * 0.7)
-	) {
-		return false;
+	if(pacer->lag_streak) {
+		lagging = worktime >= max_frametime * 0.7 || frametime > max_frametime * 1.01;
+	} else {
+		lagging = worktime >= max_frametime * 0.9 || frametime > max_frametime * 1.03;
 	}
 
+	if(lagging) {
+		++pacer->lag_streak;
+
+		if(pacer->lag_streak >= 450) {
+			log_warn("Sustained slowdown detected, disabling low-latency mode");
+			pacer->force_latency_mode = false;
+			return false;
+		}
+	} else if(pacer->lag_streak) {
+		pacer->lag_streak -= max(1, pacer->lag_streak >> 5);
+	}
+
+	debug_text("Lag streak: %u; lagged: %s", pacer->lag_streak, lagging ? "YES" : "NO");
 	return true;
 }
 
@@ -658,6 +673,8 @@ void eventloop_run(void) {
 	evloop.frame_times.target_fps = frame->target_fps;
 	evloop.frame_times.start = time_get();
 
+	int force_latency_mode = env_get("TAISEI_LOW_LATENCY", -1);
+
 	FramePacer pacer = {
 		.wait = {
 			.sleep_enabled = env_get("TAISEI_FRAMELIMITER_SLEEP", true),
@@ -665,7 +682,7 @@ void eventloop_run(void) {
 		},
 		.forced_mode = env_get("TAISEI_FRAMELIMITER_PACE_MODE", PMODE_UNDEFINED),
 		.prev_mode = PMODE_UNDEFINED,
-		.force_latency_mode = env_get("TAISEI_LOW_LATENCY", -1),
+		.force_latency_mode = force_latency_mode,
 	};
 
 	if(pacer.forced_mode < PMODE_UNDEFINED || pacer.forced_mode >= NUM_PMODES) {
@@ -683,6 +700,7 @@ void eventloop_run(void) {
 	uint scene_logic_ticks = 0;
 
 	pacer.display = display_pacer_init(evloop.frame_times.target_fps);
+	fpscounter_reset(&pacer.raw_fps);
 
 	while(frame != NULL) {
 		// In VSYNC mode, this call may block to wait for a swapchain.
@@ -706,7 +724,6 @@ void eventloop_run(void) {
 
 		debug_text("Vsync: %s (want: %s)", vsync_names[r_vsync_current()], vsync_names[config_get_int(CONFIG_VSYNC)]);
 		debug_text("Pacing mode: %s", pacing_mode_name(pacer.current_mode));
-		debug_text("FPS:  L:%.2f  R:%.2f", global.fps.logic.fps, global.fps.render.fps);
 
 		hrtime_t next_deadline;
 		hrtime_t approx_frametime = HRTIME_RESOLUTION / evloop.frame_times.target_fps;
@@ -731,11 +748,16 @@ void eventloop_run(void) {
 			UNREACHABLE;
 		}
 
-		pacer.want_low_latency = decide_low_latency(&pacer, approx_frametime);
+		pacer.want_low_latency = decide_low_latency(&pacer, evloop.frame_times.target_fps);
 
 		attr_unused auto prev_start = evloop.frame_times.start;
 		evloop.frame_times.start = time_get();
 		evloop.frame_times.next = next_deadline;
+
+		fpscounter_update(&pacer.raw_fps, evloop.frame_times.start);
+
+		debug_text("FPS:  L:%.2f  R:%.2f  RAW:%.02f",
+			global.fps.logic.fps, global.fps.render.fps, pacer.raw_fps.fps);
 
 		assert(evloop.frame_times.start > prev_start);
 		attr_unused auto elapsed = evloop.frame_times.start - prev_start;
@@ -793,6 +815,7 @@ void eventloop_run(void) {
 
 		if(laction == LFRAME_STOP || prev_frame != frame) {
 			pacer.display_pacer_failed = false;  // try again
+			pacer.force_latency_mode = force_latency_mode;
 		}
 
 		if(laction == LFRAME_STOP) {
