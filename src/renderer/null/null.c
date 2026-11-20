@@ -188,7 +188,7 @@ static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 static void null_await_frame(bool low_latency) { }
 static void null_begin_frame(void) { }
 static void null_end_frame(void) { }
-static bool null_present_frame(void) { return false; }
+static bool null_present_frame(void) { return true; }
 
 RendererBackend _r_backend_null = {
 	.name = "null",
