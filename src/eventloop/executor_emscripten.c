@@ -29,17 +29,21 @@ static void em_loop_callback(void) {
 		return;
 	}
 
-	evloop.frame_times.start = time_get();
-	evloop.frame_times.target = frame->frametime;
+	hrtime_t frametime = HRTIME_RESOLUTION / frame->target_fps;
 
-	evloop.frame_times.next += evloop.frame_times.target;
-	hrtime_t min_next_time = evloop.frame_times.start - 2 * evloop.frame_times.target;
+	evloop.frame_times.start = time_get();
+	evloop.frame_times.target_fps = frame->target_fps;
+
+	evloop.frame_times.next += frametime;
+	hrtime_t min_next_time = evloop.frame_times.start - 2 * frametime;
 
 	if(min_next_time > evloop.frame_times.next) {
 		evloop.frame_times.next = min_next_time;
 	}
 
 	global.fps.busy.last_update_time = evloop.frame_times.start;
+
+	r_await_frame(false);
 
 	LogicFrameAction lframe_action = handle_logic(&frame, &evloop.frame_times);
 
@@ -49,9 +53,11 @@ static void em_loop_callback(void) {
 
 	if(!(frame_num++ % get_effective_frameskip())) {
 		run_render_frame(frame);
+		r_present_frame();
+		fpscounter_update(&global.fps.render, time_get());
 	}
 
-	fpscounter_update(&global.fps.busy);
+	fpscounter_update(&global.fps.busy, time_get());
 }
 
 static void update_vsync(void) {
