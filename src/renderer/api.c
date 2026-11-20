@@ -863,7 +863,13 @@ void r_end_frame(void) {
 }
 
 bool r_present_frame(void) {
-	return B.present_frame();
+	bool ok = B.present_frame();
+
+	if(!ok) {
+		log_debug("present_frame() failed");
+	}
+
+	return ok;
 }
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this
