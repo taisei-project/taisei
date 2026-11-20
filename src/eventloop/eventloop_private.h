@@ -35,4 +35,4 @@ void eventloop_leave(void);
 
 LogicFrameAction run_logic_frame(LoopFrame *frame);
 LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes);
-RenderFrameAction run_render_frame(LoopFrame *frame);
+void run_render_frame(LoopFrame *frame);

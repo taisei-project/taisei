@@ -220,13 +220,12 @@ static LogicFrameAction menu_logic_frame(void *arg) {
 	return LFRAME_WAIT;
 }
 
-static RenderFrameAction menu_render_frame(void *arg) {
+static void menu_render_frame(void *arg) {
 	MenuData *menu = arg;
 	assert(menu->draw);
 	set_ortho(SCREEN_W, SCREEN_H);
 	menu->draw(menu);
 	draw_transition();
-	return RFRAME_SWAP;
 }
 
 static void menu_end_loop(void *ctx) {

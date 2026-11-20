@@ -391,7 +391,7 @@ static void draw_text(CutsceneState *st) {
 	r_state_pop();
 }
 
-static RenderFrameAction cutscene_render_frame(void *ctx) {
+static void cutscene_render_frame(void *ctx) {
 	CutsceneState *st = ctx;
 	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	set_ortho(SCREEN_W, SCREEN_H);
@@ -433,8 +433,6 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
 
 	draw_transition();
-
-	return RFRAME_SWAP;
 }
 
 static void cutscene_end_loop(void *ctx) {

@@ -119,17 +119,12 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 	return lframe_action;
 }
 
-RenderFrameAction run_render_frame(LoopFrame *frame) {
+void run_render_frame(LoopFrame *frame) {
 	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
 	r_begin_frame();
 	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
-	RenderFrameAction a = frame->render(frame->context);
+	frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
-
-	// TODO remove these, only a jank debug feature uses this, and it should be rewritten differently
-	assert(a != RFRAME_DROP);
-
 	video_finish_frame();
 	r_end_frame();
-	return a;
 }

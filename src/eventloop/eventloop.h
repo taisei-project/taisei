@@ -11,11 +11,6 @@
 
 #include "hirestime.h"
 
-typedef enum RenderFrameAction {
-	RFRAME_SWAP,
-	RFRAME_DROP,
-} RenderFrameAction;
-
 typedef enum LogicFrameAction {
 	LFRAME_WAIT,
 	LFRAME_SKIP,
@@ -24,7 +19,7 @@ typedef enum LogicFrameAction {
 } LogicFrameAction;
 
 typedef LogicFrameAction (*LogicFrameFunc)(void *context);
-typedef RenderFrameAction (*RenderFrameFunc)(void *context);
+typedef void (*RenderFrameFunc)(void *context);
 typedef void (*PostLoopFunc)(void *context);
 
 typedef struct FrameTimes {

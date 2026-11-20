@@ -1082,7 +1082,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	return LFRAME_WAIT;
 }
 
-static RenderFrameAction stage_render_frame(void *arg) {
+static void stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
@@ -1094,8 +1094,6 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	rng_unlock(&global.rand_game);
 	rng_make_active(&global.rand_game);
 	draw_transition();
-
-	return RFRAME_SWAP;
 }
 
 static void stage_end_loop(void *ctx);

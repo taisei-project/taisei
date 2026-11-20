@@ -630,9 +630,8 @@ static LogicFrameAction credits_logic_frame(void *arg) {
 	}
 }
 
-static RenderFrameAction credits_render_frame(void *arg) {
+static void credits_render_frame(void *arg) {
 	credits_draw();
-	return RFRAME_SWAP;
 }
 
 static void credits_end_loop(void *ctx) {
