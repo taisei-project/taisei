@@ -511,8 +511,8 @@ static void video_update_refresh_rate(void) {
 	}
 
 	if(!int_ratio_equals(old, video.refresh_rate)) {
-		double old_hz = int_ratio_to_double(old);
-		double new_hz = int_ratio_to_double(video.refresh_rate);
+		attr_unused double old_hz = int_ratio_to_double(old);
+		attr_unused double new_hz = int_ratio_to_double(video.refresh_rate);
 
 		log_debug("%gHz (%d/%d) -> %gHz (%d/%d)",
 			old_hz, old.num, old.den,
