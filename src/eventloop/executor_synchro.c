@@ -765,25 +765,9 @@ void eventloop_run(void) {
 
 		if(logic_ticks == 0) {
 			assert(pacer.current_mode == PMODE_DISPLAY);
-
 			// We're running at an integer multiple of the logic FPS.
 			// We don't have interpolation yet, so we have nothing new to draw,
 			// but we have to present the previous frame again to maintain vsync.
-
-			// TODO: this may fail, handle it somehow.
-			//
-			// NOTE: rendering the same frame again would have minor side-effects, because a few effects use feedback
-			// buffers and expect a constant draw rate. This is not *super* important, and we already ignore this
-			// in frameskip mode. So we have 3 options, from most to least desirable:
-			//
-			// 	1. Split feedback operations into a separate pass that runs at logic rate.
-			//  2. Just render the same frame again if repeat fails; accept the overhead and slight correctness issues.
-			//  3. Ignore the failure let them fuck up the timing.
-			//
-			// Coincidentally, this is also in descending order of implementation effort, so we do 3 for now.
-			//
-			// TODO: Also make CONFIG_VID_FRAMESKIP take this path. It's not the same as global.frameskip, we still
-			// want the FPS limiter and frame pacing there.
 			prev_present_start_time = time_get();
 			r_present_frame();
 			continue;
@@ -839,6 +823,15 @@ void eventloop_run(void) {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
 			fpscounter_update(&global.fps.busy, prev_present_start_time);
+
+			if(pacer.current_mode == PMODE_DISPLAY) {
+				// This is guaranteed to be the CONFIG_VID_FRAMESKIP path.
+				// The other cases of !should_render_frame() are unpaced.
+				// FIXME: frameskip affects some feedback-based visuals like the powersurge effect,
+				// mostly making them linger for longer than they should.
+				assert(config_get_int(CONFIG_VID_FRAMESKIP) > 0);
+				r_present_frame();
+			}
 		}
 	}
 }
