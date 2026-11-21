@@ -25,18 +25,16 @@
 TAISEI_BUILDCONF_RENDERER_BACKENDS
 #undef R
 
-RendererBackend *_r_backends[] = {
+static RendererBackend *_r_backends[] = {
 	#define R(x) &R_BACKEND(x),
 	TAISEI_BUILDCONF_RENDERER_BACKENDS
 	#undef R
-	NULL,
 };
 
-RendererBackend *_r_fallback_backends[] = {
+static RendererBackend *_r_fallback_backends[] = {
 	#define R(x) &R_BACKEND(x),
 	TAISEI_BUILDCONF_RENDERER_FALLBACK_BACKENDS
 	#undef R
-	NULL,
 };
 
 RendererBackend _r_backend;
@@ -50,9 +48,10 @@ static RendererBackend *_r_find_backend(const char *name) {
 		return &R_BACKEND(TAISEI_BUILDCONF_RENDERER_DEFAULT);
 	}
 
-	for(RendererBackend **b = _r_backends; *b; ++b) {
-		if(!strcmp((*b)->name, name)) {
-			return *b;
+	for(uint i = 0; i < countof(_r_backends); ++i) {
+		auto b = _r_backends[i];
+		if(!strcmp(b->name, name)) {
+			return b;
 		}
 	}
 
@@ -207,7 +206,7 @@ void _r_backend_init(const RendererInitParams *params) {
 	}
 
 	if(try_fallbacks) {
-		for(uint i = 0; i < ARRAY_SIZE(_r_fallback_backends); ++i) {
+		for(uint i = 0; i < countof(_r_fallback_backends); ++i) {
 			auto b = _r_fallback_backends[i];
 			if(b != backend && _r_backend_try_init(b, NULL, params)) {
 				goto done;

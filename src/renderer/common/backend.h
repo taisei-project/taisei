@@ -144,7 +144,6 @@ typedef struct RendererBackend {
 	void *custom;
 } RendererBackend;
 
-extern RendererBackend *_r_backends[];
 extern RendererBackend _r_backend;
 
 void _r_backend_init(const RendererInitParams *params);
