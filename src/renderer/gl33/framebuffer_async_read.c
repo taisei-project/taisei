@@ -171,13 +171,16 @@ void gl33_framebuffer_finalize_read_requests(void) {
 			glDeleteBuffers(1, &rq->pbo);
 			rq->pbo = 0;
 		}
+
+		*rq = (typeof(*rq)) {};
 	}
 
 	if(flip_fbo.fb.gl_fbo) {
 		glDeleteFramebuffers(1, &flip_fbo.fb.gl_fbo);
 		glDeleteRenderbuffers(1, &flip_fbo.rbo);
-		flip_fbo = (typeof(flip_fbo)) {};
 	}
+
+	flip_fbo = (typeof(flip_fbo)) {};
 }
 
 void gl33_framebuffer_read_async(

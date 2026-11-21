@@ -117,6 +117,7 @@ static struct {
 	r_feature_bits_t features;
 
 	SDL_GLContext gl_context;
+	SDL_Window *window;
 
 #ifndef STATIC_GLES3
 	bool fb_sRGB_state;
@@ -302,6 +303,7 @@ static SDL_GLContext gl33_create_context(RendererBackend *backend, SDL_Window *w
 
 static bool gl33_init_context(RendererBackend *backend, SDL_Window *window) {
 	auto vtable = &GLVT_OF(*backend);
+	R.window = window;
 	R.gl_context = vtable->create_context(backend, window);
 
 	if(!R.gl_context) {
@@ -1219,17 +1221,38 @@ static void gl33_post_init(void) {
 }
 
 static void gl33_shutdown(void) {
-	gl33_framebuffer_finalize_read_requests();
-	glcommon_unload_library();
+	assert(!R.window);
 	SDL_GL_DestroyContext(R.gl_context);
+	R.gl_context = NULL;
+	glcommon_unload_library();
 }
 
 static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	SDL_Window *window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_OPENGL);
+	SDL_Window *window = R.window;
 
-	if(!window) {
-		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
-		return NULL;
+	if(window) {
+		SDL_SetWindowTitle(window, title);
+#ifndef __EMSCRIPTEN__
+		SDL_SetWindowSize(window, w, h);
+		SDL_SetWindowPosition(window, x, y);
+#endif
+		SDL_SetWindowResizable(window, flags & SDL_WINDOW_RESIZABLE);
+		SDL_SetWindowFullscreen(window, flags & SDL_WINDOW_FULLSCREEN);
+
+		if(flags & SDL_WINDOW_HIDDEN) {
+			SDL_HideWindow(window);
+		} else {
+			SDL_ShowWindow(window);
+		}
+	} else {
+		window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_OPENGL);
+
+		if(!window) {
+			log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
+			return NULL;
+		}
+
+		R.window = window;
 	}
 
 	if(!SDL_GL_MakeCurrent(window, R.gl_context)) {
@@ -1238,6 +1261,19 @@ static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, in
 	}
 
 	return window;
+}
+
+static void gl33_unclaim_window(SDL_Window *window) {
+	if(!window) {
+		return;
+	}
+
+	assert(window == R.window);
+
+	// needs to be here because opengl sucks: gl33_shutdown has no "current" context
+	gl33_framebuffer_finalize_read_requests();
+
+	R.window = NULL;
 }
 
 static r_feature_bits_t gl33_features(void) {
@@ -1470,6 +1506,7 @@ RendererBackend _r_backend_gl33 = {
 		.post_init = gl33_post_init,
 		.shutdown = gl33_shutdown,
 		.create_window = gl33_create_window,
+		.unclaim_window = gl33_unclaim_window,
 		.features = gl33_features,
 		.capabilities = gl33_capabilities,
 		.capabilities_current = gl33_capabilities_current,

@@ -1076,23 +1076,25 @@ bool glcommon_init(RendererBackend *backend, const RendererInitParams *params) {
 		return false;
 	}
 
-	// We need to create the GL context early to make sure that it works,
-	// but that requires a window, which is not created until after the
-	// renderer is ready. Create a temporary window to work around that.
+	// We need to create the GL context early to make sure that it works, but that requires a window, which
+	// is not created until after the renderer is ready.
 
 	SDL_WindowFlags flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL;
 	SDL_Window *window = SDL_CreateWindow("", params->init_window_size.w, params->init_window_size.h, flags);
 
 	if(!window) {
 		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
-		return NULL;
-	}
-
-	if(!GLVT_OF(*backend).init_context(backend, window)) {
-		SDL_DestroyWindow(window);
 		return false;
 	}
 
-	SDL_DestroyWindow(window);
-	return true;
+	if(GLVT_OF(*backend).init_context(backend, window)) {
+		// We keep the window alive, because on some platforms (WebGL, some single-surface EGL platforms)
+		// it's not possible to move the GL context between windows. Rather than guessing whether we are
+		// on such a platform, we try to avoid recreating the window.
+		return true;
+	} else {
+		backend->funcs.unclaim_window(window);
+		SDL_DestroyWindow(window);
+		return false;
+	}
 }
