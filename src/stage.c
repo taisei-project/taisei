@@ -35,7 +35,7 @@
 #include "util/strbuf.h"
 #include "watchdog.h"
 
-typedef struct StageFrameState {
+typedef struct StageSceneState {
 	StageInfo *stage;
 	ResourceGroup *rg;
 	CallChain cc;
@@ -52,20 +52,20 @@ typedef struct StageFrameState {
 	float view_shake;
 	int bgm_start_time;
 	double bgm_start_pos;
-} StageFrameState;
+} StageSceneState;
 
-static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
+static StageSceneState *_current_stage_state;  // TODO remove this shitty hack
 
 #define BGM_FADE_LONG (2.0 * FADE_TIME / (double)FPS)
 #define BGM_FADE_SHORT (FADE_TIME / (double)FPS)
 
-static inline bool is_quickloading(StageFrameState *fstate) {
-	return fstate->quicksave && fstate->quicksave == global.replay.input.replay;
+static inline bool is_quickloading(StageSceneState *state) {
+	return state->quicksave && state->quicksave == global.replay.input.replay;
 }
 
-static inline bool should_skip_frame(StageFrameState *fstate) {
+static inline bool should_skip_frame(StageSceneState *state) {
 	return
-		is_quickloading(fstate) || (
+		is_quickloading(state) || (
 			global.replay.input.replay &&
 			global.replay.input.play.skip_frames > 0
 		);
@@ -75,19 +75,19 @@ bool stage_is_demo_mode(void) {
 	return global.replay.input.replay && global.replay.input.play.demo_mode;
 }
 
-static void sync_bgm(StageFrameState *fstate) {
+static void sync_bgm(StageSceneState *state) {
 	if(stage_is_demo_mode()) {
 		return;
 	}
 
-	double t = fstate->bgm_start_pos + (global.frames - fstate->bgm_start_time) / (double)FPS;
+	double t = state->bgm_start_pos + (global.frames - state->bgm_start_time) / (double)FPS;
 	audio_bgm_seek_realtime(t);
 }
 
-static void recover_after_skip(StageFrameState *fstate) {
-	if(fstate->was_skipping) {
-		fstate->was_skipping = false;
-		sync_bgm(fstate);
+static void recover_after_skip(StageSceneState *state) {
+	if(state->was_skipping) {
+		state->was_skipping = false;
+		sync_bgm(state);
 		audio_sfx_set_enabled(true);
 	}
 }
@@ -275,12 +275,12 @@ static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
 }
 
 static void stage_unpause(CallChainResult ccr) {
-	StageFrameState *fstate = ccr.ctx;
-	fstate->paused = false;
+	StageSceneState *state = ccr.ctx;
+	state->paused = false;
 }
 
-static void stage_pause(StageFrameState *fstate) {
-	if(fstate->paused) {
+static void stage_pause(StageSceneState *state) {
+	if(state->paused) {
 		log_debug("Pause request ignored, already paused");
 		return;
 	}
@@ -297,11 +297,11 @@ static void stage_pause(StageFrameState *fstate) {
 		m = create_ingame_menu();
 	}
 
-	fstate->paused = true;
-	stage_enter_ingame_menu(m, NULL, CALLCHAIN(stage_unpause, fstate));
+	state->paused = true;
+	stage_enter_ingame_menu(m, NULL, CALLCHAIN(stage_unpause, state));
 }
 
-static void stage_do_quickload(StageFrameState *fstate);
+static void stage_do_quickload(StageSceneState *state);
 
 static void stage_continue_game(void) {
 	log_info("The game is being continued...");
@@ -341,9 +341,9 @@ static void gameover_menu_result(CallChainResult ccr) {
 
 void stage_gameover(void) {
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
-		auto fstate = _current_stage_state;
-		if(fstate->quicksave) {
-			stage_do_quickload(fstate);
+		auto state = _current_stage_state;
+		if(state->quicksave) {
+			stage_do_quickload(state);
 		} else {
 			global.gameover = GAMEOVER_RESTART;
 		}
@@ -368,7 +368,7 @@ void stage_gameover(void) {
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
-	StageFrameState *fstate = NOT_NULL(arg);
+	StageSceneState *state = NOT_NULL(arg);
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
 
@@ -387,7 +387,7 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 			break;
 
 		case TE_GAME_PAUSE:
-			stage_pause(fstate);
+			stage_pause(state);
 			break;
 
 		default:
@@ -458,36 +458,36 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 	return rpy;
 }
 
-static void stage_do_quicksave(StageFrameState *fstate, bool isauto) {
-	if(isauto && fstate->quicksave && !fstate->quicksave_is_automatic) {
+static void stage_do_quicksave(StageSceneState *state, bool isauto) {
+	if(isauto && state->quicksave && !state->quicksave_is_automatic) {
 		// Do not overwrite a manual quicksave with an auto quicksave
 		return;
 	}
 
-	if(fstate->quicksave) {
-		replay_reset(fstate->quicksave);
-		mem_free(fstate->quicksave);
+	if(state->quicksave) {
+		replay_reset(state->quicksave);
+		mem_free(state->quicksave);
 	}
 
-	fstate->quicksave = create_quicksave_replay(global.replay.output.stage);
-	fstate->quicksave_is_automatic = isauto;
+	state->quicksave = create_quicksave_replay(global.replay.output.stage);
+	state->quicksave_is_automatic = isauto;
 }
 
-static void stage_do_quickload(StageFrameState *fstate) {
-	if(fstate->quicksave) {
-		fstate->quickload_requested = true;
+static void stage_do_quickload(StageSceneState *state) {
+	if(state->quicksave) {
+		state->quickload_requested = true;
 	} else {
 		log_info("No active quicksave");
 	}
 }
 
 static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
-	StageFrameState *fstate = NOT_NULL(arg);
+	StageSceneState *state = NOT_NULL(arg);
 
 #ifdef DEBUG
 	if(event->type == SDL_EVENT_KEY_DOWN && event->key.scancode == config_get_int(CONFIG_KEY_TIMESTOP)) {
 		if(!event->key.repeat) {
-			fstate->paused = !fstate->paused;
+			state->paused = !state->paused;
 		}
 
 		return false;
@@ -496,9 +496,9 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 
 	if(event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat && is_quicksave_allowed()) {
 		if(event->key.scancode == config_get_int(CONFIG_KEY_QUICKSAVE)) {
-			stage_do_quicksave(fstate, false);
+			stage_do_quicksave(state, false);
 		} else if(event->key.scancode == config_get_int(CONFIG_KEY_QUICKLOAD)) {
-			stage_do_quickload(fstate);
+			stage_do_quickload(state);
 		}
 
 		return false;
@@ -592,19 +592,19 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 	}
 }
 
-static void leave_replay_mode(StageFrameState *fstate, ReplayState *rp_in) {
+static void leave_replay_mode(StageSceneState *state, ReplayState *rp_in) {
 	replay_state_deinit(rp_in);
 }
 
-static void replay_input(StageFrameState *fstate) {
-	if(!should_skip_frame(fstate)) {
+static void replay_input(StageSceneState *state) {
+	if(!should_skip_frame(state)) {
 		events_poll((EventHandler[]){
 			{
 				.proc =
 					stage_is_demo_mode()
 						? stage_input_handler_demo
 						: stage_input_handler_replay,
-				.arg = fstate,
+				.arg = state,
 			},
 			{}
 		}, EFLAG_GAME);
@@ -621,7 +621,7 @@ static void replay_input(StageFrameState *fstate) {
 	player_applymovement(&global.plr);
 
 	if(a.resume_event) {
-		leave_replay_mode(fstate, rp_in);
+		leave_replay_mode(state, rp_in);
 	}
 }
 
@@ -638,9 +638,9 @@ static void display_bgm_title(void) {
 }
 
 static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
-	StageFrameState *fstate = NOT_NULL(a);
-	fstate->bgm_start_time = global.frames;
-	fstate->bgm_start_pos = audio_bgm_tell();
+	StageSceneState *state = NOT_NULL(a);
+	state->bgm_start_time = global.frames;
+	state->bgm_start_pos = audio_bgm_tell();
 
 	if(dialog_is_active(global.dialog)) {
 		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
@@ -651,23 +651,23 @@ static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
 	return false;
 }
 
-static void stage_input(StageFrameState *fstate) {
+static void stage_input(StageSceneState *state) {
 	if(stage_is_skip_mode()) {
 		events_poll((EventHandler[]){
 			{
 				.proc = stage_handle_bgm_change,
 				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
-				.arg = fstate,
+				.arg = state,
 			},
 			{}
 		}, EFLAG_NOPUMP);
 	} else {
 		events_poll((EventHandler[]){
-			{ .proc = stage_input_handler_gameplay, .arg = fstate },
+			{ .proc = stage_input_handler_gameplay, .arg = state },
 			{
 				.proc = stage_handle_bgm_change,
 				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
-				.arg = fstate,
+				.arg = state,
 			},
 			{}
 		}, EFLAG_GAME);
@@ -894,13 +894,13 @@ bool stage_is_cleared(void) {
 	return global.gameover == GAMEOVER_SCORESCREEN || global.gameover == GAMEOVER_TRANSITIONING;
 }
 
-static void stage_update_fps(StageFrameState *fstate) {
+static void stage_update_fps(StageSceneState *state) {
 	if(global.replay.output.replay) {
 		uint16_t replay_fps = (uint16_t)rint(global.fps.logic.fps);
 
-		if(replay_fps != fstate->last_replay_fps) {
+		if(replay_fps != state->last_replay_fps) {
 			replay_stage_event(global.replay.output.stage, global.frames, EV_FPS, replay_fps);
-			fstate->last_replay_fps = replay_fps;
+			state->last_replay_fps = replay_fps;
 		}
 	}
 }
@@ -939,14 +939,14 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
-static void stage_replay_sync(StageFrameState *fstate) {
+static void stage_replay_sync(StageSceneState *state) {
 	uint16_t desync_check = (rng_u64() ^ global.plr.points) & 0xFFFF;
 	ReplaySyncStatus rpsync = replay_state_check_desync(&global.replay.input, global.frames, desync_check);
 
 	if(
 		global.replay.output.stage &&
-		fstate->desync_check_freq > 0 &&
-		!(global.frames % fstate->desync_check_freq)
+		state->desync_check_freq > 0 &&
+		!(global.frames % state->desync_check_freq)
 	) {
 		replay_stage_event(global.replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
 	}
@@ -959,20 +959,20 @@ static void stage_replay_sync(StageFrameState *fstate) {
 			exit(1);
 		}
 
-		if(fstate->quicksave && fstate->quicksave == global.replay.input.replay) {
+		if(state->quicksave && state->quicksave == global.replay.input.replay) {
 			log_warn("Quicksave replay desynced; resuming prematurely!");
-			leave_replay_mode(fstate, &global.replay.input);
+			leave_replay_mode(state, &global.replay.input);
 		}
 	}
 }
 
-static void process_input(StageFrameState *fstate);
+static void process_input(StageSceneState *state);
 
-static SceneAction stage_logic_frame(void *arg) {
-	StageFrameState *fstate = arg;
-	StageInfo *stage = fstate->stage;
+static SceneAction stage_scene_logic(void *arg) {
+	StageSceneState *state = arg;
+	StageInfo *stage = state->stage;
 
-	stage_update_fps(fstate);
+	stage_update_fps(state);
 
 	if(watchdog_signaled() && !stage_is_demo_mode()) {
 		global.gameover = GAMEOVER_ABORT;
@@ -982,27 +982,27 @@ static SceneAction stage_logic_frame(void *arg) {
 		global.plr.iddqd = true;
 	}
 
-	fapproach_p(&fstate->view_shake, 0, 1);
-	fapproach_asymptotic_p(&fstate->view_shake, 0, 0.05, 1e-2);
+	fapproach_p(&state->view_shake, 0, 1);
+	fapproach_asymptotic_p(&state->view_shake, 0, 0.05, 1e-2);
 
 	if(
 		global.replay.input.replay == NULL &&
-		fstate->dynstage_generation != dynstage_get_generation()
+		state->dynstage_generation != dynstage_get_generation()
 	) {
 		log_info("Stages library updated, attempting to hot-reload");
-		stage_do_quicksave(fstate, true);   // no-op if user has a manual save
-		stage_do_quickload(fstate);
+		stage_do_quicksave(state, true);   // no-op if user has a manual save
+		stage_do_quickload(state);
 	}
 
 	if(global.gameover == GAMEOVER_TRANSITIONING) {
 		// Usually stage_comain will do this
 		events_poll(NULL, 0);
-	} else if(fstate->paused) {
-		process_input(fstate);
+	} else if(state->paused) {
+		process_input(state);
 	} else {
-		cosched_run_tasks(&fstate->sched);
+		cosched_run_tasks(&state->sched);
 		update_all_sfx();
-		stage_replay_sync(fstate);
+		stage_replay_sync(state);
 
 		global.frames++;
 
@@ -1035,25 +1035,25 @@ static SceneAction stage_logic_frame(void *arg) {
 			stage_display_clear_screen(&b);
 		}
 
-		if(stage->type == STAGE_SPELL && !global.boss && !fstate->transition_delay) {
-			fstate->transition_delay = 120;
+		if(stage->type == STAGE_SPELL && !global.boss && !state->transition_delay) {
+			state->transition_delay = 120;
 		}
 	}
 
-	if(fstate->transition_delay) {
-		if(!--fstate->transition_delay) {
+	if(state->transition_delay) {
+		if(!--state->transition_delay) {
 			stage_finish(GAMEOVER_WIN);
 		}
-	} else if(!(should_skip_frame(fstate) && stage_is_demo_mode())) {
+	} else if(!(should_skip_frame(state) && stage_is_demo_mode())) {
 		update_transition();
 	}
 
 	if(global.replay.input.replay == NULL) {
-		StageProgress *p = NOT_NULL(stageinfo_get_progress(fstate->stage, global.diff, true));
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(state->stage, global.diff, true));
 		progress_register_hiscore(p, global.plr.mode, global.plr.points);
 	}
 
-	if(fstate->quickload_requested) {
+	if(state->quickload_requested) {
 		log_info("Quickload initiated");
 		return SCENE_ACTION_STOP;
 	}
@@ -1062,12 +1062,12 @@ static SceneAction stage_logic_frame(void *arg) {
 		return SCENE_ACTION_STOP;
 	}
 
-	if(should_skip_frame(fstate)) {
-		fstate->was_skipping = true;
+	if(should_skip_frame(state)) {
+		state->was_skipping = true;
 		return SCENE_ACTION_SKIP_ALWAYS;
 	}
 
-	recover_after_skip(fstate);
+	recover_after_skip(state);
 
 
 	SceneAction skipmode = skipstate_handle_frame();
@@ -1082,9 +1082,9 @@ static SceneAction stage_logic_frame(void *arg) {
 	return SCENE_ACTION_WAIT;
 }
 
-static void stage_render_frame(void *arg) {
-	StageFrameState *fstate = arg;
-	StageInfo *stage = fstate->stage;
+static void stage_scene_render(void *arg) {
+	StageSceneState *state = arg;
+	StageInfo *stage = state->stage;
 
 	rng_lock(&global.rand_game);
 	rng_make_active(&global.rand_visual);
@@ -1096,22 +1096,22 @@ static void stage_render_frame(void *arg) {
 	draw_transition();
 }
 
-static void stage_end_loop(void *ctx);
+static void stage_scene_end(void *ctx);
 
 static void stage_stub_proc(void) { }
 static void stage_preload_stub_proc(ResourceGroup *rg) { }
 
-static void process_input(StageFrameState *fstate) {
+static void process_input(StageSceneState *state) {
 	if(global.replay.input.replay != NULL) {
-		replay_input(fstate);
+		replay_input(state);
 	} else {
-		stage_input(fstate);
+		stage_input(state);
 	}
 }
 
-TASK(stage_comain, { StageFrameState *fstate; }) {
-	StageFrameState *fstate = ARGS.fstate;
-	StageInfo *stage = fstate->stage;
+TASK(stage_comain, { StageSceneState *state; }) {
+	StageSceneState *state = ARGS.state;
+	StageInfo *stage = state->stage;
 
 	stage->procs->begin();
 	player_stage_post_init(&global.plr);
@@ -1123,7 +1123,7 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 	YIELD;
 
 	for(;;YIELD) {
-		process_input(fstate);
+		process_input(state);
 		process_boss(&global.boss);
 		process_enemies(&global.enemies);
 		process_projectiles(&global.projs, true);
@@ -1248,7 +1248,7 @@ static void _stage_enter(
 
 	res_purge();
 
-	auto fstate = ALLOC(StageFrameState, {
+	auto state = ALLOC(StageSceneState, {
 		.stage = stage,
 		.cc = next,
 		.quicksave = quickload,
@@ -1258,29 +1258,29 @@ static void _stage_enter(
 		.rg = rg,
 	});
 
-	cosched_init(&fstate->sched);
-	_current_stage_state = fstate;
+	cosched_init(&state->sched);
+	_current_stage_state = state;
 
 	skipstate_init();
 
-	if(should_skip_frame(fstate)) {
+	if(should_skip_frame(state)) {
 		audio_sfx_set_enabled(false);
 	}
 
-	if(!is_quickloading(fstate)) {
+	if(!is_quickloading(state)) {
 		demoplayer_suspend();
 	}
 
-	SCHED_INVOKE_TASK(&fstate->sched, stage_comain, fstate);
-	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
+	SCHED_INVOKE_TASK(&state->sched, stage_comain, state);
+	eventloop_enter(state, stage_scene_logic, stage_scene_render, stage_scene_end, FPS);
 }
 
 void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next) {
 	_stage_enter(stage, rg, next, NULL, false);
 }
 
-void stage_end_loop(void *ctx) {
-	StageFrameState *s = ctx;
+static void stage_scene_end(void *ctx) {
+	StageSceneState *s = ctx;
 	assert(s == _current_stage_state);
 
 	recover_after_skip(s);
