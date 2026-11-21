@@ -17,9 +17,9 @@ static uint frame_num;
 static bool em_handle_resize_event(SDL_Event *event, void *arg);
 
 static void em_loop_callback(void) {
-	LoopFrame *frame = evloop.stack_ptr;
+	Scene *scene = evloop.current_scene;
 
-	if(!frame) {
+	if(!scene) {
 		events_unregister_handler(em_handle_resize_event);
 		emscripten_cancel_main_loop();
 		return;
@@ -29,10 +29,10 @@ static void em_loop_callback(void) {
 		return;
 	}
 
-	hrtime_t frametime = HRTIME_RESOLUTION / frame->target_fps;
+	hrtime_t frametime = HRTIME_RESOLUTION / scene->target_fps;
 
 	evloop.frame_times.start = time_get();
-	evloop.frame_times.target_fps = frame->target_fps;
+	evloop.frame_times.target_fps = scene->target_fps;
 
 	evloop.frame_times.next += frametime;
 	hrtime_t min_next_time = evloop.frame_times.start - 2 * frametime;
@@ -45,14 +45,14 @@ static void em_loop_callback(void) {
 
 	r_await_frame(false);
 
-	LogicFrameAction lframe_action = handle_logic(&frame, &evloop.frame_times);
+	SceneAction action = scene_handle_logic(&scene, &evloop.frame_times);
 
-	if(!frame || lframe_action == LFRAME_STOP) {
+	if(!scene || action == SCENE_ACTION_STOP) {
 		return;
 	}
 
 	if(!(frame_num++ % get_effective_frameskip())) {
-		run_render_frame(frame);
+		scene_render_frame(scene);
 		r_present_frame();
 		fpscounter_update(&global.fps.render, time_get());
 	}

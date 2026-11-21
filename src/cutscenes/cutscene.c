@@ -201,7 +201,7 @@ static bool cutscene_event(SDL_Event *evt, void *ctx) {
 	return false;
 }
 
-static LogicFrameAction cutscene_logic_frame(void *ctx) {
+static SceneAction cutscene_logic_frame(void *ctx) {
 	CutsceneState *st = ctx;
 
 	if(watchdog_signaled()) {
@@ -253,11 +253,11 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 
 	if(st->fadeout_timer > 0) {
 		if(!(--st->fadeout_timer)) {
-			return LFRAME_STOP;
+			return SCENE_ACTION_STOP;
 		}
 	}
 
-	return LFRAME_WAIT;
+	return SCENE_ACTION_WAIT;
 }
 
 static void draw_background(CutsceneState *st, Texture *erase_mask) {

@@ -10,29 +10,27 @@
 #include "taisei.h"
 
 #include "eventloop.h"
-#include "hirestime.h"
 
-typedef struct LoopFrame LoopFrame;
+typedef struct Scene Scene;
 
 #define EVLOOP_STACK_SIZE 32
 
-struct LoopFrame {
+struct Scene {
 	void *context;
-	LogicFrameFunc logic;
-	RenderFrameFunc render;
-	PostLoopFunc on_leave;
+	SceneLogicFunc logic;
+	SceneRenderFunc render;
+	SceneLeaveFunc on_leave;
 	uint target_fps;
-	LogicFrameAction prev_logic_action;
+	SceneAction prev_logic_action;
 };
 
 extern struct evloop_s {
-	LoopFrame stack[EVLOOP_STACK_SIZE];
-	LoopFrame *stack_ptr;
+	Scene stack[EVLOOP_STACK_SIZE];
+	Scene *current_scene;
 	FrameTimes frame_times;
 } evloop;
 
 void eventloop_leave(void);
 
-LogicFrameAction run_logic_frame(LoopFrame *frame);
-LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes);
-void run_render_frame(LoopFrame *frame);
+SceneAction scene_handle_logic(Scene **pscene, const FrameTimes *ftimes);
+void scene_render_frame(Scene *scene);

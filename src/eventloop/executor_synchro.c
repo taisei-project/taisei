@@ -535,22 +535,22 @@ static bool should_render_frame(uint frame_num) {
 	return !global.is_replay_verification && (frame_num % get_effective_frameskip() == 0);
 }
 
-static LogicFrameAction run_logic(LoopFrame **frame, uint logic_ticks) {
-	LogicFrameAction lframe_action = LFRAME_WAIT;
-	LoopFrame *original_frame = *frame;
+static SceneAction run_logic(Scene **pscene, uint logic_ticks) {
+	SceneAction action = SCENE_ACTION_WAIT;
+	Scene *original_scene = *pscene;
 
-	for(uint i = 0; i < logic_ticks && *frame == original_frame; ++i) {
-		// This handles LFRAME_SKIP and LFRAME_SKIP_ALWAYS internally
-		lframe_action = handle_logic(frame, &evloop.frame_times);
-		assert(*frame != NULL || lframe_action == LFRAME_STOP);
+	for(uint i = 0; i < logic_ticks && *pscene == original_scene; ++i) {
+		// This handles SCENE_ACTION_SKIP and SCENE_ACTION_SKIP_ALWAYS internally
+		action = scene_handle_logic(pscene, &evloop.frame_times);
+		assert(*pscene != NULL || action == SCENE_ACTION_STOP);
 
-		if(lframe_action == LFRAME_STOP) {
+		if(action == SCENE_ACTION_STOP) {
 			break;
 		}
 	}
 
 	debug_text_commit();
-	return lframe_action;
+	return action;
 }
 
 typedef struct FramePacer {
@@ -663,14 +663,13 @@ static bool decide_low_latency(FramePacer *pacer, uint target_fps) {
 void eventloop_run(void) {
 	assert(thread_current_is_main());
 
-	if(evloop.stack_ptr == NULL) {
+	if(evloop.current_scene == NULL) {
 		return;
 	}
 
-	// TODO: rename LoopFrame, it's a horrible misnomer. It actually represents a continuous "scene"
-	LoopFrame *frame = evloop.stack_ptr;
+	Scene *scene = evloop.current_scene;
 
-	evloop.frame_times.target_fps = frame->target_fps;
+	evloop.frame_times.target_fps = scene->target_fps;
 	evloop.frame_times.start = time_get();
 
 	int force_latency_mode = env_get("TAISEI_LOW_LATENCY", -1);
@@ -702,7 +701,7 @@ void eventloop_run(void) {
 	pacer.display = display_pacer_init(evloop.frame_times.target_fps);
 	fpscounter_reset(&pacer.raw_fps);
 
-	while(frame != NULL) {
+	while(scene != NULL) {
 		// In VSYNC mode, this call may block to wait for a swapchain.
 		// Alternatively, r_present_frame (called at the very end, after rendering) may block instead.
 		// We don't care which one of them blocks, because they are right next to each other in the cycle.
@@ -729,8 +728,8 @@ void eventloop_run(void) {
 		hrtime_t approx_frametime = HRTIME_RESOLUTION / evloop.frame_times.target_fps;
 		uint logic_ticks = 1;
 
-		if(pacer.current_mode != pacer.prev_mode || evloop.frame_times.target_fps != frame->target_fps) {
-			evloop.frame_times.target_fps = frame->target_fps;
+		if(pacer.current_mode != pacer.prev_mode || evloop.frame_times.target_fps != scene->target_fps) {
+			evloop.frame_times.target_fps = scene->target_fps;
 
 			pacer.timer = timer_pacer_init(evloop.frame_times.target_fps);
 			display_pacer_reset(&pacer.display, evloop.frame_times.target_fps);
@@ -782,11 +781,11 @@ void eventloop_run(void) {
 
 		debug_text_commit();
 
-		auto prev_frame = frame;
+		auto prev_scene = scene;
 		scene_logic_ticks += logic_ticks;
-		LogicFrameAction laction = run_logic(&frame, logic_ticks);
+		SceneAction laction = run_logic(&scene, logic_ticks);
 
-		if(frame != prev_frame) {
+		if(scene != prev_scene) {
 			scene_start_time = work_begin_time;
 			scene_logic_ticks = 1;
 		}
@@ -797,19 +796,19 @@ void eventloop_run(void) {
 		debug_text(" Real time: %.02fms", SDL_NS_TO_MS((double)(actual_time)));
 		debug_text("Time drift: %.02fms", SDL_NS_TO_MS((double)(logic_time - actual_time)));
 
-		if(laction == LFRAME_STOP || prev_frame != frame) {
+		if(laction == SCENE_ACTION_STOP || prev_scene != scene) {
 			pacer.display_pacer_failed = false;  // try again
 			pacer.force_latency_mode = force_latency_mode;
 		}
 
-		if(laction == LFRAME_STOP) {
+		if(laction == SCENE_ACTION_STOP) {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
 			continue;
 		}
 
 		if(should_render_frame(frame_num++)) {
-			run_render_frame(frame);
+			scene_render_frame(scene);
 
 			hrtime_t work_end_time = time_get();
 			fpscounter_update(&global.fps.busy, work_end_time);

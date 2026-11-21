@@ -615,18 +615,18 @@ void credits_preload(ResourceGroup *rg) {
 	NULL);
 }
 
-static LogicFrameAction credits_logic_frame(void *arg) {
+static SceneAction credits_logic_frame(void *arg) {
 	update_transition();
 	events_poll(NULL, 0);
 	credits_process();
 	global.frames++;
 
 	if(credits.end == 0) {
-		return LFRAME_STOP;
+		return SCENE_ACTION_STOP;
 	} else if(credits.skippable && gamekeypressed(KEY_SKIP)) {
-		return LFRAME_SKIP;
+		return SCENE_ACTION_SKIP;
 	} else {
-		return LFRAME_WAIT;
+		return SCENE_ACTION_WAIT;
 	}
 }
 

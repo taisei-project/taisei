@@ -19,44 +19,44 @@
 struct evloop_s evloop;
 
 void eventloop_enter(
-	void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps
+	void *context, SceneLogicFunc logic, SceneRenderFunc render, SceneLeaveFunc on_leave, uint target_fps
 ) {
 	assert(thread_current_is_main());
-	assume(evloop.stack_ptr < evloop.stack + EVLOOP_STACK_SIZE - 1);
+	assume(evloop.current_scene < evloop.stack + EVLOOP_STACK_SIZE - 1);
 	assert(target_fps > 0);
 
-	LoopFrame *frame;
+	Scene *scene;
 
-	if(evloop.stack_ptr == NULL) {
-		frame = evloop.stack_ptr = evloop.stack;
+	if(evloop.current_scene == NULL) {
+		scene = evloop.current_scene = evloop.stack;
 	} else {
-		frame = ++evloop.stack_ptr;
+		scene = ++evloop.current_scene;
 	}
 
-	frame->context = context;
-	frame->logic = frame_logic;
-	frame->render = frame_render;
-	frame->on_leave = on_leave;
-	frame->target_fps = target_fps;
-	frame->prev_logic_action = LFRAME_WAIT;
+	scene->context = context;
+	scene->logic = logic;
+	scene->render = render;
+	scene->on_leave = on_leave;
+	scene->target_fps = target_fps;
+	scene->prev_logic_action = SCENE_ACTION_WAIT;
 
 	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 }
 
 void eventloop_leave(void) {
 	assert(thread_current_is_main());
-	assume(evloop.stack_ptr != NULL);
+	assume(evloop.current_scene != NULL);
 
-	LoopFrame *frame = evloop.stack_ptr;
+	Scene *scene = evloop.current_scene;
 
-	if(evloop.stack_ptr == evloop.stack) {
-		evloop.stack_ptr = NULL;
+	if(evloop.current_scene == evloop.stack) {
+		evloop.current_scene = NULL;
 	} else {
-		--evloop.stack_ptr;
+		--evloop.current_scene;
 	}
 
-	if(frame->on_leave != NULL) {
-		frame->on_leave(frame->context);
+	if(scene->on_leave != NULL) {
+		scene->on_leave(scene->context);
 	}
 }
 
@@ -64,67 +64,67 @@ FrameTimes eventloop_get_frame_times(void) {
 	return evloop.frame_times;
 }
 
-LogicFrameAction run_logic_frame(LoopFrame *frame) {
-	assert(frame == evloop.stack_ptr);
+static SceneAction run_logic(Scene *scene) {
+	assert(scene == evloop.current_scene);
 	debug_text_rollback();
 
-	if(frame->prev_logic_action == LFRAME_STOP) {
-		return LFRAME_STOP;
+	if(scene->prev_logic_action == SCENE_ACTION_STOP) {
+		return SCENE_ACTION_STOP;
 	}
 
-	LogicFrameAction a = frame->logic(frame->context);
+	SceneAction a = scene->logic(scene->context);
 
-	if(a != LFRAME_SKIP_ALWAYS) {
+	if(a != SCENE_ACTION_SKIP_ALWAYS) {
 		fpscounter_update(&global.fps.logic, time_get());
 	}
 
 	if(taisei_quit_requested()) {
-		a = LFRAME_STOP;
+		a = SCENE_ACTION_STOP;
 	}
 
-	frame->prev_logic_action = a;
+	scene->prev_logic_action = a;
 	return a;
 }
 
-LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
-	LogicFrameAction lframe_action;
+SceneAction scene_handle_logic(Scene **pscene, const FrameTimes *ftimes) {
+	SceneAction action;
 	uint cnt = 0;
 
 	do {
-		lframe_action = run_logic_frame(*pframe);
+		action = run_logic(*pscene);
 
-		if(lframe_action == LFRAME_SKIP_ALWAYS) {
-			lframe_action = LFRAME_SKIP;
+		if(action == SCENE_ACTION_SKIP_ALWAYS) {
+			action = SCENE_ACTION_SKIP;
 			cnt = 0;
 		}
 
-		if(evloop.stack_ptr != *pframe) {
-			*pframe = evloop.stack_ptr;
-			return lframe_action;
+		if(evloop.current_scene != *pscene) {
+			*pscene = evloop.current_scene;
+			return action;
 		}
 	} while(
-		lframe_action == LFRAME_SKIP &&
+		action == SCENE_ACTION_SKIP &&
 		++cnt < config_get_int(CONFIG_SKIP_SPEED)
 	);
 
-	if(lframe_action == LFRAME_STOP) {
+	if(action == SCENE_ACTION_STOP) {
 		eventloop_leave();
-		*pframe = evloop.stack_ptr;
+		*pscene = evloop.current_scene;
 
-		if(*pframe == NULL) {
-			return LFRAME_STOP;
+		if(*pscene == NULL) {
+			return SCENE_ACTION_STOP;
 		}
 	}
 
-	return lframe_action;
+	return action;
 }
 
-void run_render_frame(LoopFrame *frame) {
-	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
+void scene_render_frame(Scene *scene) {
+	attr_unused Scene *stack_prev = evloop.current_scene;
 	r_begin_frame();
 	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
-	frame->render(frame->context);
-	assert(evloop.stack_ptr == stack_prev);
+	scene->render(scene->context);
+	assert(evloop.current_scene == stack_prev);
 	video_finish_frame();
 	r_end_frame();
 }

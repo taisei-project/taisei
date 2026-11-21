@@ -11,16 +11,16 @@
 
 #include "hirestime.h"
 
-typedef enum LogicFrameAction {
-	LFRAME_WAIT,
-	LFRAME_SKIP,
-	LFRAME_SKIP_ALWAYS,
-	LFRAME_STOP,
-} LogicFrameAction;
+typedef enum SceneAction {
+	SCENE_ACTION_WAIT,
+	SCENE_ACTION_SKIP,
+	SCENE_ACTION_SKIP_ALWAYS,
+	SCENE_ACTION_STOP,
+} SceneAction;
 
-typedef LogicFrameAction (*LogicFrameFunc)(void *context);
-typedef void (*RenderFrameFunc)(void *context);
-typedef void (*PostLoopFunc)(void *context);
+typedef SceneAction (*SceneLogicFunc)(void *context);
+typedef void (*SceneRenderFunc)(void *context);
+typedef void (*SceneLeaveFunc)(void *context);
 
 typedef struct FrameTimes {
 	hrtime_t start;
@@ -30,9 +30,9 @@ typedef struct FrameTimes {
 
 void eventloop_enter(
 	void *context,
-	LogicFrameFunc frame_logic,
-	RenderFrameFunc frame_render,
-	PostLoopFunc on_leave,
+	SceneLogicFunc logic,
+	SceneRenderFunc render,
+	SceneLeaveFunc on_leave,
 	uint target_fps
 ) attr_nonnull(1, 2, 3);
 

@@ -125,7 +125,7 @@ static void skipstate_init(void) {
 	skip_state.skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
 }
 
-static LogicFrameAction skipstate_handle_frame(void) {
+static SceneAction skipstate_handle_frame(void) {
 	if(skip_state.skip_to_dialog && dialog_is_active(global.dialog)) {
 		skip_state.skip_to_dialog = false;
 		global.plr.iddqd = false;
@@ -140,14 +140,14 @@ static LogicFrameAction skipstate_handle_frame(void) {
 	skip_state.was_skip_mode = skip_mode;
 
 	if(skip_mode) {
-		return LFRAME_SKIP_ALWAYS;
+		return SCENE_ACTION_SKIP_ALWAYS;
 	}
 
 	if(gamekeypressed(KEY_SKIP)) {
-		return LFRAME_SKIP;
+		return SCENE_ACTION_SKIP;
 	}
 
-	return LFRAME_WAIT;
+	return SCENE_ACTION_WAIT;
 }
 
 static void skipstate_shutdown(void) {
@@ -156,7 +156,7 @@ static void skipstate_shutdown(void) {
 
 #else
 
-INLINE LogicFrameAction skipstate_handle_frame(void) { return LFRAME_WAIT; }
+INLINE SceneAction skipstate_handle_frame(void) { return SCENE_ACTION_WAIT; }
 INLINE void skipstate_init(void) { }
 INLINE void skipstate_shutdown(void) { }
 
@@ -968,7 +968,7 @@ static void stage_replay_sync(StageFrameState *fstate) {
 
 static void process_input(StageFrameState *fstate);
 
-static LogicFrameAction stage_logic_frame(void *arg) {
+static SceneAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
@@ -1055,31 +1055,31 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 
 	if(fstate->quickload_requested) {
 		log_info("Quickload initiated");
-		return LFRAME_STOP;
+		return SCENE_ACTION_STOP;
 	}
 
 	if(global.gameover > 0) {
-		return LFRAME_STOP;
+		return SCENE_ACTION_STOP;
 	}
 
 	if(should_skip_frame(fstate)) {
 		fstate->was_skipping = true;
-		return LFRAME_SKIP_ALWAYS;
+		return SCENE_ACTION_SKIP_ALWAYS;
 	}
 
 	recover_after_skip(fstate);
 
 
-	LogicFrameAction skipmode = skipstate_handle_frame();
-	if(skipmode != LFRAME_WAIT) {
+	SceneAction skipmode = skipstate_handle_frame();
+	if(skipmode != SCENE_ACTION_WAIT) {
 		return skipmode;
 	}
 
 	if(global.replay.input.replay && gamekeypressed(KEY_SKIP)) {
-		return LFRAME_SKIP;
+		return SCENE_ACTION_SKIP;
 	}
 
-	return LFRAME_WAIT;
+	return SCENE_ACTION_WAIT;
 }
 
 static void stage_render_frame(void *arg) {

@@ -190,11 +190,11 @@ void menu_no_input(MenuData *menu) {
 	events_poll(NULL, 0);
 }
 
-static LogicFrameAction menu_logic_frame(void *arg) {
+static SceneAction menu_logic_frame(void *arg) {
 	MenuData *menu = arg;
 
 	if(menu->state == MS_Dead) {
-		return LFRAME_STOP;
+		return SCENE_ACTION_STOP;
 	}
 
 	if(menu->logic) {
@@ -217,7 +217,7 @@ static LogicFrameAction menu_logic_frame(void *arg) {
 
 	update_transition();
 
-	return LFRAME_WAIT;
+	return SCENE_ACTION_WAIT;
 }
 
 static void menu_render_frame(void *arg) {
