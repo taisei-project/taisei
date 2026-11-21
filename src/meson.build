@@ -112,12 +112,6 @@ if is_developer_build
     )
 endif
 
-if host_machine.system() == 'nx'
-    taisei_src += files(
-        'arch_switch.c',
-    )
-endif
-
 subdir('audio')
 subdir('coroutine')
 subdir('cutscenes')
@@ -128,6 +122,7 @@ subdir('lasers')
 subdir('memory')
 subdir('menu')
 subdir('pixmap')
+subdir('platform')
 subdir('plrmodes')
 subdir('renderer')
 subdir('replay')
@@ -148,6 +143,7 @@ taisei_src += [
     memory_src,
     menu_src,
     pixmap_src,
+    platform_src,
     plrmodes_src,
     renderer_src,
     replay_src,

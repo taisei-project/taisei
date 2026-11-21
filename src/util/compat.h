@@ -375,7 +375,7 @@ typedef _Complex double cmplx;
 })
 
 #ifdef __SWITCH__
-	#include "../arch_switch.h"
+	#include "../platform/arch_switch.h"
 	#define atexit nxAtExit
 	#define exit nxExit
 	#define abort nxAbort

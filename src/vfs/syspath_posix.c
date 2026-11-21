@@ -29,8 +29,6 @@ VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;
 });
 
-char *vfs_syspath_separators = "/";
-
 static VFSNode *vfs_syspath_create_internal(char *path);
 
 static void vfs_syspath_free(VFSNode *node) {

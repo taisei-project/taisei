@@ -11,5 +11,6 @@
 
 #include "private.h"
 
-extern char *vfs_syspath_separators;
+#include "platform/path.h"
+
 VFSNode *vfs_syspath_create(const char *path);

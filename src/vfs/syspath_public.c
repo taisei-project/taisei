@@ -11,14 +11,14 @@
 #include "decompress_wrapper.h"
 
 static void striptrailing(char *p, char **pend) {
-	while(*pend > p && strchr(vfs_syspath_separators, *(*pend - 1))) {
+	while(*pend > p && strchr(PLATFORM_PATH_SEPARATORS, *(*pend - 1))) {
 		*--*pend = 0;
 	}
 }
 
 static void stripname(char *p, char **pend) {
 	striptrailing(p, pend);
-	while(*pend > p && !strchr(vfs_syspath_separators, *(*pend - 1))) {
+	while(*pend > p && !strchr(PLATFORM_PATH_SEPARATORS, *(*pend - 1))) {
 		*--*pend = 0;
 	}
 	striptrailing(p, pend);
@@ -80,7 +80,7 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
 }
 
 char vfs_get_syspath_separator(void) {
-	return vfs_syspath_separators[0];
+	return PLATFORM_PATH_SEPARATOR;
 }
 
 char *vfs_syspath_normalize_inplace(char *path) {

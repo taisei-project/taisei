@@ -30,19 +30,3 @@ if dep_crypto.found()
 else
     util_src += files('sha256.c')
 endif
-
-if host_machine.system() == 'windows'
-    util_src += files(
-        'choice_dialog_win32.c',
-    )
-else
-    util_src += files(
-        'choice_dialog_stub.c',  # I hope we'll never need this for non-windows platforms
-    )
-endif
-
-if dep_gamemode.found()
-    util_src += files('gamemode.c')
-else
-    util_src += files('gamemode_stub.c')
-endif

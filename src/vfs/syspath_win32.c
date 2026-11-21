@@ -23,8 +23,6 @@ VFS_NODE_TYPE(VFSSysPathNode, {
 	wchar_t *wpath;
 });
 
-char *vfs_syspath_separators = "\\/";
-
 static VFSNode *vfs_syspath_create_internal(char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
@@ -393,7 +391,7 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 static bool is_absolute(const char *path, size_t len) {
 	// starts with drive letter or path separator?
 	return
-		(len >= 1 && strchr(vfs_syspath_separators, path[0])) ||
+		(len >= 1 && strchr(PLATFORM_PATH_SEPARATORS, path[0])) ||
 		(len >= 2 && path[1] == ':' && isalpha((uchar)path[0]));
 }
 
@@ -409,7 +407,7 @@ void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char 
 		memcpy(buf, parent, l_parent);
 		buf += l_parent;
 
-		if(l_parent && !strchr(vfs_syspath_separators, parent[l_parent - 1])) {
+		if(l_parent && !strchr(PLATFORM_PATH_SEPARATORS, parent[l_parent - 1])) {
 			*buf++ = sep;
 		}
 

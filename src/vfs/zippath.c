@@ -35,7 +35,7 @@ static bool vfs_zippath_syspath(VFSNode *node, StringBuffer *buf) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
 	StringBuffer buf2 = { acquire_scratch_arena() };
 	vfs_node_repr(zpnode->znode, true, &buf2);
-	strbuf_printf(&buf2, "%c%s", vfs_syspath_separators[0], vfs_zippath_name(zpnode));
+	strbuf_printf(&buf2, "%c%s", PLATFORM_PATH_SEPARATOR, vfs_zippath_name(zpnode));
 	vfs_syspath_normalize_buffer(buf2.start, buf);
 	release_scratch_arena(buf2.arena);
 	return true;
