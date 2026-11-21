@@ -9,11 +9,27 @@
 #include "coroutine/coroutine.h"
 #include "coroutine/cotask_internal.h"
 
+#include "log.h"
+
+static bool log_task_info(const char **out_name, uint32_t *out_id) {
+	CoTask *task = cotask_active();
+
+	if(task) {
+		*out_name = task->name;
+		*out_id = task->unique_id;
+		return true;
+	}
+
+	return false;
+}
+
 void coroutines_init(void) {
 	cotask_global_init();
+	log_set_task_info_callback(log_task_info);
 }
 
 void coroutines_shutdown(void) {
+	log_set_task_info_callback(NULL);
 	cotask_global_shutdown();
 }
 

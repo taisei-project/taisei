@@ -126,7 +126,10 @@ typedef void Formatter(FormatterObj *obj, SDL_IOStream *output);
 extern Formatter log_formatter_file;
 extern Formatter log_formatter_console;
 
+typedef bool (*LogTaskInfoCallback)(const char **out_name, uint32_t *out_id);
+
 void log_init(LogLevel lvls);
+void log_set_task_info_callback(LogTaskInfoCallback callback);
 void log_queue_shutdown(void);
 void log_shutdown(void);
 void log_add_output(LogLevel levels, SDL_IOStream *output, Formatter *formatter) attr_nonnull(3);

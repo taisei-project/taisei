@@ -8,14 +8,14 @@
 
 #include "log.h"
 
-#include "coroutine/cotask.h"
+#include "dynarray.h"
 #include "list.h"
 #include "memory/scratch.h"
-#include "random.h"
 #include "thread.h"
 #include "util.h"
 #include "util/env.h"
-#include "util/io.h"
+#include "util/miscmath.h"
+#include "util/random.h"
 #include "util/strbuf.h"
 #include "util/stringops.h"
 
@@ -60,6 +60,7 @@ static struct {
 
 	DYNAMIC_ARRAY(LogFilterEntry) filters;
 
+	LogTaskInfoCallback task_info_callback;
 	bool initialized;
 
 #ifdef LOG_FATAL_MSGBOX
@@ -320,11 +321,8 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.thread_id = thread_get_current_id(),
 	};
 
-	CoTask *task = cotask_active();
-
-	if(task) {
-		entry.task = cotask_get_name(task);
-		entry.task_id = cotask_box(task).unique_id;
+	if(logging.task_info_callback) {
+		logging.task_info_callback(&entry.task, &entry.task_id);
 	}
 
 	if(entry.thread) {
@@ -824,4 +822,8 @@ void log_remove_filters(void) {
 	});
 
 	logging.filters.num_elements = 0;
+}
+
+void log_set_task_info_callback(LogTaskInfoCallback callback) {
+	logging.task_info_callback = callback;
 }
