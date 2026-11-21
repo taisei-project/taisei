@@ -8,10 +8,10 @@
 
 #include "youmu.h"
 
+#include "gfx/graphics.h"
 #include "global.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
-#include "util/graphics.h"
 
 PlayerCharacter character_youmu = {
 	.id = PLR_CHAR_YOUMU,

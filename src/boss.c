@@ -12,6 +12,7 @@
 #include "common_tasks.h"
 #include "dynstage.h"
 #include "entity.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "portrait.h"
@@ -22,7 +23,6 @@
 #include "stagetext.h"
 #include "util/env.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 
 #define DAMAGE_PER_POWER_POINT 500.0f
 #define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)

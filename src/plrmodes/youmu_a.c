@@ -10,12 +10,12 @@
 
 #include "audio/audio.h"
 #include "dialog/youmu.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
-#include "util/graphics.h"
 
 #define SHOT_SELF_DELAY 6
 #define SHOT_SELF_DAMAGE 60

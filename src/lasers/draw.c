@@ -11,11 +11,11 @@
 #include "internal.h"
 
 #include "config.h"
+#include "gfx/fbmgr.h"
 #include "memory/allocator.h"
 #include "memory/arena.h"
 #include "renderer/api.h"
 #include "util.h"
-#include "util/fbmgr.h"
 #include "util/glm.h"
 #include "util/rectpack.h"
 #include "video.h"

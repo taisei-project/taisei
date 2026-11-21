@@ -10,6 +10,8 @@
 
 #include "entity.h"
 #include "events.h"
+#include "gfx/fbmgr.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
@@ -18,9 +20,7 @@
 #include "stageobjects.h"
 #include "stagetext.h"
 #include "util/env.h"
-#include "util/fbmgr.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 #include "util/strbuf.h"
 #include "video.h"
 

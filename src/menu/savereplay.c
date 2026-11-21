@@ -14,12 +14,12 @@
 #include "config.h"
 #include "difficulty.h"
 #include "events.h"
+#include "gfx/graphics.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
 #include "plrmodes.h"
 #include "progress.h"
 #include "replay/struct.h"
-#include "util/graphics.h"
 #include "util/strbuf.h"
 #include "video.h"
 

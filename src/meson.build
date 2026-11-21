@@ -118,6 +118,7 @@ subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
+subdir('gfx')
 subdir('lasers')
 subdir('memory')
 subdir('menu')
@@ -139,6 +140,7 @@ taisei_src += [
     dialog_src,
     eventloop_src,
     filewatch_src,
+    gfx_src,
     lasers_src,
     memory_src,
     menu_src,

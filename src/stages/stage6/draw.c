@@ -8,11 +8,11 @@
 
 #include "draw.h"
 
+#include "gfx/graphics.h"
 #include "global.h"
 #include "resource/model.h"
 #include "stagedraw.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 
 static Stage6DrawData *stage6_draw_data;
 

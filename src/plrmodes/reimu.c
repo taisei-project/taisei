@@ -8,10 +8,10 @@
 
 #include "reimu.h"
 
+#include "gfx/graphics.h"
 #include "global.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
-#include "util/graphics.h"
 
 static Framebuffer *bomb_buffer;
 

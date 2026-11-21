@@ -11,9 +11,9 @@
 #include "audio/audio.h"
 #include "eventloop/eventloop.h"
 #include "events.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "replay/demoplayer.h"
-#include "util/graphics.h"
 #include "video.h"
 #include "watchdog.h"
 

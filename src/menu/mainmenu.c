@@ -15,10 +15,10 @@
 
 #include "audio/audio.h"
 #include "events.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "resource/font.h"
-#include "util/graphics.h"
 #include "version.h"
 #include "video.h"
 #include "watchdog.h"

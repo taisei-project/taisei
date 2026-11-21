@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "entity.h"
 #include "gamepad.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
@@ -23,7 +24,6 @@
 #include "stagetext.h"
 #include "stats.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 #include "util/strbuf.h"
 
 DEFINE_ENTITY_TYPE(PlayerIndicators, {

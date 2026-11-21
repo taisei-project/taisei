@@ -13,7 +13,7 @@
 
 #include "stagedraw.h"
 #include "util/glm.h"
-#include "util/graphics.h"
+#include "gfx/graphics.h"
 #include "i18n/i18n.h"
 
 TASK(elly_animate_colors, { BoxedBoss boss; }) {

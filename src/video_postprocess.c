@@ -8,9 +8,9 @@
 
 #include "video_postprocess.h"
 
+#include "gfx/fbmgr.h"
+#include "gfx/graphics.h"
 #include "resource/postprocess.h"
-#include "util/fbmgr.h"
-#include "util/graphics.h"
 #include "video.h"
 
 struct VideoPostProcess {

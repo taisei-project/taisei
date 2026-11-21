@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "common.h"
 #include "events.h"
+#include "gfx/graphics.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
 #include "menu.h"
@@ -19,7 +20,6 @@
 #include "portrait.h"
 #include "progress.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 #include "util/strbuf.h"
 #include "video.h"
 

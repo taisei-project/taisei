@@ -12,6 +12,8 @@
 #include "dynarray.h"
 #include "eventloop/eventloop.h"
 #include "events.h"
+#include "gfx/fbmgr.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
@@ -21,9 +23,7 @@
 #include "resource/font.h"
 #include "stageutils.h"
 #include "transition.h"
-#include "util/fbmgr.h"
 #include "util/glm.h"
-#include "util/graphics.h"
 #include "util/strbuf.h"
 #include "video.h"
 

@@ -22,7 +22,7 @@
 #include "gamepad.h"
 #include "renderer/api.h"
 #include "resource/font.h"
-#include "util/graphics.h"
+#include "gfx/graphics.h"
 #include "util/strbuf.h"
 #include "video.h"
 

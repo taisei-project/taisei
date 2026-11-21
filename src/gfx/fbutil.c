@@ -8,7 +8,7 @@
 
 #include "fbutil.h"
 
-static const char* attachment_name(FramebufferAttachment a) {
+static const char *attachment_name(FramebufferAttachment a) {
 	static const char *map[FRAMEBUFFER_MAX_ATTACHMENTS] = {
 		[FRAMEBUFFER_ATTACH_DEPTH] = "depth",
 		[FRAMEBUFFER_ATTACH_COLOR0] = "color0",

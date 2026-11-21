@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "fbpair.h"
-#include "geometry.h"
+#include "util/geometry.h"
 #include "list.h"
 #include "renderer/api.h"
 

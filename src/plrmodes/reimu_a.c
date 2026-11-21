@@ -11,11 +11,11 @@
 #include "audio/audio.h"
 #include "common_tasks.h"
 #include "dialog/reimu.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
-#include "util/graphics.h"
 
 #define SHOT_FORWARD_DMG 50
 #define SHOT_FORWARD_DELAY 3

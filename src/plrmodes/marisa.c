@@ -9,10 +9,10 @@
 #include "marisa.h"
 
 #include "audio/audio.h"
+#include "gfx/graphics.h"
 #include "global.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
-#include "util/graphics.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,
