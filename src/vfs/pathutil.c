@@ -144,21 +144,3 @@ void vfs_path_root_prefix(char *path) {
 		*path = VFS_PATH_SEPARATOR;
 	}
 }
-
-char *vfs_syspath_normalize_inplace(char *path) {
-	vfs_syspath_normalize(path, strlen(path) + 1, path);
-	return path;
-}
-
-char *vfs_syspath_normalize_buffer(const char *path, StringBuffer *buf) {
-	char temp[strlen(path)+1];
-	vfs_syspath_normalize(temp, sizeof(temp), path);
-	int n = strbuf_cat(buf, temp);
-	return buf->pos - n;
-}
-
-char *vfs_syspath_join_alloc(const char *parent, const char *child) {
-	char buf[strlen(parent) + strlen(child) + 2];
-	vfs_syspath_join(buf, sizeof(buf), parent, child);
-	return mem_strdup(buf);
-}
