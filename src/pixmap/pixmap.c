@@ -12,7 +12,6 @@
 #include "log.h"
 #include "memory/scratch.h"
 #include "util.h"
-#include "util/io.h"
 #include "util/strbuf.h"
 #include "vfs/public.h"
 
@@ -217,7 +216,7 @@ static char *_pixmap_source_path(const char *prefix, const char *path, StringBuf
 			strbuf_cat(sb, ".");
 			strbuf_cat(sb, *l_ext);
 
-			char *p = try_path("", base_path, sb->start);
+			char *p = vfs_util_try_path("", base_path, sb->start);
 
 			if(p != NULL) {
 				return p;

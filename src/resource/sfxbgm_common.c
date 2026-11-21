@@ -8,7 +8,7 @@
 
 #include "sfxbgm_common.h"
 #include "audio/backend.h"
-#include "util/io.h"
+#include "vfs/public.h"
 
 static const char *const *get_exts(bool isbgm, uint *numexts) {
 	const char *const *exts = (isbgm
@@ -30,7 +30,7 @@ char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm) {
 	const char *const *exts = get_exts(isbgm, &numexts);
 
 	for(uint i = 0; i < numexts; ++i) {
-		if((p = try_path(prefix, name, exts[i]))) {
+		if((p = vfs_util_try_path(prefix, name, exts[i]))) {
 			return p;
 		}
 	}

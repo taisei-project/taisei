@@ -9,10 +9,8 @@
 #include "io.h"
 
 #include "log.h"
-#include "memory/scratch.h"
 #include "stringops.h"
 #include "util/strbuf.h"
-#include "vfs/public.h"
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #include <unistd.h>
@@ -92,20 +90,4 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) {
 	va_start(args, fmt);
 	vfprintf(out, fmt, args);
 	va_end(args);
-}
-
-char *try_path(const char *prefix, const char *name, const char *ext) {
-	StringBuffer buf = { acquire_scratch_arena() };
-	strbuf_cat(&buf, prefix);
-	strbuf_cat(&buf, name);
-	strbuf_cat(&buf, ext);
-
-	char *result = NULL;
-
-	if(vfs_query(buf.start).exists) {
-		result = mem_strdup(buf.start);
-	}
-
-	release_scratch_arena(buf.arena);
-	return result;
 }

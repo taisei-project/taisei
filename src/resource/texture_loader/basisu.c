@@ -13,7 +13,7 @@
 #include "rwops/rwops_sha256.h"
 #include "util.h"
 #include "util/env.h"
-#include "util/io.h"
+#include "vfs/public.h"
 
 #include <basisu_transcoder_c_api.h>
 
@@ -40,7 +40,7 @@ struct basis_size_info {
 #define BASIS_EXT ".basis"
 
 char *texture_loader_basisu_try_path(const char *basename) {
-	return try_path(TEX_PATH_PREFIX, basename, BASIS_EXT);
+	return vfs_util_try_path(TEX_PATH_PREFIX, basename, BASIS_EXT);
 }
 
 bool texture_loader_basisu_check_path(const char *path) {

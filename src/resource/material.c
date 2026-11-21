@@ -9,7 +9,7 @@
 #include "material.h"
 
 #include "util.h"
-#include "util/io.h"
+#include "vfs/public.h"
 #include "util/kvparser.h"
 
 static char *material_path(const char *basename);
@@ -32,7 +32,7 @@ ResourceHandler material_res_handler = {
 };
 
 static char *material_path(const char *basename) {
-	return try_path(MATERIAL_PATH_PREFIX, basename, MATERIAL_EXTENSION);
+	return vfs_util_try_path(MATERIAL_PATH_PREFIX, basename, MATERIAL_EXTENSION);
 }
 
 static bool material_check_path(const char *path) {

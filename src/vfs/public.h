@@ -78,3 +78,5 @@ bool vfs_initialized(void);
 const char *vfs_get_error(void) attr_returns_nonnull;
 
 void vfs_sync(VFSSyncMode mode, CallChain next);
+
+char *vfs_util_try_path(const char *prefix, const char *name, const char *ext);

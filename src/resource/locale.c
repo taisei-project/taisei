@@ -11,7 +11,7 @@
 #include "i18n/format_strings.h"
 #include "memory/scratch.h"
 #include "util.h"
-#include "util/io.h"
+#include "vfs/public.h"
 #include "util/miscmath.h"
 
 #define LOCALE_PATH_PREFIX "res/locale/"
@@ -60,7 +60,7 @@ typedef struct MoStringDescriptor {
 } MoStringDescriptor;
 
 static char *locale_path(const char *name) {
-	return try_path(LOCALE_PATH_PREFIX, name, LOCALE_PATH_SUFFIX);
+	return vfs_util_try_path(LOCALE_PATH_PREFIX, name, LOCALE_PATH_SUFFIX);
 }
 
 static bool locale_check_path(const char *path) {

@@ -427,3 +427,19 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 bool vfs_initialized(void) {
 	return vfs_root != NULL;
 }
+
+char *vfs_util_try_path(const char *prefix, const char *name, const char *ext) {
+	StringBuffer buf = { acquire_scratch_arena() };
+	strbuf_cat(&buf, prefix);
+	strbuf_cat(&buf, name);
+	strbuf_cat(&buf, ext);
+
+	char *result = NULL;
+
+	if(vfs_query(buf.start).exists) {
+		result = mem_strdup(buf.start);
+	}
+
+	release_scratch_arena(buf.arena);
+	return result;
+}

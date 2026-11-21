@@ -9,7 +9,7 @@
 #include "shader_object.h"
 
 #include "renderer/api.h"
-#include "util/io.h"
+#include "vfs/public.h"
 
 struct shobj_type {
 	const char *ext;
@@ -47,7 +47,7 @@ static char *shader_object_path(const char *name) {
 	char *path = NULL;
 
 	for(const char *const *ext = shobj_exts; *ext; ++ext) {
-		if((path = try_path(SHOBJ_PATH_PREFIX, name, *ext))) {
+		if((path = vfs_util_try_path(SHOBJ_PATH_PREFIX, name, *ext))) {
 			return path;
 		}
 	}

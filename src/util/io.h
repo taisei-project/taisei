@@ -20,5 +20,3 @@ size_t SDL_RWvprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *f
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*
 void tsfprintf(FILE *out, const char *restrict fmt, ...) attr_printf(2, 3);
-
-char *try_path(const char *prefix, const char *name, const char *ext);

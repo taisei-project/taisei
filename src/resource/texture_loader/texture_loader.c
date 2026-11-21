@@ -10,7 +10,7 @@
 #include "basisu.h"
 
 #include "util.h"
-#include "util/io.h"
+#include "vfs/public.h"
 #include "util/kvparser.h"
 
 void texture_loader_cleanup_stage1(TextureLoadData *ld) {
@@ -64,7 +64,7 @@ char *texture_loader_source_path(const char *basename) {
 char *texture_loader_path(const char *basename) {
 	char *p = NULL;
 
-	if((p = try_path(TEX_PATH_PREFIX, basename, TEX_EXTENSION))) {
+	if((p = vfs_util_try_path(TEX_PATH_PREFIX, basename, TEX_EXTENSION))) {
 		return p;
 	}
 
