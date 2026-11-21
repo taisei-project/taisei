@@ -620,12 +620,13 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	bool display_changed = display != video_current_display();
 	bool size_changed = w != video.current.width || h != video.current.height;
 
-	if(display_changed) {
-		video_new_window(display, w, h, fs, resizable);
-		return;
+	if(display_changed && video_is_fullscreen()) {
+		// can't move a fullscreen window; fullscreen state is restored below
+		SDL_SetWindowFullscreen(video.window, false);
+		SDL_SyncWindow(video.window);
 	}
 
-	if(size_changed && !fs) {
+	if((size_changed && !fs) || display_changed) {
 		uint pos_hint = display_centered_pos(display);
 		SDL_SetWindowSize(video.window, w, h);
 		SDL_SetWindowPosition(video.window, pos_hint, pos_hint);
@@ -634,7 +635,7 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	video_set_fullscreen_internal(fs);
 	SDL_SetWindowResizable(video.window, resizable);
 
-	if(size_changed) {
+	if(size_changed || display_changed) {
 		video_update_mode_settings();
 	}
 }
