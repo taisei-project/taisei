@@ -17,6 +17,7 @@ static ShaderProgram *blit_shader;
 static struct {
 	Uniform *outputs_enabled;
 	Uniform *depth_enabled;
+	Uniform *flip_height;
 	Uniform *input_depth;
 	Uniform *input_colors[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS];
 } blit_uniforms;
@@ -30,6 +31,7 @@ void gles30_fbcopyfallback_init(RendererBackend *backend) {
 		"precision highp int;\n"
 		"uniform int outputs_enabled[%i];\n"
 		"uniform int depth_enabled;\n"
+		"uniform int flip_height;\n"
 		"uniform sampler2D input_depth;\n"
 		"layout(location = 0) out vec4 outputs[%i];\n",
 		FRAMEBUFFER_MAX_COLOR_ATTACHMENTS, FRAMEBUFFER_MAX_COLOR_ATTACHMENTS
@@ -42,6 +44,7 @@ void gles30_fbcopyfallback_init(RendererBackend *backend) {
 	strbuf_cat(&sbuf,
 		"void main(void) {\n"
 		"	ivec2 tc = ivec2(gl_FragCoord.xy);\n"
+		"	if(flip_height > 0) tc.y = flip_height - 1 - tc.y;\n"
 	);
 
 	// FIXME: do something about mipmaps?
@@ -114,6 +117,7 @@ void gles30_fbcopyfallback_init(RendererBackend *backend) {
 
 	blit_uniforms.outputs_enabled = NOT_NULL(UNIFORM(blit_shader, "outputs_enabled"));
 	blit_uniforms.depth_enabled = NOT_NULL(UNIFORM(blit_shader, "depth_enabled"));
+	blit_uniforms.flip_height = NOT_NULL(UNIFORM(blit_shader, "flip_height"));
 	blit_uniforms.input_depth = NOT_NULL(UNIFORM(blit_shader, "input_depth"));
 
 	for(int i = 0; i < ARRAY_SIZE(blit_uniforms.input_colors); ++i) {
@@ -135,24 +139,38 @@ void gles30_fbcopyfallback_framebuffer_copy(Framebuffer *dst, Framebuffer *src, 
 	Texture *u_input_depth = NULL;
 	bool any_enabled = false;
 
-	if(flags & BUFFER_DEPTH) {
-		Texture *depth_src = r_framebuffer_get_attachment(src, FRAMEBUFFER_ATTACH_DEPTH);
-		if(depth_src && r_framebuffer_get_attachment(dst, FRAMEBUFFER_ATTACH_DEPTH)) {
-			u_input_depth = depth_src;
-			any_enabled = true;
-		}
-	}
-
-	if(flags & BUFFER_COLOR) {
-		for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
-			FramebufferAttachment a = FRAMEBUFFER_ATTACH_COLOR0 + i;
-			Texture *csrc = r_framebuffer_get_attachment(src, a);
-			if(csrc && r_framebuffer_get_attachment(dst, a)) {
-				u_inputs[i] = csrc;
-				u_outputs_enabled[i] = 1;
+	if(dst) {
+		if(flags & BUFFER_DEPTH) {
+			Texture *depth_src = r_framebuffer_get_attachment(src, FRAMEBUFFER_ATTACH_DEPTH);
+			if(depth_src && r_framebuffer_get_attachment(dst, FRAMEBUFFER_ATTACH_DEPTH)) {
+				u_input_depth = depth_src;
 				any_enabled = true;
 			}
 		}
+
+		if(flags & BUFFER_COLOR) {
+			for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
+				FramebufferAttachment a = FRAMEBUFFER_ATTACH_COLOR0 + i;
+				Texture *csrc = r_framebuffer_get_attachment(src, a);
+
+				if(csrc && r_framebuffer_get_attachment(dst, a)) {
+					u_inputs[i] = csrc;
+					u_outputs_enabled[i] = 1;
+					any_enabled = true;
+				}
+			}
+		}
+	} else {
+		if(flags & BUFFER_DEPTH) {
+			u_input_depth = r_framebuffer_get_attachment(src, FRAMEBUFFER_ATTACH_DEPTH);
+		}
+
+		if(flags & BUFFER_COLOR) {
+			u_inputs[0] = r_framebuffer_get_attachment(src, FRAMEBUFFER_ATTACH_COLOR0);
+			u_outputs_enabled[0] = (bool)u_inputs[0];
+		}
+
+		any_enabled = (u_inputs[0] || u_input_depth);
 	}
 
 	if(!any_enabled) {
@@ -160,13 +178,16 @@ void gles30_fbcopyfallback_framebuffer_copy(Framebuffer *dst, Framebuffer *src, 
 	}
 
 	FramebufferAttachment outputmap_saved[FRAMEBUFFER_MAX_OUTPUTS];
-	r_framebuffer_get_output_attachments(dst, outputmap_saved);
 
-	for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
-		if(u_outputs_enabled[i]) {
-			r_framebuffer_set_output_attachment(dst, i, FRAMEBUFFER_ATTACH_COLOR0 + i);
-		} else {
-			r_framebuffer_set_output_attachment(dst, i, FRAMEBUFFER_ATTACH_NONE);
+	if(dst) {
+		r_framebuffer_get_output_attachments(dst, outputmap_saved);
+
+		for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
+			if(u_outputs_enabled[i]) {
+				r_framebuffer_set_output_attachment(dst, i, FRAMEBUFFER_ATTACH_COLOR0 + i);
+			} else {
+				r_framebuffer_set_output_attachment(dst, i, FRAMEBUFFER_ATTACH_NONE);
+			}
 		}
 	}
 
@@ -193,6 +214,7 @@ void gles30_fbcopyfallback_framebuffer_copy(Framebuffer *dst, Framebuffer *src, 
 
 	r_uniform_int_array(blit_uniforms.outputs_enabled, 0, ARRAY_SIZE(u_outputs_enabled), u_outputs_enabled);
 	r_uniform_int(blit_uniforms.depth_enabled, u_input_depth != NULL);
+	r_uniform_int(blit_uniforms.flip_height, dst ? 0 : fbsize.h);
 	r_uniform_sampler(blit_uniforms.input_depth, u_input_depth);
 
 	for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
@@ -203,6 +225,10 @@ void gles30_fbcopyfallback_framebuffer_copy(Framebuffer *dst, Framebuffer *src, 
 	r_draw(r_model_get_quad()->vertex_array, PRIM_TRIANGLE_STRIP, 0, 4, 0, 0);
 
 	r_state_pop();
-	r_framebuffer_set_output_attachments(dst, outputmap_saved);
+
+	if(dst) {
+		r_framebuffer_set_output_attachments(dst, outputmap_saved);
+	}
+
 	r_framebuffer_viewport_rect(dst, viewport_saved);
 }

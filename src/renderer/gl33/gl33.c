@@ -1577,7 +1577,7 @@ static bool gl33_present_frame(void) {
 
 	gl33_set_framebuffer_sRGB_write(false);
 	gl33_framebuffer_clear(NULL, BUFFER_ALL, &RGBA(0, 0, 0, 1), 1);
-	gl33_framebuffer_copy(NULL, R.faux_backbuffer, BUFFER_COLOR);
+	r_framebuffer_copy(NULL, R.faux_backbuffer, BUFFER_COLOR);
 
 	Framebuffer *prev_fb = r_framebuffer_current();
 	r_framebuffer(NULL);
