@@ -160,7 +160,7 @@ static hrtime_t rate_estimator_median_period(const RateEstimator *e) {
 	);
 
 	if(!ok) {
-		debug_text("%zu > %g (spread: %0.8f)", q3 - q1, q2 * RATE_ESTIMATOR_MAX_SPREAD, spread);
+		debug_text("%"PRIuTIME" > %g (spread: %0.8f)", q3 - q1, q2 * RATE_ESTIMATOR_MAX_SPREAD, spread);
 		// too much noise; rate possibly just changed
 		return 0;
 	}
@@ -438,7 +438,7 @@ static void display_pacer_unlagger_update(
 		u->target_slack = lerp(u->target_slack, UNLAGGER_DELAY_TARGET_SLACK_MIN, UNLAGGER_DELAY_TARGET_SLACK_RECOVER);
 	}
 
-	debug_text("Unlagger delay: %.2fms  %zuns", SDL_NS_TO_MS((double)u->delay), u->delay);
+	debug_text("Unlagger delay: %.2fms  %"PRIuTIME"ns", SDL_NS_TO_MS((double)u->delay), u->delay);
 	debug_text("Unlagger min block: %.2fms", SDL_NS_TO_MS((double)u->min_block_time));
 	debug_text("Unlagger slack: %.2fms", SDL_NS_TO_MS((double)u->target_slack));
 	debug_text("Unlagger window: %i / %i", u->window_frames, UNLAGGER_WINDOW);
