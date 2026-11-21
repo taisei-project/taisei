@@ -9,6 +9,8 @@
 #include "emscripten_fetch.h"
 #include "emscripten_fetch_public.h"
 
+#include "hashtable.h"
+#include "log.h"
 #include "resindex.h"
 #include "rwops/rwops_dummy.h"
 
