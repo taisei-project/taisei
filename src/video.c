@@ -973,8 +973,6 @@ void video_init(const VideoInitParams *params) {
 
 	video.scaling_factor = 0;
 
-	r_init();
-
 	int w, h;
 	bool fullscreen;
 
@@ -993,6 +991,10 @@ void video_init(const VideoInitParams *params) {
 		h = config_get_int(CONFIG_VID_HEIGHT);
 		fullscreen = config_get_int(CONFIG_FULLSCREEN);
 	}
+
+	r_init(&(RendererInitParams) {
+		.init_window_size = { w, h },
+	});
 
 	video_update_displays();
 

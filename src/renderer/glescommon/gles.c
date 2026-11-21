@@ -45,7 +45,7 @@ static SDL_EGLint *gles_angle_egl_context_attrib_callback(
 	return memcpy(SDL_malloc(sizeof(a)), a, sizeof(a));
 }
 
-bool gles_init(RendererBackend *backend, int major, int minor) {
+bool gles_init(RendererBackend *backend, const RendererInitParams *params, int major, int minor) {
 	GLVT_OF(*backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
 
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
@@ -100,7 +100,7 @@ bool gles_init(RendererBackend *backend, int major, int minor) {
 	}
 #endif
 
-	bool result = glcommon_init(backend);
+	bool result = glcommon_init(backend, params);
 
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
 	RESTORE_HINT(SDL_HINT_OPENGL_LIBRARY);

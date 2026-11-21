@@ -59,7 +59,7 @@ static RendererBackend *_r_find_backend(const char *name) {
 	return NULL;
 }
 
-static bool _r_backend_try_init(RendererBackend *backend, char *opts) {
+static bool _r_backend_try_init(RendererBackend *backend, const char *opts, const RendererInitParams *params) {
 	if(opts && !*opts) {
 		opts = NULL;
 	}
@@ -70,7 +70,11 @@ static bool _r_backend_try_init(RendererBackend *backend, char *opts) {
 		log_info("Initializing renderer backend %s", backend->name);
 	}
 
-	if(!backend->funcs.init(backend, opts)) {
+	auto new_params = *params;
+	new_params.backend_name = NOT_NULL(backend->name);
+	new_params.backend_opts = opts;
+
+	if(!backend->funcs.init(backend, &new_params)) {
 		backend->funcs.shutdown();
 		log_error("Failed to initialize renderer backend %s", backend->name);
 		return false;
@@ -161,7 +165,7 @@ static const char *get_config_renderer(MemArena *arena) {
 #endif
 }
 
-void _r_backend_init(void) {
+void _r_backend_init(const RendererInitParams *params) {
 	static bool initialized;
 
 	if(initialized) {
@@ -171,16 +175,23 @@ void _r_backend_init(void) {
 	auto scratch = acquire_scratch_arena();
 
 	RendererBackend *backend;
-	char *opts = NULL;
-	const char *name = parse_renderer_string(scratch, env_get("TAISEI_RENDERER", ""), &opts);
+	const char *name = params->backend_name;
+	const char *opts = params->backend_opts;
+	char *mut_opts = NULL;
 	bool try_fallbacks = true;
+
+	if(!name) {
+		assert(!opts);
+		name = parse_renderer_string(scratch, env_get("TAISEI_RENDERER", ""), &mut_opts);
+	}
 
 	if(name) {
 		try_fallbacks = !strcmp(name, "default");
 	} else {
-		name = parse_renderer_string(scratch, get_config_renderer(scratch), &opts);
+		name = parse_renderer_string(scratch, get_config_renderer(scratch), &mut_opts);
 	}
 
+	opts = opts ?: mut_opts;
 	backend = _r_find_backend(name);
 
 	if(!backend) {
@@ -190,7 +201,7 @@ void _r_backend_init(void) {
 			log_fatal("Unknown renderer backend '%s'", name);
 		}
 	} else {
-		if(_r_backend_try_init(backend, opts)) {
+		if(_r_backend_try_init(backend, opts, params)) {
 			goto done;
 		}
 	}
@@ -198,7 +209,7 @@ void _r_backend_init(void) {
 	if(try_fallbacks) {
 		for(uint i = 0; i < ARRAY_SIZE(_r_fallback_backends); ++i) {
 			auto b = _r_fallback_backends[i];
-			if(b != backend && _r_backend_try_init(b, NULL)) {
+			if(b != backend && _r_backend_try_init(b, NULL, params)) {
 				goto done;
 			}
 		}

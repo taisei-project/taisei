@@ -19,7 +19,7 @@ typedef struct FramebufferAttachmentQueryResult {
 typedef struct RendererBackend RendererBackend;
 
 typedef struct RendererFuncs {
-	bool (*init)(RendererBackend*, char *opts);
+	bool (*init)(RendererBackend*, const RendererInitParams *params);
 	void (*post_init)(void);
 	void (*shutdown)(void);
 
@@ -147,5 +147,5 @@ typedef struct RendererBackend {
 extern RendererBackend *_r_backends[];
 extern RendererBackend _r_backend;
 
-void _r_backend_init(void);
+void _r_backend_init(const RendererInitParams *params);
 void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base);

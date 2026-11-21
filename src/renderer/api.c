@@ -39,8 +39,8 @@ static struct {
 	hrtime_t begin_time;
 } R;
 
-void r_init(void) {
-	_r_backend_init();
+void r_init(const RendererInitParams *params) {
+	_r_backend_init(params);
 	_r_state_init();
 	_r_mat_init();
 }

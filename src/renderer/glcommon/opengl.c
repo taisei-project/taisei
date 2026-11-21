@@ -1071,7 +1071,7 @@ void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SD
 #endif
 }
 
-bool glcommon_init(RendererBackend *backend) {
+bool glcommon_init(RendererBackend *backend, const RendererInitParams *params) {
 	if(!glcommon_load_library()) {
 		return false;
 	}
@@ -1081,7 +1081,7 @@ bool glcommon_init(RendererBackend *backend) {
 	// renderer is ready. Create a temporary window to work around that.
 
 	SDL_WindowFlags flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL;
-	SDL_Window *window = SDL_CreateWindow("", 1, 1, flags);
+	SDL_Window *window = SDL_CreateWindow("", params->init_window_size.w, params->init_window_size.h, flags);
 
 	if(!window) {
 		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");

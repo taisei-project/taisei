@@ -524,7 +524,16 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
  *	TODO: Document these, and put them in an order that makes a little bit of sense.
  */
 
-void r_init(void);
+typedef struct RendererInitParams {
+	const char *backend_name;
+	const char *backend_opts;
+
+	// Apparently the backbuffer can't be resized on some setups (e.g. SDL's offscreen video driver),
+	// so let the video system pass a safe default here. This may be ignored if r_create_window respects w/h params.
+	IntExtent init_window_size;
+} RendererInitParams;
+
+void r_init(const RendererInitParams *params) attr_nonnull_all;
 void r_post_init(void);
 void r_release_resources(void);
 void r_shutdown(void);

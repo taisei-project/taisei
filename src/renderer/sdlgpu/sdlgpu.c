@@ -397,7 +397,7 @@ static Texture *sdlgpu_create_null_texture(TextureClass cls) {
 	return null_tex;
 }
 
-static bool sdlgpu_init(RendererBackend *backend, char *opts) {
+static bool sdlgpu_init(RendererBackend *backend, const RendererInitParams *params) {
 	SDL_GPUShaderFormat shader_formats = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_MSL;
 
 	if(dxbc_init_compiler()) {
@@ -408,20 +408,24 @@ static bool sdlgpu_init(RendererBackend *backend, char *opts) {
 	bool lowpower = env_get("TAISEI_SDLGPU_PREFER_LOWPOWER", false);
 	SDL_PropertiesID props = SDL_CreateProperties();
 
-	char *opt;
-	if(opts && (opt = strtok_r(NULL, ",", &opts))) {
-		// First option is the backend
-		if(strcmp(opt, "default")) {
-			SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, opt);
-		}
+	if(params->backend_opts && *params->backend_opts) WITH_SCRATCH(s) {
+		char *opts = marena_strdup(s, params->backend_opts);
+		char *opt;
 
-		while((opt = strtok_r(NULL, ",", &opts))) {
-			if(!strcmp(opt, "debug")) {
-				sdlgpu.debug = true;
-			} else if(!strcmp(opt, "lowpower")) {
-				lowpower = true;
-			} else {
-				log_warn("Unknown option '%s' ignored", opt);
+		if((opt = strtok_r(NULL, ",", &opts))) {
+			// First option is the backend
+			if(strcmp(opt, "default")) {
+				SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, opt);
+			}
+
+			while((opt = strtok_r(NULL, ",", &opts))) {
+				if(!strcmp(opt, "debug")) {
+					sdlgpu.debug = true;
+				} else if(!strcmp(opt, "lowpower")) {
+					lowpower = true;
+				} else {
+					log_warn("Unknown option '%s' ignored", opt);
+				}
 			}
 		}
 	}

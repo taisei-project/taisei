@@ -36,7 +36,7 @@
 
 static SDL_Window *global_window;
 
-static bool gles30_init(RendererBackend *backend, char *opts) {
+static bool gles30_init(RendererBackend *backend, const RendererInitParams *params) {
 	GLVT_OF(*backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
 	_r_backend_inherit(backend, &_r_backend_gl33);
 	glcommon_setup_attributes(SDL_GL_CONTEXT_PROFILE_ES, 3, 0, 0);
@@ -50,7 +50,7 @@ static bool gles30_init(RendererBackend *backend, char *opts) {
 		SDL_WINDOW_RESIZABLE |
 		SDL_WINDOW_FULLSCREEN;
 
-	global_window = SDL_CreateWindow("", 1, 1, flags);
+	global_window = SDL_CreateWindow("", params->init_window_size.w, params->init_window_size.h, flags);
 
 	if(!global_window) {
 		log_sdl_error(LOG_ERROR, "SDL_CreateWindow");
@@ -83,8 +83,8 @@ static SDL_Window *gles30_create_window(const char *title, int x, int y, int w, 
 
 #else
 
-static bool gles30_init(RendererBackend *backend, char *opts) {
-	return gles_init(backend, 3, 0);
+static bool gles30_init(RendererBackend *backend, const RendererInitParams *params) {
+	return gles_init(backend, params, 3, 0);
 }
 
 #endif

@@ -140,7 +140,7 @@ static_assert(TSGL_EXTFLAG_KHR == (1 << _TSGL_EXTVNUM_KHR), "");
 struct glext_s; // defined at the very bottom
 extern struct glext_s glext;
 
-bool glcommon_init(RendererBackend *backend);
+bool glcommon_init(RendererBackend *backend, const RendererInitParams *params);
 bool glcommon_load_library(void);
 bool glcommon_load_functions(void);
 bool glcommon_check_capabilities(void);

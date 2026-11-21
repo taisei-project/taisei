@@ -1193,7 +1193,7 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  * Renderer interface implementation
  */
 
-static bool gl33_init(RendererBackend *backend, char *opts) {
+static bool gl33_init(RendererBackend *backend, const RendererInitParams *params) {
 	SDL_GLProfile profile;
 	SDL_GLContextFlag flags = 0;
 
@@ -1211,7 +1211,7 @@ static bool gl33_init(RendererBackend *backend, char *opts) {
 	int minor = env_get("TAISEI_GL33_VERSION_MINOR", 3);
 
 	glcommon_setup_attributes(profile, major, minor, flags);
-	return glcommon_init(backend);
+	return glcommon_init(backend, params);
 }
 
 static void gl33_post_init(void) {
