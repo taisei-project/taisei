@@ -748,7 +748,7 @@ static void *video_screenshot_task(void *arg) {
 		SDL_IOStream *stream = SDL_IOFromFile(buf, "wb");
 
 		if(UNLIKELY(!stream)) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
 			return NULL;
 		}
 
