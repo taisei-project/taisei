@@ -9,8 +9,11 @@
 #pragma once
 #include "taisei.h"
 
+#include "defs.h"
+
 #include "memory/arena.h"
-#include "renderer/api.h"
+
+#include <SDL3/SDL_iostream.h>
 
 typedef enum ShaderBaseType {
 	// Matches the spvc_basetype enum in SPIRV-Cross for simplicity
@@ -108,7 +111,6 @@ typedef struct ShaderReflection {
 } ShaderReflection;
 
 uint shader_basetype_size(ShaderBaseType base_type);
-UniformType shader_type_to_uniform_type(const ShaderDataType *type);
 uint shader_type_size(const ShaderDataType *type);
 
 /*

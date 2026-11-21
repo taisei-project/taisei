@@ -8,7 +8,7 @@
 
 #include "shader_object.h"
 
-#include "../common/shaderlib/reflect.h"
+#include "../common/shader_reflect.h"
 #include "texture.h"
 #include "sdlgpu.h"
 
