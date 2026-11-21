@@ -221,14 +221,6 @@ SDLGPU renderer
    If ``1``, prefer to select a low-power, efficient GPU for rendering when multiple are available. Usually this would
    be the integrated GPU on a laptop with both integrated and discrete graphics.
 
-``TAISEI_SDLGPU_FAUX_BACKBUFFER``
-   | Default: ``1``
-
-   If ``1``, render the backbuffer into a staging texture before copying it to the swapchain at presentation. This is
-   needed to emulate swapchain reads on SDLGPU, where the swapchain is write-only. Disabling this option eliminates the
-   copy overhead, but breaks screenshots. If you don’t need the built-in screenshot functionality, it is safe to turn it
-   off.
-
 Audio
 ~~~~~
 
