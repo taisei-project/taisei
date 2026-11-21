@@ -13,8 +13,8 @@
 #include "memory/scratch.h"
 #include "rwops/rwops_arena.h"
 #include "util/io.h"
+#include "util/pathutil.h"
 #include "util/stringops.h"
-#include "vfs/pathutil.h"
 #include "vfs/public.h"
 
 enum {

@@ -13,6 +13,7 @@ util_src = files(
     'io.c',
     'kvparser.c',
     'miscmath.c',
+    'pathutil.c',
     'random.c',
     'rectpack.c',
     'sort_r.c',

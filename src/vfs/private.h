@@ -14,10 +14,10 @@
  */
 
 #include "public.h"  // IWYU pragma: export
-#include "pathutil.h"  // IWYU pragma: export
 #include "error.h"  // IWYU pragma: export
 
 #include "util.h"
+#include "util/pathutil.h"  // IWYU pragma: export
 #include "util/strbuf.h"
 
 typedef struct VFSNode VFSNode;

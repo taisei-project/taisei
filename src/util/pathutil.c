@@ -8,7 +8,6 @@
 
 #include "pathutil.h"
 
-#include "public.h"
 #include "util/stringops.h"
 
 char *vfs_path_normalize(const char *path, char *out) {
