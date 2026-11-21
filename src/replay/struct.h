@@ -10,8 +10,9 @@
 #include "taisei.h"
 
 #include "version.h"
-#include "util/systime.h"
 #include "dynarray.h"
+
+#include <SDL3/SDL_time.h>
 
 /*
  *  All stored fields in the Replay* structures are in the order in which they appear in the file.
@@ -163,7 +164,7 @@ typedef struct ReplayStage {
 
 	/* END stored fields */
 
-	SystemTime init_time;
+	SDL_Time init_time;
 	DYNAMIC_ARRAY(ReplayEvent) events;
 } ReplayStage;
 

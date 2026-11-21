@@ -14,7 +14,10 @@
 ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr) {
 	ReplayStage *s = dynarray_append(&rpy->stages, {});
 
-	get_system_time(&s->init_time);
+	if(!SDL_GetCurrentTime(&s->init_time)) {
+		log_sdl_error(LOG_ERROR, "SDL_GetCurrentTime");
+	}
+
 	dynarray_ensure_capacity(&s->events, REPLAY_ALLOC_INITIAL);
 
 	s->stage = stage->id;

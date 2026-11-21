@@ -809,10 +809,14 @@ static void video_read_framebuffer(
 void video_take_screenshot(bool viewport_only) {
 	auto tdata = ALLOC(ScreenshotTaskData);
 
-	SystemTime systime;
+	SDL_Time time = 0;
 	char timestamp[FILENAME_TIMESTAMP_MIN_BUF_SIZE];
-	get_system_time(&systime);
-	filename_timestamp(timestamp, sizeof(timestamp), systime);
+
+	if(!SDL_GetCurrentTime(&time)) {
+		log_sdl_error(LOG_ERROR, "SDL_GetCurrentTime");
+	}
+
+	filename_timestamp(timestamp, sizeof(timestamp), time);
 
 	StringBuffer buf = { acquire_scratch_arena() };
 	strbuf_printf(&buf, "storage/screenshots/taisei_%s.png", timestamp);

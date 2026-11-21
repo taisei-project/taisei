@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "systime.h"
 #include "util/compat.h"
 #include "util/strbuf.h"
 
@@ -73,7 +72,7 @@ void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize
 void hexdigest(const uint8_t *input, size_t input_size, char *output, size_t output_size);
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
-size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
+size_t filename_timestamp(char *buf, size_t buf_size, SDL_Time time) attr_nonnull(1);
 
 /*
  * Test if string matches a simple 'glob'-like pattern.

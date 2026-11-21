@@ -302,12 +302,10 @@ endif
 
 have_vla      = not cc.has_header_symbol('stdlib.h', '__STDC_NO_VLA__')
 have_complex  = not cc.has_header_symbol('stdlib.h', '__STDC_NO_COMPLEX__')
-have_timespec =     cc.has_function('timespec_get')
 
 assert(have_vla and have_complex, 'Your C implementation needs to support complex numbers and variable-length arrays.')
 
 config.set('TAISEI_BUILDCONF_USE_OPENLIBM', use_openlibm)
-config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
@@ -338,7 +336,6 @@ endif
 
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
-config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 config.set('TAISEI_BUILDCONF_HAVE_ALIGNED_ALLOC', cc.has_function('aligned_alloc'))
 # XXX: meson thinks posix_memalign exists on Switch
 config.set('TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN',
