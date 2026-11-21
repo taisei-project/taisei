@@ -11,7 +11,7 @@
 #include "memory/scratch.h"
 #include "resource.h"
 #include "renderer/api.h"
-#include "util/kvparser.h"
+#include "vfs/kvparser.h"
 
 #include <SDL3/SDL.h>
 

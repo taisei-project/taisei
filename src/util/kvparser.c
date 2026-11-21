@@ -12,7 +12,6 @@
 #include "log.h"
 #include "memory/scratch.h"
 #include "stringops.h"
-#include "vfs/public.h"
 
 bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 			      void *data) {
@@ -74,19 +73,6 @@ bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 	return !errors;
 }
 
-bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
-	SDL_IOStream *strm = vfs_open(filename, VFS_MODE_READ);
-
-	if(!strm) {
-		log_error("VFS error: %s", vfs_get_error());
-		return false;
-	}
-
-	bool status = parse_keyvalue_stream_cb(strm, callback, data);
-	SDL_CloseIO(strm);
-	return status;
-}
-
 static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 	ht_str2ptr_t *ht = data;
 	ht_set(ht, key, mem_strdup(val));
@@ -95,10 +81,6 @@ static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 
 bool parse_keyvalue_stream(SDL_IOStream *strm, ht_str2ptr_t *ht) {
 	return parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht);
-}
-
-bool parse_keyvalue_file(const char *filename, ht_str2ptr_t  *ht) {
-	return parse_keyvalue_file_cb(filename, kvcallback_hashtable, ht);
 }
 
 static bool kvcallback_spec(const char *key, const char *val, void *data) {
@@ -144,10 +126,6 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 
 bool parse_keyvalue_stream_with_spec(SDL_IOStream *strm, KVSpec *spec) {
 	return parse_keyvalue_stream_cb(strm, kvcallback_spec, spec);
-}
-
-bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec) {
-	return parse_keyvalue_file_cb(filename, kvcallback_spec, spec);
 }
 
 bool parse_bool(const char *str, bool fallback) {

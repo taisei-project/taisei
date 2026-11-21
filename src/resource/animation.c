@@ -11,7 +11,7 @@
 #include "memory/scratch.h"
 #include "renderer/api.h"
 #include "resource.h"
-#include "util/kvparser.h"
+#include "vfs/kvparser.h"
 
 static char *animation_path(const char *name) {
 	StringBuffer buf = { acquire_scratch_arena() };

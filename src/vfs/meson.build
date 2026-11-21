@@ -1,6 +1,7 @@
 
 vfs_src = files(
     'decompress_wrapper.c',
+    'kvparser.c',
     'loadpacks.c',
     'nodeapi.c',
     'private.c',

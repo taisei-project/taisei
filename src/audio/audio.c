@@ -15,7 +15,7 @@
 #include "resource/resource.h"
 #include "resource/sfx.h"
 #include "stage.h"
-#include "util/kvparser.h"
+#include "vfs/kvparser.h"
 
 #define LOOPTIMEOUTFRAMES 10
 #define DEFAULT_SFX_VOLUME 100
