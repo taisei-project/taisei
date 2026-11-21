@@ -492,6 +492,14 @@ static const char *modeflagsstr(uint32_t flags) {
 	}
 }
 
+INLINE uint display_centered_pos(uint display) {
+	if(display < video.num_displays) {
+		return SDL_WINDOWPOS_CENTERED_DISPLAY(video.displays[display]);
+	}
+
+	return SDL_WINDOWPOS_CENTERED;
+}
+
 static void video_new_window_internal(uint display, uint w, uint h, uint32_t flags, bool fallback) {
 	if(video.window) {
 		r_unclaim_window(video.window);
@@ -502,12 +510,8 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 	StringBuffer buf = { acquire_scratch_arena() };
 	strbuf_printf(&buf, "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
 
-	video.window = r_create_window(
-		buf.start,
-		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-		w, h, flags | SDL_WINDOW_HIDDEN
-	);
+	uint pos_hint = display_centered_pos(display);
+	video.window = r_create_window(buf.start, pos_hint, pos_hint, w, h, flags | SDL_WINDOW_HIDDEN);
 
 	release_scratch_arena(buf.arena);
 
@@ -622,12 +626,9 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	}
 
 	if(size_changed && !fs) {
+		uint pos_hint = display_centered_pos(display);
 		SDL_SetWindowSize(video.window, w, h);
-		SDL_SetWindowPosition(
-			video.window,
-			SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-			SDL_WINDOWPOS_CENTERED_DISPLAY(display)
-		);
+		SDL_SetWindowPosition(video.window, pos_hint, pos_hint);
 	}
 
 	video_set_fullscreen_internal(fs);
