@@ -182,7 +182,6 @@ if stages_live_reload
     taisei_stages = shared_module('taisei-stages', stages_src, version_deps,
         dependencies : taisei_deps_linkwhole + taisei_deps,
         c_args : taisei_c_args,
-        c_pch : 'pch/taisei_pch.h',
         build_by_default : true,
         gnu_symbol_visibility : 'hidden',
         override_options : libstages_opts,
@@ -376,7 +375,6 @@ if host_machine.system() == 'emscripten'
 
     libtaisei = static_library(taisei_basename, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps_linkwhole + taisei_deps,
-        c_pch : 'pch/taisei_pch.h',
         c_args : [em_common_args, taisei_c_args],
         install : meson_link_whole_is_broken,
         install_dir : '.',
@@ -423,7 +421,6 @@ elif host_machine.system() == 'nx'
     taisei_elf = executable(taisei_elf_name, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps_linkwhole + taisei_deps,
         c_args : taisei_c_args,
-        c_pch : 'pch/taisei_pch.h',
         link_args : taisei_link_args,
         install : is_debug_build,
         install_dir : bindir,
@@ -467,7 +464,6 @@ else
     libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
-        c_pch : 'pch/taisei_pch.h',
         install : false,
     )
 
