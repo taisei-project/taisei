@@ -8,8 +8,8 @@
 
 #include "replay.h"
 
+#include "iostream/iostream_stdiofp.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "struct.h"
 #include "util/strbuf.h"
@@ -108,9 +108,9 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	SDL_IOStream *file;
 
 	if(!strcmp(path, "-")) {
-		file = SDL_RWFromFP(stdin, false);
+		file = iostream_from_fp(stdin, false);
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+			log_sdl_error(LOG_ERROR, "iostream_from_fp");
 			return false;
 		}
 	} else {
@@ -131,9 +131,9 @@ bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) {
 	SDL_IOStream *file;
 
 	if(!strcmp(path, "-")) {
-		file = SDL_RWFromFP(stdout, false);
+		file = iostream_from_fp(stdout, false);
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+			log_sdl_error(LOG_ERROR, "iostream_from_fp");
 			return false;
 		}
 	} else {

@@ -8,9 +8,9 @@
 
 #include "syspath.h"
 
+#include "iostream/iostream_util.h"
 #include "memory/memory.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_util.h"
 #include "util/strbuf.h"
 #include "util/stringops.h"
 

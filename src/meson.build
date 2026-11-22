@@ -119,6 +119,7 @@ subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
 subdir('gfx')
+subdir('iostream')
 subdir('lasers')
 subdir('memory')
 subdir('menu')
@@ -128,7 +129,6 @@ subdir('plrmodes')
 subdir('renderer')
 subdir('replay')
 subdir('resource')
-subdir('rwops')
 subdir('stages')
 subdir('util')
 subdir('vfs')
@@ -141,6 +141,7 @@ taisei_src += [
     eventloop_src,
     filewatch_src,
     gfx_src,
+    iostream_src,
     lasers_src,
     memory_src,
     menu_src,
@@ -150,7 +151,6 @@ taisei_src += [
     renderer_src,
     replay_src,
     resource_src,
-    rwops_src,
     util_src,
     vfs_src,
 ]

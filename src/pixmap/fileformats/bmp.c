@@ -8,8 +8,8 @@
 
 #include "fileformats.h"
 
+#include "iostream/iostream_util.h"
 #include "log.h"
-#include "rwops/rwops_util.h"
 
 static const uint8_t bmp_magic[] = { 'B', 'M' };
 

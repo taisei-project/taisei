@@ -8,9 +8,9 @@
 
 #include "test_common.h"
 
+#include "iostream/iostream_sha256.h"
+#include "iostream/iostream_util.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_sha256.h"
-#include "rwops/rwops_util.h"
 #include "util/miscmath.h"
 #include "util/sha256.h"
 #include "util/stringops.h"
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 			size_t chunk_size = clamp(data_size / 8, 8, countof(chunk));
 			size_t read_total = 0;
 
-			file_io = SDL_RWWrapSHA256(file_io, sha256, true);
+			file_io = iostream_wrap_sha256(file_io, sha256, true);
 
 			bool was_eof = false;
 			for(;;) {

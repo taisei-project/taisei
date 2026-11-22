@@ -9,9 +9,9 @@
 #include "basisu_cache.h"
 #include "basisu.h"
 
+#include "iostream/iostream_zstd.h"
 #include "log.h"
 #include "pixmap/pixmap.h"
-#include "rwops/rwops_zstd.h"
 
 #include <basisu_transcoder_c_api.h>
 
@@ -66,17 +66,17 @@ bool texture_loader_basisu_load_cached(
 		return false;
 	}
 
-	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *io = vfs_open(path, VFS_MODE_READ);
 
-	if(!rw) {
+	if(!io) {
 		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
-	rw = SDL_RWWrapZstdReader(rw, -1, true);
+	io = iostream_wrap_zstd_reader(io, -1, true);
 
-	bool deserialize_ok = pixmap_load_stream(rw, PIXMAP_FILEFORMAT_INTERNAL, out_pixmap, 0);
-	SDL_CloseIO(rw);
+	bool deserialize_ok = pixmap_load_stream(io, PIXMAP_FILEFORMAT_INTERNAL, out_pixmap, 0);
+	SDL_CloseIO(io);
 
 	if(!deserialize_ok) {
 		log_error("%s: Failed to deserialize cached pixmap", path);
@@ -154,19 +154,19 @@ bool texture_loader_basisu_cache(
 		return false;
 	}
 
-	SDL_IOStream *rw = vfs_open(path, VFS_MODE_WRITE);
+	SDL_IOStream *io = vfs_open(path, VFS_MODE_WRITE);
 
-	if(!rw) {
+	if(!io) {
 		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
-	rw = SDL_RWWrapZstdWriter(rw, RW_ZSTD_LEVEL_DEFAULT, true);
+	io = iostream_wrap_zstd_writer(io, IOSTREAM_ZSTD_LEVEL_DEFAULT, true);
 
 	PixmapSaveOptions opts = PIXMAP_DEFAULT_SAVE_OPTIONS;
 	opts.file_format = PIXMAP_FILEFORMAT_INTERNAL;
-	bool serialize_ok = pixmap_save_stream(rw, pixmap, &opts);
-	SDL_CloseIO(rw);
+	bool serialize_ok = pixmap_save_stream(io, pixmap, &opts);
+	SDL_CloseIO(io);
 
 	if(!serialize_ok) {
 		log_error("%s: Failed to serialize pixmap", path);

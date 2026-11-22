@@ -26,17 +26,17 @@ static void load_model_stage2(ResourceLoadState *st);
 
 static void load_model_stage1(ResourceLoadState *st) {
 	const char *path = st->path;
-	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *io = vfs_open(path, VFS_MODE_READ);
 
-	if(!rw) {
+	if(!io) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
 		return;
 	}
 
 	IQMModel iqm;
-	bool loaded = iqm_load_stream(&iqm, path, rw);
-	SDL_CloseIO(rw);
+	bool loaded = iqm_load_stream(&iqm, path, io);
+	SDL_CloseIO(io);
 
 	if(loaded) {
 		res_load_continue_on_main(st, load_model_stage2, ALLOC(ModelLoadData, {

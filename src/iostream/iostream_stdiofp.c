@@ -6,7 +6,7 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_stdiofp.h"
+#include "iostream_stdiofp.h"
 #include <SDL3/SDL_error.h>
 
 #include <errno.h>
@@ -72,21 +72,21 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
 
 static bool SDLCALL stdio_close(void *userdata)
 {
-	IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
+	IOStreamStdioFPData *fpdata = (IOStreamStdioFPData *) userdata;
 	bool status = true;
-	if (rwopsdata->autoclose) {
-		if (fclose(rwopsdata->fp) != 0) {
+	if (fpdata->autoclose) {
+		if (fclose(fpdata->fp) != 0) {
 			status = SDL_SetError("Write error");
 		}
 	}
-	SDL_free(rwopsdata);
+	SDL_free(fpdata);
 	return status;
 }
 
 static bool stdio_flush(void *userdata, SDL_IOStatus *status) {
-	IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
+	IOStreamStdioFPData *fpdata = (IOStreamStdioFPData *) userdata;
 
-	if (fflush(rwopsdata->fp) != 0) {
+	if (fflush(fpdata->fp) != 0) {
 		if (errno == EAGAIN) {
 			*status = SDL_IO_STATUS_NOT_READY;
 			return false;
@@ -98,14 +98,14 @@ static bool stdio_flush(void *userdata, SDL_IOStatus *status) {
 	return true;
 }
 
-SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose)
+SDL_IOStream *iostream_from_fp(FILE *fp, bool autoclose)
 {
 	SDL_IOStreamInterface iface;
-	IOStreamStdioFPData *rwopsdata;
-	SDL_IOStream *rwops;
+	IOStreamStdioFPData *fpdata;
+	SDL_IOStream *io;
 
-	rwopsdata = (IOStreamStdioFPData *) SDL_malloc(sizeof (*rwopsdata));
-	if (!rwopsdata) {
+	fpdata = (IOStreamStdioFPData *) SDL_malloc(sizeof (*fpdata));
+	if (!fpdata) {
 		return NULL;
 	}
 
@@ -117,17 +117,17 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose)
 	iface.close = stdio_close;
 	iface.flush = stdio_flush;
 
-	rwopsdata->fp = fp;
-	rwopsdata->autoclose = autoclose;
+	fpdata->fp = fp;
+	fpdata->autoclose = autoclose;
 
-	rwops = SDL_OpenIO(&iface, rwopsdata);
-	if (!rwops) {
-		iface.close(rwopsdata);
+	io = SDL_OpenIO(&iface, fpdata);
+	if (!io) {
+		iface.close(fpdata);
 	}
 
-	SDL_PropertiesID props = SDL_GetIOProperties(rwops);
+	SDL_PropertiesID props = SDL_GetIOProperties(io);
 	assume(props != 0);
 	SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, fp);
 
-	return rwops;
+	return io;
 }

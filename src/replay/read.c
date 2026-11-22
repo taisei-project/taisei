@@ -9,8 +9,8 @@
 #include "replay.h"
 #include "rw_common.h"
 
+#include "iostream/iostream_segment.h"
 #include "player.h"
-#include "rwops/rwops_segment.h"
 
 typedef struct ReplayReadContext {
 	Replay *replay;
@@ -393,7 +393,7 @@ bool replay_read(Replay *rpy, SDL_IOStream *file, ReplayReadMode mode, const cha
 
 			ctx->stream = replay_wrap_stream_decompress(
 				rpy->version,
-				SDL_RWWrapSegment(file, ofs, rpy->fileoffset, false),
+				iostream_wrap_segment(file, ofs, rpy->fileoffset, false),
 				true
 			);
 

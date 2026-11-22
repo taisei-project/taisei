@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "rwops_dummy.h"
+#include <SDL3/SDL.h>
 
-INLINE SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose) {
-	return SDL_RWWrapDummy(src, &(RWWrapDummyOpts) {
-		.autoclose = autoclose,
-		.readonly = true,
-	});
-}
+#include "util/sha256.h"
+
+SDL_IOStream *iostream_wrap_sha256(SDL_IOStream *src, SHA256State *sha256, bool autoclose);

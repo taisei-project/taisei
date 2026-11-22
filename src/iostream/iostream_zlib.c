@@ -6,10 +6,10 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_zlib.h"
+#include "iostream_zlib.h"
 
 #include "log.h"
-#include "rwops_util.h"
+#include "iostream_util.h"
 #include "util/miscmath.h"
 
 #include <SDL3/SDL.h>
@@ -289,7 +289,7 @@ static int64_t inflate_seek_emulated(void *ctx, int64_t offset, SDL_IOWhence whe
 	ZData *z = ctx;
 	char buf[1024];
 
-	return rwutil_seek_emulated(
+	return iostream_seek_emulated(
 		z->iostream, offset, whence,
 		&z->pos, inflate_reopen, z, sizeof(buf), buf
 	);
@@ -332,9 +332,9 @@ static SDL_IOStream *wrap_reader(
 	}
 
 	ZData *z;
-	SDL_IOStream *rw = common_alloc(&z, src, autoclose, false, window_bits);
+	SDL_IOStream *io = common_alloc(&z, src, autoclose, false, window_bits);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		return NULL;
 	}
 
@@ -344,25 +344,25 @@ static SDL_IOStream *wrap_reader(
 
 	if(UNLIKELY(ret != Z_OK)) {
 		SDL_SetError("inflateInit2() failed: %i", ret);
-		SDL_CloseIO(rw);
+		SDL_CloseIO(io);
 		return NULL;
 	}
 
-	return rw;
+	return io;
 }
 
-SDL_IOStream *SDL_RWWrapZlibReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+SDL_IOStream *iostream_wrap_zlib_reader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
 	return wrap_reader(src, uncompressed_size, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapInflateReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+SDL_IOStream *iostream_wrap_inflate_reader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
 	return wrap_reader(src, uncompressed_size, autoclose, -15);
 }
 
-SDL_IOStream *SDL_RWWrapZlibWriter(SDL_IOStream *src, int clevel, bool autoclose) {
+SDL_IOStream *iostream_wrap_zlib_writer(SDL_IOStream *src, int clevel, bool autoclose) {
 	return wrap_writer(src, clevel, autoclose, 15);
 }
 
-SDL_IOStream *SDL_RWWrapDeflateWriter(SDL_IOStream *src, int clevel, bool autoclose) {
+SDL_IOStream *iostream_wrap_deflate_writer(SDL_IOStream *src, int clevel, bool autoclose) {
 	return wrap_writer(src, clevel, autoclose, -15);
 }

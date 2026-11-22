@@ -720,9 +720,9 @@ static void ires_unmake_dependent(InternalResource *ires, IResPtrArray *dependen
 }
 
 SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
-	SDL_IOStream *rw = vfs_open(path, mode);
+	SDL_IOStream *io = vfs_open(path, mode);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		return NULL;
 	}
 
@@ -731,18 +731,18 @@ SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode
 	ResourceHandler *handler = get_ires_handler(ires);
 
 	if(!handler->procs.transfer) {
-		return rw;
+		return io;
 	}
 
 	// FIXME: we probably need a better API to obtain the underlying syspath
 	FileWatch *w = WITH_SCRATCH(s, filewatch_watch(vfs_repr(path, true, &STRBUF(s))));
 
 	if(w == NULL) {
-		return rw;
+		return io;
 	}
 
 	register_watched_path(ires, path, w);
-	return rw;
+	return io;
 }
 
 INLINE void alloc_handler(ResourceHandler *h) {

@@ -6,15 +6,15 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_trace.h"
+#include "iostream_trace.h"
 #include "log.h"
-#include "rwops/rwops_util.h"
+#include "iostream/iostream_util.h"
 
 #define TRACE(tdata, fmt, ...) \
 	log_debug("[%llx :: %p :: %s] " fmt, (unsigned long long)SDL_GetCurrentThreadID(), (tdata), (tdata)->tag, __VA_ARGS__)
 
-#define TRACE_ERR(rw) \
-	TRACE((rw), "Error: %s", SDL_GetError())
+#define TRACE_ERR(tdata) \
+	TRACE((tdata), "Error: %s", SDL_GetError())
 
 typedef struct TData {
 	SDL_IOStream *wrapped;
@@ -97,7 +97,7 @@ static bool trace_flush(void *ctx, SDL_IOStatus *status) {
 	return r;
 }
 
-SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag, bool autoclose) {
+SDL_IOStream *iostream_wrap_trace(SDL_IOStream *src, const char *tag, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}

@@ -3,7 +3,7 @@
 #include "taisei.h"
 
 #include "log.h"
-#include "rwops/rwops_stdiofp.h"
+#include "iostream/iostream_stdiofp.h"
 #include "events.h"
 #include "util/env.h"
 
@@ -12,7 +12,7 @@
 static void test_init_log(void) {
 	log_init(LOG_ALL);
 	LogLevel lvls = log_parse_levels(LOG_ALL, env_get("TAISEI_TEST_LOG", ""));
-	log_add_output(lvls, SDL_RWFromFP(stderr, false), log_formatter_console);
+	log_add_output(lvls, iostream_from_fp(stderr, false), log_formatter_console);
 }
 
 static void test_init_sdl(void) {

@@ -9,9 +9,9 @@
 #include "lang_glsl.h"
 #include "shaderlib.h"
 
+#include "iostream/iostream_arena.h"
 #include "log.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_arena.h"
 #include "util/io.h"
 #include "util/pathutil.h"
 #include "util/stringops.h"
@@ -29,7 +29,7 @@ typedef struct GLSLParseState {
 	ShaderSource *src;
 	SDL_IOStream *dest;
 	MemArena *scratch;
-	RWArenaState stream_state;
+	IOStreamArenaState stream_state;
 	bool version_defined;
 } GLSLParseState;
 
@@ -52,7 +52,7 @@ static void glsl_write_lineno(GLSLFileParseState *fstate) {
 		return;
 	}
 
-	SDL_RWprintf_arena(
+	iostream_printf_arena(
 		fstate->global->dest, fstate->global->scratch,
 		"// file: %s\n#line %i %i\n",
 		fstate->path, fstate->lineno, fstate->include_level);
@@ -63,12 +63,12 @@ static void glsl_write_lineno(GLSLFileParseState *fstate) {
 static void glsl_write_version(GLSLFileParseState *fstate, GLSLVersion version) {
 	char buf[32];
 	glsl_format_version(buf, sizeof(buf), fstate->global->src->lang.glsl.version);
-	SDL_RWprintf_arena(fstate->global->dest, fstate->global->scratch, "#version %s\n", buf);
+	iostream_printf_arena(fstate->global->dest, fstate->global->scratch, "#version %s\n", buf);
 	fstate->need_lineno_marker = true;
 }
 
 static void glsl_write_header(GLSLFileParseState *fstate) {
-	SDL_RWprintf_arena(
+	iostream_printf_arena(
 		fstate->global->dest,
 		fstate->global->scratch,
 		"#define %s_STAGE\n",
@@ -77,7 +77,7 @@ static void glsl_write_header(GLSLFileParseState *fstate) {
 
 	if(fstate->global->options->macros) {
 		for(ShaderMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
-			SDL_RWprintf_arena(
+			iostream_printf_arena(
 				fstate->global->dest, fstate->global->scratch,
 				"#define %s %s\n", macro->name, STRORNULL(macro->value));
 		}
@@ -187,7 +187,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 
 	char *line;
 
-	while((line = SDL_RWgets_arena(stream, scratch, NULL))) {
+	while((line = iostream_gets_arena(stream, scratch, NULL))) {
 		char *p = line;
 		skip_space(&p);
 
@@ -207,7 +207,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			char include_abs_path[strlen(fstate->path) + strlen(filename) + 1];
 			vfs_path_resolve_relative(include_abs_path, sizeof(include_abs_path), fstate->path, filename);
 
-			SDL_RWprintf_arena(dest, scratch, "// begin include (level %i)\n", fstate->include_level);
+			iostream_printf_arena(dest, scratch, "// begin include (level %i)\n", fstate->include_level);
 
 			bool include_ok = glsl_process_file(&(GLSLFileParseState) {
 				.global = fstate->global,
@@ -216,7 +216,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				.need_lineno_marker = true,
 			});
 
-			SDL_RWprintf_arena(dest, scratch, "// end include (level %i)\n", fstate->include_level);
+			iostream_printf_arena(dest, scratch, "// end include (level %i)\n", fstate->include_level);
 
 			if(!include_ok) {
 				SDL_CloseIO(stream);
@@ -300,7 +300,7 @@ bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, cons
 		.scratch = acquire_scratch_arena(),
 	};
 
-	pstate.dest = NOT_NULL(SDL_RWArena(arena, 16 * (1 << 10), &pstate.stream_state));
+	pstate.dest = NOT_NULL(iostream_arena(arena, 16 * (1 << 10), &pstate.stream_state));
 
 	GLSLFileParseState fstate = {
 		.global = &pstate,

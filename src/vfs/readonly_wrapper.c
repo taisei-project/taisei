@@ -9,8 +9,8 @@
 #include "readonly_wrapper.h"
 #include "private.h"
 
+#include "iostream/iostream_ro.h"
 #include "log.h"
-#include "rwops/rwops_ro.h"
 
 VFS_NODE_TYPE(VFSReadOnlyNode, {
 	VFSNode *wrapped;
@@ -79,7 +79,7 @@ static SDL_IOStream * vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	return SDL_RWWrapReadOnly(vfs_node_open(WRAPPED(filenode), mode), true);
+	return iostream_wrap_readonly(vfs_node_open(WRAPPED(filenode), mode), true);
 }
 
 static const void *vfs_ro_mmap(VFSNode *node, size_t *size) {

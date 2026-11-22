@@ -144,13 +144,13 @@ static bool astream_opus_init(AudioStream *stream, OggOpusFile *opus) {
 	return true;
 }
 
-static int opus_rwops_read(void *_stream, unsigned char *_ptr, int _nbytes) {
-	SDL_IOStream *rw = _stream;
-	return SDL_ReadIO(rw, _ptr, _nbytes);
+static int opus_io_read(void *_stream, unsigned char *_ptr, int _nbytes) {
+	SDL_IOStream *io = _stream;
+	return SDL_ReadIO(io, _ptr, _nbytes);
 }
 
-static int opus_rwops_seek(void *_stream, opus_int64 _offset, int _whence) {
-	SDL_IOStream *rw = _stream;
+static int opus_io_seek(void *_stream, opus_int64 _offset, int _whence) {
+	SDL_IOStream *io = _stream;
 	SDL_IOWhence whence;
 
 	switch(_whence) {
@@ -160,22 +160,22 @@ static int opus_rwops_seek(void *_stream, opus_int64 _offset, int _whence) {
 		default: return -1;
 	}
 
-	return SDL_SeekIO(rw, _offset, whence) < 0 ? -1 : 0;
+	return SDL_SeekIO(io, _offset, whence) < 0 ? -1 : 0;
 }
 
-static opus_int64 opus_rwops_tell(void *_stream) {
-	SDL_IOStream *rw = _stream;
-	return SDL_TellIO(rw);
+static opus_int64 opus_io_tell(void *_stream) {
+	SDL_IOStream *io = _stream;
+	return SDL_TellIO(io);
 }
 
-static int opus_rwops_close(void *_stream) {
-	SDL_IOStream *rw = _stream;
-	return !SDL_CloseIO(rw) ? EOF : 0;
+static int opus_io_close(void *_stream) {
+	SDL_IOStream *io = _stream;
+	return !SDL_CloseIO(io) ? EOF : 0;
 }
 
-bool astream_opus_open(AudioStream *stream, SDL_IOStream *rw) {
+bool astream_opus_open(AudioStream *stream, SDL_IOStream *io) {
 	uint8_t buf[128];
-	SDL_ReadIO(rw, buf, sizeof(buf));
+	SDL_ReadIO(io, buf, sizeof(buf));
 	int error = op_test(NULL, buf, sizeof(buf));
 
 	if(error != 0) {
@@ -184,12 +184,12 @@ bool astream_opus_open(AudioStream *stream, SDL_IOStream *rw) {
 	}
 
 	OggOpusFile *opus = op_open_callbacks(
-		rw,
+		io,
 		&(OpusFileCallbacks) {
-			.read = opus_rwops_read,
-			.seek = opus_rwops_seek,
-			.tell = opus_rwops_tell,
-			.close = opus_rwops_close,
+			.read = opus_io_read,
+			.seek = opus_io_seek,
+			.tell = opus_io_tell,
+			.close = opus_io_close,
 		},
 		buf, sizeof(buf), &error
 	);
@@ -202,6 +202,6 @@ bool astream_opus_open(AudioStream *stream, SDL_IOStream *rw) {
 	return astream_opus_init(stream, opus);
 
 fail:
-	SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+	SDL_SeekIO(io, 0, SDL_IO_SEEK_SET);
 	return false;
 }

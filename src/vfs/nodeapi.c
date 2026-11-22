@@ -8,9 +8,9 @@
 
 #include "private.h"
 
+#include "iostream/iostream_ro.h"
 #include "log.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_ro.h"
 #include "util/strbuf.h"
 
 VFSInfo vfs_node_query(VFSNode *node) {
@@ -286,7 +286,7 @@ SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	}
 
 	bool wrap = false;
-	RWWrapDummyOpts opts = { .autoclose = true };
+	IOStreamWrapDummyOpts opts = { .autoclose = true };
 
 	if(!(mode & VFS_MODE_WRITE) && !vfs_node_query(filenode).is_readonly) {
 		wrap = true;
@@ -294,7 +294,7 @@ SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	}
 
 	if(wrap) {
-		stream = SDL_RWWrapDummy(stream, &opts);
+		stream = iostream_wrap_dummy(stream, &opts);
 	}
 
 	return stream;

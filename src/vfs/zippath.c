@@ -8,9 +8,9 @@
 
 #include "log.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_util.h"
-#include "rwops/rwops_zlib.h"
-#include "rwops/rwops_zstd.h"
+#include "iostream/iostream_util.h"
+#include "iostream/iostream_zlib.h"
+#include "iostream/iostream_zstd.h"
 #include "util/miscmath.h"
 #include "zipfile_impl.h"
 #include "syspath.h"
@@ -118,12 +118,12 @@ static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 			break;
 
 		case ZIP_COMPRESSION_DEFLATE:
-			io = SDL_RWWrapInflateReader(io, entry->uncomp_size, true);
+			io = iostream_wrap_inflate_reader(io, entry->uncomp_size, true);
 			break;
 
 		case ZIP_COMPRESSION_ZSTD:
 		case ZIP_COMPRESSION_ZSTD_DEPRECATED:
-			io = SDL_RWWrapZstdReader(io, entry->uncomp_size, true);
+			io = iostream_wrap_zstd_reader(io, entry->uncomp_size, true);
 			break;
 
 		default:

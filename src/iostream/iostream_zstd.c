@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_zstd.h"
-#include "rwops_util.h"
+#include "iostream_zstd.h"
+#include "iostream_util.h"
 
 #include "log.h"
 #include "memory/scratch.h"
@@ -37,10 +37,10 @@
  * Seek tables with frame checksums are currently not supported.
  */
 
-#define RWZSTD_SPAM 0
-#define RWZSTD_STATS 0
+#define IOSTREAM_ZSTD_SPAM 0
+#define IOSTREAM_ZSTD_STATS 0
 
-#if RWZSTD_SPAM
+#if IOSTREAM_ZSTD_SPAM
 #define SPAM(...) log_debug(__VA_ARGS__)
 #else
 #define SPAM(...) ((void)0)
@@ -66,8 +66,8 @@ typedef struct ZstdFrameCacheEntry {
 
 #define CACHE_FRAME_IDX_EMPTY UINT32_MAX
 
-#define RWZSTD_NUM_CACHED_FRAMES 4
-#define RWZSTD_MAX_CONSECUTIVE_CACHE_MISSES (RWZSTD_NUM_CACHED_FRAMES * 2)
+#define IOSTREAM_ZSTD_NUM_CACHED_FRAMES 4
+#define IOSTREAM_ZSTD_MAX_CONSECUTIVE_CACHE_MISSES (IOSTREAM_ZSTD_NUM_CACHED_FRAMES * 2)
 
 typedef struct ZstdFrameCacheDrain {
 	uint8_t *ptr;
@@ -86,7 +86,7 @@ typedef struct ZstdFrameCache {
 	};
 
 	uint64_t lru_seq;
-	ZstdFrameCacheEntry entries[RWZSTD_NUM_CACHED_FRAMES];
+	ZstdFrameCacheEntry entries[IOSTREAM_ZSTD_NUM_CACHED_FRAMES];
 } ZstdFrameCache;
 
 typedef struct ZstdData {
@@ -110,7 +110,7 @@ typedef struct ZstdData {
 			ZstdReaderSeekTable *seek_table;
 			ZstdFrameCache frame_cache;
 
-			#if RWZSTD_STATS
+			#if IOSTREAM_ZSTD_STATS
 			struct {
 				size_t total_bytes_served;
 				size_t total_bytes_served_from_cache;
@@ -147,7 +147,7 @@ typedef struct __attribute__((packed)) ZstdSeekTableEntry {
 	uint32_t decomp_size;
 } ZstdSeekTableEntry;
 
-static const ZstdReaderSeekTableEntry *rwzstd_find_seektable_entry(const ZstdReaderSeekTable *st, uint64_t offset) {
+static const ZstdReaderSeekTableEntry *zstd_find_seektable_entry(const ZstdReaderSeekTable *st, uint64_t offset) {
 	assume(st->num_entries > 0);
 
 	uint32_t lo = 0;
@@ -170,7 +170,7 @@ static const ZstdReaderSeekTableEntry *rwzstd_find_seektable_entry(const ZstdRea
 	return &st->entries[lo];
 }
 
-static int64_t rwzstd_seek_disabled(void *ctx, int64_t offset, SDL_IOWhence whence) {
+static int64_t zstd_seek_disabled(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZstdData *zdata = ctx;
 
 	if(offset == 0 && whence == SDL_IO_SEEK_CUR) {
@@ -180,7 +180,7 @@ static int64_t rwzstd_seek_disabled(void *ctx, int64_t offset, SDL_IOWhence when
 	return SDL_SetError("Can't seek in a zstd stream");
 }
 
-static int64_t rwzstd_size(void *ctx) {
+static int64_t zstd_size(void *ctx) {
 	ZstdData *zdata = ctx;
 	int64_t size = zdata->reader.uncompressed_size;
 
@@ -191,10 +191,10 @@ static int64_t rwzstd_size(void *ctx) {
 	return size;
 }
 
-static bool rwzstd_reader_close(void *ctx);
-static bool rwzstd_writer_close(void *ctx);
+static bool zstd_reader_close(void *ctx);
+static bool zstd_writer_close(void *ctx);
 
-static bool rwzstd_close(void *ctx) {
+static bool zstd_close(void *ctx) {
 	ZstdData *zdata = ctx;
 	bool ok = true;
 
@@ -206,40 +206,40 @@ static bool rwzstd_close(void *ctx) {
 	return ok;
 }
 
-static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status);
+static size_t zstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status);
 
-static size_t rwzstd_read_invalid(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+static size_t zstd_read_invalid(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	SDL_SetError("Can't read from a zstd writer stream");
 	*status = SDL_IO_STATUS_WRITEONLY;
 	return 0;
 }
 
-static size_t rwzstd_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
+static size_t zstd_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
 
-static size_t rwzstd_write_invalid(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+static size_t zstd_write_invalid(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
 	SDL_SetError("Can't write to a zstd reader stream");
 	*status = SDL_IO_STATUS_READONLY;
 	return 0;
 }
 
-static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence);
-static bool rwzstd_writer_flush(void *ctx, SDL_IOStatus *status);
+static int64_t zstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence);
+static bool zstd_writer_flush(void *ctx, SDL_IOStatus *status);
 
-static SDL_IOStream *rwzstd_alloc(ZstdData **out_zdata, SDL_IOStream *wrapped, bool autoclose, bool writer) {
+static SDL_IOStream *zstd_alloc(ZstdData **out_zdata, SDL_IOStream *wrapped, bool autoclose, bool writer) {
 	SDL_IOStreamInterface iface = { .version = sizeof(iface) };
 
 	if(writer) {
-		iface.close = rwzstd_writer_close;
-		iface.flush = rwzstd_writer_flush;
-		iface.read = rwzstd_read_invalid;
-		iface.seek = rwzstd_seek_disabled;
-		iface.write = rwzstd_write;
+		iface.close = zstd_writer_close;
+		iface.flush = zstd_writer_flush;
+		iface.read = zstd_read_invalid;
+		iface.seek = zstd_seek_disabled;
+		iface.write = zstd_write;
 	} else {
-		iface.close = rwzstd_reader_close;
-		iface.read = rwzstd_read;
-		iface.seek = rwzstd_reader_seek;
-		iface.size = rwzstd_size;
-		iface.write = rwzstd_write_invalid;
+		iface.close = zstd_reader_close;
+		iface.read = zstd_read;
+		iface.seek = zstd_reader_seek;
+		iface.size = zstd_size;
+		iface.write = zstd_write_invalid;
 	}
 
 	auto zdata = ALLOC(ZstdData, {
@@ -262,8 +262,8 @@ static SDL_IOStream *rwzstd_alloc(ZstdData **out_zdata, SDL_IOStream *wrapped, b
 	return io;
 }
 
-static void rwzstd_reader_dump_stats(ZstdData *z) {
-	#if RWZSTD_STATS
+static void zstd_reader_dump_stats(ZstdData *z) {
+	#if IOSTREAM_ZSTD_STATS
 	log_debug("%s: ZSTD STATS:\n === Total served: %zu; from cache: %zu; total decompressed %zu; efficiency: %.02f%%; %% decompressed: %.02f%%; cache %sabled",
 		iostream_get_name(z->iostream),
 		z->reader.stats.total_bytes_served,
@@ -276,7 +276,7 @@ static void rwzstd_reader_dump_stats(ZstdData *z) {
 	#endif
 }
 
-static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size, SDL_IOStatus *status) {
+static size_t zstd_reader_fill_in_buffer(ZstdData *z, size_t request_size, SDL_IOStatus *status) {
 	ZSTD_inBuffer *in = &z->reader.in_buffer;
 
 	if(request_size > z->reader.in_buffer_alloc_size) {
@@ -324,7 +324,7 @@ static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size, SDL
 	return pos - start;
 }
 
-static ZstdFrameCacheEntry *rwzstd_cache_lookup(ZstdFrameCache *cache, uint32_t frame_idx) {
+static ZstdFrameCacheEntry *zstd_cache_lookup(ZstdFrameCache *cache, uint32_t frame_idx) {
 	for(int i = 0; i < ARRAY_SIZE(cache->entries); i++) {
 		auto e = cache->entries + i;
 
@@ -337,7 +337,7 @@ static ZstdFrameCacheEntry *rwzstd_cache_lookup(ZstdFrameCache *cache, uint32_t 
 	return NULL;
 }
 
-static ZstdFrameCacheEntry *rwzstd_cache_eviction_slot(ZstdFrameCache *cache) {
+static ZstdFrameCacheEntry *zstd_cache_eviction_slot(ZstdFrameCache *cache) {
 	auto victim = cache->entries;
 
 	for(int i = 0; i < ARRAY_SIZE(cache->entries); i++) {
@@ -355,7 +355,7 @@ static ZstdFrameCacheEntry *rwzstd_cache_eviction_slot(ZstdFrameCache *cache) {
 	return victim;
 }
 
-static uint32_t rwzstd_seektable_entry_frame_size(
+static uint32_t zstd_seektable_entry_frame_size(
 	const ZstdData *zdata, const ZstdReaderSeekTableEntry *e
 ) {
 	auto st = NOT_NULL(zdata->reader.seek_table);
@@ -372,12 +372,12 @@ static uint32_t rwzstd_seektable_entry_frame_size(
  * Decompress frame frame_idx into the cache.
  * The source stream must be positioned at the start of the frame.
  */
-static ZstdFrameCacheEntry *rwzstd_cache_populate(ZstdData *z, uint32_t frame_idx) {
+static ZstdFrameCacheEntry *zstd_cache_populate(ZstdData *z, uint32_t frame_idx) {
 	ZstdFrameCache *cache = &z->reader.frame_cache;
-	ZstdFrameCacheEntry *ce = rwzstd_cache_eviction_slot(cache);
+	ZstdFrameCacheEntry *ce = zstd_cache_eviction_slot(cache);
 
 	auto frame = z->reader.seek_table->entries + frame_idx;
-	uint32_t frame_decomp_size = rwzstd_seektable_entry_frame_size(z, frame);
+	uint32_t frame_decomp_size = zstd_seektable_entry_frame_size(z, frame);
 
 	if(ce->alloc_size < frame_decomp_size) {
 		ce->data = mem_realloc(ce->data, frame_decomp_size);
@@ -395,7 +395,7 @@ static ZstdFrameCacheEntry *rwzstd_cache_populate(ZstdData *z, uint32_t frame_id
 
 	while(hint != 0) {
 		if(in->size - in->pos < hint) {
-			rwzstd_reader_fill_in_buffer(z, hint, &status);
+			zstd_reader_fill_in_buffer(z, hint, &status);
 
 			if(in->size - in->pos < hint) {
 				log_error("%s: Unexpected end of input while caching frame %u",
@@ -423,7 +423,7 @@ static ZstdFrameCacheEntry *rwzstd_cache_populate(ZstdData *z, uint32_t frame_id
 
 	assert(ce->filled_size == frame_decomp_size);
 
-	#if RWZSTD_STATS
+	#if IOSTREAM_ZSTD_STATS
 	z->reader.stats.total_bytes_decompressed += out.pos;
 	#endif
 
@@ -433,7 +433,7 @@ static ZstdFrameCacheEntry *rwzstd_cache_populate(ZstdData *z, uint32_t frame_id
 	return ce;
 }
 
-static int64_t rwzstd_reader_seek_source(ZstdData *z, int64_t comp_pos, SDL_IOWhence whence, int64_t decomp_pos) {
+static int64_t zstd_reader_seek_source(ZstdData *z, int64_t comp_pos, SDL_IOWhence whence, int64_t decomp_pos) {
 	int64_t srcpos = SDL_SeekIO(z->wrapped, comp_pos, whence);
 
 	if(srcpos < 0) {
@@ -451,14 +451,14 @@ static int64_t rwzstd_reader_seek_source(ZstdData *z, int64_t comp_pos, SDL_IOWh
 	return decomp_pos;
 }
 
-static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+static size_t zstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	ZstdData *z = ctx;
 	ZstdFrameCache *cache = &z->reader.frame_cache;
 	attr_unused size_t request_size = size;
 
 	/*
 	 * Drain any pending cache window first. This window is installed by
-	 * rwzstd_reader_seek() after a cache hit or populate and covers the
+	 * zstd_reader_seek() after a cache hit or populate and covers the
 	 * remainder of the cached frame starting at the seek target. Once
 	 * exhausted the stream decompressor takes over from the next frame.
 	 */
@@ -475,7 +475,7 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 		ptr = (uint8_t*)ptr + cached_read;
 		total_read += cached_read;
 		from_cache += cached_read;
-		#if RWZSTD_STATS
+		#if IOSTREAM_ZSTD_STATS
 		z->reader.stats.total_bytes_served_from_cache += cached_read;
 		#endif
 	}
@@ -495,7 +495,7 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 
 	while(out.pos < out.size && have_input) {
 		if(in->size - in->pos < z->reader.next_read_size) {
-			rwzstd_reader_fill_in_buffer(z, z->reader.next_read_size, status);
+			zstd_reader_fill_in_buffer(z, z->reader.next_read_size, status);
 
 			if(in->size - in->pos < z->reader.next_read_size) {
 				// end of stream
@@ -550,14 +550,14 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 				int64_t seek_status = -1;
 
 				if(st_e_next < st->entries + st->num_entries) {
-					seek_status = rwzstd_reader_seek_source(
+					seek_status = zstd_reader_seek_source(
 						z, st_e_next->comp_offset, SDL_IO_SEEK_SET, this_ofs);
 				} else {
 					// This is the last frame… and we don't know where it ends.
 					// That information exists in the seek table, so we could
 					// have stored it, but seeking to the very end of the file
 					// is probably also fine…
-					seek_status = rwzstd_reader_seek_source(z, 0, SDL_IO_SEEK_END, this_ofs);
+					seek_status = zstd_reader_seek_source(z, 0, SDL_IO_SEEK_END, this_ofs);
 				}
 
 				if(UNLIKELY(seek_status < 0)) {
@@ -575,12 +575,12 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 	z->pos += out.pos;
 
 	if(total_read < request_size) {
-		// should have been set by rwzstd_reader_fill_in_buffer
+		// should have been set by zstd_reader_fill_in_buffer
 		// request_size == 0 case is handled by SDL
 		assert(*status == SDL_IO_STATUS_EOF);
 	} else {
 		// we may have buffered the entire input, but not yet consumed all of the decompressed output
-		// don't propagate EOF from rwzstd_reader_fill_in_buffer
+		// don't propagate EOF from zstd_reader_fill_in_buffer
 		*status = SDL_IO_STATUS_READY;
 	}
 
@@ -588,7 +588,7 @@ end:
 	SPAM("%s: READ(%zu): %zu from cache, %zu decompressed",
 		iostream_get_name(z->iostream), request_size, from_cache, total_read - from_cache);
 
-	#if RWZSTD_STATS
+	#if IOSTREAM_ZSTD_STATS
 	z->reader.stats.total_bytes_served += total_read;
 	z->reader.stats.total_bytes_decompressed += total_read - from_cache;
 	#endif
@@ -596,11 +596,11 @@ end:
 	return total_read;
 }
 
-static bool rwzstd_reader_close(void *ctx) {
+static bool zstd_reader_close(void *ctx) {
 	ZstdData *z = ctx;
 
 	if(z->reader.seek_table) {
-		rwzstd_reader_dump_stats(z);
+		zstd_reader_dump_stats(z);
 	}
 
 	ZSTD_freeDStream(z->reader.stream);
@@ -612,10 +612,10 @@ static bool rwzstd_reader_close(void *ctx) {
 		mem_free(cache->entries[i].data);
 	}
 
-	return rwzstd_close(z);
+	return zstd_close(z);
 }
 
-static bool rwzstd_reader_init_seektable(ZstdData *zdata) {
+static bool zstd_reader_init_seektable(ZstdData *zdata) {
 	SDL_IOStream *src = zdata->wrapped;
 	int64_t init_ofs = SDL_TellIO(src);
 	ZstdReaderSeekTable *st = NULL;
@@ -764,13 +764,13 @@ fail:
 	return false;
 }
 
-static SDL_IOStream *rwzstd_open_reader(SDL_IOStream *src, bool autoclose, int64_t uncompressed_size) {
+static SDL_IOStream *zstd_open_reader(SDL_IOStream *src, bool autoclose, int64_t uncompressed_size) {
 	if(!src) {
 		return NULL;
 	}
 
 	ZstdData *z;
-	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false);
+	SDL_IOStream *io = zstd_alloc(&z, src, autoclose, false);
 
 	if(!io) {
 		return NULL;
@@ -787,7 +787,7 @@ static SDL_IOStream *rwzstd_open_reader(SDL_IOStream *src, bool autoclose, int64
 
 	// Try to load the seekable format seek table if it exists.
 	// If successful, this will also init uncompressed_size if it's unknown.
-	rwzstd_reader_init_seektable(z);
+	zstd_reader_init_seektable(z);
 
 	if(z->reader.uncompressed_size < 0) {
 		// Try to get it from the zstd frame header.
@@ -797,7 +797,7 @@ static SDL_IOStream *rwzstd_open_reader(SDL_IOStream *src, bool autoclose, int64
 		size_t psize = z->reader.in_buffer.size;
 		size_t header_size = 24;  // a bit larger than ZSTD_FRAMEHEADERSIZE_MAX from private API
 		SDL_IOStatus status;  // FIXME
-		rwzstd_reader_fill_in_buffer(z, header_size, &status);
+		zstd_reader_fill_in_buffer(z, header_size, &status);
 		z->reader.next_read_size -= z->reader.in_buffer.size - psize;
 
 		ZSTD_inBuffer *in = &z->reader.in_buffer;
@@ -819,14 +819,14 @@ static SDL_IOStream *rwzstd_open_reader(SDL_IOStream *src, bool autoclose, int64
 	return io;
 }
 
-static int rwzstd_reopen(void *ctx) {
-	return rwzstd_reader_seek_source(ctx, 0, SDL_IO_SEEK_SET, 0) >= 0 ? 0 : -1;
+static int zstd_reopen(void *ctx) {
+	return zstd_reader_seek_source(ctx, 0, SDL_IO_SEEK_SET, 0) >= 0 ? 0 : -1;
 }
 
-static int64_t rwzstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
+static int64_t zstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
 	auto st = NOT_NULL(zdata->reader.seek_table);
 	auto cache = &zdata->reader.frame_cache;
-	auto st_entry = rwzstd_find_seektable_entry(st, target_pos);
+	auto st_entry = zstd_find_seektable_entry(st, target_pos);
 	uint32_t frame_idx = (uint32_t)(st_entry - st->entries);
 
 	assert(cache->enabled);
@@ -834,14 +834,14 @@ static int64_t rwzstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
 	cache->drain.ptr = NULL;
 	cache->drain.remaining = 0;
 
-	ZstdFrameCacheEntry *ce = rwzstd_cache_lookup(cache, frame_idx);
+	ZstdFrameCacheEntry *ce = zstd_cache_lookup(cache, frame_idx);
 
 	if(!ce) {
 		SPAM("%s: Frame cache miss for frame %u; populating",
 			iostream_get_name(zdata->iostream), frame_idx);
 
-		assert(cache->consecutive_misses < RWZSTD_MAX_CONSECUTIVE_CACHE_MISSES);
-		if(++cache->consecutive_misses == RWZSTD_MAX_CONSECUTIVE_CACHE_MISSES) {
+		assert(cache->consecutive_misses < IOSTREAM_ZSTD_MAX_CONSECUTIVE_CACHE_MISSES);
+		if(++cache->consecutive_misses == IOSTREAM_ZSTD_MAX_CONSECUTIVE_CACHE_MISSES) {
 			cache->enabled = false;
 			log_debug("%s: %d consecutive cache misses, disabling the cache",
 				iostream_get_name(zdata->iostream), cache->consecutive_misses);
@@ -855,17 +855,17 @@ static int64_t rwzstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
 			}
 
 			// recursive call, but will fallback to non-cached path now
-			return rwzstd_reader_seek(zdata, target_pos, SDL_IO_SEEK_SET);
+			return zstd_reader_seek(zdata, target_pos, SDL_IO_SEEK_SET);
 		}
 
-		int64_t seek_status = rwzstd_reader_seek_source(
+		int64_t seek_status = zstd_reader_seek_source(
 			zdata, st_entry->comp_offset, SDL_IO_SEEK_SET, st_entry->decomp_offset);
 
 		if(UNLIKELY(seek_status < 0)) {
 			return -1;
 		}
 
-		ce = rwzstd_cache_populate(zdata, frame_idx);
+		ce = zstd_cache_populate(zdata, frame_idx);
 
 		if(!ce) {
 			return SDL_SetError("Failed to populate frame cache");
@@ -882,7 +882,7 @@ static int64_t rwzstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
 		 */
 		uint32_t next_idx = frame_idx + 1;
 		if(next_idx < st->num_entries) {
-			int64_t seek_status = rwzstd_reader_seek_source(zdata,
+			int64_t seek_status = zstd_reader_seek_source(zdata,
 				st->entries[next_idx].comp_offset, SDL_IO_SEEK_SET,
 				st->entries[next_idx].decomp_offset);
 
@@ -901,9 +901,9 @@ static int64_t rwzstd_reader_seek_cached(ZstdData *zdata, int64_t target_pos) {
 	return target_pos;
 }
 
-static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+static int64_t zstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	ZstdData *zdata = ctx;
-	int64_t target_pos = rwutil_compute_seek_pos(offset, whence, zdata->pos, zdata->reader.uncompressed_size);
+	int64_t target_pos = iostream_compute_seek_pos(offset, whence, zdata->pos, zdata->reader.uncompressed_size);
 	attr_unused int64_t orig_pos = zdata->pos;
 
 	if(UNLIKELY(target_pos < 0)) {
@@ -921,12 +921,12 @@ static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence
 
 	if(st) {
 		if(zdata->reader.frame_cache.enabled) {
-			return rwzstd_reader_seek_cached(zdata, target_pos);
+			return zstd_reader_seek_cached(zdata, target_pos);
 		}
 
-		auto st_e = rwzstd_find_seektable_entry(st, target_pos);
+		auto st_e = zstd_find_seektable_entry(st, target_pos);
 		if(target_pos < zdata->pos || zdata->pos < st_e->decomp_offset) {
-			int64_t seek_result = rwzstd_reader_seek_source(
+			int64_t seek_result = zstd_reader_seek_source(
 				zdata, st_e->comp_offset, SDL_IO_SEEK_SET, st_e->decomp_offset);
 
 			if(UNLIKELY(seek_result < 0)) {
@@ -943,8 +943,8 @@ static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence
 		skip_begin = zdata->pos;
 	}
 
-	int64_t skip_result = rwutil_seek_emulated_abs(
-		zdata->iostream, target_pos, &zdata->pos, rwzstd_reopen, zdata, sizeof(skip_buf), skip_buf);
+	int64_t skip_result = iostream_seek_emulated_abs(
+		zdata->iostream, target_pos, &zdata->pos, zstd_reopen, zdata, sizeof(skip_buf), skip_buf);
 
 	if(UNLIKELY(skip_result < 0)) {
 		return skip_result;
@@ -956,7 +956,7 @@ static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence
 	int64_t attr_unused waste = skip_result - skip_begin;
 	SPAM("Seek %zi --> %zi; skip waste: %zi", orig_pos, target_pos, waste);
 
-	#if RWZSTD_STATS
+	#if IOSTREAM_ZSTD_STATS
 	assert(zdata->reader.stats.total_bytes_served > waste);
 	zdata->reader.stats.total_bytes_served -= waste;
 	#endif
@@ -964,7 +964,7 @@ static int64_t rwzstd_reader_seek(void *ctx, int64_t offset, SDL_IOWhence whence
 	return skip_result;
 }
 
-static bool rwzstd_compress(
+static bool zstd_compress(
 	ZstdData *z, ZSTD_inBuffer *in, ZSTD_EndDirective edir, size_t *zstatus, SDL_IOStatus *io_status
 ) {
 	ZSTD_outBuffer *out = &z->writer.out_buffer;
@@ -993,11 +993,11 @@ static bool rwzstd_compress(
 	return true;
 }
 
-SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
-	return rwzstd_open_reader(src, autoclose, uncompressed_size);
+SDL_IOStream *iostream_wrap_zstd_reader(SDL_IOStream *src, int64_t uncompressed_size, bool autoclose) {
+	return zstd_open_reader(src, autoclose, uncompressed_size);
 }
 
-static size_t rwzstd_write(void *ctx, const void *data_in, size_t size, SDL_IOStatus *status) {
+static size_t zstd_write(void *ctx, const void *data_in, size_t size, SDL_IOStatus *status) {
 	ZstdData *z = ctx;
 	size_t zstatus;
 
@@ -1011,7 +1011,7 @@ static size_t rwzstd_write(void *ctx, const void *data_in, size_t size, SDL_IOSt
 	};
 
 	while(in.pos < in.size) {
-		if(UNLIKELY(!rwzstd_compress(z, &in, ZSTD_e_continue, &zstatus, status))) {
+		if(UNLIKELY(!zstd_compress(z, &in, ZSTD_e_continue, &zstatus, status))) {
 			return 0;
 		}
 	}
@@ -1020,12 +1020,12 @@ static size_t rwzstd_write(void *ctx, const void *data_in, size_t size, SDL_IOSt
 	return size;
 }
 
-static bool rwzstd_writer_flush(void *ctx, SDL_IOStatus *status) {
+static bool zstd_writer_flush(void *ctx, SDL_IOStatus *status) {
 	ZstdData *z = ctx;
 	size_t zstatus;
 
 	do {
-		if(UNLIKELY(!rwzstd_compress(z, &(ZSTD_inBuffer){}, ZSTD_e_end, &zstatus, status))) {
+		if(UNLIKELY(!zstd_compress(z, &(ZSTD_inBuffer){}, ZSTD_e_end, &zstatus, status))) {
 			return false;
 		}
 	} while(zstatus != 0);
@@ -1033,25 +1033,25 @@ static bool rwzstd_writer_flush(void *ctx, SDL_IOStatus *status) {
 	return true;
 }
 
-static bool rwzstd_writer_close(void *ctx) {
+static bool zstd_writer_close(void *ctx) {
 	ZstdData *z = ctx;
 	SDL_IOStatus status;
-	bool flush_ok = rwzstd_writer_flush(z, &status);
+	bool flush_ok = zstd_writer_flush(z, &status);
 
 	ZSTD_freeCStream(z->writer.stream);
 	mem_free(z->writer.out_buffer.dst);
 
-	bool r = rwzstd_close(z);
+	bool r = zstd_close(z);
 	return r && flush_ok;
 }
 
-SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel, bool autoclose) {
+SDL_IOStream *iostream_wrap_zstd_writer(SDL_IOStream *src, int clevel, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	ZstdData *z;
-	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, true);
+	SDL_IOStream *io = zstd_alloc(&z, src, autoclose, true);
 
 	if(UNLIKELY(!io)) {
 		return NULL;
@@ -1059,7 +1059,7 @@ SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel, bool autoclose
 
 	if(UNLIKELY(clevel < ZSTD_minCLevel() || clevel > ZSTD_maxCLevel())) {
 		log_warn("Invalid compression level %i", clevel);
-		clevel = RW_ZSTD_LEVEL_DEFAULT;
+		clevel = IOSTREAM_ZSTD_LEVEL_DEFAULT;
 		assert(0);
 	}
 

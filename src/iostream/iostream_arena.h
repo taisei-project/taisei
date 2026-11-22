@@ -9,7 +9,15 @@
 #pragma once
 #include "taisei.h"
 
+#include "memory/arena.h"
+
 #include <SDL3/SDL.h>
 
-SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end,
-				bool autoclose);
+typedef struct IOStreamArenaState {
+	MemArena *arena;
+	char *buffer;
+	uint32_t buffer_size;
+	uint32_t io_offset;
+} IOStreamArenaState;
+
+SDL_IOStream *iostream_arena(MemArena *arena, uint32_t init_buffer_size, IOStreamArenaState *state);

@@ -13,9 +13,9 @@
 
 uint32_t replay_struct_stage_metadata_checksum(ReplayStage *stg, uint16_t version);
 
-SDL_IOStream *replay_wrap_stream_compress(uint16_t version, SDL_IOStream *rw,
+SDL_IOStream *replay_wrap_stream_compress(uint16_t version, SDL_IOStream *io,
 					  bool autoclose);
 SDL_IOStream *replay_wrap_stream_decompress(uint16_t version,
-					    SDL_IOStream *rw, bool autoclose);
+					    SDL_IOStream *io, bool autoclose);
 
 extern uint8_t replay_magic_header[REPLAY_MAGIC_HEADER_SIZE];

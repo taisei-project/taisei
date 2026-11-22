@@ -9,8 +9,8 @@
 #include "basisu.h"
 #include "basisu_cache.h"
 
+#include "iostream/iostream_sha256.h"
 #include "pixmap/pixmap.h"
-#include "rwops/rwops_sha256.h"
 #include "util.h"
 #include "util/env.h"
 #include "vfs/public.h"
@@ -372,16 +372,16 @@ static void texture_loader_basisu_failed(TextureLoadData *ld, struct basisu_load
 	texture_loader_failed(ld);
 }
 
-static char *read_basis_file(SDL_IOStream *rw, size_t *file_size,
+static char *read_basis_file(SDL_IOStream *io, size_t *file_size,
 			     size_t hash_size, char hash[hash_size]) {
 	assert(hash_size >= BASISU_HASH_SIZE);
 
 	SHA256State *sha256 = sha256_new();
-	rw = SDL_RWWrapSHA256(rw, sha256, false);
+	io = iostream_wrap_sha256(io, sha256, false);
 	char *buf = NULL;
 
-	if(LIKELY(rw)) {
-		buf = SDL_LoadFile_IO(rw, file_size, true);
+	if(LIKELY(io)) {
+		buf = SDL_LoadFile_IO(io, file_size, true);
 	}
 
 	if(UNLIKELY(!buf)) {
@@ -716,17 +716,17 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	const char *ctx = ld->st->name;
 	const char *basis_file = ld->src_paths.main;
 
-	SDL_IOStream *rw_in = res_open_file(ld->st, basis_file, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(ld->st, basis_file, VFS_MODE_READ);
 
-	if(!UNLIKELY(rw_in)) {
+	if(!UNLIKELY(io)) {
 		log_error("%s: VFS error: %s", ctx, vfs_get_error());
 		texture_loader_basisu_failed(ld, &bld);
 		return;
 	}
 
 	size_t filesize;
-	bld.filebuf = read_basis_file(rw_in, &filesize, sizeof(bld.basis_hash), bld.basis_hash);
-	SDL_CloseIO(rw_in);
+	bld.filebuf = read_basis_file(io, &filesize, sizeof(bld.basis_hash), bld.basis_hash);
+	SDL_CloseIO(io);
 
 	if(UNLIKELY(!bld.filebuf)) {
 		log_error("%s: Read error: %s", basis_file, SDL_GetError());

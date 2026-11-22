@@ -1,6 +1,6 @@
 #include "i18n/format_strings.h"
+#include "iostream/iostream_stdiofp.h"
 #include "log.h"
-#include "rwops/rwops_stdiofp.h"
 #include "util.h"
 
 static bool test_is_format_specifier(void) {
@@ -75,7 +75,7 @@ static bool test_match_format_strings(void) {
 int main(int argc, char **argv) {
 	log_init(LOG_ALL);
 	atexit(log_shutdown);
-	log_add_output(LOG_ALL, SDL_RWFromFP(stderr, false), log_formatter_console);
+	log_add_output(LOG_ALL, iostream_from_fp(stderr, false), log_formatter_console);
 
 	if(!test_is_format_specifier()) {
 		return 1;

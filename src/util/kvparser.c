@@ -23,7 +23,7 @@ bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
 	int lineno = 0;
 	int errors = 0;
 
-	for(char *ptr; (ptr = SDL_RWgets_arena(strm, scratch, NULL)); marena_rollback(scratch, &snap)) {
+	for(char *ptr; (ptr = iostream_gets_arena(strm, scratch, NULL)); marena_rollback(scratch, &snap)) {
 		char *sep, *key, *val;
 
 		++lineno;

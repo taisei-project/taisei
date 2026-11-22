@@ -571,8 +571,8 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		char *str_wrap_t = NULL;
 		char *str_format = NULL;
 
-		SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
-		bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
+		SDL_IOStream *io = res_open_file(st, st->path, VFS_MODE_READ);
+		bool parsed = parse_keyvalue_stream_with_spec(io, (KVSpec[]) {
 			{ "source",         .out_str  = &ld->src_paths.main },
 			{ "alphamap",       .out_str  = &ld->src_paths.alphamap },
 			{ "cube_px",        .out_str  = &ld->src_paths.cubemap[CUBEMAP_FACE_POS_X] },
@@ -593,7 +593,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			{ "linearize",      .out_bool = &want_srgb },
 			{}
 		});
-		SDL_CloseIO(rw);
+		SDL_CloseIO(io);
 
 		if(UNLIKELY(!parsed)) {
 			texture_loader_failed(ld);

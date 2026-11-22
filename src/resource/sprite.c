@@ -59,9 +59,9 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		return;
 	}
 
-	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(st, st->path, VFS_MODE_READ);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		log_error("VFS error: %s", vfs_get_error());
 		mem_free(spr);
 		mem_free(state);
@@ -71,7 +71,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	struct { float top, bottom, left, right; } pad = { };
 
-	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
+	bool parsed = parse_keyvalue_stream_with_spec(io, (KVSpec[]) {
 		{ "atlas",          .out_str   = &state->atlas_name },
 		{ "texture",        .out_str   = &state->texture_name },
 		{ "region_x",       .out_float = &spr->tex_area.x },
@@ -87,7 +87,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{}
 	});
 
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 
 	if(UNLIKELY(!parsed)) {
 		mem_free(spr);

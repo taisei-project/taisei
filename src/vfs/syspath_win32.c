@@ -8,9 +8,9 @@
 
 #include "syspath.h"
 
+#include "iostream/iostream_util.h"
 #include "memory/memory.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_util.h"
 #include "util/strbuf.h"
 #include "util/stringops.h"
 
@@ -86,16 +86,16 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	mode &= VFS_MODE_RWMASK;
-	SDL_IOStream *rwops = SDL_IOFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
+	SDL_IOStream *io = SDL_IOFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
 
-	if(!rwops) {
+	if(!io) {
 		vfs_set_error_from_sdl();
 	} else {
-		auto props = SDL_GetIOProperties(rwops);
+		auto props = SDL_GetIOProperties(io);
 		SDL_SetStringProperty(props, PROP_IOSTREAM_NAME, pnode->path);
 	}
 
-	return rwops;
+	return io;
 }
 
 static VFSNode *vfs_syspath_locate(VFSNode *node, const char *path) {

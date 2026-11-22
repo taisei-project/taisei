@@ -293,10 +293,10 @@ bool check_font_path(const char *path) {
 }
 
 static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong count) {
-	SDL_IOStream *rwops = stream->descriptor.pointer;
+	SDL_IOStream *io = stream->descriptor.pointer;
 	ulong error = count ? 0 : 1;
 
-	if(SDL_SeekIO(rwops, offset, SDL_IO_SEEK_SET) < 0) {
+	if(SDL_SeekIO(io, offset, SDL_IO_SEEK_SET) < 0) {
 		log_error("Can't seek in stream (%s): %s", (char*)stream->pathname.pointer, SDL_GetError());
 		return error;
 	}
@@ -305,9 +305,9 @@ static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong 
 		return 0;
 	}
 
-	size_t r = SDL_ReadIO(rwops, buffer, count);
+	size_t r = SDL_ReadIO(io, buffer, count);
 
-	if(r == 0 && SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+	if(r == 0 && SDL_GetIOStatus(io) != SDL_IO_STATUS_EOF) {
 		log_error("Read error (%s): %s", (char*)stream->pathname.pointer, SDL_GetError());
 	}
 
@@ -335,9 +335,9 @@ static FT_Error FT_Done_Face_Thread_Safe(FT_Face face) {
 }
 
 static FT_Face load_font_face(char *vfspath, long index) {
-	SDL_IOStream *rwops = vfs_open(vfspath, VFS_MODE_READ);
+	SDL_IOStream *io = vfs_open(vfspath, VFS_MODE_READ);
 
-	if(!rwops) {
+	if(!io) {
 		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
@@ -345,11 +345,11 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	char *syspath = WITH_SCRATCH(scratch, mem_strdup(vfs_repr(vfspath, true, &STRBUF(scratch))));
 
 	FT_Stream ftstream = ALLOC(typeof(*ftstream), {
-		.descriptor.pointer = rwops,
+		.descriptor.pointer = io,
 		.pathname.pointer = syspath,
 		.read = ftstream_read,
 		.close = ftstream_close,
-		.size = SDL_GetIOSize(rwops),
+		.size = SDL_GetIOSize(io),
 	});
 
 	FT_Open_Args ftargs = {
@@ -868,9 +868,9 @@ void load_font_stage1(ResourceLoadState *st) {
 		.base_border_outer = 1.5f,
 	};
 
-	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(st, st->path, VFS_MODE_READ);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
 		return;
@@ -878,7 +878,7 @@ void load_font_stage1(ResourceLoadState *st) {
 
 	char *fallbacks = NULL;
 
-	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
+	bool parsed = parse_keyvalue_stream_with_spec(io, (KVSpec[]){
 		{ "source",        .out_str   = &font.source_path },
 		{ "size",          .out_int   = &font.base_size },
 		{ "face",          .out_long  = &font.base_face_idx },
@@ -888,7 +888,7 @@ void load_font_stage1(ResourceLoadState *st) {
 		{}
 	});
 
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 
 	if(UNLIKELY(!parsed)) {
 		log_error("Failed to parse font file '%s'", st->path);

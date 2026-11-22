@@ -6,9 +6,9 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_segment.h"
+#include "iostream_segment.h"
 #include "log.h"
-#include "rwops/rwops_util.h"
+#include "iostream/iostream_util.h"
 #include "util/miscmath.h"
 
 typedef struct Segment {
@@ -162,7 +162,7 @@ static bool segment_close(void *ctx) {
 	return result;
 }
 
-SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end, bool autoclose) {
+SDL_IOStream *iostream_wrap_segment(SDL_IOStream *src, size_t start, size_t end, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}

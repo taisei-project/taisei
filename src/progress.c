@@ -12,7 +12,7 @@
 #include "util.h"
 #include "version.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_zstd.h"
+#include "iostream/iostream_zstd.h"
 
 #include <zlib.h>
 
@@ -985,7 +985,7 @@ static SDL_IOStream *progress_open_file_read(const char *path) {
 	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ);
 
 	if(file) {
-		return SDL_RWWrapZstdReader(file, -1, true);
+		return iostream_wrap_zstd_reader(file, -1, true);
 	}
 
 	log_error("VFS error: %s; trying legacy path", vfs_get_error());
@@ -1004,7 +1004,7 @@ static SDL_IOStream *progress_open_file_write(const char *path) {
 	SDL_IOStream *file = vfs_open(path, VFS_MODE_WRITE);
 
 	if(file) {
-		return SDL_RWWrapZstdWriter(file, 20, true);
+		return iostream_wrap_zstd_writer(file, 20, true);
 	}
 
 	log_error("VFS error: %s", vfs_get_error());

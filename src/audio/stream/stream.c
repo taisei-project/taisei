@@ -44,10 +44,10 @@ SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, const AudioStrea
 	});
 }
 
-bool astream_open(AudioStream *stream, SDL_IOStream *rwops, const char *filename) {
+bool astream_open(AudioStream *stream, SDL_IOStream *io, const char *filename) {
 	bool ok = false;
 
-	ok = astream_opus_open(stream, rwops);
+	ok = astream_opus_open(stream, io);
 
 	if(!ok) {
 		log_error("%s: failed to open audio stream", filename);
@@ -177,9 +177,9 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 	assert(buffer_size >= astream_util_resampled_buffer_size(src, spec));
 
 	SDL_AudioStream *pipe = NULL;
-	SDL_IOStream *rw = SDL_IOFromMem(buffer, buffer_size);
+	SDL_IOStream *io = SDL_IOFromMem(buffer, buffer_size);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		log_sdl_error(LOG_ERROR, "SDL_IOFromMem");
 		goto fail;
 	}
@@ -202,7 +202,7 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 		}
 
 		if(read > 0) {
-			if(UNLIKELY(SDL_WriteIO(rw, staging, read) < read)) {
+			if(UNLIKELY(SDL_WriteIO(io, staging, read) < read)) {
 				log_sdl_error(LOG_ERROR, "SDL_WriteIO");
 				goto fail;
 			}
@@ -223,12 +223,12 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 	}
 
 	SDL_DestroyAudioStream(pipe);
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 	return true;
 
 fail:
-	if(rw) {
-		SDL_CloseIO(rw);
+	if(io) {
+		SDL_CloseIO(io);
 	}
 	SDL_DestroyAudioStream(pipe);
 	return false;

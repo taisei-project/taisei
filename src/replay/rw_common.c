@@ -8,9 +8,9 @@
 
 #include "rw_common.h"
 
+#include "iostream/iostream_zlib.h"
+#include "iostream/iostream_zstd.h"
 #include "log.h"
-#include "rwops/rwops_zlib.h"
-#include "rwops/rwops_zstd.h"
 
 uint8_t replay_magic_header[REPLAY_MAGIC_HEADER_SIZE] = REPLAY_MAGIC_HEADER;
 
@@ -69,18 +69,18 @@ uint32_t replay_struct_stage_metadata_checksum(ReplayStage *stg, uint16_t versio
 	return cs;
 }
 
-SDL_IOStream *replay_wrap_stream_compress(uint16_t version, SDL_IOStream *rw, bool autoclose) {
+SDL_IOStream *replay_wrap_stream_compress(uint16_t version, SDL_IOStream *io, bool autoclose) {
 	if((version & ~REPLAY_VERSION_COMPRESSION_BIT) >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
-		return SDL_RWWrapZstdWriter(rw, 22, autoclose);
+		return iostream_wrap_zstd_writer(io, 22, autoclose);
 	} else {
-		return SDL_RWWrapZlibWriter(rw, RW_DEFLATE_LEVEL_DEFAULT, autoclose);
+		return iostream_wrap_zlib_writer(io, IOSTREAM_DEFLATE_LEVEL_DEFAULT, autoclose);
 	}
 }
 
-SDL_IOStream *replay_wrap_stream_decompress(uint16_t version, SDL_IOStream *rw, bool autoclose) {
+SDL_IOStream *replay_wrap_stream_decompress(uint16_t version, SDL_IOStream *io, bool autoclose) {
 	if((version & ~REPLAY_VERSION_COMPRESSION_BIT) >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
-		return SDL_RWWrapZstdReader(rw, -1, autoclose);
+		return iostream_wrap_zstd_reader(io, -1, autoclose);
 	} else {
-		return SDL_RWWrapZlibReader(rw, -1, autoclose);
+		return iostream_wrap_zlib_reader(io, -1, autoclose);
 	}
 }

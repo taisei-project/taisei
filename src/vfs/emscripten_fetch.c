@@ -10,9 +10,9 @@
 #include "emscripten_fetch_public.h"
 
 #include "hashtable.h"
+#include "iostream/iostream_dummy.h"
 #include "log.h"
 #include "resindex.h"
-#include "rwops/rwops_dummy.h"
 
 #include <dirent.h>
 #include <emscripten/em_js.h>

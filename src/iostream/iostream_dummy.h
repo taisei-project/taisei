@@ -9,15 +9,12 @@
 #pragma once
 #include "taisei.h"
 
-#include "memory/arena.h"
-
 #include <SDL3/SDL.h>
 
-typedef struct RWArenaState {
-	MemArena *arena;
-	char *buffer;
-	uint32_t buffer_size;
-	uint32_t io_offset;
-} RWArenaState;
+typedef struct IOStreamWrapDummyOpts {
+	bool autoclose;
+	bool readonly;
+	bool assert_no_seek;
+} IOStreamWrapDummyOpts;
 
-SDL_IOStream *SDL_RWArena(MemArena *arena, uint32_t init_buffer_size, RWArenaState *state);
+SDL_IOStream *iostream_wrap_dummy(SDL_IOStream *src, const IOStreamWrapDummyOpts *opts);

@@ -67,9 +67,9 @@ static void free_mat_load_data(struct mat_load_data *ld) {
 static void material_load_stage2(ResourceLoadState *st);
 
 static void material_load_stage1(ResourceLoadState *st) {
-	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(st, st->path, VFS_MODE_READ);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
 	}
@@ -83,7 +83,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		.depth_scale = 0,
 	});
 
-	bool ok = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
+	bool ok = parse_keyvalue_stream_with_spec(io, (KVSpec[]) {
 		{ "diffuse_map",      .out_str = &ld->diffuse_map },
 		{ "normal_map",       .out_str = &ld->normal_map },
 		{ "ambient_map",      .out_str = &ld->ambient_map },
@@ -98,7 +98,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{},
 	});
 
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 
 	if(!ok) {
 		free_mat_load_data(ld);

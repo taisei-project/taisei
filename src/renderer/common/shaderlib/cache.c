@@ -12,9 +12,9 @@
 
 #include "log.h"
 #include "util/sha256.h"
-#include "rwops/rwops_arena.h"
-#include "rwops/rwops_crc32.h"
-#include "rwops/rwops_zstd.h"
+#include "iostream/iostream_arena.h"
+#include "iostream/iostream_crc32.h"
+#include "iostream/iostream_zstd.h"
 #include "vfs/public.h"
 
 #define CACHE_VERSION 8
@@ -31,13 +31,13 @@ static uint8_t *shader_cache_construct_entry(
 ) {
 	uint8_t *result = NULL;
 	uint32_t crc = CRC_INIT;
-	RWArenaState arena_state;
-	SDL_IOStream *abuf = SDL_RWArena(arena, BUFSIZ, &arena_state);
-	SDL_IOStream *crcbuf = SDL_RWWrapCRC32(abuf, &crc, false);
+	IOStreamArenaState arena_state;
+	SDL_IOStream *abuf = iostream_arena(arena, BUFSIZ, &arena_state);
+	SDL_IOStream *crcbuf = iostream_wrap_crc32(abuf, &crc, false);
 	SDL_IOStream *dest = crcbuf;
 
 	if(UNLIKELY(!crcbuf)) {
-		log_sdl_error(LOG_ERROR, "SDL_RWWrapCRC32");
+		log_sdl_error(LOG_ERROR, "iostream_wrap_crc32");
 		return NULL;
 	}
 
@@ -171,7 +171,7 @@ fail:
 
 static bool shader_cache_load_entry(SDL_IOStream *stream, ShaderSource *out_src, MemArena *arena) {
 	uint32_t crc = CRC_INIT;
-	SDL_IOStream *s = SDL_RWWrapCRC32(stream, &crc, false);
+	SDL_IOStream *s = iostream_wrap_crc32(stream, &crc, false);
 
 	auto arena_snap = marena_snapshot(arena);
 
@@ -279,7 +279,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, Me
 		return false;
 	}
 
-	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, -1, true));
+	stream = NOT_NULL(iostream_wrap_zstd_reader(stream, -1, true));
 	bool result = shader_cache_load_entry(stream, entry, arena);
 	SDL_CloseIO(stream);
 
@@ -302,7 +302,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 		return false;
 	}
 
-	out = NOT_NULL(SDL_RWWrapZstdWriter(out, RW_ZSTD_LEVEL_DEFAULT, true));
+	out = NOT_NULL(iostream_wrap_zstd_writer(out, IOSTREAM_ZSTD_LEVEL_DEFAULT, true));
 	SDL_WriteIO(out, entry, entry_size);
 	SDL_CloseIO(out);
 

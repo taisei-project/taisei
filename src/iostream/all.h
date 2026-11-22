@@ -9,6 +9,13 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL3/SDL_iostream.h>
+#include "iostream_crc32.h"
+#include "iostream_ro.h"
+#include "iostream_segment.h"
+#include "iostream_sha256.h"
+#include "iostream_zlib.h"
+#include "iostream_zstd.h"
 
-SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose);
+#ifdef DEBUG
+#include "iostream_trace.h"
+#endif

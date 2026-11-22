@@ -9,7 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL3/SDL.h>
+#include "iostream_dummy.h"
 
-SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag,
-			      bool autoclose);
+INLINE SDL_IOStream *iostream_wrap_readonly(SDL_IOStream *src, bool autoclose) {
+	return iostream_wrap_dummy(src, &(IOStreamWrapDummyOpts) {
+		.autoclose = autoclose,
+		.readonly = true,
+	});
+}

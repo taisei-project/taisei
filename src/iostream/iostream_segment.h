@@ -9,13 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "rwops_crc32.h"
-#include "rwops_ro.h"
-#include "rwops_segment.h"
-#include "rwops_sha256.h"
-#include "rwops_zlib.h"
-#include "rwops_zstd.h"
+#include <SDL3/SDL.h>
 
-#ifdef DEBUG
-#include "rwops_trace.h"
-#endif
+SDL_IOStream *iostream_wrap_segment(SDL_IOStream *src, size_t start, size_t end, bool autoclose);

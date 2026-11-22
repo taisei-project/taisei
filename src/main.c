@@ -18,6 +18,7 @@
 #include "gamepad.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "iostream/iostream_stdiofp.h"
 #include "log.h"
 #include "log_sdl.h"
 #include "memory/scratch.h"
@@ -30,7 +31,6 @@
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
-#include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "stageobjects.h"
 #include "taskmanager.h"
@@ -113,8 +113,8 @@ static void init_log(void) {
 	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", ""));
 
 	log_init(LOG_DEFAULT_LEVELS);
-	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false), log_formatter_console);
-	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false), log_formatter_console);
+	log_add_output(lvls_stdout, iostream_from_fp(stdout, false), log_formatter_console);
+	log_add_output(lvls_stderr, iostream_from_fp(stderr, false), log_formatter_console);
 }
 
 static SDL_IOStream *open_log_file(const char *log_path) {
@@ -165,9 +165,9 @@ static void init_log_file(MemArena *scratch) {
 }
 
 static void init_log_filter(void) {
-	SDL_IOStream *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
+	SDL_IOStream *io = vfs_open("storage/logfilter", VFS_MODE_READ);
 
-	if(!rw) {
+	if(!io) {
 		return;
 	}
 
@@ -175,7 +175,7 @@ static void init_log_filter(void) {
 	auto scratch = acquire_scratch_arena();
 	size_t size;
 
-	while((p = SDL_RWgets_arena(rw, scratch, &size))) {
+	while((p = iostream_gets_arena(io, scratch, &size))) {
 		while(isspace(*p)) {
 			++p;
 		}
@@ -188,7 +188,7 @@ static void init_log_filter(void) {
 	}
 
 	release_scratch_arena(scratch);
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 }
 
 static void init_sdl(void) {
@@ -632,19 +632,19 @@ static void main_replay(MainContext *mctx) {
 
 static void main_vfstree(CallChainResult ccr) {
 	MainContext *mctx = ccr.ctx;
-	SDL_IOStream *rwops = SDL_RWFromFP(stdout, false);
+	SDL_IOStream *io = iostream_from_fp(stdout, false);
 	int status = 0;
 
-	if(!rwops) {
-		log_fatal("SDL_RWFromFP() failed: %s", SDL_GetError());
-		log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+	if(!io) {
+		log_fatal("iostream_from_fp() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "iostream_from_fp");
 		status = 1;
-	} else if(!vfs_print_tree(rwops, mctx->cli.filename)) {
+	} else if(!vfs_print_tree(io, mctx->cli.filename)) {
 		log_error("VFS error: %s", vfs_get_error());
 		status = 2;
 	}
 
-	SDL_CloseIO(rwops);
+	SDL_CloseIO(io);
 	vfs_shutdown();
 	main_quit(mctx, status);
 }

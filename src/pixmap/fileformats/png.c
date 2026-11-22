@@ -8,8 +8,8 @@
 
 #include "fileformats.h"
 
+#include "iostream/iostream_util.h"
 #include "log.h"
-#include "rwops/rwops_util.h"
 
 #include <png.h>
 

@@ -20,32 +20,32 @@ int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCm
 	return result;
 }
 
-size_t taisei_version_read(SDL_IOStream *rwops, TaiseiVersion *version) {
+size_t taisei_version_read(SDL_IOStream *io, TaiseiVersion *version) {
 	size_t read_size = 0;
 
-	if(!SDL_ReadU8(rwops, &version->major)) return read_size;
+	if(!SDL_ReadU8(io, &version->major)) return read_size;
 	read_size += sizeof(version->major);
-	if(!SDL_ReadU8(rwops, &version->minor)) return read_size;
+	if(!SDL_ReadU8(io, &version->minor)) return read_size;
 	read_size += sizeof(version->minor);
-	if(!SDL_ReadU8(rwops, &version->patch)) return read_size;
+	if(!SDL_ReadU8(io, &version->patch)) return read_size;
 	read_size += sizeof(version->patch);
-	if(!SDL_ReadU16LE(rwops, &version->tweak)) return read_size;
+	if(!SDL_ReadU16LE(io, &version->tweak)) return read_size;
 	read_size += sizeof(version->tweak);
 
 	assume(TAISEI_VERSION_SIZE == read_size);
 	return TAISEI_VERSION_SIZE;
 }
 
-size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version) {
+size_t taisei_version_write(SDL_IOStream *io, TaiseiVersion *version) {
 	size_t write_size = 0;
 
-	if(!SDL_WriteU8(rwops, version->major)) return write_size;
+	if(!SDL_WriteU8(io, version->major)) return write_size;
 	write_size += sizeof(version->major);
-	if(!SDL_WriteU8(rwops, version->minor)) return write_size;
+	if(!SDL_WriteU8(io, version->minor)) return write_size;
 	write_size += sizeof(version->minor);
-	if(!SDL_WriteU8(rwops, version->patch)) return write_size;
+	if(!SDL_WriteU8(io, version->patch)) return write_size;
 	write_size += sizeof(version->patch);
-	if(!SDL_WriteU16LE(rwops, version->tweak)) return write_size;
+	if(!SDL_WriteU16LE(io, version->tweak)) return write_size;
 	write_size += sizeof(version->tweak);
 
 	assert(write_size == TAISEI_VERSION_SIZE);

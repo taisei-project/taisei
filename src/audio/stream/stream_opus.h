@@ -11,4 +11,4 @@
 
 #include "stream.h"
 
-bool astream_opus_open(AudioStream *stream, SDL_IOStream *rw);
+bool astream_opus_open(AudioStream *stream, SDL_IOStream *io);

@@ -9,10 +9,10 @@
 #include "atlas.h"
 #include "texture.h"
 
+#include "iostream/iostream_util.h"
 #include "memory/scratch.h"
 #include "pixmap/pixmap.h"
 #include "renderer/api.h"
-#include "rwops/rwops_util.h"
 
 #define TSATLAS_MAGIC 0xa7baacaab2b6baadull
 #define TSATLAS_VERSION 1

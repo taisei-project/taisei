@@ -8,8 +8,8 @@
 
 #include "fileformats.h"
 
+#include "iostream/iostream_crc32.h"
 #include "log.h"
-#include "rwops/rwops_crc32.h"
 #include "util.h"
 
 enum {
@@ -46,7 +46,7 @@ static bool px_internal_save(SDL_IOStream *stream, const Pixmap *pixmap,
 	W_U16(stream, PXI_VERSION);
 
 	uint32_t crc32 = PXI_CRC32_INIT;
-	cstream = NOT_NULL(SDL_RWWrapCRC32(stream, &crc32, false));
+	cstream = NOT_NULL(iostream_wrap_crc32(stream, &crc32, false));
 
 	W_U32(cstream, pixmap->width);
 	W_U32(cstream, pixmap->height);
@@ -94,7 +94,7 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 	}
 
 	uint32_t crc32 = PXI_CRC32_INIT;
-	cstream = NOT_NULL(SDL_RWWrapCRC32(stream, &crc32, false));
+	cstream = NOT_NULL(iostream_wrap_crc32(stream, &crc32, false));
 
 	// TODO validate and verify consistency of data_size/width/height/format
 

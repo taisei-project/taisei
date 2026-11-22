@@ -39,26 +39,26 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 	struct shprog_load_data ldata = {};
 	char *strobjects = NULL;
 
-	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(st, st->path, VFS_MODE_READ);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
 		return;
 	}
 
-	if(!parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
+	if(!parse_keyvalue_stream_with_spec(io, (KVSpec[]){
 		{ "glsl_objects", .out_str = &strobjects, KVSPEC_DEPRECATED("objects") },
 		{ "objects",      .out_str = &strobjects },
 		{}
 	})) {
-		SDL_CloseIO(rw);
+		SDL_CloseIO(io);
 		mem_free(strobjects);
 		res_load_failed(st);
 		return;
 	}
 
-	SDL_CloseIO(rw);
+	SDL_CloseIO(io);
 
 	if(strobjects) {
 		ldata.objlist = mem_alloc(strlen(strobjects) + 1);

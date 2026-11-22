@@ -11,10 +11,4 @@
 
 #include <SDL3/SDL.h>
 
-typedef struct RWWrapDummyOpts {
-	bool autoclose;
-	bool readonly;
-	bool assert_no_seek;
-} RWWrapDummyOpts;
-
-SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, const RWWrapDummyOpts *opts);
+SDL_IOStream *iostream_wrap_trace(SDL_IOStream *src, const char *tag, bool autoclose);

@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_dummy.h"
-#include "rwops/rwops_util.h"
+#include "iostream_dummy.h"
+#include "iostream/iostream_util.h"
 
 // autoclose bit encoded as lowest bit of the context pointer, which is normally always 0
 #define DUMMY_SOURCE(ctx)    ((SDL_IOStream*)((uintptr_t)(ctx) & ~1ull))
@@ -55,7 +55,7 @@ static size_t dummy_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus 
 	return r;
 }
 
-SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, const RWWrapDummyOpts *opts) {
+SDL_IOStream *iostream_wrap_dummy(SDL_IOStream *src, const IOStreamWrapDummyOpts *opts) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}

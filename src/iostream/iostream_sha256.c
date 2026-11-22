@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "rwops_sha256.h"
-#include "rwops/rwops_util.h"
+#include "iostream_sha256.h"
+#include "iostream/iostream_util.h"
 
 struct sha256_ctx {
 	SDL_IOStream *src;
@@ -15,7 +15,7 @@ struct sha256_ctx {
 	bool autoclose;
 };
 
-static bool rwsha256_close(void *ctx) {
+static bool sha256_close(void *ctx) {
 	struct sha256_ctx *sctx = ctx;
 
 	bool result = true;
@@ -28,7 +28,7 @@ static bool rwsha256_close(void *ctx) {
 	return result;
 }
 
-static int64_t rwsha256_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+static int64_t sha256_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	struct sha256_ctx *sctx = ctx;
 
 	if(!offset && whence == SDL_IO_SEEK_CUR) {
@@ -39,51 +39,51 @@ static int64_t rwsha256_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
 	return -1;
 }
 
-static int64_t rwsha256_size(void *ctx) {
+static int64_t sha256_size(void *ctx) {
 	struct sha256_ctx *sctx = ctx;
 	return SDL_GetIOSize(sctx->src);
 }
 
-static void rwsha256_update_sha256(struct sha256_ctx *sctx, const void *data, size_t size) {
+static void sha256_update_sha256(struct sha256_ctx *sctx, const void *data, size_t size) {
 	sha256_update(sctx->sha256, data, size);
 }
 
-static size_t rwsha256_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+static size_t sha256_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	struct sha256_ctx *sctx = ctx;
 	size_t result = SDL_ReadIO(sctx->src, ptr, size);
 	*status = SDL_GetIOStatus(sctx->src);
-	rwsha256_update_sha256(sctx, ptr, result);
+	sha256_update_sha256(sctx, ptr, result);
 	return result;
 }
 
-static size_t rwsha256_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+static size_t sha256_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
 	struct sha256_ctx *sctx = ctx;
 	size_t result = SDL_WriteIO(sctx->src, ptr, size);
 	*status = SDL_GetIOStatus(sctx->src);
-	rwsha256_update_sha256(sctx, ptr, result);
+	sha256_update_sha256(sctx, ptr, result);
 	return result;
 }
 
-static bool rwsha256_flush(void *ctx, SDL_IOStatus *status) {
+static bool sha256_flush(void *ctx, SDL_IOStatus *status) {
 	struct sha256_ctx *sctx = ctx;
 	bool result = SDL_FlushIO(sctx->src);
 	*status = SDL_GetIOStatus(sctx->src);
 	return result;
 }
 
-SDL_IOStream *SDL_RWWrapSHA256(SDL_IOStream *src, SHA256State *sha256, bool autoclose) {
+SDL_IOStream *iostream_wrap_sha256(SDL_IOStream *src, SHA256State *sha256, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_IOStreamInterface iface = {
 		.version = sizeof(iface),
-		.size = rwsha256_size,
-		.seek = rwsha256_seek,
-		.close = rwsha256_close,
-		.read = rwsha256_read,
-		.write = rwsha256_write,
-		.flush = rwsha256_flush,
+		.size = sha256_size,
+		.seek = sha256_seek,
+		.close = sha256_close,
+		.read = sha256_read,
+		.write = sha256_write,
+		.flush = sha256_flush,
 	};
 
 	auto sctx = ALLOC(struct sha256_ctx, {

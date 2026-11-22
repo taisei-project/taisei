@@ -63,7 +63,7 @@ SDL_IOStream* vfs_open(const char *path, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	SDL_IOStream *rwops = NULL;
+	SDL_IOStream *io = NULL;
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -71,7 +71,7 @@ SDL_IOStream* vfs_open(const char *path, VFSOpenMode mode) {
 	if(node) {
 		assert(node->funcs != NULL);
 
-		if(!(rwops = vfs_node_open(node, mode))) {
+		if(!(io = vfs_node_open(node, mode))) {
 			vfs_set_error("Can't open '%s': %s", path, vfs_get_error());
 		}
 
@@ -80,7 +80,7 @@ SDL_IOStream* vfs_open(const char *path, VFSOpenMode mode) {
 		vfs_set_error("Node '%s' does not exist", path);
 	}
 
-	return rwops;
+	return io;
 }
 
 VFSInfo vfs_query(const char *path) {

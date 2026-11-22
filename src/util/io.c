@@ -16,7 +16,7 @@
 #include <unistd.h>
 #endif
 
-char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) {
+char *iostream_gets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) {
 	size_t chunk_size = 64;
 	size_t buf_size = chunk_size;
 	char *buf = marena_alloc(arena, buf_size);
@@ -68,19 +68,19 @@ char *SDL_RWgets_arena(SDL_IOStream *io, MemArena *arena, size_t *out_buf_size) 
 	return buf;
 }
 
-size_t SDL_RWprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char* fmt, ...) {
+size_t iostream_printf_arena(SDL_IOStream *io, MemArena *scratch, const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	size_t ret = SDL_RWvprintf_arena(rwops, scratch, fmt, args);
+	size_t ret = iostream_vprintf_arena(io, scratch, fmt, args);
 	va_end(args);
 	return ret;
 }
 
-size_t SDL_RWvprintf_arena(SDL_IOStream *rwops, MemArena *scratch, const char *fmt, va_list args) {
+size_t iostream_vprintf_arena(SDL_IOStream *io, MemArena *scratch, const char *fmt, va_list args) {
 	auto snapshot = marena_snapshot(scratch);
 	StringBuffer buf = { scratch };
 	uint len = strbuf_vprintf(&buf, fmt, args);
-	size_t ret = SDL_WriteIO(rwops, buf.start, len);
+	size_t ret = SDL_WriteIO(io, buf.start, len);
 	marena_rollback(scratch, &snapshot);
 	return ret;
 }

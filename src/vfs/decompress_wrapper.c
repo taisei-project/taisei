@@ -10,9 +10,9 @@
 #include "decompress_wrapper_public.h"
 
 #include "hashtable.h"
+#include "iostream/iostream_ro.h"
+#include "iostream/iostream_zstd.h"
 #include "memory/scratch.h"
-#include "rwops/rwops_ro.h"
-#include "rwops/rwops_zstd.h"
 #include "util/strbuf.h"
 #include "util/stringops.h"
 
@@ -127,10 +127,10 @@ static SDL_IOStream *vfs_decomp_open(VFSNode *filenode, VFSOpenMode mode) {
 	}
 
 	if(VFS_NODE_CAST(VFSDecompNode, filenode)->compr_zstd) {
-		return SDL_RWWrapZstdReader(raw, -1, true);
+		return iostream_wrap_zstd_reader(raw, -1, true);
 	}
 
-	return SDL_RWWrapReadOnly(raw, true);
+	return iostream_wrap_readonly(raw, true);
 }
 
 struct decomp_iter_data {
