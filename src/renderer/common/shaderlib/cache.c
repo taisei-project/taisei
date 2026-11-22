@@ -15,7 +15,6 @@
 #include "iostream/iostream_arena.h"
 #include "iostream/iostream_crc32.h"
 #include "iostream/iostream_zstd.h"
-#include "vfs/public.h"
 
 #define CACHE_VERSION 8
 #define CRC_INIT 0
@@ -25,6 +24,12 @@
 #define MAX_GLSL_MACRO_NAME_LEN   255
 #define MAX_GLSL_MACRO_VALUE_LEN  255
 #define MAX_ENTRYPOINT_NAME_LEN   255
+
+static ShaderCacheBackend cache_backend;
+
+void shader_cache_set_backend(const ShaderCacheBackend *backend) {
+	cache_backend = backend ? *backend : (typeof(cache_backend)) {};
+}
 
 static uint8_t *shader_cache_construct_entry(
 	const ShaderSource *src, const ShaderMacro *macros, size_t *out_size, MemArena *arena
@@ -270,10 +275,11 @@ fail:
 }
 
 bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, MemArena *arena) {
-	char path[256];
-	snprintf(path, sizeof(path), "cache/shaders/%s/%s", hash, key);
+	if(!cache_backend.open_read) {
+		return false;
+	}
 
-	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *stream = cache_backend.open_read(hash, key, cache_backend.userdata);
 
 	if(stream == NULL) {
 		return false;
@@ -288,17 +294,13 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry, Me
 }
 
 static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *entry, size_t entry_size) {
-	char path[256];
+	if(!cache_backend.open_write) {
+		return false;
+	}
 
-	vfs_mkdir("cache/shaders");
-	snprintf(path, sizeof(path), "cache/shaders/%s", hash);
-	vfs_mkdir(path);
-	snprintf(path, sizeof(path), "cache/shaders/%s/%s", hash, key);
-
-	SDL_IOStream *out = vfs_open(path, VFS_MODE_WRITE);
+	SDL_IOStream *out = cache_backend.open_write(hash, key, cache_backend.userdata);
 
 	if(out == NULL) {
-		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
@@ -315,8 +317,10 @@ bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src
 	uint8_t *entry = shader_cache_construct_entry(src, NULL, &entry_size, arena);
 
 	if(entry != NULL) {
-		shader_cache_set_raw(hash, key, entry, entry_size);
-		log_debug("Stored %s/%s in cache", hash, key);
+		if(shader_cache_set_raw(hash, key, entry, entry_size)) {
+			log_debug("Stored %s/%s in cache", hash, key);
+		}
+
 		return true;
 	}
 

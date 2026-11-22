@@ -8,7 +8,9 @@
 
 #include "shader_object.h"
 
+#include "memory/scratch.h"
 #include "renderer/api.h"
+#include "renderer/common/shaderlib/cache.h"
 #include "vfs/public.h"
 
 struct shobj_type {
@@ -181,14 +183,56 @@ static bool transfer_shader_object(void *dst, void *src) {
 	return r_shader_object_transfer(dst, src);
 }
 
+#define SHADER_CACHE_DIR "cache/shaders"
+
+static SDL_IOStream *shader_cache_open_read(const char *hash, const char *key, void *userdata) {
+	return WITH_SCRATCH(s, ({
+		auto buf = STRBUF(s);
+		strbuf_printf(&buf, SHADER_CACHE_DIR "/%s/%s", hash, key);
+		vfs_open(buf.start, VFS_MODE_READ);
+	}));
+}
+
+static SDL_IOStream *shader_cache_open_write(const char *hash, const char *key, void *userdata) {
+	vfs_mkdir(SHADER_CACHE_DIR);
+
+	auto out = WITH_SCRATCH(s, ({
+		auto buf = STRBUF(s);
+		strbuf_printf(&buf, SHADER_CACHE_DIR "/%s", hash);
+		vfs_mkdir(buf.start);
+		strbuf_printf(&buf, "/%s", key);
+		vfs_open(buf.start, VFS_MODE_WRITE);
+	}));
+
+	if(out == NULL) {
+		log_error("VFS error: %s", vfs_get_error());
+	}
+
+	return out;
+}
+
+static void init_shader_objects(void) {
+	shader_cache_set_backend(&(ShaderCacheBackend) {
+		.open_read = shader_cache_open_read,
+		.open_write = shader_cache_open_write,
+	});
+
+	spirv_init_compiler();
+}
+
+static void shutdown_shader_objects(void) {
+	spirv_shutdown_compiler();
+	shader_cache_set_backend(NULL);
+}
+
 ResourceHandler shader_object_res_handler = {
 	.type = RES_SHADER_OBJECT,
 	.typename = "shader object",
 	.subdir = SHOBJ_PATH_PREFIX,
 
 	.procs = {
-		.init = spirv_init_compiler,
-		.shutdown = spirv_shutdown_compiler,
+		.init = init_shader_objects,
+		.shutdown = shutdown_shader_objects,
 		.find = shader_object_path,
 		.check = check_shader_object_path,
 		.load = load_shader_object_stage1,

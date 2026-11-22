@@ -119,7 +119,6 @@ static void *walker(const char *path, void *unused) {
 }
 
 static void on_vfs_up(CallChainResult ccr) {
-	vfs_unmount("cache");
 	marena_init(&G.arena, 0);
 	spirv_init_compiler();
 	vfs_dir_walk("res/shader", walker, NULL);

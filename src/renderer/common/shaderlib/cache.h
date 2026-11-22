@@ -13,11 +13,21 @@
 
 #include "memory/arena.h"
 
+#include <SDL3/SDL_iostream.h>
+
 // sha256 hexdigest  : 64 bytes
 // separator         : 1 byte
 // 64-bit size (hex) : 8 bytes
 // null terminator   : 1 byte
 #define SHADER_CACHE_HASH_BUFSIZE 74
+
+typedef struct ShaderCacheBackend {
+	SDL_IOStream *(*open_read)(const char *hash, const char *key, void *userdata);
+	SDL_IOStream *(*open_write)(const char *hash, const char *key, void *userdata);
+	void *userdata;
+} ShaderCacheBackend;
+
+void shader_cache_set_backend(const ShaderCacheBackend *backend);
 
 bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size], MemArena *arena)
 	attr_nonnull(1, 4, 5) attr_nodiscard;
