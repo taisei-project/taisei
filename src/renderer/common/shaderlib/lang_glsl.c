@@ -15,7 +15,6 @@
 #include "util/io.h"
 #include "util/pathutil.h"
 #include "util/stringops.h"
-#include "vfs/public.h"
 
 enum {
 	GLSL_INCLUDE_DEPTH = 42,
@@ -161,19 +160,12 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		return false;
 	}
 
-	SDL_IOStream *stream;
-	GLSLSourceOpenCallback open = fstate->global->options->file_open_callback;
-
-	if(open) {
-		stream = open(fstate->path, fstate->global->options->file_open_callback_userdata);
-	} else {
-		stream = vfs_open(fstate->path, VFS_MODE_READ);
-	}
-
+	auto opts = fstate->global->options;
+	SDL_IOStream *stream = opts->file_open_callback(fstate->path, opts->file_open_callback_userdata);
 	SDL_IOStream *dest = fstate->global->dest;
 
 	if(!stream) {
-		log_error("VFS error: %s", vfs_get_error());
+		log_error("%s: failed to open file", fstate->path);
 		return false;
 	}
 
@@ -287,6 +279,8 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 }
 
 bool glsl_load_source(const char *path, ShaderSource *out, MemArena *arena, const GLSLSourceOptions *options) {
+	assert(options->file_open_callback != NULL);
+
 	*out = (typeof(*out)) {
 		.lang.lang = SHLANG_GLSL,
 		.lang.glsl.version = options->version,

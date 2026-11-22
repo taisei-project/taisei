@@ -64,7 +64,13 @@ static void load_shader_object_stage2(ResourceLoadState *st);
 
 static SDL_IOStream *glsl_open_callback(const char *path, void *userdata) {
 	ResourceLoadState *st = userdata;
-	return res_open_file(st, path, VFS_MODE_READ);
+	SDL_IOStream *io = res_open_file(st, path, VFS_MODE_READ);
+
+	if(!io) {
+		log_error("VFS error: %s", vfs_get_error());
+	}
+
+	return io;
 }
 
 static void load_shader_object_stage1(ResourceLoadState *st) {
