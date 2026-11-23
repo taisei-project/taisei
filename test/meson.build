@@ -14,18 +14,23 @@ subdir('i18n')
 
 tests = [
     { 'name' : 'zip_io',
+      'deps' : [taisei_vfs_dep],
       'depends' : zip_targets,
       'args' : resources_build_dir },
 ]
 
 if shader_transpiler_enabled
-    tests += { 'name' : 'shader_transpiler', 'timeout' : 60 }
+    tests += {
+        'name' : 'shader_transpiler',
+        'deps' : [taisei_shaderlib_dep, taisei_vfs_dep],
+        'timeout' : 60,
+    }
 endif
 
 foreach tdict : tests
     test(tdict['name'], executable(
             tdict['name'], '@0@.c'.format(tdict['name']),
-            dependencies : libtaisei_dep,
+            dependencies : taisei_deps_linkwhole + tdict['deps'],
             include_directories : test_incdir,
             install : false,
             link_args : taisei_link_args,
