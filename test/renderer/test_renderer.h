@@ -2,6 +2,7 @@
 #include "taisei.h"
 
 #include "config.h"
+#include "events.h"
 #include "log.h"
 #include "memory/scratch.h"
 #include "renderer/api.h"
@@ -134,6 +135,7 @@ static Model test_renderer_load_iqm(const char *path) {
 
 static void test_init_renderer(void) {
 	test_init_basic();
+	events_init();
 
 	config_set_int(CONFIG_VSYNC, 1);
 	config_set_int(CONFIG_VID_RESIZABLE, 1);
@@ -146,5 +148,6 @@ static void test_init_renderer(void) {
 
 static void test_shutdown_renderer(void) {
 	video_shutdown();
+	events_shutdown();
 	test_shutdown_basic();
 }
