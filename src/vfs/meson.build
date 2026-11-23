@@ -1,4 +1,10 @@
 
+vfs_deps = [taisei_iostream_dep]
+
+if host_machine.system() == 'windows'
+    vfs_deps += cc.find_library('shlwapi')
+endif
+
 vfs_src = files(
     'decompress_wrapper.c',
     'kvparser.c',
@@ -44,6 +50,7 @@ endif
 if use_static_res_index
     vfs_src += files('resindex.c')
     vfs_src += resindex
+    vfs_deps += resindex_dep
 
     if is_developer_build
         vfs_src += files('resindex_layered.c')

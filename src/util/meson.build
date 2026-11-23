@@ -23,6 +23,7 @@ endif
 
 if dep_crypto.found()
     util_src += files('sha256_openssl.c')
+    util_deps += dep_crypto
 else
     util_src += files('sha256.c')
 endif

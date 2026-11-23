@@ -54,7 +54,7 @@ if use_static_res_index
         build_by_default : false,
     )
 
-    taisei_deps += declare_dependency(include_directories : include_directories('.'))
+    resindex_dep = declare_dependency(include_directories : include_directories('.'))
 
     meson.add_install_script(
         res_index_install_command, resindex, data_path,

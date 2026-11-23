@@ -25,7 +25,7 @@ elif xdg_systems.contains(host_machine.system())
     vfs_platform_paths_src += files('cache_xdg.c')
 elif host_machine.system() == 'darwin'
     add_languages('objc')
-    taisei_deps += dependency('appleframeworks', modules : 'foundation')
+    vfs_deps += dependency('appleframeworks', modules : 'foundation')
     vfs_platform_paths_src += files('cache_apple.m')
 else
     vfs_platform_paths_src += files('cache_generic.c')

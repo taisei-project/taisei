@@ -1,4 +1,4 @@
-format_strings = i18n.xgettext('format_strings', taisei_src, args : [ '-kF_', '--from-code=utf-8' ], install : false)
+format_strings = i18n.xgettext('format_strings', i18n_scan_src, args : [ '-kF_', '--from-code=utf-8' ], install : false)
 
 format_string_list = custom_target(
     'format_string_list.c',

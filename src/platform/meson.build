@@ -1,5 +1,6 @@
 
 platform_src = []
+platform_deps = []
 
 if host_machine.system() == 'windows'
     platform_src += files(
@@ -13,6 +14,7 @@ endif
 
 if dep_gamemode.found()
     platform_src += files('gamemode.c')
+    platform_deps += dep_gamemode
 else
     platform_src += files('gamemode_stub.c')
 endif

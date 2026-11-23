@@ -247,31 +247,6 @@ sub_glad = subproject('glad')
 dep_glad_gl = sub_glad.get_variable('glad_gl_dep')
 dep_glad_egl = sub_glad.get_variable('glad_egl_dep')
 
-taisei_deps = [
-    dep_basisu_transcoder,
-    dep_cglm,
-    dep_crypto,
-    dep_freetype,
-    dep_gamemode,
-    dep_koishi,
-    dep_libunibreak,
-    dep_m,
-    dep_png,
-    dep_sdl3,
-    dep_webp,
-    dep_zlib,
-    dep_zstd,
-    # NOTE: don't add glad here
-]
-
-taisei_deps_linkwhole = [
-    dep_m_linkwhole
-]
-
-if host_machine.system() == 'windows'
-    taisei_deps += cc.find_library('shlwapi')
-endif
-
 package_data = (get_option('package_data')
     .disable_if(host_machine.system() == 'emscripten')
     .allowed())

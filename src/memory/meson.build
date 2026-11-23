@@ -1,4 +1,6 @@
 
+memory_deps = []
+
 memory_src = files(
     'allocator.c',
     'arena.c',
@@ -24,7 +26,7 @@ if allocator == 'mimalloc'
         fallback : ['mimalloc-cmake-wrapper', 'mimalloc_dep']
     )
     if dep_mimalloc.found()
-        taisei_deps += dep_mimalloc
+        memory_deps += dep_mimalloc
     else
         allocator = 'libc'
     endif

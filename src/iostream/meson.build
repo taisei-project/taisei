@@ -1,4 +1,10 @@
 
+iostream_deps = [
+    taisei_base_dep,
+    dep_zlib,
+    dep_zstd,
+]
+
 iostream_src = files(
     'iostream_arena.c',
     'iostream_crc32.c',

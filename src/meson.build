@@ -12,8 +12,7 @@ taisei_main_src = files('main.c')
 if host_machine.system() == 'windows'
     winmod = import('windows')
 
-    rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
-    icons_dir = join_paths(meson.source_root(), 'misc', 'icons')
+    icons_dir = join_paths(meson.project_source_root(), 'misc', 'icons')
     icon_main = join_paths(icons_dir, 'taisei.ico')
     icon_replay = join_paths(icons_dir, 'taisei-replay.ico')
     manifest = join_paths(meson.current_source_dir(), 'taisei.manifest')
@@ -54,19 +53,170 @@ if host_machine.system() == 'windows'
     config.set('__USE_MINGW_ANSI_STDIO', 1)
 endif
 
+# 'shared_library' can be used to check for missing deps, but the final result
+# won't work correctly because of openlibm funnies.
+internal_lib_type = 'static_library'
+
+taisei_internal_libs = {}
+
+taisei_common_dep = declare_dependency(
+    compile_args : taisei_c_args,
+    include_directories : include_directories('.'),
+    dependencies : [
+        dep_cglm,
+        dep_m,
+        dep_sdl3,
+    ],
+)
+
+#
+#   libtaisei-base: common low-level utils and data structures
+#
+
+base_src = files(
+    'color.c',
+    'dynarray.c',
+    'hashtable.c',
+    'hirestime.c',
+    'list.c',
+    'log.c',
+    'log_sdl.c',
+    'ringbuf.c',
+    'taskmanager.c',
+    'thread.c',
+    'version.c',
+    'zipfile.c',
+)
+
+subdir('memory')
+subdir('platform')
+subdir('util')
+
+base_src += [
+    memory_src,
+    platform_src,
+    util_src,
+]
+
+base_deps = [
+    dep_crypto,
+    memory_deps,
+    platform_deps,
+    util_deps,
+]
+
+libtaisei_base = build_target('taisei-base', base_src,
+    target_type : internal_lib_type,
+    dependencies : [taisei_common_dep, base_deps],
+    install : false,
+)
+
+taisei_base_dep = declare_dependency(
+    dependencies : taisei_common_dep,
+    link_with : libtaisei_base,
+)
+
+taisei_internal_libs += { 'base' : {
+    'lib' : libtaisei_base,
+    'dep' : taisei_base_dep,
+    'src' : base_src
+}}
+
+#
+#   libtaisei-iostream: SDL_IOStream extensions
+#
+
+subdir('iostream')
+
+libtaisei_iostream = build_target('taisei-iostream', iostream_src,
+    target_type : internal_lib_type,
+    dependencies : iostream_deps,
+    install : false,
+)
+
+taisei_iostream_dep = declare_dependency(
+    dependencies : taisei_common_dep,
+    link_with : libtaisei_iostream,
+)
+
+taisei_internal_libs += { 'iostream' : {
+    'lib' : libtaisei_iostream,
+    'dep' : taisei_iostream_dep,
+    'src' : iostream_src
+}}
+
+#
+#   libtaisei-vfs: Virtual File System
+#
+
+subdir('vfs')
+
+libtaisei_vfs = build_target('taisei-vfs', vfs_src,
+    target_type : internal_lib_type,
+    dependencies : vfs_deps,
+    install : false,
+)
+
+taisei_vfs_dep = declare_dependency(
+    dependencies : taisei_common_dep,
+    link_with : libtaisei_vfs,
+)
+
+taisei_internal_libs += { 'vfs' : {
+    'lib' : libtaisei_vfs,
+    'dep' : taisei_vfs_dep,
+    'src' : vfs_src
+}}
+
+#
+#   libtaisei-shaderlib: shader compilation, translation, and reflection
+#
+
+subdir('renderer/common/shaderlib')
+
+libtaisei_shaderlib = build_target('taisei-shaderlib', r_shaderlib_src,
+    target_type : internal_lib_type,
+    dependencies : [taisei_iostream_dep, r_shaderlib_libdeps],
+    install : false,
+)
+
+taisei_shaderlib_dep = declare_dependency(
+    dependencies : taisei_common_dep,
+    link_with : libtaisei_shaderlib,
+)
+
+taisei_internal_libs += { 'shaderlib' : {
+    'lib' : libtaisei_shaderlib,
+    'dep' : taisei_shaderlib_dep,
+    'src' : r_shaderlib_src
+}}
+
+#
+#   libtaisei: everything else (that hasn't been split up yet)
+#
+
+taisei_deps = [
+    taisei_common_dep,
+    dep_basisu_transcoder,
+    dep_freetype,
+    dep_koishi,
+    dep_libunibreak,
+    dep_png,
+    dep_webp,
+    dep_zlib,
+    dep_zstd,
+]
+
 taisei_src = files(
     'aniplayer.c',
     'boss.c',
     'cli.c',
-    'color.c',
-    'color.c',
     'common_tasks.c',
     'config.c',
     'credits.c',
     'debug_text.c',
     'dialog.c',
     'difficulty.c',
-    'dynarray.c',
     'enemy.c',
     'enemy_classes.c',
     'entity.c',
@@ -74,12 +224,7 @@ taisei_src = files(
     'framerate.c',
     'gamepad.c',
     'global.c',
-    'hashtable.c',
-    'hirestime.c',
     'item.c',
-    'list.c',
-    'log_sdl.c',
-    'log.c',
     'move.c',
     'player.c',
     'plrmodes.c',
@@ -88,7 +233,6 @@ taisei_src = files(
     'projectile.c',
     'projectile_prototypes.c',
     'random.c',
-    'ringbuf.c',
     'stage.c',
     'stagedraw.c',
     'stageinfo.c',
@@ -96,14 +240,10 @@ taisei_src = files(
     'stagetext.c',
     'stageutils.c',
     'stats.c',
-    'taskmanager.c',
-    'thread.c',
     'transition.c',
-    'version.c',
     'video.c',
     'video_postprocess.c',
     'watchdog.c',
-    'zipfile.c',
 )
 
 if is_developer_build
@@ -119,19 +259,14 @@ subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
 subdir('gfx')
-subdir('iostream')
 subdir('lasers')
-subdir('memory')
 subdir('menu')
 subdir('pixmap')
-subdir('platform')
 subdir('plrmodes')
 subdir('renderer')
 subdir('replay')
 subdir('resource')
 subdir('stages')
-subdir('util')
-subdir('vfs')
 
 taisei_src += [
     audio_src,
@@ -141,29 +276,38 @@ taisei_src += [
     eventloop_src,
     filewatch_src,
     gfx_src,
-    iostream_src,
     lasers_src,
-    memory_src,
     menu_src,
     pixmap_src,
-    platform_src,
     plrmodes_src,
     renderer_src,
     replay_src,
     resource_src,
-    util_src,
-    vfs_src,
+    # NOTE: stages_src added later
 ]
 
-# i18n needs to know about other sources
-# to build format string list
+taisei_libs = []
+taisei_libs_deps = []
+taisei_libs_src = []
+
+foreach name, def : taisei_internal_libs
+    taisei_libs += def['lib']
+    taisei_libs_deps += def['dep']
+    taisei_libs_src += def['src']
+endforeach
+
+# i18n needs to know about other sources to build format string list
+i18n_scan_src = [taisei_src, stages_src, taisei_libs_src]
 subdir('i18n')
 taisei_src += i18n_src
 
 taisei_deps += [
     audio_deps,
     renderer_deps,
-    util_deps,
+]
+
+taisei_deps_linkwhole = [
+    dep_m_linkwhole
 ]
 
 if stages_live_reload
@@ -178,7 +322,7 @@ if stages_live_reload
     endif
 
     taisei_stages = shared_module('taisei-stages', stages_src, version_deps,
-        dependencies : taisei_deps_linkwhole + taisei_deps,
+        dependencies : [taisei_deps_linkwhole, taisei_deps],
         c_args : taisei_c_args,
         build_by_default : true,
         gnu_symbol_visibility : 'hidden',
@@ -372,7 +516,7 @@ if host_machine.system() == 'emscripten'
     endif
 
     libtaisei = static_library(taisei_basename, taisei_src, taisei_main_src, version_deps,
-        dependencies : taisei_deps_linkwhole + taisei_deps,
+        dependencies : [taisei_deps_linkwhole, taisei_deps, taisei_libs_deps],
         c_args : [em_common_args, taisei_c_args],
         install : meson_link_whole_is_broken,
         install_dir : '.',
@@ -417,7 +561,7 @@ if host_machine.system() == 'emscripten'
 elif host_machine.system() == 'nx'
     taisei_elf_name = '@0@.elf'.format(taisei_basename)
     taisei_elf = executable(taisei_elf_name, taisei_src, taisei_main_src, version_deps,
-        dependencies : taisei_deps_linkwhole + taisei_deps,
+        dependencies : [taisei_deps_linkwhole, taisei_deps, taisei_libs_deps],
         c_args : taisei_c_args,
         link_args : taisei_link_args,
         install : is_debug_build,
@@ -460,16 +604,17 @@ elif host_machine.system() == 'nx'
     bindist_deps += taisei_nro
 else
     libtaisei = static_library(taisei_basename, taisei_src, version_deps,
-        dependencies : taisei_deps,
+        dependencies : [taisei_deps, taisei_libs_deps],
         c_args : taisei_c_args,
         install : false,
     )
 
     libtaisei_dep = declare_dependency(
         compile_args : taisei_c_args,
-        dependencies : taisei_deps_linkwhole + taisei_deps,
+        dependencies : [taisei_deps_linkwhole, taisei_deps, taisei_libs_deps],
         include_directories : include_directories('.'),
-        link_with : libtaisei,
+        # The other internal libs go here too for .as_link_whole() to do its job
+        link_with : [libtaisei, taisei_libs],
     )
 
     have_taisei_exe = true
