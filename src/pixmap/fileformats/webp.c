@@ -113,9 +113,15 @@ static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat pref
 	return ok;
 }
 
+static void px_webp_log_lib_versions(void) {
+	int webp_v = WebPGetDecoderVersion();
+	log_info("Using libwebpdecoder %d.%d.%d", (webp_v >> 16) & 0xff, (webp_v >> 8) & 0xff, webp_v & 0xff);
+}
+
 PixmapFileFormatHandler pixmap_fileformat_webp = {
 	.probe = px_webp_probe,
 	.load = px_webp_load,
+	.log_lib_versions = px_webp_log_lib_versions,
 	.filename_exts = (const char*[]) { "webp", NULL },
 	.name = "WebP",
 };

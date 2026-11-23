@@ -330,10 +330,16 @@ done:
 
 DIAGNOSTIC_GCC(pop)
 
+static void px_png_log_lib_versions(void) {
+	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
+	log_info("Using libpng %s", png_get_libpng_ver(NULL));
+}
+
 PixmapFileFormatHandler pixmap_fileformat_png = {
 	.probe = px_png_probe,
 	.load = px_png_load,
 	.save = px_png_save,
+	.log_lib_versions = px_png_log_lib_versions,
 	.filename_exts = (const char*[]) { "png", NULL },
 	.name = "PNG",
 };

@@ -192,6 +192,29 @@ taisei_internal_libs += { 'shaderlib' : {
 }}
 
 #
+#   libtaisei-pixmap: Image I/O and manipulation
+#
+
+subdir('pixmap')
+
+libtaisei_pixmap = build_target('taisei-pixmap', pixmap_src,
+    target_type : internal_lib_type,
+    dependencies : pixmap_deps,
+    install : false,
+)
+
+taisei_pixmap_dep = declare_dependency(
+    dependencies : taisei_common_dep,
+    link_with : libtaisei_pixmap
+)
+
+taisei_internal_libs += { 'pixmap' : {
+    'lib' : libtaisei_pixmap,
+    'dep' : taisei_pixmap_dep,
+    'src' : pixmap_src
+}}
+
+#
 #   libtaisei: everything else (that hasn't been split up yet)
 #
 
@@ -201,8 +224,6 @@ taisei_deps = [
     dep_freetype,
     dep_koishi,
     dep_libunibreak,
-    dep_png,
-    dep_webp,
     dep_zlib,
     dep_zstd,
 ]
@@ -261,7 +282,6 @@ subdir('filewatch')
 subdir('gfx')
 subdir('lasers')
 subdir('menu')
-subdir('pixmap')
 subdir('plrmodes')
 subdir('renderer')
 subdir('replay')
@@ -278,12 +298,14 @@ taisei_src += [
     gfx_src,
     lasers_src,
     menu_src,
-    pixmap_src,
     plrmodes_src,
     renderer_src,
     replay_src,
     resource_src,
     # NOTE: stages_src added later
+
+    # FIXME: these are needed until all libs are isolated in their own root subdirs
+    pixmap_game_src,
 ]
 
 taisei_libs = []

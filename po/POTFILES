@@ -222,6 +222,8 @@ src/pixmap/fileformats/webp.c
 src/pixmap/pixmap.c
 src/pixmap/pixmap.h
 src/pixmap/pixmap_conversion.inc.h
+src/pixmap/pixmap_vfs.c
+src/pixmap/pixmap_vfs.h
 src/platform/arch_switch.c
 src/platform/arch_switch.h
 src/platform/choice_dialog.h

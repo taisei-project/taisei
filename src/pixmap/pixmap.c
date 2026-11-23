@@ -10,10 +10,7 @@
 #include "fileformats/fileformats.h"
 
 #include "log.h"
-#include "memory/scratch.h"
 #include "util.h"
-#include "util/strbuf.h"
-#include "vfs/public.h"
 
 static PixmapFileFormatHandler *fileformat_handlers[] = {
 	[PIXMAP_FILEFORMAT_INTERNAL] = &pixmap_fileformat_internal,
@@ -50,30 +47,38 @@ void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format,
 	return pixmap_alloc_buffer(format, src->width, src->height, out_bufsize);
 }
 
-static PixmapFileFormatHandler *pixmap_handler_for_filename(const char *file) {
+PixmapFileFormat pixmap_fileformat_for_filename(const char *file) {
 	const char *ext = strrchr(file, '.');
 
 	if(!ext || !*(++ext)) {
-		return NULL;
+		return PIXMAP_FILEFORMAT_INVALID;
 	}
 
 	for(int i = 0; i < ARRAY_SIZE(fileformat_handlers); ++i) {
 		PixmapFileFormatHandler *h = NOT_NULL(fileformat_handlers[i]);
 		for(const char **l_ext = h->filename_exts; *l_ext; ++l_ext) {
 			if(!SDL_strcasecmp(*l_ext, ext)) {
-				return h;
+				return i;
 			}
 		}
 	}
 
-	return NULL;
+	return PIXMAP_FILEFORMAT_INVALID;
 }
 
-attr_returns_nonnull
 static PixmapFileFormatHandler *pixmap_handler_for_fileformat(PixmapFileFormat ff) {
 	uint idx = ff;
-	assert(idx < PIXMAP_NUM_FILEFORMATS);
-	return NOT_NULL(fileformat_handlers[idx]);
+	return idx < PIXMAP_NUM_FILEFORMATS ? NOT_NULL(fileformat_handlers[idx]) : NULL;
+}
+
+const char *pixmap_fileformat_name(PixmapFileFormat format) {
+	auto h = pixmap_handler_for_fileformat(format);
+	return h ? NOT_NULL(h->name) : NULL;
+}
+
+const char *const *pixmap_fileformat_extensions(PixmapFileFormat format) {
+	auto h = pixmap_handler_for_fileformat(format);
+	return h ? h->filename_exts : NULL;
 }
 
 static PixmapFileFormatHandler *pixmap_probe_stream(SDL_IOStream *stream) {
@@ -98,8 +103,7 @@ static PixmapFileFormatHandler *pixmap_probe_stream(SDL_IOStream *stream) {
 	return NULL;
 }
 
-bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt,
-			Pixmap *dst, PixmapFormat preferred_format) {
+bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) {
 	PixmapFileFormatHandler *handler = NULL;
 
 	if(filefmt == PIXMAP_FILEFORMAT_AUTO) {
@@ -121,24 +125,11 @@ bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt,
 	return handler->load(stream, dst, preferred_format);
 }
 
-bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) {
-	log_debug("%s   %x", path, preferred_format);
-	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ);
-
-	if(!stream) {
-		log_error("VFS error: %s", vfs_get_error());
-		return false;
-	}
-
-	bool result = pixmap_load_stream(stream, PIXMAP_FILEFORMAT_AUTO, dst, preferred_format);
-	SDL_CloseIO(stream);
-	return result;
-}
-
-static bool pixmap_save_stream_internal(SDL_IOStream *stream,
-					const Pixmap *src,
-					const PixmapSaveOptions *opts,
-					PixmapFileFormatHandler *handler
+static bool pixmap_save_stream_internal(
+	SDL_IOStream *stream,
+	const Pixmap *src,
+	const PixmapSaveOptions *opts,
+	PixmapFileFormatHandler *handler
 ) {
 	if(UNLIKELY(!handler->save)) {
 		log_error("Can't save images in %s format", NOT_NULL(handler->name));
@@ -148,92 +139,14 @@ static bool pixmap_save_stream_internal(SDL_IOStream *stream,
 	return handler->save(stream, src, opts);
 }
 
-bool pixmap_save_stream(SDL_IOStream *stream, const Pixmap *src,
-			const PixmapSaveOptions *opts) {
+bool pixmap_save_stream(SDL_IOStream *stream, const Pixmap *src, const PixmapSaveOptions *opts) {
 	PixmapFileFormat fmt = opts->file_format;
-	PixmapFileFormatHandler *h = pixmap_handler_for_fileformat(fmt);
+	PixmapFileFormatHandler *h = NOT_NULL(pixmap_handler_for_fileformat(fmt));
 	return pixmap_save_stream_internal(stream, src, opts, h);
 }
 
-bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptions *opts) {
-	PixmapFileFormatHandler *h = NULL;
-	PixmapFileFormat fmt = PIXMAP_FILEFORMAT_AUTO;
-
-	if(opts) {
-		assert(opts->struct_size >= sizeof(PixmapSaveOptions));
-		fmt = opts->file_format;
-	}
-
-	if(fmt == PIXMAP_FILEFORMAT_AUTO) {
-		h = pixmap_handler_for_filename(path);
-	} else {
-		h = pixmap_handler_for_fileformat(fmt);
-	}
-
-	if(UNLIKELY(!h)) {
-		h = NOT_NULL(pixmap_handler_for_fileformat(PIXMAP_FILEFORMAT_INTERNAL));
-		log_warn(
-			"Couldn't determine file format from filename `%s`, assuming %s",
-			path, NOT_NULL(h->name)
-		);
-	}
-
-	SDL_IOStream *stream = vfs_open(path, VFS_MODE_WRITE);
-
-	if(UNLIKELY(!stream)) {
-		log_error("VFS error: %s", vfs_get_error());
-		return false;
-	}
-
-	bool result = pixmap_save_stream_internal(stream, src, opts, h);
-	SDL_CloseIO(stream);
-	return result;
-}
-
 bool pixmap_check_filename(const char *path) {
-	return (bool)pixmap_handler_for_filename(path);
-}
-
-static char *_pixmap_source_path(const char *prefix, const char *path, StringBuffer *sb) {
-	strbuf_cat(sb, prefix);
-	strbuf_cat(sb, path);
-	char *base_path = strbuf_commit(sb);
-
-	if(pixmap_check_filename(base_path) && vfs_query(base_path).exists) {
-		return mem_strdup(base_path);
-	}
-
-	char *dot = strrchr(base_path, '.');
-
-	if(dot) {
-		*dot = 0;
-	}
-
-	for(int i = 0; i < ARRAY_SIZE(fileformat_handlers); ++i) {
-		PixmapFileFormatHandler *h = NOT_NULL(fileformat_handlers[i]);
-
-		for(const char **l_ext = h->filename_exts; *l_ext; ++l_ext) {
-			strbuf_cat(sb, ".");
-			strbuf_cat(sb, *l_ext);
-
-			char *p = vfs_util_try_path("", base_path, sb->start);
-
-			if(p != NULL) {
-				return p;
-			}
-
-			strbuf_clear(sb);
-		}
-	}
-
-	return NULL;
-}
-
-char *pixmap_source_path(const char *prefix, const char *path) {
-	StringBuffer sb = { acquire_scratch_arena() };
-	char *result = _pixmap_source_path(prefix, path, &sb);
-	release_scratch_arena(sb.arena);
-	return result;
+	return (uint)pixmap_fileformat_for_filename(path) < PIXMAP_NUM_FILEFORMATS;
 }
 
 const char *pixmap_format_name(PixmapFormat fmt) {
@@ -428,4 +341,13 @@ bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels) {
 	}
 
 	return false;
+}
+
+void pixmap_log_lib_versions(void) {
+	for(int i = 0; i < ARRAY_SIZE(fileformat_handlers); ++i) {
+		PixmapFileFormatHandler *h = NOT_NULL(fileformat_handlers[i]);
+		if(h->log_lib_versions) {
+			h->log_lib_versions();
+		}
+	}
 }

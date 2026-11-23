@@ -14,7 +14,8 @@
 #define PIXMAP_BUFFER_MAX_SIZE INT32_MAX
 
 typedef enum PixmapFileFormat {
-	PIXMAP_FILEFORMAT_AUTO = -1,
+	PIXMAP_FILEFORMAT_INVALID = -1,
+	PIXMAP_FILEFORMAT_AUTO = PIXMAP_FILEFORMAT_INVALID,
 
 	// NOTE: these are probed from first to last
 	PIXMAP_FILEFORMAT_WEBP,
@@ -296,14 +297,15 @@ void pixmap_flip_y(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_flip_y_inplace(Pixmap *src) attr_nonnull(1);
 
-bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
+PixmapFileFormat pixmap_fileformat_for_filename(const char *file) attr_nonnull(1);
+const char *pixmap_fileformat_name(PixmapFileFormat format);
+const char *const *pixmap_fileformat_extensions(PixmapFileFormat format);
+
 bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 3) attr_nodiscard;
 
-bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2);
 bool pixmap_save_stream(SDL_IOStream *stream, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2, 3);
 
 bool pixmap_check_filename(const char *path);
-char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
 const char *pixmap_format_name(PixmapFormat fmt);
 uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height);
@@ -314,3 +316,5 @@ SDL_Surface *pixmap_to_sdl_surface(const Pixmap *px);
 SwizzleMask swizzle_canonize(SwizzleMask sw_in);
 bool swizzle_is_valid(SwizzleMask sw);
 bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels);
+
+void pixmap_log_lib_versions(void);

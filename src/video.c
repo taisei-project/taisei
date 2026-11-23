@@ -18,6 +18,7 @@
 #include "i18n/i18n.h"
 #include "memory/memory.h"
 #include "memory/scratch.h"
+#include "pixmap/pixmap_vfs.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
 #include "taskmanager.h"

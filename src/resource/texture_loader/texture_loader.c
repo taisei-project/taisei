@@ -9,9 +9,10 @@
 #include "texture_loader.h"
 #include "basisu.h"
 
+#include "pixmap/pixmap_vfs.h"
 #include "util.h"
-#include "vfs/public.h"
 #include "util/kvparser.h"
+#include "vfs/public.h"
 
 void texture_loader_cleanup_stage1(TextureLoadData *ld) {
 	mem_free(ld->src_paths.main);

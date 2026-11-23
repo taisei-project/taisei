@@ -48,13 +48,8 @@
 #include FT_FREETYPE_H
 #include <locale.h>
 #include <unibreakbase.h>
-#include <webp/decode.h>
 #include <zlib.h>
 #include <zstd.h>
-
-#ifdef TAISEI_BUILDCONF_HAVE_LIBPNG
-#include <png.h>
-#endif
 
 #undef UNICODE
 #include <SDL3/SDL_main.h>
@@ -222,14 +217,6 @@ static void log_lib_versions(void) {
 	log_info("Compiled against zlib %s", ZLIB_VERSION);
 	log_info("Using zlib %s", zlibVersion());
 
-#ifdef TAISEI_BUILDCONF_HAVE_LIBPNG
-	log_info("Compiled against libpng %s", PNG_LIBPNG_VER_STRING);
-	log_info("Using libpng %s", png_get_libpng_ver(NULL));
-#endif
-
-	int webp_v = WebPGetDecoderVersion();
-	log_info("Using libwebpdecoder %d.%d.%d", (webp_v >> 16) & 0xff, (webp_v >> 8) & 0xff, webp_v & 0xff);
-
 	log_info("Compiled against libzstd %s", ZSTD_VERSION_STRING);
 	log_info("Using libzstd %s", ZSTD_versionString());
 
@@ -237,6 +224,8 @@ static void log_lib_versions(void) {
 
 	log_info("Compiled against libunibreak %d.%d", UNIBREAK_VERSION >> 8, UNIBREAK_VERSION & 0xff);
 	log_info("Using libunibreak %d.%d", unibreak_version >> 8, unibreak_version & 0xff);
+
+	pixmap_log_lib_versions();
 }
 
 static void log_system_specs(void) {

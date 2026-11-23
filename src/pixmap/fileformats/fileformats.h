@@ -19,6 +19,7 @@ typedef struct PixmapFileFormatHandler {
 		     PixmapFormat preferred_format);
 	bool (*save)(SDL_IOStream *stream, const Pixmap *pixmap,
 		     const PixmapSaveOptions *opts);
+	void (*log_lib_versions)(void);
 	const char **filename_exts;
 	const char *name;
 } PixmapFileFormatHandler;
