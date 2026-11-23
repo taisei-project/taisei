@@ -233,3 +233,10 @@ option(
     type : 'feature',
     description : 'Build various test programs'
 )
+
+option(
+    'linkcheck_internal_libs',
+    type : 'feature',
+    value : 'auto',
+    description : 'Check internal libraries for missing symbols (for developers/CI)'
+)

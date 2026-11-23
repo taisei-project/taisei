@@ -347,6 +347,28 @@ endif
 
 configure_file(configuration : config, output : 'build_config.h')
 
+do_link_check = (get_option('linkcheck_internal_libs')
+    .require(host_machine.system() not in ['emscripten', 'nx'],
+        error_message : 'linkcheck_internal_libs doesn\'t work on @0@'.format(host_machine.system()))
+    .require(get_option('b_staticpic'),
+        error_message : 'linkcheck_internal_libs requires b_staticpic=true')
+    .require(get_option('b_sanitize') == 'none',
+        error_message : 'linkcheck_internal_libs requires b_sanitize=none')
+    .enable_auto_if(is_developer_build)).enabled()
+do_link_check = do_link_check and internal_lib_type == 'static_library'
+
+if do_link_check
+    foreach name, def : taisei_internal_libs
+        shared_library(f'taisei-@name@-linkcheck',
+            link_whole : def['lib'],
+            dependencies : [taisei_deps_linkwhole, def['dep']],
+            override_options : ['b_lundef=true'],
+            build_by_default : true,
+            install : false,
+        )
+    endforeach
+endif
+
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 have_libtaisei = false
 have_taisei_exe = false
