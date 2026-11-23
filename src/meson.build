@@ -172,11 +172,11 @@ taisei_internal_libs += { 'vfs' : {
 #   libtaisei-shaderlib: shader compilation, translation, and reflection
 #
 
-subdir('renderer/common/shaderlib')
+subdir('shaderlib')
 
-libtaisei_shaderlib = build_target('taisei-shaderlib', r_shaderlib_src,
+libtaisei_shaderlib = build_target('taisei-shaderlib', shaderlib_src,
     target_type : internal_lib_type,
-    dependencies : [taisei_iostream_dep, r_shaderlib_libdeps],
+    dependencies : shaderlib_deps,
     install : false,
 )
 
@@ -188,7 +188,7 @@ taisei_shaderlib_dep = declare_dependency(
 taisei_internal_libs += { 'shaderlib' : {
     'lib' : libtaisei_shaderlib,
     'dep' : taisei_shaderlib_dep,
-    'src' : r_shaderlib_src
+    'src' : shaderlib_src
 }}
 
 #

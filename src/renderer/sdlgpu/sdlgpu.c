@@ -19,7 +19,7 @@
 #include "pipeline_cache.h"
 
 #include "../common/matstack.h"
-#include "../common/shaderlib/lang_dxbc.h"
+#include "shaderlib/lang_dxbc.h"
 
 #include "memory/scratch.h"
 #include "util/env.h"

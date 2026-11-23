@@ -12,7 +12,7 @@
 #include "sdlgpu.h"
 
 #include "../api.h"
-#include "../common/shaderlib/reflect.h"
+#include "shaderlib/reflect.h"
 #include "../common/magic_uniforms.h"
 
 #include <SDL3/SDL_gpu.h>

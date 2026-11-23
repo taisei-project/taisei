@@ -11,10 +11,10 @@
 
 #include "color.h"
 #include "pixmap/pixmap.h"
-#include "renderer/common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 #include "resource/texture.h"
+#include "shaderlib/shaderlib.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;

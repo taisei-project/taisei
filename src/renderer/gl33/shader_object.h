@@ -10,9 +10,9 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "../common/shaderlib/shaderlib.h"
 #include "opengl.h"
 #include "resource/shader_object.h"
+#include "shaderlib/shaderlib.h"
 
 struct ShaderObject {
 	GLuint gl_handle;

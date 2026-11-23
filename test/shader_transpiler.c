@@ -8,7 +8,7 @@
 
 #include "test_common.h"
 
-#include "renderer/common/shaderlib/shaderlib.h"
+#include "shaderlib/shaderlib.h"
 #include "util.h"
 #include "util/stringops.h"
 #include "vfs/setup.h"

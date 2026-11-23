@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "../common/shaderlib/shaderlib.h"
 #include "dynarray.h"
+#include "shaderlib/shaderlib.h"
 
 typedef DYNAMIC_ARRAY(ShaderLangInfo) ShaderLangInfoArray;
 extern ShaderLangInfoArray glcommon_shader_lang_table;

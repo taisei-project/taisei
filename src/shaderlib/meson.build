@@ -1,5 +1,5 @@
 
-r_shaderlib_src = files(
+shaderlib_src = files(
     'cache.c',
     'lang_glsl.c',
     'lang_spirv_aux.c',
@@ -7,7 +7,7 @@ r_shaderlib_src = files(
     'shaderlib.c',
 )
 
-r_shaderlib_libdeps = []
+shaderlib_deps = [taisei_iostream_dep]
 
 # NOTE: transpile_glsl is for static, offline translation.
 # It makes little sense to include the transpiler if that is used.
@@ -27,14 +27,14 @@ opt_shader_transpiler_dxbc = (get_option('shader_transpiler_dxbc').
         error_message : 'shader_transpiler must be enabled to use shader_transpiler_dxbc'))
 
 if shader_transpiler_enabled
-    r_shaderlib_src += files('lang_spirv.c')
-    r_shaderlib_libdeps += [dep_glslang, dep_spvc]
+    shaderlib_src += files('lang_spirv.c')
+    shaderlib_deps += [dep_glslang, dep_spvc]
 else
-    r_shaderlib_src += files('lang_spirv_stub.c')
+    shaderlib_src += files('lang_spirv_stub.c')
 endif
 
 if opt_shader_transpiler_dxbc.allowed()
-    r_shaderlib_src += files('lang_dxbc.c')
+    shaderlib_src += files('lang_dxbc.c')
 else
-    r_shaderlib_src += files('lang_dxbc_stub.c')
+    shaderlib_src += files('lang_dxbc_stub.c')
 endif

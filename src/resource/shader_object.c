@@ -10,7 +10,7 @@
 
 #include "memory/scratch.h"
 #include "renderer/api.h"
-#include "renderer/common/shaderlib/cache.h"
+#include "shaderlib/cache.h"
 #include "vfs/public.h"
 
 struct shobj_type {
