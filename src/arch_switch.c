@@ -7,8 +7,6 @@
 
 #include "arch_switch.h"
 
-#include "global.h"
-#include "renderer/glcommon/debug.h"
 #include "util/env.h"
 #include "util/io.h"
 
@@ -19,6 +17,8 @@
 #include <switch/services/nifm.h>
 #include <switch/runtime/devices/socket.h>
 #include <switch/runtime/nxlink.h>
+
+#include <SDL3/SDL_events.h>
 
 #define NX_LOG_FMT(fmt, ...) tsfprintf(stdout, "[NX] " fmt "\n", ##__VA_ARGS__)
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
@@ -35,7 +35,7 @@ static void onAppletHook(AppletHookType hook, void *param) {
 	switch (hook) {
 		case AppletHookType_OnExitRequest:
 			NX_LOG("Got AppletHook OnExitRequest, exiting.\n");
-			taisei_quit();
+			SDL_PushEvent(&(SDL_Event) { .type = SDL_EVENT_QUIT });
 			break;
 
 		default:
@@ -62,7 +62,7 @@ void userAppInit(void) {
 
 	getcwd(g_programDir, FS_MAX_PATH);
 
-	if(glcommon_debug_requested()) {
+	if(env_get("TAISEI_GL_DEBUG", false)) {
 		// enable Mesa logging:
 		NX_SETENV("EGL_LOG_LEVEL", "debug");
 		NX_SETENV("MESA_VERBOSE", "all");
