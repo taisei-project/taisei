@@ -1258,7 +1258,7 @@ static void _stage_enter(
 		.rg = rg,
 	});
 
-	cosched_init(&state->sched);
+	cosched_init(&state->sched, NULL);
 	_current_stage_state = state;
 
 	skipstate_init();

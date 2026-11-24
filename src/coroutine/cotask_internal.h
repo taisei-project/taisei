@@ -58,6 +58,7 @@ struct CoTask {
 
 	uint32_t unique_id;
 	const char *name;
+	void *context;
 
 	char _end[0];
 

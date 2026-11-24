@@ -756,3 +756,7 @@ void cotask_force_finish(CoTask *task) {
 const char *cotask_get_name(CoTask *task) {
 	return task->name;
 }
+
+void *cotask_get_context(CoTask *task) {
+	return task->context;
+}

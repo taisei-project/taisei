@@ -15,9 +15,10 @@ typedef struct CoSched CoSched;
 
 struct CoSched {
 	CoTaskList tasks, pending_tasks;
+	void *context;  // inherited by all tasks
 };
 
-void cosched_init(CoSched *sched);
+void cosched_init(CoSched *sched, void *context);
 CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
 #define cosched_new_task(sched, func, arg, arg_size, debug_label) \
 	_cosched_new_task(sched, func, arg, arg_size, false, COTASK_DEBUG_INFO(debug_label))
