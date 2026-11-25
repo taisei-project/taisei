@@ -22,7 +22,6 @@ void init_global(CLIAction *cli) {
 	global.frameskip = cli->frameskip;
 
 	if(cli->type == CLI_VerifyReplay) {
-		global.is_headless = true;
 		global.is_replay_verification = true;
 		global.frameskip = 1;
 	} else if(global.frameskip) {
