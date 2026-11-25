@@ -47,6 +47,7 @@ typedef struct StageInstance {
 
 	Boss *boss;
 	Dialog *dialog;
+	int8_t diff; // Difficulty, but signed to prevent obscure overflow errors
 	uint voltage_threshold;
 	float view_shake;
 	GameoverType gameover;
@@ -60,6 +61,7 @@ typedef struct GameSession {
 	} replay;
 
 	GameoverType gameover;
+	int8_t diff; // Difficulty, but signed to prevent obscure overflow errors
 	bool is_practice_mode;
 } GameSession;
 

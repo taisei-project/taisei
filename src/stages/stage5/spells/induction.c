@@ -11,25 +11,25 @@
 DEFINE_EXTERN_TASK(stage5_spell_induction) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	// thwart safespots
- 	cmplx ofs = global.diff > D_Normal ? 10 * I : 0;
+ 	cmplx ofs = STAGE.diff > D_Normal ? 10 * I : 0;
 	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0 * I + ofs, 0.06);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	aniplayer_queue(&boss->ani, "dashdown_wait", 0);
-	bool inverted = (global.diff > D_Normal);
+	bool inverted = (STAGE.diff > D_Normal);
 
 	for(int x = 0;; x++, WAIT(8)) {
 		play_sfx_loop("shot1_loop");
 		play_sfx("redirect");
 
 		int c = 6;
-		int c2 = 6 - (global.diff/4);
+		int c2 = 6 - (STAGE.diff/4);
 		for(int i = 0; i < c; i++) {
 			for(int j = 0; j < 2; j++) {
 				Color clr = RGBA(1 - 1 / (1 + 0.1 * (x % c2)), 0.5 - 0.1 * (x % c2), 1.0, 0.0);
 				float shift = 0.6 * (x / c2);
 				float a = -0.0002 * difficulty_value(0, 1, 2, 3);
-				if(global.diff >= D_Hard) {
+				if(STAGE.diff >= D_Hard) {
 					a += 0.0005;
 				}
 

@@ -49,7 +49,6 @@ enum {
 #define VIEWPORT_RECT { VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H }
 
 typedef struct {
-	int8_t diff; // this holds values of type Difficulty, but should be signed to prevent obscure overflow errors
 	Player plr;
 
 

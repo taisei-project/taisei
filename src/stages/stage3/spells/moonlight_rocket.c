@@ -115,7 +115,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	// if we get here, p must be still alive and valid
 
 	int cnt = 22;
-	real rot = (global.frames - NOT_NULL(boss->current)->starttime) * 0.0037 * global.diff;
+	real rot = (global.frames - NOT_NULL(boss->current)->starttime) * 0.0037 * STAGE.diff;
 	Color c = HSLA(fmod(rot, M_TAU) / (M_TAU), 1.0, 0.5, 0);
 	real boost = difficulty_value(4, 6, 8, 10);
 

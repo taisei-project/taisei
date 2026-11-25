@@ -32,7 +32,7 @@ TASK(burst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_dir; }) {
 			.proto = pp_crystal,
 			.pos = e->pos,
 			.color = RGB(0.2, 0.3, 0.5),
-			.move = move_asymptotic_simple(aim * (2 + 0.5 * global.diff), 5),
+			.move = move_asymptotic_simple(aim * (2 + 0.5 * STAGE.diff), 5),
 		);
 	}
 
@@ -103,7 +103,7 @@ TASK(circletoss_fairy, { cmplx pos; cmplx velocity; cmplx exit_accel; int exit_t
 		.interval = difficulty_value(3, 3, 2, 2)
 	);
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_SUBTASK_DELAYED(30, circletoss_shoot_toss, ENT_BOX(e),
 			.times = 4,
 			.period = 150,
@@ -206,7 +206,7 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 
 	while(true) {
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
-		aim *= 1 + 0.3 * global.diff + rng_real();
+		aim *= 1 + 0.3 * STAGE.diff + rng_real();
 
 		play_sfx("shot1");
 		PROJECTILE(
@@ -281,7 +281,7 @@ TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 		.boost = 2.0
 	);
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_TASK_DELAYED(95, instantcircle_fairy_shoot, be,
 			.cnt = difficulty_value(0, 26, 29, 32),
 			.speed = difficulty_value(0, 2.0, 3.0, 3.0),
@@ -478,7 +478,7 @@ TASK(circletoss_fairies_1) {
 			.pos = VIEWPORT_W * i + VIEWPORT_H / 3 * I,
 			.velocity = 2 - 4 * i - 0.3 * I,
 			.exit_accel = 0.03 * (1 - 2 * i) - 0.04 * I ,
-			.exit_time = (global.diff > D_Easy) ? 500 : 240
+			.exit_time = (STAGE.diff > D_Easy) ? 500 : 240
 		);
 
 		WAIT(250);
@@ -590,7 +590,7 @@ TASK(spawn_midboss) {
 
 	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_intro), NULL);
 	boss_add_attack_task(boss, AT_Normal, "Icy Storm", 20, 24000, TASK_INDIRECT(BossAttack, stage1_midboss_nonspell_1), NULL);
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		boss_add_attack_from_info(boss, &stage1_spells.mid.perfect_freeze, false);
 	}
 	boss_add_attack_task(boss, AT_Move, "Flee", 2, 0, TASK_INDIRECT(BossAttack, midboss_flee), NULL);
@@ -640,7 +640,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx end_velocity; }) {
 					.move = move_asymptotic_simple(1.5*cdir(2*M_PI/n2*i),2),
 				);
 
-				if(global.diff > D_Easy) {
+				if(STAGE.diff > D_Easy) {
 					PROJECTILE(
 						.proto = pp_rice,
 						.pos = e->pos,
@@ -681,7 +681,7 @@ TASK(spawn_boss) {
 	boss_add_attack_from_info(boss, &stage1_spells.boss.crystal_rain, false);
 	boss_add_attack_task(boss, AT_Normal, "Iceplosion 1", 20, 30000, TASK_INDIRECT(BossAttack, stage1_boss_nonspell_2), NULL);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		boss_add_attack_from_info(boss, &stage1_spells.boss.snow_halation, false);
 	}
 
@@ -743,7 +743,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 	INVOKE_TASK_DELAYED(100, circletoss_fairy,           -25 + VIEWPORT_H/3*I,  1 - 0.5*I, 0.01 * ( 1 - I), 200);
 	INVOKE_TASK_DELAYED(125, circletoss_fairy, VIEWPORT_W+25 + VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(115, circletoss_fairy,           -25 + 2*VIEWPORT_H/3*I,  1 - 0.5*I, 0.01 * ( 1 - I), 200);
 		INVOKE_TASK_DELAYED(140, circletoss_fairy, VIEWPORT_W+25 + 2*VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
 	}
@@ -764,7 +764,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 
 	INVOKE_TASK_DELAYED(1400, drop_swirls, 25, 2*VIEWPORT_W/3, 2*I, -0.06);
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_TASK_DELAYED(1600, drop_swirls, 25,   VIEWPORT_W/3, 2*I,  0.06);
 	}
 
@@ -773,7 +773,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 	INVOKE_TASK_DELAYED(1820, circle_fairy, VIEWPORT_W + 42 + 300*I, VIEWPORT_W - 130 + 240*I);
 	INVOKE_TASK_DELAYED(1820, circle_fairy,            - 42 + 300*I,              130 + 240*I);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(1880, instantcircle_fairy, VIEWPORT_W + 42 + 300*I, VIEWPORT_W -  84 + 260*I, 0.2 * (-2 - I));
 		INVOKE_TASK_DELAYED(1880, instantcircle_fairy,            - 42 + 300*I,               84 + 260*I, 0.2 * ( 2 - I));
 	}

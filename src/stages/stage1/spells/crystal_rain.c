@@ -48,7 +48,7 @@ TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 	int interval = difficulty_value(100, 80, 50, 20);
 
 	for(int t = 0, round = 0; t < 400; ++round) {
-		bool odd = (global.diff > D_Normal ? (round & 1) : 0);
+		bool odd = (STAGE.diff > D_Normal ? (round & 1) : 0);
 		real n = (difficulty_value(1, 2, 6, 11) + odd)/2.0;
 		cmplx org = boss->pos + shot_ofs;
 

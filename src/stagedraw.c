@@ -950,7 +950,7 @@ void stage_draw_overlay(GameSession *game) {
 	r_disable(RCAP_CULL_FACE);
 
 	if(stage->boss) {
-		draw_boss_overlay(stage->boss);
+		draw_boss_overlay(game, stage->boss);
 	}
 
 	player_draw_overlay(&global.plr);
@@ -1867,7 +1867,7 @@ void stage_draw_hud(GameSession *game) {
 
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = res_sprite(difficulty_sprite_name(global.diff)),
+		.sprite = res_sprite(difficulty_sprite_name(stage->diff)),
 		.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 400 },
 		.scale.both = 0.6,
 		.shader = res_shader("sprite_default"),

@@ -105,7 +105,7 @@ static void reset_game(StartGameContext *ctx) {
 		progress.game_settings.character,
 		progress.game_settings.shotmode
 	);
-	global.diff = ctx->difficulty;
+	ctx->session.diff = ctx->difficulty;
 
 	assert(global.plr.mode != NULL);
 }

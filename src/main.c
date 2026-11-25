@@ -591,14 +591,14 @@ static void main_singlestg(MainContext *mctx) {
 		.stg = stg,
 	});
 
-	global.diff = stg->difficulty;
+	ctx->session.diff = stg->difficulty;
 	ctx->session.is_practice_mode = (stg->type != STAGE_EXTRA);
 
 	if(a->diff) {
-		global.diff = a->diff;
-		log_info("Setting difficulty to %s", difficulty_name(global.diff));
-	} else if(!global.diff) {
-		global.diff = D_Easy;
+		ctx->session.diff = a->diff;
+		log_info("Setting difficulty to %s", difficulty_name(ctx->session.diff));
+	} else if(!ctx->session.diff) {
+		ctx->session.diff = D_Easy;
 	}
 
 	char title[STAGE_MAX_TITLE_SIZE];

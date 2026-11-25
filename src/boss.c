@@ -40,7 +40,7 @@ typedef struct SpellBonus {
 	bool failed;
 } SpellBonus;
 
-static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
+static void calc_spell_bonus(StageInstance *stage, Attack *a, SpellBonus *bonus);
 
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
 
@@ -165,11 +165,13 @@ static const Color *boss_healthbar_color(AttackType atype) {
 	return colors + atype;
 }
 
-static StageProgress *get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
-	if(!write || (GAME.replay.input.replay == NULL && global.stage->type == STAGE_STORY)) {
-		StageInfo *i = stageinfo_get_by_spellcard(a->info, global.diff);
+static StageProgress *get_spellstage_progress(GameSession *game, Attack *a, StageInfo **out_stginfo, bool write) {
+	StageInstance *stage = &game->stage;
+
+	if(!write || (game->replay.input.replay == NULL && global.stage->type == STAGE_STORY)) {
+		StageInfo *i = stageinfo_get_by_spellcard(a->info, stage->diff);
 		if(i) {
-			StageProgress *p = stageinfo_get_progress(i, global.diff, write);
+			StageProgress *p = stageinfo_get_progress(i, stage->diff, write);
 
 			if(out_stginfo) {
 				*out_stginfo = i;
@@ -442,7 +444,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 	draw_boss_text(ALIGN_CENTER, re(pos), im(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
 }
 
-static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
+static void draw_spell_name(GameSession *game, Boss *b, int time, bool healthbar_radial) {
 	Font *font = res_font("standard");
 
 	cmplx x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
@@ -491,7 +493,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		draw_spell_warning(font, im(x0) - font_get_lineskip(font), warn_progress, opacity);
 	}
 
-	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
+	StageProgress *p = get_spellstage_progress(game, b->current, NULL, false);
 
 	if(p) {
 		char buf[32];
@@ -531,7 +533,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		);
 
 		SpellBonus bonus;
-		calc_spell_bonus(b->current, &bonus);
+		calc_spell_bonus(&game->stage, b->current, &bonus);
 		format_huge_num(0, bonus.total, sizeof(buf), buf);
 
 		draw_boss_text(ALIGN_LEFT,
@@ -749,7 +751,7 @@ void draw_boss_fake_overlay(Boss *boss) {
 	}
 }
 
-void draw_boss_overlay(Boss *boss) {
+void draw_boss_overlay(GameSession *game, Boss *boss) {
 	bool radial_style = healthbar_style_is_radial();
 
 	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
@@ -761,7 +763,7 @@ void draw_boss_overlay(Boss *boss) {
 			t_portrait += attacktype_start_delay(boss->current->type);
 
 			draw_spell_portrait(boss, t_portrait);
-			draw_spell_name(boss, t_spell, radial_style);
+			draw_spell_name(game, boss, t_spell, radial_style);
 		}
 
 		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, _(boss->name), res_font("standard"), RGBA(o, o, o, o));
@@ -962,7 +964,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	return DMG_RESULT_OK;
 }
 
-static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
+static void calc_spell_bonus(StageInstance *stage, Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = attack_was_failed(a);
 
@@ -988,13 +990,13 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	}
 
 	bonus->total = bonus->clear + bonus->time + bonus->endurance + bonus->survival;
-	bonus->diff_multiplier = 0.6 + 0.2 * global.diff;
+	bonus->diff_multiplier = 0.6 + 0.2 * stage->diff;
 	bonus->total *= bonus->diff_multiplier;
 }
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	SpellBonus bonus = {};
-	calc_spell_bonus(a, &bonus);
+	calc_spell_bonus(&STAGE, a, &bonus);
 
 	const char *title = bonus.failed ? _("Spell Card failed…")  : _("Spell Card captured!");
 
@@ -1085,7 +1087,7 @@ void boss_finish_current_attack(Boss *boss) {
 		boss_give_spell_bonus(boss, boss->current, &global.plr);
 
 		if(!attack_was_failed(boss->current)) {
-			StageProgress *p = get_spellstage_progress(boss->current, NULL, true);
+			StageProgress *p = get_spellstage_progress(&GAME, boss->current, NULL, true);
 
 			if(p) {
 				progress_register_stage_cleared(p, global.plr.mode);
@@ -1425,7 +1427,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	log_debug("[%i] %s", global.frames, a->name);
 
 	StageInfo *i;
-	StageProgress *p = get_spellstage_progress(a, &i, true);
+	StageProgress *p = get_spellstage_progress(&GAME, a, &i, true);
 
 	if(p) {
 		if(!p->unlocked) {

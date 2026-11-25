@@ -47,7 +47,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 		for(int j = 0; j <= density; j++) {
 			cmplx dir = sin(i * 0.2) * cdir(0.15 * (j - density*0.5)) * (1 - 2 * (i&1));
 
-			cmplx vel = (-0.5 * sin(global.frames + i * 46752 + 16463 * j + 467 * sin(global.frames*i*j))) * global.diff + re(dir) + 2.0 * I;
+			cmplx vel = (-0.5 * sin(global.frames + i * 46752 + 16463 * j + 467 * sin(global.frames*i*j))) * STAGE.diff + re(dir) + 2.0 * I;
 
 			PROJECTILE(
 				.proto = pp_wave,
@@ -274,7 +274,7 @@ TASK(scythe_mid, { cmplx pos; }) {
 
 	s->move = move_asymptotic_halflife(scythe_speed, -(scythe_speed*2)*I, firetime);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_SUBTASK(scythe_mid_aimshot, ENT_BOX(s));
 	}
 
@@ -289,7 +289,7 @@ TASK(scythe_mid, { cmplx pos; }) {
 			.max_viewport_dist = r*2,
 		);
 
-		INVOKE_TASK_DELAYED(140, projectile_redirect, ENT_BOX(p), move_linear(global.diff * cdir(0.6) * dir));
+		INVOKE_TASK_DELAYED(140, projectile_redirect, ENT_BOX(p), move_linear(STAGE.diff * cdir(0.6) * dir));
 	}
 }
 

@@ -49,10 +49,10 @@ TASK(walls, { int duration; }) {
 			);
 		}
 
-		if(global.diff >= D_Hard) {
+		if(STAGE.diff >= D_Hard) {
 			real shift = 0;
 
-			if(global.diff == D_Lunatic) {
+			if(STAGE.diff == D_Lunatic) {
 				shift = 0.3 * max(0, t - 100);
 			}
 
@@ -91,7 +91,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 
 		do {
 			win = rng_irange(0, SLOTS);
-		} while(win == plr_slot && global.diff > D_Easy);
+		} while(win == plr_slot && STAGE.diff > D_Easy);
 
 		for(int i = 0; i < SLOTS; i++) {
 			if(i == win) {
@@ -105,7 +105,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 				.sound = COMMON_CHARGE_SOUNDS
 			);
 
-			if(i == plr_slot && global.diff > D_Normal) {
+			if(i == plr_slot && STAGE.diff > D_Normal) {
 				INVOKE_SUBTASK(common_charge,
 					.pos = VIEWPORT_W / (real)SLOTS * (i + 0.5) + VIEWPORT_H*I,
 					.color = RGBA(0.2, 0.2, 1.0, 0),
@@ -136,7 +136,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 				);
 			}
 
-			if(i == plr_slot && global.diff > D_Normal) {
+			if(i == plr_slot && STAGE.diff > D_Normal) {
 				for(int j = 0; j < balls_per_slot; j++) {
 					Projectile *p = PROJECTILE(
 						.proto = pp_ball,

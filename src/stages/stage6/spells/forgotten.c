@@ -107,7 +107,7 @@ TASK(forgotten_orbiter_spawner, { BoxedBoss boss; }) {
 			.move = move_linear(4 * I * cdir(-M_TAU / 5 * triangle(i/5./M_TAU)))
 		);
 
-		if(global.diff == D_Lunatic) {
+		if(STAGE.diff == D_Lunatic) {
 			INVOKE_TASK(forgotten_orbiter, ENT_BOX(p), 40 * cdir(i / 20.0));
 		}
 
@@ -145,12 +145,12 @@ DEFINE_EXTERN_TASK(stage6_spell_forgotten) {
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
 	INVOKE_SUBTASK(forgotten_baryons_movement, ARGS.baryons, ENT_BOX(boss));
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_SUBTASK(forgotten_baryons_spawner, ARGS.baryons);
 	}
 
 	INVOKE_SUBTASK_DELAYED(50, forgotten_spawner);
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_SUBTASK_DELAYED(50, forgotten_orbiter_spawner, ENT_BOX(boss));
 	}
 

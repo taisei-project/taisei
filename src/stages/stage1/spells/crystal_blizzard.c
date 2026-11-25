@@ -87,7 +87,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 
 			if(!(t % 7)) {
 				play_sfx("shot1");
-				int cnt = global.diff - 1;
+				int cnt = STAGE.diff - 1;
 				for(int i = 0; i < cnt; ++i) {
 					PROJECTILE(
 						.proto = pp_ball,

@@ -104,7 +104,7 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 				);
 			} else {
 				next_gap += rng_i32_range(2, max_gap);
-				if(global.diff > D_Normal) {
+				if(STAGE.diff > D_Normal) {
 					PROJECTILE(
 						.proto = pp_flea,
 						.pos = m.pos,

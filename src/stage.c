@@ -873,7 +873,7 @@ static void stage_finish_internal(StagePrivateState *state, GameoverType gameove
 		prev_gameover != GAMEOVER_SCORESCREEN &&
 		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
 	) {
-		StageProgress *p = NOT_NULL(stageinfo_get_progress(global.stage, global.diff, true));
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(global.stage, stage->diff, true));
 		progress_register_stage_cleared(p, global.plr.mode);
 	}
 
@@ -930,7 +930,7 @@ void stage_start_bgm(const char *bgm) {
 }
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
-	switch(global.diff) {
+	switch(STAGE.diff) {
 		case D_Easy:    STAGE.voltage_threshold = easy;    return;
 		case D_Normal:  STAGE.voltage_threshold = normal;  return;
 		case D_Hard:    STAGE.voltage_threshold = hard;    return;
@@ -968,7 +968,7 @@ static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bo
 
 		if(next == NULL || next->type != STAGE_STORY) {
 			bonus->all_clear.base = global.plr.point_item_value * 100 + global.plr.points / 10;
-			bonus->all_clear.diff_multiplier = difficulty_value(1.0, 1.1, 1.3, 1.6);
+			bonus->all_clear.diff_multiplier = difficulty_value_for(stage->diff, 1.0, 1.1, 1.3, 1.6);
 			bonus->all_clear.diff_bonus = bonus->all_clear.base * (bonus->all_clear.diff_multiplier - 1.0);
 		}
 	}
@@ -1106,7 +1106,7 @@ static SceneAction stage_scene_logic(void *arg) {
 	}
 
 	if(session->replay.input.replay == NULL) {
-		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage->info, global.diff, true));
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage->info, stage->diff, true));
 		progress_register_hiscore(p, global.plr.mode, global.plr.points);
 	}
 
@@ -1263,6 +1263,12 @@ static void _stage_enter(
 		replay_state_init_play(&session->replay.input, quickload, qload_stage);
 	}
 
+	if(session->replay.input.replay) {
+		stage->diff = NOT_NULL(session->replay.input.stage)->diff;
+	} else {
+		stage->diff = session->diff;
+	}
+
 	// I really want to separate all of the game state from the global struct sometime
 	global.stage = stage_info;
 
@@ -1285,7 +1291,7 @@ static void _stage_enter(
 
 		start_time = rstg->start_time;
 		seed = rstg->rng_seed;
-		global.diff = rstg->diff;
+		stage->diff = rstg->diff;
 
 		char title[STAGE_MAX_TITLE_SIZE];
 		stagetitle_format_localized(&stage_info->title, sizeof(title), title);
@@ -1294,7 +1300,7 @@ static void _stage_enter(
 		start_time = (uint64_t)time(0);
 		seed = makeseed();
 
-		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage_info, global.diff, true));
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage_info, stage->diff, true));
 		progress_register_stage_played(p, global.plr.mode);
 	}
 
@@ -1311,7 +1317,7 @@ static void _stage_enter(
 			stage_info,
 			start_time,
 			seed,
-			global.diff,
+			stage->diff,
 			&global.plr
 		);
 		player_init(&global.plr);

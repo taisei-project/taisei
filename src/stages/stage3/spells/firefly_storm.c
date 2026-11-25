@@ -74,7 +74,7 @@ DEFINE_EXTERN_TASK(stage3_spell_firefly_storm) {
 	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	bool lun = global.diff == D_Lunatic;
+	bool lun = STAGE.diff == D_Lunatic;
 	aniplayer_queue(&boss->ani, "fly", 0);
 
 	int convert_time = difficulty_value(40, 55, 75, 100);
@@ -93,7 +93,7 @@ DEFINE_EXTERN_TASK(stage3_spell_firefly_storm) {
 
 			INVOKE_SUBTASK(fstorm_bullet,
 				.boss = ENT_BOX(boss),
-				.proto = (global.diff >= D_Hard) && !(i%10) ? pp_bigball : pp_ball,
+				.proto = (STAGE.diff >= D_Hard) && !(i%10) ? pp_bigball : pp_ball,
 				.pos = boss->pos + pos,
 				.vel = bullet_rotation * cnormalize(pos) * (1 + v),
 				.convert_time = convert_time

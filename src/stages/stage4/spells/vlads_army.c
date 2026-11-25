@@ -126,7 +126,7 @@ TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 		cmplx phase = rng_dir();
 		for(int j = 0; j < count; j++) {
 			cmplx dir = cdir(M_TAU * j / count);
-			if(global.diff == D_Lunatic)
+			if(STAGE.diff == D_Lunatic)
 				dir *= phase;
 			create_laser(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0),
 				laser_rule_accelerated(dir, 0.1 * dir));
@@ -274,7 +274,7 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 
 	int chase_drop_step = difficulty_value(17, 14, 11, 8);
 	for(int i = 0; i < ARGS.chase_time / chase_drop_step; i++, WAIT(chase_drop_step)) {
-		if(global.diff>D_Easy) {
+		if(STAGE.diff>D_Easy) {
 			Color clr = RGBA_MUL_ALPHA(0.1 + 0.07 * i, 0.3, 1 - 0.05 * i, 0.8);
 			clr.a = 0;
 
@@ -357,7 +357,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 
 		b->move = move_from_towards(b->pos, startpos, 0.1);
 
-		if(global.diff >= D_Hard) {
+		if(STAGE.diff >= D_Hard) {
 			double offset = VIEWPORT_W * 0.5;
 			cmplx pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
 			cmplx target = 0.5 * VIEWPORT_W + VIEWPORT_H * 0.3 * I;
@@ -373,7 +373,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 		}
 		WAIT(100);
 
-		/*if((t == length-20 && global.diff == D_Easy)|| b->current->hp < shieldlimit) {
+		/*if((t == length-20 && STAGE.diff == D_Easy)|| b->current->hp < shieldlimit) {
 			for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 				if(e->logic_rule == kurumi_extra_shield) {
 					e->args[2] = 1; // discharge extra shield

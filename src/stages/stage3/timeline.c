@@ -729,7 +729,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(1700, laserball_fairy,
 			.pos = VIEWPORT_W/3 + 140*I,
 			.freq_factor = 1,
@@ -768,7 +768,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.velocity = I,
 	);
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_TASK_DELAYED(900, common_call_func, welcome_swirls);
 	}
 

@@ -214,7 +214,7 @@ static void explode_circuit(Node *head) {
 static void set_active(NodesGrid *grid, Node *n) {
 	grid->active = n;
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		int cnt = difficulty_value(2, 5, 7, 10);
 		cmplx v = 2 * rng_dir();
 		cmplx r = cdir(M_TAU/cnt);

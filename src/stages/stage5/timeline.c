@@ -69,14 +69,14 @@ TASK(spawn_boss) {
 
 	boss_add_attack_task(boss, AT_Normal, "Bolts2", 45, 27000, TASK_INDIRECT(BossAttack, stage5_boss_nonspell_2), NULL);
 
-	if(global.diff < D_Hard) {
+	if(STAGE.diff < D_Hard) {
 		boss_add_attack_from_info(boss, &stage5_spells.boss.artificial_lightning, false);
 	} else {
 		boss_add_attack_from_info(boss, &stage5_spells.boss.double_lightning, false);
 	}
 
 	boss_add_attack_task(boss, AT_Normal, "Bolts3", 50, 30000, TASK_INDIRECT(BossAttack, stage5_boss_nonspell_3), NULL);
-	if(global.diff < D_Hard) {
+	if(STAGE.diff < D_Hard) {
 		boss_add_attack_from_info(boss, &stage5_spells.boss.induction_field, false);
 	} else {
 		boss_add_attack_from_info(boss, &stage5_spells.boss.inductive_resonance, false);
@@ -981,7 +981,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 	INVOKE_TASK_DELAYED(2200, miner_swirls_2, {
 		.num = 20,
 		.delay = 60,
-		.start = VIEWPORT_W / (6 + global.diff),
+		.start = VIEWPORT_W / (6 + STAGE.diff),
 		.velocity = 3.0 * I,
 	});
 
@@ -991,7 +991,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.offset = 0,
 	});
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		INVOKE_TASK_DELAYED(2580, lightburst_fairies_1, {
 			.num = 1,
 			.pos = (VIEWPORT_W - 160) + 120i,
@@ -1006,7 +1006,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 	WAIT(1100);
 	stage5_dialog_post_midboss();
 
-	INVOKE_TASK_DELAYED(120, sine_swirls, 30, .dense = global.diff > D_Normal);
+	INVOKE_TASK_DELAYED(120, sine_swirls, 30, .dense = STAGE.diff > D_Normal);
 
 	WAIT(200);
 

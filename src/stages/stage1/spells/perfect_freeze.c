@@ -37,7 +37,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 		common_charge(40, &boss->pos, 0, RGBA(1.0, 0.5, 0.0, 0));
 
-		int n = global.diff;
+		int n = STAGE.diff;
 		int nfrog = n*60;
 
 		DECLARE_ENT_ARRAY(Projectile, projs, nfrog);
@@ -98,7 +98,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			real r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
 
 			cmplx aim = cnormalize(global.plr.pos - boss->pos);
-			real speed = 2 + 0.2 * global.diff;
+			real speed = 2 + 0.2 * STAGE.diff;
 
 			for(int sign = -1; sign <= 1; sign += 2) {
 				cmplx v1 = speed * aim * cdir(0.5 * (sign > 0 ? r1 : r2));

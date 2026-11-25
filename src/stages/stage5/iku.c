@@ -9,6 +9,7 @@
 #include "iku.h"
 
 #include "common_tasks.h"
+#include "gamesession.h"
 #include "i18n/i18n.h"
 
 static void iku_slave_draw(EntityInterface *e, StageInstance *stage) {
@@ -122,7 +123,7 @@ DEFINE_EXTERN_TASK(iku_induction_bullet) {
 	cmplx angular_vel = ARGS.angular_vel;
 
 	for(int time = 0;; time++, YIELD) {
-		int t = time * sqrt(global.diff);
+		int t = time * sqrt(STAGE.diff);
 
 		if(ARGS.inverted) {
 			t = time*0.6;

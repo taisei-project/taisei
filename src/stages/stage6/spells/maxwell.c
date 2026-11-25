@@ -54,7 +54,7 @@ TASK(maxwell_laser, { cmplx pos; cmplx dir; real phase; real phase_speed; }) {
 		}
 
 		real f = -1.0;
-		if(global.diff > D_Normal) {
+		if(STAGE.diff > D_Normal) {
 			f = tanh(steepness * sin(t / 120.0)) * fcorrection;
 		}
 

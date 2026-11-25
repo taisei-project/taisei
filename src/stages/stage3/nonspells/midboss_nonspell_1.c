@@ -67,7 +67,7 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 			);
 		}
 
-		if(global.diff < D_Normal) {
+		if(STAGE.diff < D_Normal) {
 			break;
 		}
 

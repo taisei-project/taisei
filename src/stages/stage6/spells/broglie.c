@@ -169,7 +169,7 @@ TASK(broglie_charger_bullet, {
 		real inc = difficulty_value(1.21, 1.0, 0.81, 0.64);
 
 		for(real laser_offset = 0; laser_offset < l->deathtime; laser_offset += inc, ++pnum) {
-			bool fast = global.diff == D_Easy || pnum & 1;
+			bool fast = STAGE.diff == D_Easy || pnum & 1;
 
 			INVOKE_TASK(broglie_particle,
 				.laser = ENT_BOX(l),

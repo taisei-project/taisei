@@ -237,7 +237,7 @@ DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
 		aniplayer_hard_switch(&boss->ani, (x & 1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
 
-		if(global.diff > D_Normal) {
+		if(STAGE.diff > D_Normal) {
 			INVOKE_SUBTASK(double_strike,
 				.origin = re(boss->pos),
 				.minwidth = 8,

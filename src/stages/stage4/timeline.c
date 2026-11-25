@@ -114,7 +114,7 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 		int chain_len = difficulty_value(3, 3, 5, 5);
 		real fire_chance = difficulty_value(0.2,0.45,0.75,1.0);
 
-		if(global.diff > D_Easy) {
+		if(STAGE.diff > D_Easy) {
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos,
@@ -262,7 +262,7 @@ TASK(laser_fairy_explosion, { BoxedEnemy enemy; }) {
 
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
 	int count = difficulty_value(4,5,6,8);
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		for(int i = 0; i < count; i++) {
 			cmplx dir = aim * cdir(M_TAU * i / count);
 			create_laserline_ab(e->pos, e->pos + 1000*dir, 15, laser_delay, laser_delay + 60, RGBA(0.7, 1.0, 0.2, 0.0));
@@ -296,7 +296,7 @@ TASK(laser_fairy, { cmplx pos; MoveParams move; }) {
 	for(int i = 0; i < count; i++) {
 		play_sfx("shot3");
 		cmplx dir = cdir((0.1 * i - (1-2*(i&1))*M_PI / 2.0) * sign(re(ARGS.move.velocity)));
-		for(int j = 0; j < global.diff; j++) {
+		for(int j = 0; j < STAGE.diff; j++) {
 			PROJECTILE(
 				.proto = pp_crystal,
 				.pos = e->pos,
@@ -344,7 +344,7 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 				.move = move_asymptotic_simple(2*cdir(M_TAU / count * j + 3 * i), 3 * sin(6 * M_PI / count * j))
 			);
 
-			if(global.diff > D_Easy) {
+			if(STAGE.diff > D_Easy) {
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = e->pos,
@@ -379,7 +379,7 @@ TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 			.move = move_accelerated(0.5 * speed * dir, 0.001*dir),
 		);
 
-		if(global.diff > D_Easy) {
+		if(STAGE.diff > D_Easy) {
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos,
@@ -636,7 +636,7 @@ TASK(spawn_midboss) {
 
 	boss_add_attack_task(b, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, kurumi_intro), NULL);
 	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
-	if(global.diff < D_Hard) {
+	if(STAGE.diff < D_Hard) {
 		boss_add_attack_from_info(b, &stage4_spells.mid.dry_fountain, false);
 	} else {
 		boss_add_attack_from_info(b, &stage4_spells.mid.red_spike, false);
@@ -745,7 +745,7 @@ TASK(spawn_boss) {
 
 	boss_add_attack_task(b, AT_Move, "Introduction", 4, 0, TASK_INDIRECT(BossAttack, kurumi_boss_intro), NULL);
 	boss_add_attack_task(b, AT_Normal, "", 25, 33000, TASK_INDIRECT(BossAttack, stage4_boss_nonspell_1), NULL);
-	if(global.diff < D_Hard) {
+	if(STAGE.diff < D_Hard) {
 		boss_add_attack_from_info(b, &stage4_spells.boss.animate_wall, false);
 	} else {
 		boss_add_attack_from_info(b, &stage4_spells.boss.demon_wall, false);

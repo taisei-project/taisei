@@ -34,9 +34,9 @@ Color difficulty_color(Difficulty diff)
 
 void difficulty_preload(ResourceGroup *rg);
 
-#define difficulty_value(easy, normal, hard, lunatic) ({ \
+#define difficulty_value_for(diff, easy, normal, hard, lunatic) ({ \
     typeof((easy)+(normal)+(hard)+(lunatic)) val; \
-    switch(global.diff) { \
+    switch(diff) { \
         case D_Easy:    val = easy;    break; \
         case D_Normal:  val = normal;  break; \
         case D_Hard:    val = hard;    break; \
@@ -45,3 +45,6 @@ void difficulty_preload(ResourceGroup *rg);
     } \
     val; \
 })
+
+#define difficulty_value(easy, normal, hard, lunatic) \
+    difficulty_value_for(STAGE.diff, easy, normal, hard, lunatic)

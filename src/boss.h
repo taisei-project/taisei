@@ -19,6 +19,8 @@
 #include "entity.h"
 #include "resource/resource.h"
 
+typedef struct GameSession GameSession;
+
 #define BOSS_HURT_RADIUS 16
 #define BOSS_MAX_ATTACKS 24
 
@@ -195,7 +197,7 @@ void process_boss(Boss **boss) attr_nonnull(1);
 
 void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
 void draw_boss_background(Boss *boss) attr_nonnull(1);
-void draw_boss_overlay(Boss *boss) attr_nonnull(1);
+void draw_boss_overlay(GameSession *game, Boss *boss) attr_nonnull(1, 2);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
 Attack *boss_add_attack(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossRule draw_rule)

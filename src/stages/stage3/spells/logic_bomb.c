@@ -60,7 +60,7 @@ TASK(recursive_ball, { cmplx origin; cmplx dir; real angle; ProjFlags flags; }) 
 		spawn_projectile_highlight_effect(p);
 	}
 
-	if(global.diff > D_Easy) {
+	if(STAGE.diff > D_Easy) {
 		p->color.r = 0;
 		projectile_set_prototype(p, pp_thickrice);
 		WAIT(difficulty_value(0, 120, 120, 100));

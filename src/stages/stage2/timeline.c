@@ -343,7 +343,7 @@ TASK(aimshot_fairy, { BoxedEnemy e; MoveParams move_enter; MoveParams move_exit;
 			.move = move_asymptotic_simple(speed1 * dir, -1),
 		);
 
-		if(global.diff > D_Easy) {
+		if(STAGE.diff > D_Easy) {
 			PROJECTILE(
 				.proto = pp_plainball,
 				.pos = e->pos,
@@ -821,7 +821,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(400, twin-spinshots);
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(300, spinshot_fairy,
 			.pos = VIEWPORT_W/3+VIEWPORT_H/3*I,
 			.move_exit = move_accelerated(0, 0.1*I)

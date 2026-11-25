@@ -21,7 +21,7 @@ static void goat_bullets(
 ) {
 	for(int i = 0; i < cnt; i++) {
 		cmplx o = !top*VIEWPORT_H*I + SLOT_WIDTH * (slot + i/(cnt - 1.0));
-		cmplx a = 0.007 * (sin((M_PI * 4 * i / (cnt - 1))) * 0.1 * global.diff - I * (1 + psin(i + t)));
+		cmplx a = 0.007 * (sin((M_PI * 4 * i / (cnt - 1))) * 0.1 * STAGE.diff - I * (1 + psin(i + t)));
 
 		if(top) {
 			a *= -0.5;
@@ -48,7 +48,7 @@ TASK(goat, { int slot; CoEvent *activation_event; }) {
 	int period = 60;
 	int timeout = 300;
 
-	bool top_enabled = global.diff > D_Hard;
+	bool top_enabled = STAGE.diff > D_Hard;
 
 	INVOKE_SUBTASK(common_charge,
 		.pos = SLOT_WIDTH * (slot + 0.5) + VIEWPORT_H*I,
@@ -109,7 +109,7 @@ TASK(cards, { BoxedBoss boss; }) {
 
 	int cnt = 10;
 	int period = 30;
-	int period_reduction = global.diff;
+	int period_reduction = STAGE.diff;
 	real side = rng_sign();
 	real w = SLOT_WIDTH * 0.5 * difficulty_value(1.1, 1.25, 1.5, 1.5);
 	real ofs = (SLOT_WIDTH * 0.5 - w);

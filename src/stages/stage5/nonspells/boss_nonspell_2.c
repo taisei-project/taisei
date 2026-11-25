@@ -27,7 +27,7 @@ static LaserRule bolts2_laser_rule(cmplx target, real sign) {
 	LaserRuleBolt2Data rd = {
 		.target = target,
 		.sign = sign,
-		.difficulty = global.diff,
+		.difficulty = STAGE.diff,
 	};
 	return MAKE_LASER_RULE(bolts2_laser_rule_impl, rd);
 }

@@ -114,7 +114,7 @@ TASK(slave, { cmplx pos; int number; }) {
 
 	INVOKE_SUBTASK_DELAYED(200, slave_bullet_shot, { .slave = ENT_BOX(slave) });
 
-	if(global.diff > D_Normal) {
+	if(STAGE.diff > D_Normal) {
 		INVOKE_SUBTASK_DELAYED(600, slave_ball_shot, { .slave = ENT_BOX(slave) });
 	}
 

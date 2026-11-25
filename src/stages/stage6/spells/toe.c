@@ -589,7 +589,7 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 	int start_time = 0;
 	int end_time = FERMIONTIME + 1000;
 	int cycle_step = 200;
-	int solo_cycles = (FERMIONTIME - start_time) / cycle_step - global.diff + 1;
+	int solo_cycles = (FERMIONTIME - start_time) / cycle_step - STAGE.diff + 1;
 	int warp_cycles = (HIGGSTIME - start_time) / cycle_step - 1;
 	int count = 0;
 
@@ -604,8 +604,8 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 			int num_warps = 0;
 
 			if(cycle < solo_cycles) {
-				num_warps = global.diff;
-			} else if(cycle < warp_cycles && global.diff > D_Normal) {
+				num_warps = STAGE.diff;
+			} else if(cycle < warp_cycles && STAGE.diff > D_Normal) {
 				num_warps = 1;
 			}
 
