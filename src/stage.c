@@ -171,6 +171,7 @@ INLINE void skipstate_shutdown(void) { }
 
 static void stage_start(GameSession *session, StageInfo *stage_info) {
 	global.frames = 0;
+	audio_set_game_clock(global.frames);
 	player_stage_pre_init(&session->plr);
 
 	stats_stage_reset(&session->plr.stats);
@@ -1038,6 +1039,7 @@ static void stage_end_frame(StagePrivateState *state) {
 	GameSession *game = state->game;
 
 	global.frames++;
+	audio_set_game_clock(global.frames);
 
 	/*
 	 * TODO: Investigate why/if any of this needs to happen after global.frames++,

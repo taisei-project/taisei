@@ -164,6 +164,16 @@ void audio_sfx_destroy(SFX *sfx) {
 	mem_free(sfx);
 }
 
+static SDL_AtomicInt game_clock;
+
+void audio_set_game_clock(int frame) {
+	SDL_SetAtomicInt(&game_clock, frame);
+}
+
+int audio_get_game_clock(void) {
+	return SDL_GetAtomicInt(&game_clock);
+}
+
 static bool is_skip_mode(void) {
 	return stage_is_skip_mode();
 }
@@ -211,7 +221,7 @@ static SFXPlayID register_sfx_playback(
 		sfx->per_group[g].last_play_id = play_id;
 	}
 
-	sfx->lastplayframe = global.frames;
+	sfx->lastplayframe = audio_get_game_clock();
 	return play_id;
 }
 
@@ -244,11 +254,11 @@ static SFXPlayID play_sfx_internal(
 
 	SFX *sfx = res_sfx(name);
 
-	if(!sfx || (!is_ui && sfx->lastplayframe + 3 + cooldown >= global.frames)) {
+	if(!sfx || (!is_ui && sfx->lastplayframe + 3 + cooldown >= audio_get_game_clock())) {
 		return 0;
 	}
 
-	sfx->lastplayframe = global.frames;
+	sfx->lastplayframe = audio_get_game_clock();
 
 	AudioChannelGroup group = is_ui ? CHANGROUP_SFX_UI : CHANGROUP_SFX_GAME;
 	AudioBackendChannel ch = AUDIO_BACKEND_CHANNEL_INVALID;
@@ -301,7 +311,7 @@ void play_sfx_loop(const char *name) {
 		return;
 	}
 
-	sfx->lastplayframe = global.frames;
+	sfx->lastplayframe = audio_get_game_clock();
 
 	if(sfx->looping) {
 		return;
@@ -337,7 +347,7 @@ static void *update_sounds_callback(const char *name, Resource *res, void *arg) 
 		return NULL;
 	}
 
-	if(sfx->looping && (reset || global.frames > sfx->lastplayframe + LOOPTIMEOUTFRAMES)) {
+	if(sfx->looping && (reset || audio_get_game_clock() > sfx->lastplayframe + LOOPTIMEOUTFRAMES)) {
 		stop_sfx_loop(sfx, SFX_LOOPSTOP_FADETIME);
 		sfx->looping = false;
 	}

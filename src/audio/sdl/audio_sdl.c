@@ -90,8 +90,10 @@ static void *mixer_thread(void *arg) {
 	rng_init(&fuck, 0);
 
 	while(true) {
-		if(global.frames < clock) {
-			clock = global.frames;
+		int game_clock = audio_get_game_clock();
+
+		if(game_clock < clock) {
+			clock = game_clock;
 		}
 
 		memset(mix_buffer, audio.silence, sizeof(mix_buffer));
@@ -122,7 +124,7 @@ static void *mixer_thread(void *arg) {
 		}
 
 		if(audio.shutting_down) {
-			if(clock < global.frames) {
+			if(clock < audio_get_game_clock()) {
 				// Don't want to lose any frames in case we're dumping and running behind
 				continue;
 			} else {
@@ -427,7 +429,7 @@ static AudioBackendChannel audio_sdl_sfx_play(
 	int scheduled_frame;
 
 	if(group == CHANGROUP_SFX_GAME)  {
-		scheduled_frame = global.frames;
+		scheduled_frame = audio_get_game_clock();
 	} else {
 		scheduled_frame = -1;
 	}

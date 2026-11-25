@@ -54,6 +54,10 @@ void audio_sfx_destroy(SFX *sfx) attr_nonnull(1);
 
 bool audio_sfx_set_enabled(bool enabled);
 
+// Copy of the game clock pushed by the stage; used to schedule and rate-limit game sfx
+void audio_set_game_clock(int frame);
+int audio_get_game_clock(void);
+
 // TODO modernize sfx API
 
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);
