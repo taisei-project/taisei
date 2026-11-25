@@ -13,6 +13,16 @@
 #include "coroutine/cotask.h"
 #include "coroutine/coevent.h"
 
+typedef enum GameoverType {
+	GAMEOVER_NONE,
+	GAMEOVER_DEFEAT = 1,
+	GAMEOVER_WIN,
+	GAMEOVER_ABORT,
+	GAMEOVER_RESTART,
+	GAMEOVER_SCORESCREEN = -1,
+	GAMEOVER_TRANSITIONING = -2,
+} GameoverType;
+
 typedef struct StagePrivateState StagePrivateState;
 
 typedef struct StageInstance {
@@ -25,10 +35,12 @@ typedef struct StageInstance {
 
 	uint voltage_threshold;
 	float view_shake;
+	GameoverType gameover;
 } StageInstance;
 
 typedef struct GameSession {
 	StageInstance stage;
+	GameoverType gameover;
 	bool is_practice_mode;
 } GameSession;
 

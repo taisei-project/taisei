@@ -29,7 +29,7 @@ typedef struct StageClearBonus {
 } StageClearBonus;
 
 void stage_enter(GameSession *session, StageInfo *stage, ResourceGroup *rg, CallChain next);
-void stage_finish(int gameover);
+void stage_finish(GameoverType gameover);
 void stage_gameover(void);
 
 void stage_start_bgm(const char *bgm);

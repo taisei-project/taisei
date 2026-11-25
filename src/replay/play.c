@@ -78,23 +78,22 @@ static void replay_do_play(CallChainResult ccr) {
 static void replay_do_post_play(CallChainResult ccr) {
 	ReplayContext *ctx = ccr.ctx;
 
-	if(global.gameover == GAMEOVER_ABORT) {
+	if(ctx->session.gameover == GAMEOVER_ABORT) {
 		replay_do_cleanup(ccr);
 		return;
 	}
 
-	if(global.gameover == GAMEOVER_RESTART) {
+	if(ctx->session.gameover == GAMEOVER_RESTART) {
 		--ctx->stage_idx;
 	}
 
-	global.gameover = 0;
+	ctx->session.gameover = GAMEOVER_NONE;
 	replay_do_play(ccr);
 }
 
 static void replay_do_cleanup(CallChainResult ccr) {
 	ReplayContext *ctx = ccr.ctx;
 
-	global.gameover = 0;
 	replay_state_deinit(&global.replay.input);
 	res_group_release(&ctx->rg);
 

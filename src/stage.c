@@ -48,6 +48,8 @@ struct StagePrivateState {
 	int bgm_start_time;
 	double bgm_start_pos;
 	uint16_t last_replay_fps;
+	GameoverType finish_gameover;  // applied after the fade-out transition
+	int gameover_time;
 	bool quicksave_is_automatic;
 	bool quickload_requested;
 	bool was_skipping;
@@ -164,7 +166,6 @@ INLINE void skipstate_shutdown(void) { }
 
 static void stage_start(GameSession *session, StageInfo *stage_info) {
 	global.frames = 0;
-	global.gameover = 0;
 	player_stage_pre_init(&global.plr);
 
 	stats_stage_reset(&global.plr.stats);
@@ -191,6 +192,12 @@ static bool ingame_menu_interrupts_bgm(void) {
 	return global.stage->type != STAGE_SPELL;
 }
 
+static bool is_cleared(StagePrivateState *state) {
+	StageInstance *stage = state->stage;
+
+	return stage->gameover == GAMEOVER_SCORESCREEN || stage->gameover == GAMEOVER_TRANSITIONING;
+}
+
 static inline bool is_quicksave_allowed(StagePrivateState *state) {
 #ifndef DEBUG
 	if(!state->game->is_practice_mode) {
@@ -198,7 +205,7 @@ static inline bool is_quicksave_allowed(StagePrivateState *state) {
 	}
 #endif
 
-	if(global.gameover != GAMEOVER_NONE) {
+	if(state->stage->gameover != GAMEOVER_NONE) {
 		return false;
 	}
 
@@ -206,6 +213,7 @@ static inline bool is_quicksave_allowed(StagePrivateState *state) {
 }
 
 typedef struct IngameMenuCallContext {
+	StagePrivateState *state;
 	CallChain next;
 	BGM *saved_bgm;
 	double saved_bgm_pos;
@@ -247,11 +255,11 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 		return;
 	}
 
-	if(global.gameover > 0) {
+	if(ctx->state->stage->gameover > 0) {
 		stop_all_sfx();
 
 		if(ctx->bgm_interrupted) {
-			audio_bgm_stop(global.gameover == GAMEOVER_RESTART ? BGM_FADE_SHORT : BGM_FADE_LONG);
+			audio_bgm_stop(ctx->state->stage->gameover == GAMEOVER_RESTART ? BGM_FADE_SHORT : BGM_FADE_LONG);
 		}
 	} else {
 		resume_bgm(ctx);
@@ -264,9 +272,9 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 	mem_free(ctx);
 }
 
-static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
+static void stage_enter_ingame_menu(StagePrivateState *state, MenuData *m, BGM *bgm, CallChain next) {
 	events_emit(TE_GAME_PAUSE_STATE_CHANGED, true, NULL, NULL);
-	auto ctx = ALLOC(IngameMenuCallContext, { .next = next });
+	auto ctx = ALLOC(IngameMenuCallContext, { .state = state, .next = next });
 	setup_ingame_menu_bgm(ctx, bgm);
 	pause_all_sfx();
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, ctx));
@@ -285,7 +293,7 @@ static void stage_pause(StagePrivateState *state) {
 		return;
 	}
 
-	if(global.gameover == GAMEOVER_TRANSITIONING || stage_is_skip_mode()) {
+	if(state->stage->gameover == GAMEOVER_TRANSITIONING || stage_is_skip_mode()) {
 		return;
 	}
 
@@ -298,28 +306,36 @@ static void stage_pause(StagePrivateState *state) {
 	}
 
 	state->paused = true;
-	stage_enter_ingame_menu(m, NULL, CALLCHAIN(stage_unpause, state));
+	stage_enter_ingame_menu(state, m, NULL, CALLCHAIN(stage_unpause, state));
 }
 
 static void stage_do_quickload(StagePrivateState *state);
+static void stage_finish_internal(StagePrivateState *state, GameoverType gameover);
 
 static void stage_continue_game(void) {
 	log_info("The game is being continued...");
 	player_event(&global.plr, &global.replay.input, &global.replay.output, EV_CONTINUE, 0);
 }
 
+typedef struct GameoverMenuResultContext {
+	StagePrivateState *state;
+	GameoverMenuAction action;
+} GameoverMenuResultContext;
+
 static void gameover_menu_result(CallChainResult ccr) {
-	GameoverMenuAction *_action = ccr.ctx;
-	auto action = *_action;
-	mem_free(_action);
+	GameoverMenuResultContext *ctx = ccr.ctx;
+	StagePrivateState *state = ctx->state;
+	StageInstance *stage = state->stage;
+	auto action = ctx->action;
+	mem_free(ctx);
 
 	switch(action) {
 		case GAMEOVERMENU_ACTION_QUIT:
 		case GAMEOVERMENU_ACTION_DEFAULT:
 			if(global.plr.stats.total.continues_used >= MAX_CONTINUES) {
-				global.gameover = GAMEOVER_DEFEAT;
+				stage->gameover = GAMEOVER_DEFEAT;
 			} else {
-				global.gameover = GAMEOVER_ABORT;
+				stage->gameover = GAMEOVER_ABORT;
 			}
 			break;
 
@@ -328,11 +344,11 @@ static void gameover_menu_result(CallChainResult ccr) {
 			break;
 
 		case GAMEOVERMENU_ACTION_RESTART:
-			global.gameover = GAMEOVER_RESTART;
+			stage->gameover = GAMEOVER_RESTART;
 			break;
 
 		case GAMEOVERMENU_ACTION_QUICKLOAD:
-			stage_do_quickload(_current_stage_state);
+			stage_do_quickload(state);
 			break;
 
 		default: UNREACHABLE;
@@ -346,7 +362,7 @@ void stage_gameover(void) {
 		if(state->quicksave) {
 			stage_do_quickload(state);
 		} else {
-			global.gameover = GAMEOVER_RESTART;
+			state->stage->gameover = GAMEOVER_RESTART;
 		}
 		return;
 	}
@@ -358,15 +374,15 @@ void stage_gameover(void) {
 		progress_unlock_bgm("gameover");
 	}
 
-	auto action = ALLOC(GameoverMenuAction);
+	auto ctx = ALLOC(GameoverMenuResultContext, { .state = state });
 	auto menu = create_gameover_menu(&(GameoverMenuParams) {
 		.game = state->game,
-		.output = action,
+		.output = &ctx->action,
 		.quickload_shown = is_quicksave_allowed(state),
 		.quickload_enabled = state->quicksave != NULL,
 	});
 
-	stage_enter_ingame_menu(menu, bgm, CALLCHAIN(gameover_menu_result, action));
+	stage_enter_ingame_menu(state, menu, bgm, CALLCHAIN(gameover_menu_result, ctx));
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
@@ -378,11 +394,11 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 		case TE_GAME_KEY_DOWN:
 			switch(code) {
 				case KEY_STOP:
-					stage_finish(GAMEOVER_DEFEAT);
+					stage_finish_internal(state, GAMEOVER_DEFEAT);
 					return true;
 
 				case KEY_RESTART:
-					stage_finish(GAMEOVER_RESTART);
+					stage_finish_internal(state, GAMEOVER_RESTART);
 					return true;
 			}
 
@@ -399,11 +415,11 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 	return false;
 }
 
-static bool stage_input_key_filter(KeyIndex key, bool is_release) {
+static bool stage_input_key_filter(StagePrivateState *state, KeyIndex key, bool is_release) {
 	if(key == KEY_HAHAIWIN) {
 		IF_DEBUG(
 			if(!is_release) {
-				stage_finish(GAMEOVER_WIN);
+				stage_finish_internal(state, GAMEOVER_WIN);
 			}
 		);
 
@@ -420,14 +436,14 @@ static bool stage_input_key_filter(KeyIndex key, bool is_release) {
 		}
 	);
 
-	if(stage_is_cleared()) {
+	if(is_cleared(state)) {
 		if(key == KEY_SHOT) {
 			if(
-				global.gameover == GAMEOVER_SCORESCREEN &&
-				global.frames - global.gameover_time > GAMEOVER_SCORE_DELAY * 2
+				state->stage->gameover == GAMEOVER_SCORESCREEN &&
+				global.frames - state->gameover_time > GAMEOVER_SCORE_DELAY * 2
 			) {
 				if(!is_release) {
-					stage_finish(GAMEOVER_WIN);
+					stage_finish_internal(state, GAMEOVER_WIN);
 				}
 			}
 		}
@@ -525,13 +541,13 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
-			if(stage_input_key_filter(code, false)) {
+			if(stage_input_key_filter(state, code, false)) {
 				player_event(&global.plr, NULL, rpy, EV_PRESS, code);
 			}
 			break;
 
 		case TE_GAME_KEY_UP:
-			if(stage_input_key_filter(code, true)) {
+			if(stage_input_key_filter(state, code, true)) {
 				player_event(&global.plr, NULL, rpy, EV_RELEASE, code);
 			}
 			break;
@@ -557,13 +573,14 @@ static bool stage_input_handler_demo(SDL_Event *event, void *arg) {
 		case TE_GAMEPAD_BUTTON_DOWN:
 		case TE_GAMEPAD_AXIS_DIGITAL:
 		exit:
-			stage_finish(GAMEOVER_ABORT);
+			stage_finish_internal(NOT_NULL(arg), GAMEOVER_ABORT);
 	}
 
 	return false;
 }
 
 struct replay_event_arg {
+	StagePrivateState *state;
 	ReplayState *st;
 	ReplayEvent *resume_event;
 };
@@ -581,7 +598,7 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 
 	switch(e->type) {
 		case EV_OVER:
-			global.gameover = GAMEOVER_DEFEAT;
+			a->state->stage->gameover = GAMEOVER_DEFEAT;
 			break;
 
 		case EV_RESUME:
@@ -618,7 +635,7 @@ static void replay_input(StagePrivateState *state) {
 		return;
 	}
 
-	struct replay_event_arg a = { .st = rp_in };
+	struct replay_event_arg a = { .state = state, .st = rp_in };
 	replay_state_play_advance(rp_in, global.frames, handle_replay_event, &a);
 	player_applymovement(&global.plr);
 
@@ -802,23 +819,26 @@ static void stage_free(void) {
 }
 
 static void stage_finalize(CallChainResult ccr) {
-	global.gameover = (intptr_t)ccr.ctx;
+	StagePrivateState *state = ccr.ctx;
+	state->stage->gameover = state->finish_gameover;
 }
 
-void stage_finish(int gameover) {
-	if(global.gameover == GAMEOVER_TRANSITIONING) {
+static void stage_finish_internal(StagePrivateState *state, GameoverType gameover) {
+	StageInstance *stage = state->stage;
+
+	if(stage->gameover == GAMEOVER_TRANSITIONING) {
 		return;
 	}
 
-	int prev_gameover = global.gameover;
-	global.gameover_time = global.frames;
+	GameoverType prev_gameover = stage->gameover;
+	state->gameover_time = global.frames;
 
 	if(gameover == GAMEOVER_SCORESCREEN) {
-		global.gameover = GAMEOVER_SCORESCREEN;
+		stage->gameover = GAMEOVER_SCORESCREEN;
 	} else {
-		global.gameover = GAMEOVER_TRANSITIONING;
-		CallChain cc = CALLCHAIN(stage_finalize, (void*)(intptr_t)gameover);
-		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2, cc);
+		stage->gameover = GAMEOVER_TRANSITIONING;
+		state->finish_gameover = gameover;
+		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2, CALLCHAIN(stage_finalize, state));
 
 		if(!stage_is_demo_mode()) {
 			audio_bgm_stop(BGM_FADE_LONG);
@@ -838,6 +858,10 @@ void stage_finish(int gameover) {
 		// don't get stuck in an infinite loop
 		taisei_quit();
 	}
+}
+
+void stage_finish(GameoverType gameover) {
+	stage_finish_internal(STAGE.priv, gameover);
 }
 
 static void stage_preload(StageInfo *si, ResourceGroup *rg) {
@@ -893,7 +917,7 @@ void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunati
 }
 
 bool stage_is_cleared(void) {
-	return global.gameover == GAMEOVER_SCORESCREEN || global.gameover == GAMEOVER_TRANSITIONING;
+	return is_cleared(STAGE.priv);
 }
 
 static void stage_update_fps(StagePrivateState *state) {
@@ -980,7 +1004,7 @@ static SceneAction stage_scene_logic(void *arg) {
 	stage_update_fps(state);
 
 	if(watchdog_signaled() && !stage_is_demo_mode()) {
-		global.gameover = GAMEOVER_ABORT;
+		stage->gameover = GAMEOVER_ABORT;
 	}
 
 	if(stage_is_skip_mode()) {
@@ -999,7 +1023,7 @@ static SceneAction stage_scene_logic(void *arg) {
 		stage_do_quickload(state);
 	}
 
-	if(global.gameover == GAMEOVER_TRANSITIONING) {
+	if(stage->gameover == GAMEOVER_TRANSITIONING) {
 		// Usually stage_comain will do this
 		events_poll(NULL, 0);
 	} else if(state->paused) {
@@ -1018,7 +1042,7 @@ static SceneAction stage_scene_logic(void *arg) {
 
 		stagetext_update();
 
-		if(global.replay.input.replay && global.gameover != GAMEOVER_TRANSITIONING) {
+		if(global.replay.input.replay && stage->gameover != GAMEOVER_TRANSITIONING) {
 			ReplayStage *rstg = global.replay.input.stage;
 			ReplayEvent *last_event = dynarray_get_ptr(
 				&rstg->events, rstg->events.num_elements - 1);
@@ -1027,13 +1051,13 @@ static SceneAction stage_scene_logic(void *arg) {
 				global.frames == last_event->frame - FADE_TIME &&
 				last_event->type != EV_RESUME
 			) {
-				stage_finish(GAMEOVER_DEFEAT);
+				stage_finish_internal(state, GAMEOVER_DEFEAT);
 			}
 		}
 
 		if(
-			global.gameover == GAMEOVER_SCORESCREEN &&
-			global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY
+			stage->gameover == GAMEOVER_SCORESCREEN &&
+			global.frames - state->gameover_time == GAMEOVER_SCORE_DELAY
 		) {
 			StageClearBonus b;
 			stage_give_clear_bonus(state, &b);
@@ -1047,7 +1071,7 @@ static SceneAction stage_scene_logic(void *arg) {
 
 	if(state->transition_delay) {
 		if(!--state->transition_delay) {
-			stage_finish(GAMEOVER_WIN);
+			stage_finish_internal(state, GAMEOVER_WIN);
 		}
 	} else if(!(should_skip_frame(state) && stage_is_demo_mode())) {
 		update_transition();
@@ -1063,7 +1087,7 @@ static SceneAction stage_scene_logic(void *arg) {
 		return SCENE_ACTION_STOP;
 	}
 
-	if(global.gameover > 0) {
+	if(stage->gameover > GAMEOVER_NONE) {
 		return SCENE_ACTION_STOP;
 	}
 
@@ -1162,9 +1186,9 @@ static void _stage_enter(
 	assert(stage_info);
 	assert(stage_info->procs);
 
-	if(global.gameover == GAMEOVER_WIN) {
-		global.gameover = 0;
-	} else if(global.gameover) {
+	if(session->gameover == GAMEOVER_WIN) {
+		session->gameover = GAMEOVER_NONE;
+	} else if(session->gameover) {
 		run_call_chain(&next, NULL);
 		return;
 	}
@@ -1312,7 +1336,7 @@ static void stage_scene_end(void *ctx) {
 			replay_stage_event(global.replay.output.stage, global.frames, EV_OVER, 0);
 			global.replay.output.stage->plr_points_final = global.plr.points;
 
-			if(global.gameover == GAMEOVER_WIN) {
+			if(stage->gameover == GAMEOVER_WIN) {
 				global.replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
 			}
 
@@ -1339,8 +1363,10 @@ static void stage_scene_end(void *ctx) {
 	skipstate_shutdown();
 
 	if(taisei_quit_requested()) {
-		global.gameover = GAMEOVER_ABORT;
+		stage->gameover = GAMEOVER_ABORT;
 	}
+
+	session->gameover = stage->gameover;
 
 	_current_stage_state = NULL;
 

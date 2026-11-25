@@ -548,7 +548,7 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	replay_reset(mctx->replay_out);
 	replay_state_init_record(&global.replay.output, mctx->replay_out);
 	replay_state_deinit(&global.replay.input);
-	global.gameover = 0;
+	ctx->session.gameover = GAMEOVER_NONE;
 	player_init(&global.plr);
 	stats_init(&global.plr.stats);
 
@@ -563,7 +563,7 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
 
-	if(global.gameover == GAMEOVER_RESTART) {
+	if(ctx->session.gameover == GAMEOVER_RESTART) {
 		main_singlestg_begin_game(ccr);
 	} else {
 		ask_save_replay(mctx->replay_out, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));

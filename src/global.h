@@ -48,16 +48,6 @@ enum {
 #define VIEWPORT_SIZE { VIEWPORT_W, VIEWPORT_H }
 #define VIEWPORT_RECT { VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H }
 
-typedef enum GameoverType {
-	GAMEOVER_NONE,
-	GAMEOVER_DEFEAT = 1,
-	GAMEOVER_WIN,
-	GAMEOVER_ABORT,
-	GAMEOVER_RESTART,
-	GAMEOVER_SCORESCREEN = -1,
-	GAMEOVER_TRANSITIONING = -2,
-} GameoverType;
-
 typedef struct {
 	int8_t diff; // this holds values of type Difficulty, but should be signed to prevent obscure overflow errors
 	Player plr;
@@ -75,9 +65,6 @@ typedef struct {
 
 	Boss *boss;
 	Dialog *dialog;
-
-	GameoverType gameover;
-	int gameover_time;
 
 	struct {
 		FPSCounter logic;

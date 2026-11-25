@@ -96,7 +96,7 @@ static void start_game_do_pick_character(CallChainResult ccr) {
 static void reset_game(StartGameContext *ctx) {
 	ctx->current_stage = ctx->restart_stage;
 
-	global.gameover = GAMEOVER_NONE;
+	ctx->session.gameover = GAMEOVER_NONE;
 	replay_reset(&ctx->replay);
 	replay_state_init_record(&global.replay.output, &ctx->replay);
 	player_init(&global.plr);
@@ -145,7 +145,7 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 static void start_game_do_leave_stage(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 
-	if(global.gameover == GAMEOVER_RESTART) {
+	if(ctx->session.gameover == GAMEOVER_RESTART) {
 		reset_game(ctx);
 		enter_stage_now(ctx);
 		return;
@@ -159,7 +159,7 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 		} else {
 			CallChain cc;
 
-			if(global.gameover == GAMEOVER_WIN) {
+			if(ctx->session.gameover == GAMEOVER_WIN) {
 				res_group_release(&ctx->rg);
 				res_purge();
 				credits_preload(&ctx->rg);
@@ -200,7 +200,6 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	kill_aux_menus(ctx);
 	res_group_release(&ctx->rg);
 	mem_free(ctx);
-	global.gameover = GAMEOVER_NONE;
 	replay_state_deinit(&global.replay.output);
 	main_menu_update_practice_menus();
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);

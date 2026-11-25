@@ -20,13 +20,17 @@
 #include "submenus.h"
 #include "video.h"
 
+static GameSession *menu_game(MenuData *m) {
+	return NOT_NULL(((IngameMenuContext*)m->context)->game);
+}
+
 static void return_to_title(MenuData *m, void *arg) {
-	global.gameover = GAMEOVER_ABORT;
+	menu_game(m)->stage.gameover = GAMEOVER_ABORT;
 	menu_action_close(m, arg);
 }
 
 void restart_game(MenuData *m, void *arg) {
-	global.gameover = GAMEOVER_RESTART;
+	menu_game(m)->stage.gameover = GAMEOVER_RESTART;
 	menu_action_close(m, arg);
 }
 
@@ -143,7 +147,7 @@ MenuData *create_ingame_menu(GameSession *game) {
 }
 
 static void skip_stage(MenuData *m, void *arg) {
-	global.gameover = GAMEOVER_WIN;
+	menu_game(m)->stage.gameover = GAMEOVER_WIN;
 	menu_action_close(m, arg);
 }
 
