@@ -37,8 +37,8 @@ TASK(laser_drop, { BoxedBoss boss; }) {
 	for(int x = 0;; x++, WAIT(60)) {
 		aniplayer_queue(&boss->ani, (x&1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
-		create_laser(re(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0),
-			bolts2_laser_rule(global.plr.pos, (x&1) * 2 - 1));
+		create_laser(re(GAME.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0),
+			bolts2_laser_rule(GAME.plr.pos, (x&1) * 2 - 1));
 		play_sfx_ex("laser1", 0, false);
 	}
 }

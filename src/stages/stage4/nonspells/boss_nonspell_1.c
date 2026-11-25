@@ -34,7 +34,7 @@ DEFINE_EXTERN_TASK(stage4_boss_nonspell_1) {
 
 			cmplx dir = cdir(M_TAU / count * i);
 
-			cmplx redirect_vel = 1.5 * cnormalize(global.plr.pos - spawn_pos - 2 * redirect_time * dir) + 0.3 * dir;
+			cmplx redirect_vel = 1.5 * cnormalize(GAME.plr.pos - spawn_pos - 2 * redirect_time * dir) + 0.3 * dir;
 
 			Projectile *p = PROJECTILE(
 				.proto = pp_rice,

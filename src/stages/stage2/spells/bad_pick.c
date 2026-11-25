@@ -87,7 +87,7 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 		t += WAIT(30);
 
 		int win;
-		int plr_slot = slot_of_position(global.plr.pos);
+		int plr_slot = slot_of_position(GAME.plr.pos);
 
 		do {
 			win = rng_irange(0, SLOTS);

@@ -14,12 +14,12 @@
 #include "stage5.h"
 
 static void stage5_dialog_post_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage5PostBossDialog, pm->dialog->Stage5PostBoss);
 }
 
 static void stage5_dialog_post_midboss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage5PostMidBossDialog, pm->dialog->Stage5PostMidBoss);
 }
 
@@ -56,7 +56,7 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
 	stage_unlock_bgm("stage5");
 	Boss *boss = STAGE.boss = stage5_spawn_iku(VIEWPORT_W/2 - 200.0 * I);
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage5PreBossDialogEvents *e;
 
 	INVOKE_TASK_INDIRECT(Stage5PreBossDialog, pm->dialog->Stage5PreBoss, &e);
@@ -113,7 +113,7 @@ TASK(greeter_fairy, {
 	common_charge(80, &e->pos, 0, clr_charge);
 
 	for(int x = 0; x < reps; x++) {
-		cmplx dir = cnormalize(global.plr.pos - e->pos);
+		cmplx dir = cnormalize(GAME.plr.pos - e->pos);
 		for(int i = -count; i <= count; i++) {
 			real boost = 5 - glm_ease_quad_in(fabs(i / (real)count));
 			PROJECTILE(
@@ -234,7 +234,7 @@ TASK(lightburst_fairy_2, {
 	for(int x = 0; x < 30; x++, WAIT(5)) {
 		play_sfx_loop("shot1_loop");
 		for(int i = 0; i < count; i++) {
-			cmplx n = cnormalize(global.plr.pos - e->pos) * cdir(M_TAU / count * i);
+			cmplx n = cnormalize(GAME.plr.pos - e->pos) * cdir(M_TAU / count * i);
 			RNG_ARRAY(rand, 2);
 			PROJECTILE(
 				.proto = pp_bigball,
@@ -269,7 +269,7 @@ TASK(lightburst_fairy_1, {
 	for(int x = 0; x < length; x++, WAIT(5)) {
 		play_sfx_loop("shot1_loop");
 		for(int i = 0; i < count; i++) {
-			cmplx n = cnormalize(global.plr.pos - e->pos) * cdir(M_TAU / count * i);
+			cmplx n = cnormalize(GAME.plr.pos - e->pos) * cdir(M_TAU / count * i);
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos + 50 * n * cdir(-0.4 * x * difficulty),
@@ -332,7 +332,7 @@ TASK(laser_fairy, {
 	int dir_mod = difficulty_value(9, 8, 7, 6);
 
 	for(int x = 0; x < amount; x++) {
-		cmplx n = cnormalize(global.plr.pos - e->pos) * cdir((0.02 * dir_mod) * x);
+		cmplx n = cnormalize(GAME.plr.pos - e->pos) * cdir((0.02 * dir_mod) * x);
 		real fac = (0.5 + 0.2 * angle_mod);
 
 		create_laser(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0),
@@ -474,7 +474,7 @@ TASK(limiter_fairy, {
 	for(int x = 0; x < 400; x++) {
 		for(int i = 1; i >= -1; i -= 2) {
 			real a = i * (baseangle + 3.0 / (x + 1));
-			cmplx plraim = cnormalize(global.plr.pos - e->pos);
+			cmplx plraim = cnormalize(GAME.plr.pos - e->pos);
 			cmplx aim = plraim * cdir(a);
 
 			PROJECTILE(
@@ -606,7 +606,7 @@ TASK(superbullet_fairy, {
 	common_charge(60, &e->pos, 0, RGBA(1.0, 0.5, 0, 0));
 
 	real difficulty = difficulty_value(5.0, 8.0, 11.0, 12.0);
-	cmplx r = cnormalize(global.plr.pos - e->pos);
+	cmplx r = cnormalize(GAME.plr.pos - e->pos);
 
 	for(int x = 0; x < 140; x++, YIELD) {
 		real s = sin(x / difficulty);
@@ -788,7 +788,7 @@ TASK(lasertraps, { int num; int interval; }) {
 	cmplx vp = VIEWPORT_W + VIEWPORT_H*I;
 
 	for(int i = 0; i < ARGS.num; ++i, WAIT(ARGS.interval)) {
-		INVOKE_TASK(lasertrap, cwclamp(global.plr.pos, 0, vp));
+		INVOKE_TASK(lasertrap, cwclamp(GAME.plr.pos, 0, vp));
 	}
 }
 
@@ -797,7 +797,7 @@ TASK(magnet_bullet, { cmplx pos; cmplx vel; int idx; BoxedProjectileArray *magne
 		.velocity = ARGS.vel,
 		.retention = 0.992,
 		.attraction = 0.1,
-		.attraction_point = global.plr.pos,
+		.attraction_point = GAME.plr.pos,
 	};
 
 	auto p = TASK_BIND(PROJECTILE(
@@ -812,7 +812,7 @@ TASK(magnet_bullet, { cmplx pos; cmplx vel; int idx; BoxedProjectileArray *magne
 	for(;;) {
 		YIELD;
 
-		p->move.attraction_point = global.plr.pos;
+		p->move.attraction_point = GAME.plr.pos;
 
 		ENT_ARRAY_FOREACH(ARGS.magnets, Projectile *m, {
 			if(m == p) {

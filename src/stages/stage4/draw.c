@@ -126,7 +126,7 @@ static void stage4_bg_setup_pbr_lighting_outdoors(Camera3D *cam) {
 	};
 
 	vec3 r;
-	camera3d_unprojected_ray(cam, global.plr.pos, r);
+	camera3d_unprojected_ray(cam, GAME.plr.pos, r);
 	glm_vec3_scale(r, 4, r);
 	glm_vec3_add(cam->pos, r, lights[0].pos);
 

@@ -33,13 +33,13 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 		p->flags |= PFLAG_MANUALANGLE;
 
 		for(int i = 0; i < 20; ++i, YIELD) {
-			fapproach_asymptotic_p(&p->angle, carg(global.plr.pos - p->pos), 0.2, 1e-3);
+			fapproach_asymptotic_p(&p->angle, carg(GAME.plr.pos - p->pos), 0.2, 1e-3);
 		}
 
 		play_sfx("redirect");
 		play_sfx("shot1");
 
-		cmplx aim = cnormalize(global.plr.pos - p->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - p->pos);
 		p->angle = carg(aim);
 		p->color = phase_colors[phase];
 		spawn_projectile_highlight_effect(p);

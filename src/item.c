@@ -130,7 +130,7 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 		return NULL;
 	}
 
-	if(type == ITEM_POWER_MINI && player_is_powersurge_active(&global.plr)) {
+	if(type == ITEM_POWER_MINI && player_is_powersurge_active(&GAME.plr)) {
 		type = ITEM_SURGE;
 	}
 
@@ -195,7 +195,7 @@ static cmplx move_item(Item *i) {
 	cmplx oldpos = i->pos;
 
 	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
-		i->pos -= (7 + i->auto_collect) * cnormalize(i->pos - global.plr.pos);
+		i->pos -= (7 + i->auto_collect) * cnormalize(i->pos - GAME.plr.pos);
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
@@ -229,7 +229,7 @@ static bool item_out_of_bounds(Item *item) {
 }
 
 bool collect_item(Item *item, float value) {
-	if(!player_is_alive(&global.plr)) {
+	if(!player_is_alive(&GAME.plr)) {
 		return false;
 	}
 
@@ -257,17 +257,17 @@ void collect_all_items(float value) {
 
 void process_items(ItemList *items) {
 	Item *item = items->first, *del = NULL;
-	float attract_dist = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
-	bool plr_alive = player_is_alive(&global.plr);
+	float attract_dist = player_property(&GAME.plr, PLR_PROP_COLLECT_RADIUS);
+	bool plr_alive = player_is_alive(&GAME.plr);
 	bool stage_cleared = stage_is_cleared();
-	bool surge_active = player_is_powersurge_active(&global.plr);
-	real poc = player_property(&global.plr, PLR_PROP_POC);
+	bool surge_active = player_is_powersurge_active(&GAME.plr);
+	real poc = player_property(&GAME.plr, PLR_PROP_POC);
 
 	while(item != NULL) {
 		bool may_collect = true;
 
 		if(
-			(item->type == ITEM_POWER_MINI && global.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
+			(item->type == ITEM_POWER_MINI && GAME.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
 			(item->type == ITEM_SURGE && !surge_active)
 		) {
 			item_set_type(item, ITEM_PIV);
@@ -291,10 +291,10 @@ void process_items(ItemList *items) {
 		bool grabbed = false;
 
 		if(may_collect) {
-			real item_dist2 = cabs2(global.plr.pos - item->pos);
+			real item_dist2 = cabs2(GAME.plr.pos - item->pos);
 
 			if(plr_alive) {
-				if(im(global.plr.pos) < poc || stage_cleared) {
+				if(im(GAME.plr.pos) < poc || stage_cleared) {
 					collect_item(item, 1);
 				} else if(item_dist2 < attract_dist * attract_dist) {
 					real value;
@@ -302,7 +302,7 @@ void process_items(ItemList *items) {
 					if(surge_active) {
 						value = 1;
 					} else {
-						value = 1 - im(global.plr.pos) / VIEWPORT_H;
+						value = 1 - im(GAME.plr.pos) / VIEWPORT_H;
 					}
 
 					collect_item(item, value);
@@ -323,45 +323,45 @@ void process_items(ItemList *items) {
 		if(grabbed) {
 			switch(item->type) {
 			case ITEM_POWER:
-				player_add_power(&global.plr, POWER_VALUE);
-				player_add_points(&global.plr, 25, item->pos);
-				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN*3, PLR_POWERSURGE_NEGATIVE_GAIN*3);
+				player_add_power(&GAME.plr, POWER_VALUE);
+				player_add_points(&GAME.plr, 25, item->pos);
+				player_extend_powersurge(&GAME.plr, PLR_POWERSURGE_POSITIVE_GAIN*3, PLR_POWERSURGE_NEGATIVE_GAIN*3);
 				play_sfx("item_generic");
 				break;
 			case ITEM_POWER_MINI:
-				player_add_power(&global.plr, POWER_VALUE_MINI);
-				player_add_points(&global.plr, 5, item->pos);
+				player_add_power(&GAME.plr, POWER_VALUE_MINI);
+				player_add_points(&GAME.plr, 5, item->pos);
 				play_sfx("item_generic");
 				break;
 			case ITEM_SURGE:
-				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN, PLR_POWERSURGE_NEGATIVE_GAIN);
-				player_add_points(&global.plr, 25, item->pos);
+				player_extend_powersurge(&GAME.plr, PLR_POWERSURGE_POSITIVE_GAIN, PLR_POWERSURGE_NEGATIVE_GAIN);
+				player_add_points(&GAME.plr, 25, item->pos);
 				play_sfx("item_generic");
 				break;
 			case ITEM_POINTS:
-				player_add_points(&global.plr, round(global.plr.point_item_value * item->pickup_value), item->pos);
+				player_add_points(&GAME.plr, round(GAME.plr.point_item_value * item->pickup_value), item->pos);
 				play_sfx("item_generic");
 				break;
 			case ITEM_PIV:
-				player_add_piv(&global.plr, 1, item->pos);
+				player_add_piv(&GAME.plr, 1, item->pos);
 				play_sfx("item_generic");
 				break;
 			case ITEM_VOLTAGE:
-				player_add_voltage(&global.plr, 1);
-				player_add_piv(&global.plr, 10, item->pos);
+				player_add_voltage(&GAME.plr, 1);
+				player_add_piv(&GAME.plr, 10, item->pos);
 				play_sfx("item_generic");
 				break;
 			case ITEM_LIFE:
-				player_add_lives(&global.plr, 1);
+				player_add_lives(&GAME.plr, 1);
 				break;
 			case ITEM_BOMB:
-				player_add_bombs(&global.plr, 1);
+				player_add_bombs(&GAME.plr, 1);
 				break;
 			case ITEM_LIFE_FRAGMENT:
-				player_add_life_fragments(&global.plr, 1);
+				player_add_life_fragments(&GAME.plr, 1);
 				break;
 			case ITEM_BOMB_FRAGMENT:
-				player_add_bomb_fragments(&global.plr, PLR_MAX_BOMB_FRAGMENTS / 5);
+				player_add_bomb_fragments(&GAME.plr, PLR_MAX_BOMB_FRAGMENTS / 5);
 				break;
 			}
 		}

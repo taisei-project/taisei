@@ -492,7 +492,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = &stagedraw.dummy,
-		.pos = { re(global.plr.pos), im(global.plr.pos) },
+		.pos = { re(game->plr.pos), im(game->plr.pos) },
 		.scale.both = 2, // NOTE: actual player is a singular point
 		.color = RGB(1, 1, 1),
 	});
@@ -639,10 +639,11 @@ static bool copydepth_rule(Framebuffer *fb) {
 	return false;
 }
 
-static bool powersurge_draw_predicate(EntityInterface *ent, StageInstance *stage) {
+static bool powersurge_draw_predicate(EntityInterface *ent, void *arg) {
+	GameSession *game = arg;
 	uint layer = ent->draw_layer & ~LAYER_LOW_MASK;
 
-	if(player_is_powersurge_active(&global.plr)) {
+	if(player_is_powersurge_active(&game->plr)) {
 		switch(layer) {
 			case LAYER_PLAYER_SLAVE:
 			case LAYER_PLAYER_SHOT:
@@ -679,12 +680,12 @@ static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, Bl
 	r_disable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_CULL_FACE);
 
-	// if(player_is_powersurge_active(&global.plr)) {
+	// if(player_is_powersurge_active(&game->plr)) {
 		r_state_push();
 		r_framebuffer(stagedraw.powersurge_fbpair.front);
 		r_blend(BLEND_PREMUL_ALPHA);
 		r_shader("sprite_default");
-		ent_draw(powersurge_draw_predicate, stage);
+		ent_draw(powersurge_draw_predicate, game, stage);
 		r_state_pop();
 	// }
 
@@ -906,7 +907,7 @@ bool stage_should_draw_particle(Projectile *p) {
 	return (p->flags & PFLAG_REQUIREDPARTICLE) || config_get_int(CONFIG_PARTICLES);
 }
 
-static bool stage_draw_predicate(EntityInterface *ent, StageInstance *stage) {
+static bool stage_draw_predicate(EntityInterface *ent, void *arg) {
 	if(ent->type == ENT_TYPE_ID(Projectile)) {
 		Projectile *p = ENT_CAST(ent, Projectile);
 
@@ -931,6 +932,7 @@ static void stage_draw_objects(GameSession *game) {
 		config_get_int(CONFIG_PARTICLES)
 			? NULL
 			: stage_draw_predicate,
+		NULL,
 		stage
 	);
 
@@ -953,7 +955,7 @@ void stage_draw_overlay(GameSession *game) {
 		draw_boss_overlay(game, stage->boss);
 	}
 
-	player_draw_overlay(&global.plr);
+	player_draw_overlay(&game->plr);
 
 	if(stagedraw.clear_screen.alpha > 0) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);
@@ -964,9 +966,10 @@ void stage_draw_overlay(GameSession *game) {
 }
 
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
+	GameSession *game = arg;
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_vec2_complex("player", global.plr.pos);
+	r_uniform_vec2_complex("player", game->plr.pos);
 }
 
 static inline void begin_viewport_shake(GameSession *game) {
@@ -1146,7 +1149,7 @@ void stage_draw_scene(GameSession *game) {
 		draw_framebuffer_tex,
 		VIEWPORT_W,
 		VIEWPORT_H,
-		NULL
+		game
 	);
 
 	stagedraw.current_postprocess_fbpair = NULL;
@@ -1194,7 +1197,7 @@ static inline void stage_draw_hud_power_value(GameSession *game, float xpos, flo
 	Font *fnt_int = res_font("standard");
 	Font *fnt_fract = res_font("small");
 
-	int pw = global.plr.power_stored;
+	int pw = game->plr.power_stored;
 
 	Color c_whole, c_fract;
 	Color c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
@@ -1265,7 +1268,7 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 
 static void stage_draw_hud_scores(GameSession *game, float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
 	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_hiscore, buf, bufsize, progress.hiscore);
-	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_score,   buf, bufsize, global.plr.points);
+	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_score,   buf, bufsize, game->plr.points);
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
@@ -1434,7 +1437,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	// Score left to next extra life
 	if(labels->x.next_life > 0) {
 		Color next_clr = color_mul(RGBA(0.5, 0.3, 0.4, 0.5), labels->lb_baseclr);
-		format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
+		format_huge_num(0, game->plr.extralife_threshold - game->plr.points, sizeof(buf), buf);
 		font = res_font("small");
 
 		text_draw(_("Next:"), &(TextParams) {
@@ -1460,7 +1463,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	// Bomb fragments (numeric)
 	if(labels->x.next_bomb > 0) {
 		Color next_clr = color_mul(RGBA(0.3, 0.5, 0.3, 0.5), labels->lb_baseclr);
-		snprintf(buf, sizeof(buf), "%d / %d", global.plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
+		snprintf(buf, sizeof(buf), "%d / %d", game->plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
 		font = res_font("small");
 
 		text_draw(_("Fragments:"), &(TextParams) {
@@ -1494,7 +1497,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	font_set_kerning_enabled(font, false);
 
 	// Point Item Value... value
-	format_huge_num(6, global.plr.point_item_value, sizeof(buf), buf);
+	format_huge_num(6, game->plr.point_item_value, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.value },
 		.shader_ptr = stagedraw.hud_text.shader,
@@ -1507,10 +1510,10 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	});
 
 	// Voltage value
-	format_huge_num(4, global.plr.voltage, sizeof(buf), buf);
+	format_huge_num(4, game->plr.voltage, sizeof(buf), buf);
 	float volts_x = 0;
 
-	Color voltage_tint = global.plr.voltage >= stage->voltage_threshold
+	Color voltage_tint = game->plr.voltage >= stage->voltage_threshold
 		? RGB(1.0, 0.9, 0.7) // RGB(0.9, 0.7, 1.0)
 		: RGB(1.0, 1.0, 1.0);
 
@@ -1563,7 +1566,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	});
 
 	// Graze value
-	format_huge_num(6, global.plr.graze, sizeof(buf), buf);
+	format_huge_num(6, game->plr.graze, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.graze },
 		.shader_ptr = stagedraw.hud_text.shader,
@@ -1579,7 +1582,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	r_mat_mv_pop();
 
 	// God Mode indicator
-	if(global.plr.iddqd) {
+	if(game->plr.iddqd) {
 		text_draw(_("God Mode is enabled!"), &(TextParams) {
 			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
 			.font_ptr = font,
@@ -1655,7 +1658,7 @@ void stage_draw_bottom_text(GameSession *game) {
 #ifdef PLR_DPS_STATS
 	else if(global.frames) {
 		int totaldmg = 0;
-		int framespan = sizeof(global.plr.dmglog)/sizeof(*global.plr.dmglog);
+		int framespan = sizeof(game->plr.dmglog)/sizeof(*game->plr.dmglog);
 		int graphspan = framespan;
 		static int max = 0;
 		float graph[framespan];
@@ -1666,19 +1669,19 @@ void stage_draw_bottom_text(GameSession *game) {
 		}
 
 		// hack to update the graph every frame
-		player_register_damage(&global.plr, NULL, &(DamageInfo) { .amount = 0, .type = DMG_PLAYER_SHOT });
+		player_register_damage(&game->plr, NULL, &(DamageInfo) { .amount = 0, .type = DMG_PLAYER_SHOT });
 
 		for(int i = 0; i < framespan; ++i) {
-			totaldmg += global.plr.dmglog[i];
+			totaldmg += game->plr.dmglog[i];
 
-			if(global.plr.dmglog[i] > max) {
-				max = global.plr.dmglog[i];
+			if(game->plr.dmglog[i] > max) {
+				max = game->plr.dmglog[i];
 			}
 		}
 
 		for(int i = 0; i < graphspan; ++i) {
 			if(max > 0) {
-				graph[i] = (float)global.plr.dmglog[i] / max;
+				graph[i] = (float)game->plr.dmglog[i] / max;
 			} else {
 				graph[i] = 0;
 			}
@@ -1837,7 +1840,7 @@ void stage_draw_hud(GameSession *game) {
 			.pos = { pos_lives, labels.y.lives + labels.y_ofs.lives_display },
 			.origin_offset = { 0, 0 },
 			.limits = { PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS },
-			.filled = { global.plr.lives, global.plr.life_fragments },
+			.filled = { game->plr.lives, game->plr.life_fragments },
 			.alpha = 1,
 			.spacing = spacing,
 			.color = {
@@ -1852,7 +1855,7 @@ void stage_draw_hud(GameSession *game) {
 			.pos = { pos_bombs, labels.y.bombs + labels.y_ofs.bombs_display },
 			.origin_offset = { 0, 0.05 },
 			.limits = { PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS },
-			.filled = { global.plr.bombs, global.plr.bomb_fragments },
+			.filled = { game->plr.bombs, game->plr.bomb_fragments },
 			.alpha = 1,
 			.spacing = spacing,
 			.color = {

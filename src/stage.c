@@ -113,7 +113,7 @@ void _stage_bookmark(const char *name) {
 
 	if(skip_state.skip_to_bookmark && !strcmp(skip_state.skip_to_bookmark, name)) {
 		skip_state.skip_to_bookmark = NULL;
-		global.plr.iddqd = false;
+		GAME.plr.iddqd = false;
 	}
 }
 
@@ -133,7 +133,7 @@ static void skipstate_init(void) {
 static SceneAction skipstate_handle_frame(StagePrivateState *state) {
 	if(skip_state.skip_to_dialog && dialog_is_active(state->stage->dialog)) {
 		skip_state.skip_to_dialog = false;
-		global.plr.iddqd = false;
+		state->game->plr.iddqd = false;
 	}
 
 	bool skip_mode = stage_is_skip_mode();
@@ -169,24 +169,24 @@ INLINE void skipstate_shutdown(void) { }
 
 static void stage_start(GameSession *session, StageInfo *stage_info) {
 	global.frames = 0;
-	player_stage_pre_init(&global.plr);
+	player_stage_pre_init(&session->plr);
 
-	stats_stage_reset(&global.plr.stats);
+	stats_stage_reset(&session->plr.stats);
 
 	if(stage_info->type == STAGE_SPELL) {
 		session->is_practice_mode = true;
-		global.plr.lives = 0;
-		global.plr.bombs = 0;
+		session->plr.lives = 0;
+		session->plr.bombs = 0;
 	} else if(session->is_practice_mode) {
-		global.plr.lives = PLR_STGPRACTICE_LIVES;
-		global.plr.bombs = PLR_STGPRACTICE_BOMBS;
+		session->plr.lives = PLR_STGPRACTICE_LIVES;
+		session->plr.bombs = PLR_STGPRACTICE_BOMBS;
 	}
 
 	if(session->is_practice_mode) {
-		global.plr.power_stored = config_get_int(CONFIG_PRACTICE_POWER);
+		session->plr.power_stored = config_get_int(CONFIG_PRACTICE_POWER);
 	}
 
-	global.plr.power_stored = clamp(global.plr.power_stored, 0, PLR_MAX_POWER_STORED);
+	session->plr.power_stored = clamp(session->plr.power_stored, 0, PLR_MAX_POWER_STORED);
 
 	reset_all_sfx();
 }
@@ -319,7 +319,7 @@ static void stage_continue_game(StagePrivateState *state) {
 	GameSession *game = state->game;
 
 	log_info("The game is being continued...");
-	player_event(&global.plr, &game->replay.input, &game->replay.output, EV_CONTINUE, 0);
+	player_event(&game->plr, &game->replay.input, &game->replay.output, EV_CONTINUE, 0);
 }
 
 typedef struct GameoverMenuResultContext {
@@ -331,13 +331,15 @@ static void gameover_menu_result(CallChainResult ccr) {
 	GameoverMenuResultContext *ctx = ccr.ctx;
 	StagePrivateState *state = ctx->state;
 	StageInstance *stage = state->stage;
+	GameSession *game = state->game;
+
 	auto action = ctx->action;
 	mem_free(ctx);
 
 	switch(action) {
 		case GAMEOVERMENU_ACTION_QUIT:
 		case GAMEOVERMENU_ACTION_DEFAULT:
-			if(global.plr.stats.total.continues_used >= MAX_CONTINUES) {
+			if(game->plr.stats.total.continues_used >= MAX_CONTINUES) {
 				stage->gameover = GAMEOVER_DEFEAT;
 			} else {
 				stage->gameover = GAMEOVER_ABORT;
@@ -463,7 +465,7 @@ static bool stage_input_key_filter(StagePrivateState *state, KeyIndex key, bool 
 }
 
 attr_nonnull_all
-static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
+static Replay *create_quicksave_replay(StagePrivateState *state, ReplayStage *rstg_src) {
 	ReplayStage *rstg = memdup(rstg_src, sizeof(*rstg));
 	rstg->num_events = 0;
 	rstg->events = (typeof(rstg->events)) {};
@@ -472,7 +474,7 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
 
 	replay_stage_event(rstg, global.frames, EV_RESUME, 0);
-	replay_stage_update_final_stats(rstg, &global.plr.stats);
+	replay_stage_update_final_stats(rstg, &state->game->plr.stats);
 
 	auto rpy = ALLOC(Replay);
 	rpy->stages.num_elements = rpy->stages.capacity = 1;
@@ -493,7 +495,7 @@ static void stage_do_quicksave(StagePrivateState *state, bool isauto) {
 		mem_free(state->quicksave);
 	}
 
-	state->quicksave = create_quicksave_replay(state->game->replay.output.stage);
+	state->quicksave = create_quicksave_replay(state, state->game->replay.output.stage);
 	state->quicksave_is_automatic = isauto;
 }
 
@@ -555,13 +557,13 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
 			if(stage_input_key_filter(state, code, false)) {
-				player_event(&global.plr, NULL, rpy, EV_PRESS, code);
+				player_event(&game->plr, NULL, rpy, EV_PRESS, code);
 			}
 			break;
 
 		case TE_GAME_KEY_UP:
 			if(stage_input_key_filter(state, code, true)) {
-				player_event(&global.plr, NULL, rpy, EV_RELEASE, code);
+				player_event(&game->plr, NULL, rpy, EV_RELEASE, code);
 			}
 			break;
 
@@ -620,7 +622,7 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 			break;
 
 		default:
-			player_event(&global.plr, a->st, &game->replay.output, e->type, e->value);
+			player_event(&game->plr, a->st, &game->replay.output, e->type, e->value);
 			break;
 	}
 }
@@ -653,7 +655,7 @@ static void replay_input(StagePrivateState *state) {
 
 	struct replay_event_arg a = { .state = state, .st = rp_in };
 	replay_state_play_advance(rp_in, global.frames, handle_replay_event, &a);
-	player_applymovement(&global.plr);
+	player_applymovement(&game->plr);
 
 	if(a.resume_event) {
 		leave_replay_mode(state, rp_in);
@@ -717,8 +719,8 @@ static void stage_input(StagePrivateState *state) {
 	}
 #endif
 
-	player_fix_input(&global.plr, &game->replay.output);
-	player_applymovement(&global.plr);
+	player_fix_input(&game->plr, &game->replay.output);
+	player_applymovement(&game->plr);
 }
 
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {
@@ -879,7 +881,7 @@ static void stage_finish_internal(StagePrivateState *state, GameoverType gameove
 		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
 	) {
 		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage->info, stage->diff, true));
-		progress_register_stage_cleared(p, global.plr.mode);
+		progress_register_stage_cleared(p, game->plr.mode);
 	}
 
 	if(gameover == GAMEOVER_SCORESCREEN && stage_is_skip_mode()) {
@@ -972,7 +974,7 @@ static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bo
 		StageInfo *next = stageinfo_get_by_id(stage->info->id + 1);
 
 		if(next == NULL || next->type != STAGE_STORY) {
-			bonus->all_clear.base = global.plr.point_item_value * 100 + global.plr.points / 10;
+			bonus->all_clear.base = game->plr.point_item_value * 100 + game->plr.points / 10;
 			bonus->all_clear.diff_multiplier = difficulty_value_for(stage->diff, 1.0, 1.1, 1.3, 1.6);
 			bonus->all_clear.diff_bonus = bonus->all_clear.base * (bonus->all_clear.diff_multiplier - 1.0);
 		}
@@ -982,8 +984,8 @@ static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bo
 		bonus->base = stage->info->id * 1000000;
 	}
 
-	bonus->voltage = max(0, (int)global.plr.voltage - (int)stage->voltage_threshold) * (global.plr.point_item_value / 25);
-	bonus->lives = global.plr.lives * global.plr.point_item_value * 5;
+	bonus->voltage = max(0, (int)game->plr.voltage - (int)stage->voltage_threshold) * (game->plr.point_item_value / 25);
+	bonus->lives = game->plr.lives * game->plr.point_item_value * 5;
 
 	// TODO: maybe a difficulty multiplier?
 
@@ -995,13 +997,13 @@ static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bo
 		bonus->all_clear.base +
 		bonus->all_clear.diff_bonus +
 	0);
-	player_add_points(&global.plr, bonus->total, global.plr.pos);
+	player_add_points(&game->plr, bonus->total, game->plr.pos);
 }
 
 static void stage_replay_sync(StagePrivateState *state) {
 	GameSession *game = state->game;
 
-	uint16_t desync_check = (rng_u64() ^ global.plr.points) & 0xFFFF;
+	uint16_t desync_check = (rng_u64() ^ game->plr.points) & 0xFFFF;
 	ReplaySyncStatus rpsync = replay_state_check_desync(&game->replay.input, global.frames, desync_check);
 
 	if(
@@ -1085,7 +1087,7 @@ static SceneAction stage_scene_logic(void *arg) {
 	}
 
 	if(stage_is_skip_mode()) {
-		global.plr.iddqd = true;
+		session->plr.iddqd = true;
 	}
 
 	fapproach_p(&stage->view_shake, 0, 1);
@@ -1118,7 +1120,7 @@ static SceneAction stage_scene_logic(void *arg) {
 
 	if(session->replay.input.replay == NULL) {
 		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage->info, stage->diff, true));
-		progress_register_hiscore(p, global.plr.mode, global.plr.points);
+		progress_register_hiscore(p, session->plr.mode, session->plr.points);
 	}
 
 	if(state->quickload_requested) {
@@ -1183,9 +1185,10 @@ static void process_input(StagePrivateState *state) {
 TASK(stage_comain, { StagePrivateState *state; }) {
 	StagePrivateState *state = ARGS.state;
 	StageInstance *stage = state->stage;
+	GameSession *game = state->game;
 
 	stage->info->procs->begin();
-	player_stage_post_init(&global.plr);
+	player_stage_post_init(&game->plr);
 
 	if(stage->info->type != STAGE_SPELL) {
 		display_stage_title(stage->info);
@@ -1205,7 +1208,7 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 		if(stage->dialog) {
 			dialog_update(stage->dialog);
 
-			if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(stage->dialog)) {
+			if((game->plr.inputflags & INFLAG_SKIP) && dialog_is_active(stage->dialog)) {
 				dialog_page(stage->dialog);
 			}
 		}
@@ -1314,14 +1317,14 @@ static void _stage_enter(
 		seed = makeseed();
 
 		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage_info, stage->diff, true));
-		progress_register_stage_played(p, global.plr.mode);
+		progress_register_stage_played(p, session->plr.mode);
 	}
 
 	rng_init(&state->rng, seed);
 
 	if(session->replay.input.replay) {
-		player_init(&global.plr);
-		replay_stage_sync_player_state(session->replay.input.stage, &global.plr);
+		player_init(&session->plr);
+		replay_stage_sync_player_state(session->replay.input.stage, &session->plr);
 	}
 
 	if(session->replay.output.replay) {
@@ -1331,13 +1334,13 @@ static void _stage_enter(
 			start_time,
 			seed,
 			stage->diff,
-			&global.plr
+			&session->plr
 		);
-		player_init(&global.plr);
-		replay_stage_sync_player_state(session->replay.output.stage, &global.plr);
+		player_init(&session->plr);
+		replay_stage_sync_player_state(session->replay.output.stage, &session->plr);
 	}
 
-	plrmode_preload(global.plr.mode, rg);
+	plrmode_preload(session->plr.mode, rg);
 
 	res_purge();
 
@@ -1384,13 +1387,13 @@ static void stage_scene_end(void *ctx) {
 			replay_stage_destroy_events(session->replay.output.stage);
 		} else {
 			replay_stage_event(session->replay.output.stage, global.frames, EV_OVER, 0);
-			session->replay.output.stage->plr_points_final = global.plr.points;
+			session->replay.output.stage->plr_points_final = session->plr.points;
 
 			if(stage->gameover == GAMEOVER_WIN) {
 				session->replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
 			}
 
-			replay_stage_update_final_stats(session->replay.output.stage, &global.plr.stats);
+			replay_stage_update_final_stats(session->replay.output.stage, &session->plr.stats);
 		}
 	}
 
@@ -1404,7 +1407,7 @@ static void stage_scene_end(void *ctx) {
 	COEVENT_CANCEL_ARRAY(stage->events);
 	cosched_finish(&state->sched);
 	stage_free(state);
-	player_free(&global.plr);
+	player_free(&session->plr);
 	ent_shutdown();
 	rng_make_active(NULL);
 	stop_all_sfx();
@@ -1436,7 +1439,7 @@ static void stage_scene_end(void *ctx) {
 }
 
 void stage_unlock_bgm(const char *bgm) {
-	if(GAME.replay.input.replay == NULL && !global.plr.stats.total.continues_used) {
+	if(GAME.replay.input.replay == NULL && !GAME.plr.stats.total.continues_used) {
 		progress_unlock_bgm(bgm);
 	}
 }

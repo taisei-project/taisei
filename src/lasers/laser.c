@@ -609,7 +609,7 @@ static void laser_clear_now(Laser *l) {
 
 void process_lasers(LaserList *lasers) {
 	bool stage_cleared = stage_is_cleared();
-	Player *plr = &global.plr;
+	Player *plr = &GAME.plr;
 
 	lintern.segments.num_elements = 0;
 

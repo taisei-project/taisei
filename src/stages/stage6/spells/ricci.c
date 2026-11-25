@@ -129,7 +129,7 @@ TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 		cmplx target = VIEWPORT_W / 2.0 + VIEWPORT_H * I * 2 / 3 - 100 * sin(baryon_speed * t / 200.0) - 25 * I * cos(baryon_speed * t * 3.0 / 500.0);
 
 		if(t < 150) {
-			baryons->target_poss[0] = global.plr.pos;
+			baryons->target_poss[0] = GAME.plr.pos;
 		} else {
 			baryons->target_poss[0] += 0.5 * cnormalize(target - baryons->target_poss[0]);
 		}

@@ -107,7 +107,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 		common_charge_static(charge_time, boss->pos, RGBA(0, 0.5, 1.0, 0.0));
 		aniplayer_queue(&boss->ani, "main", 0);
 
-		real angle_ofs = carg(global.plr.pos - boss->pos);
+		real angle_ofs = carg(GAME.plr.pos - boss->pos);
 		int size = size_base + size_oscillation * sin(burst * 2.21);
 
 		for(int flake = 0; flake < flakes_per_burst; ++flake) {

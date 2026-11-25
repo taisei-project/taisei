@@ -268,7 +268,7 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 			}
 		}
 	}
-	e->move = move_linear((global.plr.pos - e->pos) / ARGS.chase_time);
+	e->move = move_linear((GAME.plr.pos - e->pos) / ARGS.chase_time);
 	INVOKE_TASK(kurumi_vladsarmy_drainer, ARGS.boss, ENT_BOX(e));
 	play_sfx("redirect");
 

@@ -360,8 +360,8 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		};
 
 		LineSegment seg = {
-			.a = global.plr.pos - global.plr.velocity - p->prevpos,
-			.b = global.plr.pos - p->pos
+			.a = GAME.plr.pos - GAME.plr.velocity - p->prevpos,
+			.b = GAME.plr.pos - p->pos
 		};
 
 #ifdef DEBUG
@@ -374,7 +374,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 					? "Lerp over HUGE distance %f; this is ABSOLUTELY a bug! Player speed was %f. Spawned at %s:%d (%s); proj time = %d"
 					: "Lerp over large distance %f; this is either a bug or a very fast projectile, investigate. Player speed was %f. Spawned at %s:%d (%s); proj time = %d",
 				seglen,
-				cabs(global.plr.velocity),
+				cabs(GAME.plr.velocity),
 				p->debug.file,
 				p->debug.line,
 				p->debug.func,
@@ -385,14 +385,14 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_ENTITY;
-			out_col->entity = &global.plr.ent;
+			out_col->entity = &GAME.plr.ent;
 			out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 		} else {
 			e_proj.axes = projectile_graze_size(p);
 
 			if(re(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
 				out_col->type = PCOL_PLAYER_GRAZE;
-				out_col->entity = &global.plr.ent;
+				out_col->entity = &GAME.plr.ent;
 				out_col->location = p->pos;
 			}
 		}

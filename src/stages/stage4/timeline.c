@@ -17,14 +17,14 @@
 #include "../stage6/elly.h"
 
 static void stage4_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage4PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage4PreBossDialog, pm->dialog->Stage4PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage4boss");
 }
 
 static void stage4_dialog_post_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage4PostBossDialog, pm->dialog->Stage4PostBoss);
 }
 
@@ -106,7 +106,7 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 		}
 
 		play_sfx_ex("shot3", 5, false);
-		cmplx aim = cnormalize(global.plr.pos - e->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 
 		real speed = difficulty_value(2, 2.3, 2.6, 3);
 		real boost_factor = 1.2;
@@ -155,7 +155,7 @@ TASK(partcircle_fairy, { cmplx pos; MoveParams move; }) {
 		for(int j = 0; j < circles; j++) {
 			play_sfx("shot2");
 
-			real angle_offset = carg(global.plr.pos - e->pos);
+			real angle_offset = carg(GAME.plr.pos - e->pos);
 			cmplx dir = cdir((i - 4) * M_TAU / projs_per_circle + angle_offset) * cnormalize(ARGS.move.velocity);
 
 			PROJECTILE(
@@ -192,7 +192,7 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 
 	for(int i = 0; i < count; i++) {
 		play_sfx_loop("shot1_loop");
-		cmplx dir = cnormalize(global.plr.pos - ARGS.e->pos) * cdir(2 * M_TAU / (count + 1) * i);
+		cmplx dir = cnormalize(GAME.plr.pos - ARGS.e->pos) * cdir(2 * M_TAU / (count + 1) * i);
 		cmplx v = speed * dir;
 		PROJECTILE(
 			.proto = pp_card,
@@ -230,7 +230,7 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 	WAIT(60);
 	for(int i = 0; i < count; i++) {
 		play_sfx_loop("shot1_loop");
-		cmplx dir = cnormalize(global.plr.pos - e->pos) * cdir(2 * M_TAU / (count + 1) * i);
+		cmplx dir = cnormalize(GAME.plr.pos - e->pos) * cdir(2 * M_TAU / (count + 1) * i);
 
 		for(int j = 0; j < 3; j++) {
 			real speed = shotspeed * (1.0 + 0.1 * j);
@@ -260,7 +260,7 @@ TASK(laser_fairy_explosion, { BoxedEnemy enemy; }) {
 	INVOKE_TASK_DELAYED(laser_delay, play_laser_sfx);
 
 
-	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 	int count = difficulty_value(4,5,6,8);
 	if(STAGE.diff > D_Easy) {
 		for(int i = 0; i < count; i++) {
@@ -363,7 +363,7 @@ TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
 	int count = difficulty_value(5, 10, 15, 20);
-	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 
 	real speed = difficulty_value(1.4, 1.7, 2.0, 2.3);
 
@@ -879,7 +879,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	INVOKE_TASK_DELAYED(1200, spawn_laser_pattern_fairy);
 	for(int i = 0; i < 4; i++) {
-		INVOKE_TASK_DELAYED(1000+120*i, bigcircle_fairy, .pos = pos[i], .vel = cnormalize(global.plr.pos-pos[i]));
+		INVOKE_TASK_DELAYED(1000+120*i, bigcircle_fairy, .pos = pos[i], .vel = cnormalize(GAME.plr.pos-pos[i]));
 	}
 
 	INVOKE_TASK_DELAYED(1500, spawn_spiral_fairy, .twist = 0.1);

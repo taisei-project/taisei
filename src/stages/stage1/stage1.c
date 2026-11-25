@@ -89,7 +89,7 @@ static void stage1_spellpractice_start(void) {
 }
 
 static void stage1_preload(ResourceGroup *rg) {
-	// DIALOG_PRELOAD(&global.plr, Stage1PreBoss, RESF_DEFAULT);
+	// DIALOG_PRELOAD(&GAME.plr, Stage1PreBoss, RESF_DEFAULT);
 	portrait_preload_base_sprite(rg, "cirno", NULL, RESF_DEFAULT);
 	portrait_preload_base_sprite(rg, "cirno", "defeated", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "cirno", "angry", RESF_DEFAULT);

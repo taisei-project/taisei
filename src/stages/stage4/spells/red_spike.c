@@ -60,7 +60,7 @@ DEFINE_EXTERN_TASK(kurumi_dryfountain) {
 	WAIT(step * 2);
 	for(;;) {
 		for(int i = 0; i < count; i++) {
-			cmplx vel = speed * cdir(M_TAU / count * i) * cnormalize(global.plr.pos-b->pos);
+			cmplx vel = speed * cdir(M_TAU / count * i) * cnormalize(GAME.plr.pos-b->pos);
 			PROJECTILE(
 				.proto = pp_bigball,
 				.pos = b->pos,
@@ -100,7 +100,7 @@ DEFINE_EXTERN_TASK(kurumi_redspike) {
 			for(int i = 0; i < 200; i += WAIT(step)) {
 				RNG_ARRAY(rand, 2);
 				cmplx offset = 100 * vrng_real(rand[0]) * vrng_dir(rand[1]);
-				cmplx dir = cnormalize(global.plr.pos - b->pos - offset);
+				cmplx dir = cnormalize(GAME.plr.pos - b->pos - offset);
 
 				PROJECTILE(
 					.proto = pp_rice,

@@ -79,7 +79,7 @@ typedef struct DamageInfo {
 } DamageInfo;
 
 typedef void (*EntityDrawFunc)(EntityInterface *ent, StageInstance *stage);
-typedef bool (*EntityPredicate)(EntityInterface *ent, StageInstance *stage);
+typedef bool (*EntityPredicate)(EntityInterface *ent, void *arg);
 typedef DamageResult (*EntityDamageFunc)(EntityInterface *target, const DamageInfo *damage);
 typedef void (*EntityDrawHookCallback)(EntityInterface *ent, void *arg);
 typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, cmplx ent_origin, void *arg);
@@ -134,7 +134,7 @@ void ent_init(void);
 void ent_shutdown(void);
 void ent_register(EntityInterface *ent, EntityType type) attr_nonnull(1);
 void ent_unregister(EntityInterface *ent) attr_nonnull(1);
-void ent_draw(EntityPredicate predicate, StageInstance *stage);
+void ent_draw(EntityPredicate predicate, void *predicate_arg, StageInstance *stage);
 DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) attr_nonnull(1, 2);
 void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) attr_nonnull(3);
 void ent_area_damage_ellipse(Ellipse ellipse, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) attr_nonnull(2);

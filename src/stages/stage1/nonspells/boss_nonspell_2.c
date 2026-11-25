@@ -17,7 +17,7 @@ TASK(snowburst, { BoxedBoss boss; }) {
 	int shots_per_round = difficulty_value(4, 4, 6, 7);
 	real spread = difficulty_value(0.13, 0.16, 0.19, 0.22);
 
-	real angle_ofs = carg(global.plr.pos - boss->pos);
+	real angle_ofs = carg(GAME.plr.pos - boss->pos);
 	for(int round = 0; round < rounds; ++round) {
 		real speed = (3 + round / 3.0);
 		real boost = round * 0.7;

@@ -15,6 +15,7 @@
 #include "enemy.h"
 #include "item.h"
 #include "lasers/laser.h"
+#include "player.h"
 #include "projectile.h"
 #include "replay/state.h"
 #include "stageinfo.h"
@@ -54,6 +55,7 @@ typedef struct StageInstance {
 } StageInstance;
 
 typedef struct GameSession {
+	Player plr;
 	StageInstance stage;
 
 	struct {

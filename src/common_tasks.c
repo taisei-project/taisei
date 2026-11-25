@@ -406,7 +406,7 @@ DEFINE_EXTERN_TASK(common_hitbox_warning) {
 	for(;;YIELD) {
 		if(*ARGS.radius > 0) {
 			real maxdist = *ARGS.radius + threshold;
-			real dist2 = cabs2(*ARGS.pos - global.plr.pos);
+			real dist2 = cabs2(*ARGS.pos - GAME.plr.pos);
 
 			if(dist2 < maxdist * maxdist) {
 				fapproach_asymptotic_p(&alpha, 1.0f, 0.15f, 1e-4);

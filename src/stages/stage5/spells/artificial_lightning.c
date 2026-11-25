@@ -104,7 +104,7 @@ TASK(fork_branch, {
 		cmplx r = cdir(s * rng_range(M_TAU/24, M_TAU/16));
 		cmplx o = (dest - mid) * r;
 		real m = cabs(o);
-		o = m * cnormalize(clerp(o, global.plr.pos - mid, 0.125));
+		o = m * cnormalize(clerp(o, GAME.plr.pos - mid, 0.125));
 
 		++bc;
 		INVOKE_TASK(fork_branch, mid, mid + o, c, ARGS.width * 0.8, ARGS.color, &bc);
@@ -147,7 +147,7 @@ TASK(fork, {
 		next_len = seglen * rng_range(0.5, 1.2);
 		cmplx arcdir;
 
-		arcdir = global.plr.pos - a;
+		arcdir = GAME.plr.pos - a;
 
 		if(cabs2(arcdir) > next_len * next_len) {
 			arcdir = cnormalize(arcdir) * next_len;
@@ -187,7 +187,7 @@ TASK(fork, {
 TASK(double_strike, { cmplx origin; real maxwidth; real minwidth; int delay; }) {
 	INVOKE_SUBTASK(fork,
 		.orig = ARGS.origin,
-		.dest = global.plr.pos,
+		.dest = GAME.plr.pos,
 		.maxwidth = ARGS.maxwidth,
 		.minwidth = ARGS.minwidth,
 		.color0 = RGBA(0.1, 0.5, 1, 0),
@@ -198,7 +198,7 @@ TASK(double_strike, { cmplx origin; real maxwidth; real minwidth; int delay; }) 
 
 	INVOKE_SUBTASK(fork,
 		.orig = ARGS.origin,
-		.dest = global.plr.pos,
+		.dest = GAME.plr.pos,
 		.maxwidth = ARGS.maxwidth,
 		.minwidth = ARGS.minwidth,
 		.color0 = RGBA(1.0, 1.0, 0.5, 0),
@@ -247,7 +247,7 @@ DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
 		} else {
 			INVOKE_SUBTASK(fork,
 				.orig = re(boss->pos),
-				.dest = global.plr.pos,
+				.dest = GAME.plr.pos,
 				.minwidth = 8,
 				.maxwidth = 64,
 				.color0 = RGBA(0.1, 0.5, 1, 0),

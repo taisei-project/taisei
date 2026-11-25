@@ -361,7 +361,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 		}
 
 		if(t == circletime) {
-			target_homing = global.plr.pos - 256*I;
+			target_homing = GAME.plr.pos - 256*I;
 			orb->flags &= ~PFLAG_NOCOLLISION;
 			play_sfx("redirect");
 		}
@@ -379,7 +379,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 
 		for(int i = 0; i < 3; i++) {
 			cmplx trail_pos = orb->pos + 10 * cdir(2*M_PI/3*(i+t*0.1));
-			cmplx trail_vel = global.plr.pos - trail_pos;
+			cmplx trail_vel = GAME.plr.pos - trail_pos;
 			trail_vel *= 3 * circlestrength / cabs(trail_vel);
 
 			PARTICLE(

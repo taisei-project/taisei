@@ -41,7 +41,7 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 	p->color = RGBA(0.3, 0.8, 0.8, 0.0);
 	projectile_set_prototype(p, pp_bullet);
 
-	cmplx vel = cdir(rng_sreal()*0.01) * (global.plr.pos - p->pos) * 0.001;
+	cmplx vel = cdir(rng_sreal()*0.01) * (GAME.plr.pos - p->pos) * 0.001;
 	p->move = move_linear(vel);
 
 	real deflection = difficulty_value(0.004, 0.004, 0.005, 0.005);
@@ -100,7 +100,7 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 			cmplx p = CMPLX(VIEWPORT_W * ((j + 0.5 + 0.4 * rng_sreal()) / (real)count), y);
 			cmplx dir = cdir(M_TAU * sin(vrng_angle(rand[j]) + 245 * i + j * j * 3501));
 
-			if(cabs(p - global.plr.pos) > 60) {
+			if(cabs(p - GAME.plr.pos) > 60) {
 				INVOKE_TASK(kurumi_vampvape_proj, 160, p, speed * dir);
 
 				if(rng_chance(0.5)) {

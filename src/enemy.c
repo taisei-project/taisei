@@ -311,8 +311,8 @@ void process_enemies(EnemyList *enemies) {
 
 		float hurt_radius = enemy_get_hurt_radius(enemy);
 
-		if(hurt_radius > 0 && cabs(enemy->pos - global.plr.pos) < hurt_radius) {
-			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
+		if(hurt_radius > 0 && cabs(enemy->pos - GAME.plr.pos) < hurt_radius) {
+			ent_damage(&GAME.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 
 		if(should_auto_kill(enemy)) {

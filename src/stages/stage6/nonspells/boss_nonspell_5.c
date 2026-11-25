@@ -24,7 +24,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_5) {
 
 		int cnt = 5;
 		for(int i = 0; i < cnt; ++i) {
-			cmplx dir = cdir(M_PI / 4 * (1.0 / cnt * i - 0.5)) * cnormalize(global.plr.pos-boss->pos);
+			cmplx dir = cdir(M_PI / 4 * (1.0 / cnt * i - 0.5)) * cnormalize(GAME.plr.pos-boss->pos);
 
 			for(int j = 0; j < 3; j++) {
 				PROJECTILE(
@@ -38,7 +38,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_5) {
 		WAIT(interval);
 
 		int w = difficulty_value(1, 1, 2, 2);
-		cmplx dir = cnormalize(global.plr.pos - boss->pos);
+		cmplx dir = cnormalize(GAME.plr.pos - boss->pos);
 
 		for(int x = -w; x <= w; x++) {
 			for(int y = -w; y <= w; y++) {

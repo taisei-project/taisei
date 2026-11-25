@@ -169,7 +169,7 @@ DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
 		}
 
 		WAIT(90);
-		plr_slot = re(global.plr.pos) / SLOT_WIDTH;
+		plr_slot = re(GAME.plr.pos) / SLOT_WIDTH;
 
 		// goat1_slot is the one that we will reveal
 		if(goat1_slot == plr_slot) {

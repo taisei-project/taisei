@@ -13,7 +13,7 @@ TASK(aimcircle, { int lifetime; int focustime; }) {
 		.sprite_ptr = res_sprite("fairy_circle"),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
-		.pos = global.plr.pos,
+		.pos = GAME.plr.pos,
 		.angle_delta = M_TAU/60,
 		.color = RGB(2, 0.75, 0.5),
 	));
@@ -23,9 +23,9 @@ TASK(aimcircle, { int lifetime; int focustime; }) {
 
 	for(int t = 0; t < ARGS.lifetime; ++t, YIELD) {
 		if(t < ARGS.focustime) {
-			capproach_asymptotic_p(&p->pos, global.plr.pos, 0.2, 1e-3);
+			capproach_asymptotic_p(&p->pos, GAME.plr.pos, 0.2, 1e-3);
 		} else if(t == ARGS.focustime) {
-			p->pos = global.plr.pos;
+			p->pos = GAME.plr.pos;
 		}
 
 		float sf = min(t / (float)spawntime, 1.0f);
@@ -103,7 +103,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 
 	play_sfx("redirect");
 
-	cmplx dist = global.plr.pos - p->pos;
+	cmplx dist = GAME.plr.pos - p->pos;
 	cmplx accel = ARGS.accel_rate * cnormalize(dist);
 	dt = sqrt(2 * cabs(dist) / ARGS.accel_rate);
 	dt += 2 * rng_f64s();

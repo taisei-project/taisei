@@ -142,7 +142,7 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	real o = 0;
 
 	for(;;) {
-		cmplx aim = cnormalize(global.plr.pos - boss->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - boss->pos);
 
 		for(int i = 0; i < n; ++i) {
 			cmplx dir = aim * cdir((i + o) * M_TAU / n);

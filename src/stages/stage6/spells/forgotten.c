@@ -36,12 +36,12 @@ TASK(forgotten_baryons_spawner, { BoxedEllyBaryons baryons;}) {
 			RNG_ARRAY(R, 2);
 			cmplx pos = baryons->poss[i] + 60 * vrng_sreal(R[0]) + I * 60 * vrng_sreal(R[1]);
 
-			if(cabs(pos - global.plr.pos) > 100) {
+			if(cabs(pos - GAME.plr.pos) > 100) {
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = pos,
 					.color = RGBA(1.0, 0.4, 1.0, 0.0),
-					.move = move_linear(cnormalize(global.plr.pos - pos)),
+					.move = move_linear(cnormalize(GAME.plr.pos - pos)),
 				);
 			}
 		}
@@ -63,12 +63,12 @@ TASK(forgotten_bullet, { cmplx pos; cmplx *diff; }) {
 
 	for(;;) {
 		cmplx v = (*ARGS.diff)*0.00005;
-		cmplx x = p->pos - global.plr.pos;
+		cmplx x = p->pos - GAME.plr.pos;
 
 		real f1 = 1 + 2 * re(v*conj(x)) + cabs2(x);
 		real f2 = 1 - re(v*v);
 		real f3 = f1 - f2 * cabs2(x);
-		p->pos = global.plr.pos + (f1 * v + f2 * x) / f3 + vel0 / (1 + 2 * cabs2(x) / VIEWPORT_W / VIEWPORT_W);
+		p->pos = GAME.plr.pos + (f1 * v + f2 * x) / f3 + vel0 / (1 + 2 * cabs2(x) / VIEWPORT_W / VIEWPORT_W);
 
 		YIELD;
 	}
@@ -117,13 +117,13 @@ TASK(forgotten_orbiter_spawner, { BoxedBoss boss; }) {
 
 TASK(forgotten_spawner) {
 	cmplx diff = 0;
-	cmplx plr_pos_old = global.plr.pos;
+	cmplx plr_pos_old = GAME.plr.pos;
 
 	int interval = difficulty_value(3, 3, 2, 2);
 
 	for(int t = 0;; t++) {
-		diff = global.plr.pos - plr_pos_old;
-		plr_pos_old = global.plr.pos;
+		diff = GAME.plr.pos - plr_pos_old;
+		plr_pos_old = GAME.plr.pos;
 
 		play_sfx_loop("shot1_loop");
 
@@ -131,7 +131,7 @@ TASK(forgotten_spawner) {
 			RNG_ARRAY(R, 2);
 			cmplx pos = VIEWPORT_W * vrng_real(R[0]) + I * VIEWPORT_H * vrng_real(R[1]);
 
-			if(cabs(pos - global.plr.pos) > 50) {
+			if(cabs(pos - GAME.plr.pos) > 50) {
 				INVOKE_SUBTASK(forgotten_bullet, pos, &diff);
 			}
 		}

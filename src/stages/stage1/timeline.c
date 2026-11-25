@@ -26,7 +26,7 @@ TASK(burst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_dir; }) {
 	int n = difficulty_value(0, 1, 3, 5);
 
 	for(int i = -n; i <= n; i++) {
-		cmplx aim = cdir(carg(global.plr.pos - e->pos) + 0.2 * i);
+		cmplx aim = cdir(carg(GAME.plr.pos - e->pos) + 0.2 * i);
 
 		PROJECTILE(
 			.proto = pp_crystal,
@@ -75,7 +75,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 		for(int i = ARGS.duration; i--;) {
 			play_sfx_loop("shot1_loop");
 
-			real aim_angle = carg(global.plr.pos - e->pos) + spread * 0.5 * rng_sreal();
+			real aim_angle = carg(GAME.plr.pos - e->pos) + spread * 0.5 * rng_sreal();
 			cmplx aim = cdir(aim_angle) * rng_range(1, 3);
 
 			PROJECTILE(
@@ -139,7 +139,7 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 	for(;;) {
 		play_sfx("shot1");
 
-		cmplx aim = cnormalize(global.plr.pos - e->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 		aim *= difficulty_value(2, 2, 2.5, 3);
 
 		PROJECTILE(
@@ -205,7 +205,7 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 	WAIT(difficulty_value(50, 35, 20, 20));
 
 	while(true) {
-		cmplx aim = cnormalize(global.plr.pos - e->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 		aim *= 1 + 0.3 * STAGE.diff + rng_real();
 
 		play_sfx("shot1");
@@ -234,7 +234,7 @@ TASK(multiburst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_accel; }) {
 		int n = difficulty_value(0, 0, 2, 3);
 
 		for(int j = -n; j <= n; j++) {
-			cmplx aim = cdir(carg(global.plr.pos - e->pos) + j / 5.0);
+			cmplx aim = cdir(carg(GAME.plr.pos - e->pos) + j / 5.0);
 			aim *= 2.5;
 
 			PROJECTILE(
@@ -316,7 +316,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
 	Enemy *e = TASK_BIND(
 		ecls_fairy_summon(ecls_spawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)), 120).entity);
 
-	cmplx dir = cnormalize(global.plr.pos - e->pos);
+	cmplx dir = cnormalize(GAME.plr.pos - e->pos);
 	cmplx ofs = -24 * dir;
 
 	common_charge(60, &e->pos, ofs, RGBA(0.0, 0.25, 0.5, 0));
@@ -668,7 +668,7 @@ TASK(spawn_boss) {
 
 	Boss *boss = STAGE.boss = stage1_spawn_cirno(-230 + 100.0*I);
 
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage1PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage1PreBossDialog, pm->dialog->Stage1PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
@@ -692,7 +692,7 @@ TASK(spawn_boss) {
 }
 
 static void stage1_dialog_post_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage1PostBossDialog, pm->dialog->Stage1PostBoss);
 }
 

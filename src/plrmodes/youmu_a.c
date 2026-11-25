@@ -115,7 +115,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 	real f = myon->focus_factor;
 	cmplx stardust_v = (2 + f) * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
 
-	if(player_should_shoot(&global.plr)) {
+	if(player_should_shoot(&GAME.plr)) {
 		RNG_ARRAY(R, 7);
 
 		PARTICLE(
@@ -504,7 +504,7 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAMyon *myon; }) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(pp_event);
 
-		float t = player_get_bomb_progress(&global.plr);
+		float t = player_get_bomb_progress(&GAME.plr);
 		float f = max(0, 1 - 10 * t);
 		cmplx myonpos = CMPLX(re(myon->pos)/VIEWPORT_W, im(myon->pos)/VIEWPORT_H);
 

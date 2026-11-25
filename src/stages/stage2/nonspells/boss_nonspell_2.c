@@ -34,7 +34,7 @@ TASK(balls, { BoxedBoss boss; }) {
 		play_sfx("shot_special1");
 		play_sfx("redirect");
 
-		cmplx aim = cnormalize(global.plr.pos - boss->pos);
+		cmplx aim = cnormalize(GAME.plr.pos - boss->pos);
 
 		int n = 12;
 		for(int i = 0; i < n; ++i) {

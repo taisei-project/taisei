@@ -450,7 +450,7 @@ bool player_should_shoot(Player *plr) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
 		!dialog_is_active(STAGE.dialog) &&
-		player_is_alive(&global.plr);
+		player_is_alive(&GAME.plr);
 }
 
 void player_placeholder_bomb_logic(Player *plr) {
@@ -985,7 +985,7 @@ static void player_powersurge_expired(Player *plr, bool is_break) {
 	);
 
 	if(!is_break) {
-		player_add_points(&global.plr, bonus.score, plr->pos);
+		player_add_points(&GAME.plr, bonus.score, plr->pos);
 	} else {
 		play_sfx("noise1");
 		stagetext_add(_("Surge Break!"), plr->pos - 64 * I, ALIGN_CENTER,
@@ -1092,13 +1092,14 @@ void player_realdeath(Player *plr) {
 }
 
 static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
+	Player *plr = args[0].as_ptr;
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", t + p->birthtime);
 	r_uniform_float("progress", t / p->timeout);
 	r_uniform_vec2("origin", re(p->pos), im(p->pos));
-	r_uniform_vec2("clear_origin", re(global.plr.pos), im(global.plr.pos));
+	r_uniform_vec2("clear_origin", re(plr->pos), im(plr->pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
@@ -1186,7 +1187,10 @@ void player_death(Player *plr) {
 		.pos = plr->pos,
 		.size = 1+I,
 		.timeout = 90,
-		.draw_rule = player_death_effect_draw_overlay,
+		.draw_rule = {
+			.func = player_death_effect_draw_overlay,
+			.args[0].as_ptr = plr,
+		},
 		.blend = BLEND_NONE,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_OVERLAY,
@@ -1471,7 +1475,7 @@ static bool player_applymovement_gamepad(Player *plr) {
 
 	if(direction) {
 		plr->gamepadmove = true;
-		player_move(&global.plr, direction);
+		player_move(&GAME.plr, direction);
 	}
 
 	return true;
@@ -1539,7 +1543,7 @@ void player_applymovement(Player *plr) {
 		direction /= cabs(direction);
 
 	if(direction)
-		player_move(&global.plr, direction);
+		player_move(&GAME.plr, direction);
 }
 
 void player_fix_input(Player *plr, ReplayState *rpy_out) {
@@ -1843,13 +1847,13 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		switch(target->type) {
 			case ENT_TYPE_ID(Enemy): {
 				pos = ENT_CAST(target, Enemy)->pos;
-				player_add_points(&global.plr, damage->amount, pos);
+				player_add_points(plr, damage->amount, pos);
 				break;
 			}
 
 			case ENT_TYPE_ID(Boss): {
 				pos = ENT_CAST(target, Boss)->pos;
-				player_add_points(&global.plr, damage->amount, pos);
+				player_add_points(plr, damage->amount, pos);
 				break;
 			}
 

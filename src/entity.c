@@ -113,7 +113,7 @@ static inline bool ent_is_drawable(EntityInterface *ent) {
 	return (ent->draw_layer & ~LAYER_LOW_MASK) > LAYER_NODRAW && ent->draw_func;
 }
 
-void ent_draw(EntityPredicate predicate, StageInstance *stage) {
+void ent_draw(EntityPredicate predicate, void *predicate_arg, StageInstance *stage) {
 	call_hooks(&entities.hooks.pre_draw, NULL);
 	dynarray_qsort(&entities.registered, ent_cmp);
 
@@ -122,7 +122,7 @@ void ent_draw(EntityPredicate predicate, StageInstance *stage) {
 			EntityInterface *ent = *pent;
 			ent->index = i;
 
-			if(ent_is_drawable(ent) && predicate(ent, stage)) {
+			if(ent_is_drawable(ent) && predicate(ent, predicate_arg)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent, stage);
@@ -157,14 +157,14 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 
 	if(DAMAGETYPE_IS_PLAYER(damage->type)) {
 		new_damage = *damage;
-		player_damage_hook(&global.plr, ent, &new_damage);
+		player_damage_hook(&GAME.plr, ent, &new_damage);
 		damage = &new_damage;
 	}
 
 	DamageResult res = ent->damage_func(ent, damage);
 
 	if(res == DMG_RESULT_OK) {
-		player_register_damage(&global.plr, ent, damage);
+		player_register_damage(&GAME.plr, ent, damage);
 	}
 
 	return res;

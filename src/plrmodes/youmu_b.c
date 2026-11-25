@@ -305,7 +305,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 		if(orb) {
 			target = orb->pos;
 		} else {
-			target = plrutil_homing_target(p->pos, re(global.plr.pos) - 128*I);
+			target = plrutil_homing_target(p->pos, re(GAME.plr.pos) - 128*I);
 		}
 
 		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity);

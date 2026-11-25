@@ -99,15 +99,15 @@ static void reset_game(StartGameContext *ctx) {
 	ctx->session.gameover = GAMEOVER_NONE;
 	replay_reset(&ctx->replay);
 	replay_state_init_record(&ctx->session.replay.output, &ctx->replay);
-	player_init(&global.plr);
-	stats_init(&global.plr.stats);
-	global.plr.mode = plrmode_find(
+	player_init(&ctx->session.plr);
+	stats_init(&ctx->session.plr.stats);
+	ctx->session.plr.mode = plrmode_find(
 		progress.game_settings.character,
 		progress.game_settings.shotmode
 	);
 	ctx->session.diff = ctx->difficulty;
 
-	assert(global.plr.mode != NULL);
+	assert(ctx->session.plr.mode != NULL);
 }
 
 static void kill_aux_menus(StartGameContext *ctx) {
@@ -176,7 +176,8 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 }
 
 static void start_game_do_show_ending(CallChainResult ccr) {
-	Player *plr = &global.plr;
+	StartGameContext *ctx = ccr.ctx;
+	Player *plr = &ctx->session.plr;
 	PlayerCharacter *character = plr->mode->character;
 	PlrCharEndingCutscene *ec_id;
 

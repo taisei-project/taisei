@@ -549,11 +549,11 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	replay_state_init_record(&ctx->session.replay.output, mctx->replay_out);
 	replay_state_deinit(&ctx->session.replay.input);
 	ctx->session.gameover = GAMEOVER_NONE;
-	player_init(&global.plr);
-	stats_init(&global.plr.stats);
+	player_init(&ctx->session.plr);
+	stats_init(&ctx->session.plr.stats);
 
 	if(ctx->plrmode) {
-		global.plr.mode = ctx->plrmode;
+		ctx->session.plr.mode = ctx->plrmode;
 	}
 
 	stage_enter(&ctx->session, ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));

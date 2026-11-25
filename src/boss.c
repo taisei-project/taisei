@@ -40,7 +40,7 @@ typedef struct SpellBonus {
 	bool failed;
 } SpellBonus;
 
-static void calc_spell_bonus(StageInstance *stage, Attack *a, SpellBonus *bonus);
+static void calc_spell_bonus(GameSession *game, Attack *a, SpellBonus *bonus);
 
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
 
@@ -250,7 +250,7 @@ static void update_hud_attack_ptrs(Boss *boss) {
 
 static void update_healthbar(Boss *boss) {
 	bool radial = healthbar_style_is_radial();
-	bool player_nearby = radial && cabs(boss->pos - global.plr.pos) < 128;
+	bool player_nearby = radial && cabs(boss->pos - GAME.plr.pos) < 128;
 	float update_speed = 0.1;
 	float target_opacity = 1.0;
 	float target_fill = 0.0;
@@ -369,7 +369,7 @@ static void update_hud(Boss *boss) {
 		target_spell_opacity = 0.0;
 	}
 
-	if(im(global.plr.pos) < 128) {
+	if(im(GAME.plr.pos) < 128) {
 		target_plrproximity_opacity = 0.25;
 	}
 
@@ -511,7 +511,7 @@ static void draw_spell_name(GameSession *game, Boss *b, int time, bool healthbar
 		bool kern = font_get_kerning_enabled(font);
 		font_set_kerning_enabled(font, false);
 
-		auto plrmode = global.plr.mode;
+		auto plrmode = game->plr.mode;
 		auto plrprog = &p->per_plrmode[plrmode->character->id][plrmode->shot_mode];
 		snprintf(buf, sizeof(buf), "%u / %u", plrprog->num_cleared, plrprog->num_played);
 
@@ -533,7 +533,7 @@ static void draw_spell_name(GameSession *game, Boss *b, int time, bool healthbar
 		);
 
 		SpellBonus bonus;
-		calc_spell_bonus(&game->stage, b->current, &bonus);
+		calc_spell_bonus(game, b->current, &bonus);
 		format_huge_num(0, bonus.total, sizeof(buf), buf);
 
 		draw_boss_text(ALIGN_LEFT,
@@ -964,17 +964,19 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	return DMG_RESULT_OK;
 }
 
-static void calc_spell_bonus(StageInstance *stage, Attack *a, SpellBonus *bonus) {
+static void calc_spell_bonus(GameSession *game, Attack *a, SpellBonus *bonus) {
+	StageInstance *stage = &game->stage;
+
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = attack_was_failed(a);
 
 	int time_left = clamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
 
-	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
+	double piv_factor = game->plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
 
 	if(a->type == AT_ExtraSpell) {
-		base *= (1.0 + global.plr.voltage / 1000.0);
+		base *= (1.0 + game->plr.voltage / 1000.0);
 	}
 
 	bonus->clear = bonus->failed ? 0 : base;
@@ -996,7 +998,7 @@ static void calc_spell_bonus(StageInstance *stage, Attack *a, SpellBonus *bonus)
 
 static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	SpellBonus bonus = {};
-	calc_spell_bonus(&STAGE, a, &bonus);
+	calc_spell_bonus(&GAME, a, &bonus);
 
 	const char *title = bonus.failed ? _("Spell Card failed…")  : _("Spell Card captured!");
 
@@ -1084,13 +1086,13 @@ void boss_finish_current_attack(Boss *boss) {
 	}
 
 	if(ATTACK_IS_SPELL(t)) {
-		boss_give_spell_bonus(boss, boss->current, &global.plr);
+		boss_give_spell_bonus(boss, boss->current, &GAME.plr);
 
 		if(!attack_was_failed(boss->current)) {
 			StageProgress *p = get_spellstage_progress(&GAME, boss->current, NULL, true);
 
 			if(p) {
-				progress_register_stage_cleared(p, global.plr.mode);
+				progress_register_stage_cleared(p, GAME.plr.mode);
 			}
 
 			// HACK
@@ -1113,7 +1115,7 @@ void boss_finish_current_attack(Boss *boss) {
 		// if not, skip it. This can't be done any later, because we have to know whether to start
 		// the death sequence this frame (since the extra spell is usually the final one).
 		Attack *next = boss->current + 1;
-		if(next->type == AT_ExtraSpell && global.plr.voltage < STAGE.voltage_threshold) {
+		if(next->type == AT_ExtraSpell && GAME.plr.voltage < STAGE.voltage_threshold) {
 			// see boss_should_skip_attack()
 			next->timeout = 0;
 		}
@@ -1284,8 +1286,8 @@ void process_boss(Boss **pboss) {
 		play_sfx_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
 	}
 
-	if(boss_is_player_collision_active(boss) && cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {
-		ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
+	if(boss_is_player_collision_active(boss) && cabs(boss->pos - GAME.plr.pos) < BOSS_HURT_RADIUS) {
+		ent_damage(&GAME.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 	}
 
 	#ifdef DEBUG
@@ -1437,7 +1439,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 			p->unlocked = true;
 		}
 
-		progress_register_stage_played(p, global.plr.mode);
+		progress_register_stage_played(p, GAME.plr.mode);
 	}
 
 	// This should go before a->rule(b,EVENT_BIRTH), so it doesn’t reset values set by the attack rule.

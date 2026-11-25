@@ -48,7 +48,7 @@ TASK(XPattern, { BoxedBoss boss; real dir_sign; int num2; int num3; }) {
 	int num3 = ARGS.num3 * rank;
 	real odd = 1;
 	real dir_sign = ARGS.dir_sign;
-	cmplx rot = cnormalize(global.plr.pos - boss->pos) * cdir(M_PI/2 * -dir_sign);
+	cmplx rot = cnormalize(GAME.plr.pos - boss->pos) * cdir(M_PI/2 * -dir_sign);
 
 	for(int i = 0; i < num2; ++i) {
 		for(int j = 0; j < 3; ++j) {

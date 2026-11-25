@@ -133,10 +133,10 @@ TASK(halation_orb, {
 
 TASK(halation_chase, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_from_towards(boss->pos, global.plr.pos, 0.05);
+	boss->move = move_from_towards(boss->pos, GAME.plr.pos, 0.05);
 	for(;;) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
-		boss->move.attraction_point = global.plr.pos;
+		boss->move.attraction_point = GAME.plr.pos;
 		YIELD;
 	}
 }
@@ -155,7 +155,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 
 	for(;;) {
 		WAIT(60);
-		center = global.plr.pos;
+		center = GAME.plr.pos;
 		rotation += M_PI/2;
 
 		cmplx orb_positions[orbs];
@@ -179,7 +179,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 
 		WAIT(60);
 
-		if(cabs(global.plr.pos - center) > 200) {
+		if(cabs(GAME.plr.pos - center) > 200) {
 			const char *text[] = {
 				N_("What are you doing??"),
 				N_("Dodge it properly!"),

@@ -49,7 +49,6 @@ enum {
 #define VIEWPORT_RECT { VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H }
 
 typedef struct {
-	Player plr;
 
 
 	int frames; // stage global timer

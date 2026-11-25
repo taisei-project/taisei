@@ -18,7 +18,7 @@ TASK(crystal_rain_drops) {
 		for(int i = 0; i < nshots; ++i) {
 			RNG_ARRAY(rng, 2);
 			cmplx org = vrng_range(rng[0], 0, VIEWPORT_W);
-			cmplx aim = cnormalize(global.plr.pos - org);
+			cmplx aim = cnormalize(GAME.plr.pos - org);
 			PROJECTILE(
 				.proto = pp_crystal,
 				.pos = org,
@@ -58,7 +58,7 @@ TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 				.proto = odd? pp_plainball : pp_bigball,
 				.pos = org,
 				.color = RGB(0.2, 0.2, 0.9),
-				.move = move_asymptotic_simple(2 * cdir(carg(global.plr.pos - org) + 0.3 * i), 2.3),
+				.move = move_asymptotic_simple(2 * cdir(carg(GAME.plr.pos - org) + 0.3 * i), 2.3),
 			);
 		}
 

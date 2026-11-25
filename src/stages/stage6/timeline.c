@@ -192,7 +192,7 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 	BoxedTask cleanup = cotask_box(INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished,
 		sniper_fairy_shot_cleanup, lb));
 
-	cmplx aim = global.plr.pos - e->pos;
+	cmplx aim = GAME.plr.pos - e->pos;
 	MoveParams aim_move = { };
 
 	INVOKE_SUBTASK(common_charge,
@@ -212,7 +212,7 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 		}
 
 		if(t < aimfreezetime) {
-			aim_target = global.plr.pos;
+			aim_target = GAME.plr.pos;
 		}
 
 		aim_move = move_towards(aim_move.velocity, aim_target, 1.5);
@@ -255,7 +255,7 @@ TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 			.proto = pp_ball,
 			.pos = scythe->pos + r * dir,
 			.color = RGBA(0, 0.2, 0.5, 0.0),
-			.move = move_accelerated(dir, speed * cnormalize(global.plr.pos - scythe->pos - r * dir)),
+			.move = move_accelerated(dir, speed * cnormalize(GAME.plr.pos - scythe->pos - r * dir)),
 			.max_viewport_dist = r,
 		);
 
@@ -296,7 +296,7 @@ TASK(scythe_mid, { cmplx pos; }) {
 TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
 	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
@@ -355,7 +355,7 @@ TASK(spawn_boss) {
 		.scythe = scythe_ref
 	);
 
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage6PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage6PreBossDialog, pm->dialog->Stage6PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss), scythe_ref);
@@ -457,7 +457,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		INVOKE_TASK_DELAYED(720 + 10 * i, side_fairy,
 			.pos = pos,
 			.move = move_linear(2.0 * I + (1 - 2 * (i & 1))),
-			.direction = I * cnormalize(global.plr.pos - pos) * (1 - 2 * (i & 1)),
+			.direction = I * cnormalize(GAME.plr.pos - pos) * (1 - 2 * (i & 1)),
 			.index = i * psin(i)
 		);
 	}

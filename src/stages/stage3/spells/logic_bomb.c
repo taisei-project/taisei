@@ -22,7 +22,7 @@ TASK(limiters, { BoxedBoss boss; }) {
 
 		for(int i = -1; i < 2; i += 2) {
 			real c = psin(time/10.0);
-			cmplx aim = cnormalize(global.plr.pos - boss->pos);
+			cmplx aim = cnormalize(GAME.plr.pos - boss->pos);
 			cmplx v = 8 * aim * cdir(i * angle);
 			PROJECTILE(
 				.proto = pp_crystal,
@@ -77,7 +77,7 @@ TASK(recursive_balls, { BoxedBoss boss; }) {
 
 	for(;;WAIT(delay)) {
 		cmplx o = boss->pos + boss_get_sprite_offset(boss) + SHOT_OFS2;
-		cmplx d = cnormalize(global.plr.pos - o + 32 * rng_dir());
+		cmplx d = cnormalize(GAME.plr.pos - o + 32 * rng_dir());
 		play_sfx("shot_special1");
 		INVOKE_TASK(recursive_ball, o, d, M_PI/2);
 	}

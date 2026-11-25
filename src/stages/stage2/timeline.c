@@ -324,7 +324,7 @@ TASK(aimshot_fairy, { BoxedEnemy e; MoveParams move_enter; MoveParams move_exit;
 	WAIT(42);
 	play_sfx("shot1");
 
-	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 	int num = difficulty_value(1, 1, 3, 5);
 	real speed1 = difficulty_value(3, 4, 5, 5);
 	real speed2 = difficulty_value(3, 3, 4, 4);
@@ -460,7 +460,7 @@ TASK(flea_swirl, {
 }
 
 static void stage2_dialog_post_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage2PostBossDialog, pm->dialog->Stage2PostBoss);
 }
 
@@ -636,7 +636,7 @@ TASK(spawn_boss) {
 
 	Boss *boss = STAGE.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
 
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage2PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage2PreBossDialog, pm->dialog->Stage2PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));

@@ -46,7 +46,7 @@ DEFINE_EXTERN_TASK(stage4_boss_nonspell_2) {
 					.color = RGB(1,0,0.5),
 					.move = move_linear(3 * dir)
 				);
-				cmplx redirect_vel = 1.5 * cnormalize(global.plr.pos - spawn_pos - 2 * redirect_time * dir) + 0.4  * dir;
+				cmplx redirect_vel = 1.5 * cnormalize(GAME.plr.pos - spawn_pos - 2 * redirect_time * dir) + 0.4  * dir;
 
 				INVOKE_TASK_DELAYED(redirect_time, stage4_boss_nonspell_redirect,
 					.proj = ENT_BOX(p),

@@ -25,7 +25,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 		for(int shot = 0; shot < num_shots; ++shot) {
 			for(int i = 0; i < num_projs; ++i) {
 				cmplx shot_org = boss->pos;
-				cmplx aim = cdir(i*M_TAU/num_projs + carg(global.plr.pos - shot_org));
+				cmplx aim = cdir(i*M_TAU/num_projs + carg(GAME.plr.pos - shot_org));
 				real speed = 3 + shot / 3.0;
 				real boost = shot * 0.7;
 

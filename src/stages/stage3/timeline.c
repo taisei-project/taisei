@@ -18,7 +18,7 @@
 #include "stages/common_imports.h"
 
 static void stage3_dialog_post_boss(void) {
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage3PostBossDialog, pm->dialog->Stage3PostBoss);
 }
 
@@ -99,7 +99,7 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 	WAIT(30);
 	e->move.retention = 0.9;
 	WAIT(20);
-	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	cmplx aim = cnormalize(GAME.plr.pos - e->pos);
 
 	for(int t = 0; t < shooting_time/interval; t++) {
 		play_sfx("shot1");
@@ -233,7 +233,7 @@ TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 
 	for(int i = 0; i < maxshots; ++i, WAIT(interval)) {
 		play_sfx("shot1");
-		cmplx diff = global.plr.pos - e->pos;
+		cmplx diff = GAME.plr.pos - e->pos;
 
 		if(cabs2(diff) < minrange * minrange) {
 			continue;
@@ -582,7 +582,7 @@ TASK(spawn_boss) {
 
 	glm_vec3_copy((vec3) { 50, 30, 80 }, stage3_get_draw_data()->boss_light.radiance);
 
-	PlayerMode *pm = global.plr.mode;
+	PlayerMode *pm = GAME.plr.mode;
 	Stage3PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage3PreBossDialog, pm->dialog->Stage3PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));

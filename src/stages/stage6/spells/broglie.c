@@ -210,7 +210,7 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 	for(int attack_num = 0;; attack_num++) {
 		for(int t = 0; t < delay; t++) {
 			cmplx boss_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
-			baryons->target_poss[0] = boss_pos + 100 * cnormalize(global.plr.pos - boss_pos);
+			baryons->target_poss[0] = boss_pos + 100 * cnormalize(GAME.plr.pos - boss_pos);
 
 			YIELD;
 		}

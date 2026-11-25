@@ -37,7 +37,7 @@ DEFINE_EXTERN_TASK(stage5_boss_nonspell_1) {
 				.proto = pp_ball,
 				.pos = boss->pos,
 				.color = RGBA(0.4, 1.0, 1.0, 0),
-				.move = move_asymptotic_simple((i + 2) * 0.4 * cnormalize(global.plr.pos - boss->pos) + 0.2 * offset * rng_sreal(), 3),
+				.move = move_asymptotic_simple((i + 2) * 0.4 * cnormalize(GAME.plr.pos - boss->pos) + 0.2 * offset * rng_sreal(), 3),
 			);
 		}
 		play_sfx("shot2");

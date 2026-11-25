@@ -33,7 +33,7 @@ TASK(fstorm_bullet, { BoxedBoss boss; ProjPrototype *proto; cmplx pos; cmplx vel
 	int t = 0;
 
 	for(;;YIELD) {
-		if(cabs(global.plr.pos - p->pos) > 100) {
+		if(cabs(GAME.plr.pos - p->pos) > 100) {
 			++t;
 		} else {
 			t = max(0, t - 1);

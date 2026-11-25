@@ -97,7 +97,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			real r1 = sin(i/M_PI*5.3) * cos(2*i/M_PI*5.3);
 			real r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
 
-			cmplx aim = cnormalize(global.plr.pos - boss->pos);
+			cmplx aim = cnormalize(GAME.plr.pos - boss->pos);
 			real speed = 2 + 0.2 * STAGE.diff;
 
 			for(int sign = -1; sign <= 1; sign += 2) {

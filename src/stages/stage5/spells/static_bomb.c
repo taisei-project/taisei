@@ -34,7 +34,7 @@ TASK(slave_laser_shot, { BoxedIkuSlave slave; int delay; }) {
 	int amount = 800 - ARGS.delay;
 	for(int x = 0; x <  (amount / difficulty); x++) {
 		real rand = rng_sreal();
-		create_laserline(slave->pos, 10 * cnormalize(global.plr.pos - slave->pos) * cdir(0.04 * rand), 60, 120, RGBA(1, 0.3, 1, 0));
+		create_laserline(slave->pos, 10 * cnormalize(GAME.plr.pos - slave->pos) * cdir(0.04 * rand), 60, 120, RGBA(1, 0.3, 1, 0));
 		WAIT(45);
 		play_sfx_ex("laser1", 0, true);
 		WAIT(difficulty - 45);

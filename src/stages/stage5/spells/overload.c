@@ -130,7 +130,7 @@ TASK(grid_visual, { NodesGrid *grid; }) {
 	Sprite *spr_target = res_sprite("fairy_circle_red");
 
 	for(int t = 0;; ++t, YIELD) {
-		Node *next = grid->active ? nearest_link(grid, grid->active, global.plr.pos) : NULL;
+		Node *next = grid->active ? nearest_link(grid, grid->active, GAME.plr.pos) : NULL;
 		for(int r = 0; r < rows; ++r) {
 			for(int c = 0; c < columns; ++c) {
 				Node *n = NOT_NULL(get_node(grid, r, c));
@@ -262,7 +262,7 @@ TASK(grid_logic, { CoEvent *trigger; NodesGrid **grid_out; }) {
 			goto wait_for_active_node;
 		}
 
-		Node *next = nearest_link(grid, grid->active, global.plr.pos);
+		Node *next = nearest_link(grid, grid->active, GAME.plr.pos);
 
 		Laser *laser = create_laserline_ab(grid->active->pos, next->pos, 16, 15, 99999, RGBA(0.3, 0.9, 1, 0));
 		laser->unclearable = true;
@@ -304,7 +304,7 @@ TASK(trigger_ball_particles, { BoxedProjectile p; }) {
 TASK(trigger_ball, { cmplx pos; NodesGrid *grid; int charge_time; }) {
 	int charge_time = ARGS.charge_time;
 	int discharge_time = charge_time;
-	Node *target = nearest_node(ARGS.grid, global.plr.pos);
+	Node *target = nearest_node(ARGS.grid, GAME.plr.pos);
 
 	Color charge_color = RGBA(0.5, 0.2, 1.0, 0.0);
 

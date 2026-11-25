@@ -162,7 +162,7 @@ static void sun_move(Projectile *p) {
 	}
 
 	real a = difficulty_value(0.001, 0.001, 0.002, 0.002);
-	p->move = move_accelerated(p->move.velocity, a * cnormalize(global.plr.pos - p->pos));
+	p->move = move_accelerated(p->move.velocity, a * cnormalize(GAME.plr.pos - p->pos));
 
 	auto halo = res_sprite("part/blast_huge_halo");
 
@@ -300,7 +300,7 @@ DEFINE_EXTERN_TASK(stage3_spell_moths_to_a_flame) {
 		aniplayer_queue(&boss->ani, "specialshot_release", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
 		boss->move.attraction_point = common_wander(boss->pos, 92, bounds);
-		cmplx aim = 0.5 * (global.plr.pos - boss->pos);
+		cmplx aim = 0.5 * (GAME.plr.pos - boss->pos);
 		INVOKE_SUBTASK(slave, ENT_BOX(boss), boss->pos + aim);
 		WAIT(cycle - charge_time);
 	}

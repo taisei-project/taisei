@@ -72,7 +72,7 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 		ctx->base.title = _("Game Over");
 
 		StringBuffer s = { acquire_scratch_arena() };
-		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
+		int c = MAX_CONTINUES - params->game->plr.stats.total.continues_used;
 		bool have_continues = c > 0;
 
 		if(have_continues) {

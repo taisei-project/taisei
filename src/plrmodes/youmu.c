@@ -93,7 +93,7 @@ DEFINE_EXTERN_TASK(youmu_common_bomb_background) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(draw_event);
 
-		float t = player_get_bomb_progress(&global.plr);
+		float t = player_get_bomb_progress(&GAME.plr);
 		float fade = 1.0f;
 
 		if(t < 1.0f / 12.0f) {
