@@ -30,7 +30,7 @@ typedef COEVENTS_ARRAY(
 	postprocess_after_overlay
 ) StageDrawEvents;
 
-void stage_draw_preload(ResourceGroup *rg);
+void stage_draw_preload(GameSession *game, ResourceGroup *rg);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
 bool stage_draw_is_initialized(void);

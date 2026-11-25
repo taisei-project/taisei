@@ -546,8 +546,8 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	MainContext *mctx = ctx->mctx;
 
 	replay_reset(mctx->replay_out);
-	replay_state_init_record(&global.replay.output, mctx->replay_out);
-	replay_state_deinit(&global.replay.input);
+	replay_state_init_record(&ctx->session.replay.output, mctx->replay_out);
+	replay_state_deinit(&ctx->session.replay.input);
 	ctx->session.gameover = GAMEOVER_NONE;
 	player_init(&global.plr);
 	stats_init(&global.plr.stats);
@@ -612,11 +612,10 @@ static void main_singlestg(MainContext *mctx) {
 
 static void main_replay(MainContext *mctx) {
 	if(mctx->replay_out) {
-		replay_state_init_record(&global.replay.output, mctx->replay_out);
 		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
 	}
 
-	replay_play(mctx->replay_in, mctx->replay_idx, false, CALLCHAIN(main_cleanup, mctx));
+	replay_play(mctx->replay_in, mctx->replay_idx, false, mctx->replay_out, CALLCHAIN(main_cleanup, mctx));
 	eventloop_run();
 }
 

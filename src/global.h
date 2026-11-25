@@ -72,10 +72,6 @@ typedef struct {
 		FPSCounter busy;
 	} fps;
 
-	struct {
-		ReplayState input, output;
-	} replay;
-
 	RandomState rand_game;
 	RandomState rand_visual;
 

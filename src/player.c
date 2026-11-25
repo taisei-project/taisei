@@ -614,7 +614,7 @@ DEFINE_TASK(player_logic) {
 
 		if(
 			plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames &&
-			plr->lives < 0 && global.replay.input.replay == NULL
+			plr->lives < 0 && GAME.replay.input.replay == NULL
 		) {
 			stage_gameover();
 		}

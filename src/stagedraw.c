@@ -278,7 +278,7 @@ static void stage_draw_destroy_framebuffers(void) {
 	stagedraw.mfb_group = NULL;
 }
 
-void stage_draw_preload(ResourceGroup *rg) {
+void stage_draw_preload(GameSession *game, ResourceGroup *rg) {
 	res_group_preload(rg, RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
@@ -323,7 +323,7 @@ void stage_draw_preload(ResourceGroup *rg) {
 		"monosmall",
 	NULL);
 
-	if(stage_is_demo_mode()) {
+	if(game_is_demo_mode(game)) {
 		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 			"text_demo",
 		NULL);
@@ -1621,8 +1621,8 @@ void stage_draw_bottom_text(GameSession *game) {
 		.color = RGB(1, 1, 1),
 	});
 
-	ReplayState *rst = &global.replay.input;
-	if(rst->replay != NULL && (!stage_is_demo_mode() || rst->play.desync_frame >= 0)) {
+	ReplayState *rst = &game->replay.input;
+	if(rst->replay != NULL && (!game_is_demo_mode(game) || rst->play.desync_frame >= 0)) {
 		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
@@ -1977,7 +1977,7 @@ void stage_draw_hud(GameSession *game) {
 	}
 
 	// Demo indicator
-	if(stage_is_demo_mode()) {
+	if(game_is_demo_mode(game)) {
 		cmplxf pos = CMPLXF(
 			VIEWPORT_X + VIEWPORT_W * 0.5f,
 			VIEWPORT_Y + VIEWPORT_H * 0.5f - 75

@@ -12,6 +12,7 @@
 #include "stageinfo.h"
 #include "coroutine/cotask.h"
 #include "coroutine/coevent.h"
+#include "replay/state.h"
 
 typedef enum GameoverType {
 	GAMEOVER_NONE,
@@ -40,6 +41,11 @@ typedef struct StageInstance {
 
 typedef struct GameSession {
 	StageInstance stage;
+
+	struct {
+		ReplayState input, output;
+	} replay;
+
 	GameoverType gameover;
 	bool is_practice_mode;
 } GameSession;
@@ -47,3 +53,7 @@ typedef struct GameSession {
 // These are only valid in a coroutine task context
 #define GAME              (*(GameSession*)NOT_NULL(cotask_get_context(cotask_active_unsafe())))
 #define STAGE             (GAME.stage)
+
+static inline bool game_is_demo_mode(const GameSession *game) {
+	return game->replay.input.replay && game->replay.input.play.demo_mode;
+}

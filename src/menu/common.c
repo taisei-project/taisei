@@ -98,7 +98,7 @@ static void reset_game(StartGameContext *ctx) {
 
 	ctx->session.gameover = GAMEOVER_NONE;
 	replay_reset(&ctx->replay);
-	replay_state_init_record(&global.replay.output, &ctx->replay);
+	replay_state_init_record(&ctx->session.replay.output, &ctx->replay);
 	player_init(&global.plr);
 	stats_init(&global.plr.stats);
 	global.plr.mode = plrmode_find(
@@ -199,8 +199,8 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
 	res_group_release(&ctx->rg);
+	replay_state_deinit(&ctx->session.replay.output);
 	mem_free(ctx);
-	replay_state_deinit(&global.replay.output);
 	main_menu_update_practice_menus();
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
