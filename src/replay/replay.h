@@ -46,4 +46,9 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) att
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) attr_nonnull_all;
 
-void replay_play(Replay *rpy, int firstidx, bool demo_mode, Replay *rerecord, CallChain next) attr_nonnull(1);
+typedef enum ReplayPlayFlags {
+	REPLAY_PLAY_DEMO = (1 << 0),
+	REPLAY_PLAY_VERIFY = (1 << 1),
+} ReplayPlayFlags;
+
+void replay_play(Replay *rpy, int firstidx, ReplayPlayFlags flags, Replay *rerecord, CallChain next) attr_nonnull(1);

@@ -12,7 +12,11 @@
 #include "cli.h"
 
 void taisei_init(CLIAction *cli);
+
 bool taisei_is_kiosk_mode(void);
+
+// true = no config or progress saved
+bool taisei_is_transient(void);
 
 void taisei_quit(void);
 bool taisei_quit_requested(void);

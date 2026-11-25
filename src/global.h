@@ -61,7 +61,6 @@ typedef struct {
 	} fps;
 
 
-	uint is_replay_verification : 1;
 } Global;
 
 extern Global global;

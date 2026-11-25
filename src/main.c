@@ -65,9 +65,7 @@ attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
-	if(!global.is_replay_verification) {
-		taisei_commit_persistent_data(false);
-	}
+	taisei_commit_persistent_data(false);
 
 	i18n_shutdown();
 	debug_text_shutdown();
@@ -618,7 +616,8 @@ static void main_replay(MainContext *mctx) {
 		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
 	}
 
-	replay_play(mctx->replay_in, mctx->replay_idx, false, mctx->replay_out, CALLCHAIN(main_cleanup, mctx));
+	ReplayPlayFlags flags = mctx->cli.type == CLI_VerifyReplay ? REPLAY_PLAY_VERIFY : 0;
+	replay_play(mctx->replay_in, mctx->replay_idx, flags, mctx->replay_out, CALLCHAIN(main_cleanup, mctx));
 	eventloop_run();
 }
 

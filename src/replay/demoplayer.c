@@ -130,7 +130,7 @@ static void demoplayer_start_demo_posttransition(CallChainResult ccr) {
 	if(TRANSITION_RESULT_CANCELED(ccr)) {
 		run_call_chain(&end, NULL);
 	} else {
-		replay_play(&ctx->rpy, 0, true, NULL, end);
+		replay_play(&ctx->rpy, 0, REPLAY_PLAY_DEMO, NULL, end);
 	}
 }
 

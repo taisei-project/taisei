@@ -1017,7 +1017,7 @@ static void stage_replay_sync(StagePrivateState *state) {
 
 	if(rpsync == REPLAY_SYNC_FAIL) {
 		if(
-			global.is_replay_verification &&
+			game->is_replay_verification &&
 			!game->replay.output.stage
 		) {
 			exit(1);

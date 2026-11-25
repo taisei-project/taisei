@@ -17,6 +17,7 @@
 static struct {
 	SDL_AtomicInt quitting;
 	bool kiosk_mode;
+	bool transient;
 } app;
 
 void taisei_init(CLIAction *cli) {
@@ -28,10 +29,15 @@ void taisei_init(CLIAction *cli) {
 
 	if(cli->type == CLI_VerifyReplay) {
 		eventloop_set_headless(true);
+		app.transient = true;
 	} else if(cli->frameskip) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", cli->frameskip);
 		eventloop_set_frameskip(cli->frameskip);
 	}
+}
+
+bool taisei_is_transient(void) {
+	return app.transient;
 }
 
 bool taisei_is_kiosk_mode(void) {

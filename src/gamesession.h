@@ -65,6 +65,7 @@ typedef struct GameSession {
 	GameoverType gameover;
 	int8_t diff; // Difficulty, but signed to prevent obscure overflow errors
 	bool is_practice_mode;
+	bool is_replay_verification;
 } GameSession;
 
 // These are only valid in a coroutine task context

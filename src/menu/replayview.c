@@ -69,7 +69,7 @@ static void really_start_replay(CallChainResult ccr) {
 	mem_free(argp);
 
 	if(!TRANSITION_RESULT_CANCELED(ccr)) {
-		replay_play(arg.rpy, arg.stgnum, false, NULL, CALLCHAIN(on_replay_finished, arg.rpy));
+		replay_play(arg.rpy, arg.stgnum, 0, NULL, CALLCHAIN(on_replay_finished, arg.rpy));
 	}
 }
 

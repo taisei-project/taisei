@@ -8,6 +8,7 @@
 
 #include "global.h"
 
+#include "taisei_app.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "gamepad.h"
@@ -18,10 +19,6 @@ void init_global(CLIAction *cli) {
 	global = (typeof(global)) {};
 
 	rng_init_default(time(0));
-
-	if(cli->type == CLI_VerifyReplay) {
-		global.is_replay_verification = true;
-	}
 
 	fpscounter_reset(&global.fps.logic);
 	fpscounter_reset(&global.fps.render);
@@ -50,6 +47,10 @@ static void *sync_task(void *arg) {
 }
 
 void taisei_commit_persistent_data(bool async) {
+	if(taisei_is_transient()) {
+		return;
+	}
+
 	if(!SDL_CompareAndSwapAtomicInt(&syncing_data, 0, 1)) {
 		log_warn("Commit already in progress");
 		return;

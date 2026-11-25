@@ -20,14 +20,14 @@ typedef struct ReplayContext {
 	ResourceGroup rg;
 	GameSession session;
 	int stage_idx;
-	bool demo_mode;
+	ReplayPlayFlags flags;
 } ReplayContext;
 
 static void replay_do_cleanup(CallChainResult ccr);
 static void replay_do_play(CallChainResult ccr);
 static void replay_do_post_play(CallChainResult ccr);
 
-void replay_play(Replay *rpy, int firstidx, bool demo_mode, Replay *rerecord, CallChain next) {
+void replay_play(Replay *rpy, int firstidx, ReplayPlayFlags flags, Replay *rerecord, CallChain next) {
 	if(firstidx >= rpy->stages.num_elements || firstidx < 0) {
 		log_error("No stage #%i in the replay", firstidx);
 		run_call_chain(&next, NULL);
@@ -38,7 +38,8 @@ void replay_play(Replay *rpy, int firstidx, bool demo_mode, Replay *rerecord, Ca
 		.cc = next,
 		.rpy = rpy,
 		.stage_idx = firstidx,
-		.demo_mode = demo_mode,
+		.session.is_replay_verification = flags & REPLAY_PLAY_VERIFY,
+		.flags = flags,
 	});
 
 	if(rerecord) {
@@ -72,7 +73,7 @@ static void replay_do_play(CallChainResult ccr) {
 	} else {
 		assume(rstg != NULL);
 		replay_state_init_play(&ctx->session.replay.input, rpy, rstg);
-		ctx->session.replay.input.play.demo_mode = ctx->demo_mode;
+		ctx->session.replay.input.play.demo_mode = ctx->flags & REPLAY_PLAY_DEMO;
 		ctx->session.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		res_group_release(&ctx->rg);
 		stage_enter(&ctx->session, stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
