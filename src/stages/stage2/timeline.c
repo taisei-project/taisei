@@ -641,7 +641,7 @@ TASK(spawn_boss) {
 	INVOKE_TASK_INDIRECT(Stage2PreBossDialog, pm->dialog->Stage2PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage2boss");
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	boss_add_attack_task(boss, AT_Normal, "Cards1", 60, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.amulet_of_harm, false);
@@ -859,7 +859,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	WAIT(240);
 	stage2_dialog_post_boss();
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);

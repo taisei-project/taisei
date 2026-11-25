@@ -263,7 +263,7 @@ static void update_healthbar(Boss *boss) {
 		boss_is_fleeing(boss) ||
 		!a_cur ||
 		a_cur->type == AT_Move ||
-		dialog_is_active(global.dialog)
+		dialog_is_active(STAGE.dialog)
 	) {
 		target_opacity = 0.0;
 	}
@@ -359,7 +359,7 @@ static void update_hud(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(!boss->current || boss->current->type == AT_Move || dialog_is_active(global.dialog)) {
+	if(!boss->current || boss->current->type == AT_Move || dialog_is_active(STAGE.dialog)) {
 		target_opacity = 0.0;
 	}
 
@@ -1140,7 +1140,7 @@ void process_boss(Boss **pboss) {
 	fapproach_asymptotic_p(&boss->background_transition, boss->in_background ? 1.0f : 0.0f, 0.15, 1e-3);
 	boss->ent.draw_layer = lerp(LAYER_BOSS, LAYER_BACKGROUND, boss->background_transition);
 
-	if(!boss->current || dialog_is_active(global.dialog)) {
+	if(!boss->current || dialog_is_active(STAGE.dialog)) {
 		return;
 	}
 

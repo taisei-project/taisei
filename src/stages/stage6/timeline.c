@@ -298,7 +298,7 @@ TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 
 	PlayerMode *pm = global.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 
@@ -362,7 +362,7 @@ TASK(spawn_boss) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 
 	int scythe_ready_time = 220;
-	int dialog_time = WAIT_EVENT(&global.dialog->events.fadeout_began).frames;
+	int dialog_time = WAIT_EVENT(&STAGE.dialog->events.fadeout_began).frames;
 	WAIT(scythe_ready_time - dialog_time);
 	stage6_bg_start_boss_rotation();
 

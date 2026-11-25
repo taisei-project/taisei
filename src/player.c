@@ -449,7 +449,7 @@ static void player_fail_spell(Player *plr) {
 bool player_should_shoot(Player *plr) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
-		!dialog_is_active(global.dialog) &&
+		!dialog_is_active(STAGE.dialog) &&
 		player_is_alive(&global.plr);
 }
 
@@ -574,7 +574,7 @@ void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
 }
 
 static void player_powersurge_logic(Player *plr) {
-	if(dialog_is_active(global.dialog)) {
+	if(dialog_is_active(STAGE.dialog)) {
 		return;
 	}
 
@@ -1308,8 +1308,8 @@ PlayerEventResult player_event(
 
 	switch(type) {
 		case EV_PRESS:
-			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
-				useful = dialog_page(global.dialog);
+			if(dialog_is_active(STAGE.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
+				useful = dialog_page(STAGE.dialog);
 				break;
 			}
 
@@ -1319,7 +1319,7 @@ PlayerEventResult player_event(
 					break;
 
 				case KEY_SPECIAL:
-					if(dialog_is_active(global.dialog)) {
+					if(dialog_is_active(STAGE.dialog)) {
 						useful = false;
 						break;
 					}
@@ -1585,7 +1585,7 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 		config_get_int(CONFIG_AUTO_SURGE) &&
 		plr->power_stored == PLR_MAX_POWER_STORED &&
 		!player_is_powersurge_active(plr) &&
-		!dialog_is_active(global.dialog)
+		!dialog_is_active(STAGE.dialog)
 	) {
 		player_event(plr, NULL, rpy_out, EV_PRESS, KEY_SPECIAL);
 	}

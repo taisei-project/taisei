@@ -129,8 +129,8 @@ static void skipstate_init(void) {
 	skip_state.skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
 }
 
-static SceneAction skipstate_handle_frame(void) {
-	if(skip_state.skip_to_dialog && dialog_is_active(global.dialog)) {
+static SceneAction skipstate_handle_frame(StagePrivateState *state) {
+	if(skip_state.skip_to_dialog && dialog_is_active(state->stage->dialog)) {
 		skip_state.skip_to_dialog = false;
 		global.plr.iddqd = false;
 	}
@@ -160,7 +160,7 @@ static void skipstate_shutdown(void) {
 
 #else
 
-INLINE SceneAction skipstate_handle_frame(void) { return SCENE_ACTION_WAIT; }
+INLINE SceneAction skipstate_handle_frame(StagePrivateState *state) { return SCENE_ACTION_WAIT; }
 INLINE void skipstate_init(void) { }
 INLINE void skipstate_shutdown(void) { }
 
@@ -670,11 +670,12 @@ static void display_bgm_title(void) {
 
 static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
 	StagePrivateState *state = NOT_NULL(a);
+	StageInstance *stage = state->stage;
 	state->bgm_start_time = global.frames;
 	state->bgm_start_pos = audio_bgm_tell();
 
-	if(dialog_is_active(global.dialog)) {
-		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
+	if(dialog_is_active(stage->dialog)) {
+		INVOKE_TASK_WHEN(&stage->dialog->events.fadeout_began, common_call_func, display_bgm_title);
 	} else {
 		display_bgm_title();
 	}
@@ -801,19 +802,21 @@ void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 }
 
 TASK(clear_dialog) {
-	assert(global.dialog != NULL);
+	assert(STAGE.dialog != NULL);
 	// dialog_deinit() should've been called by dialog_end() at this point
-	global.dialog = NULL;
+	STAGE.dialog = NULL;
 }
 
 void stage_begin_dialog(Dialog *d) {
-	assert(global.dialog == NULL);
-	global.dialog = d;
+	assert(STAGE.dialog == NULL);
+	STAGE.dialog = d;
 	dialog_init(d);
 	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
 }
 
-static void stage_free(void) {
+static void stage_free(StagePrivateState *state) {
+	StageInstance *stage = state->stage;
+
 	delete_enemies(&global.enemies);
 	delete_items();
 	delete_lasers();
@@ -821,9 +824,9 @@ static void stage_free(void) {
 	delete_projectiles(&global.projs);
 	delete_projectiles(&global.particles);
 
-	if(global.dialog) {
-		dialog_deinit(global.dialog);
-		global.dialog = NULL;
+	if(stage->dialog) {
+		dialog_deinit(stage->dialog);
+		stage->dialog = NULL;
 	}
 
 	if(global.boss) {
@@ -1122,7 +1125,7 @@ static SceneAction stage_scene_logic(void *arg) {
 
 	recover_after_skip(state);
 
-	SceneAction skipmode = skipstate_handle_frame();
+	SceneAction skipmode = skipstate_handle_frame(state);
 	if(skipmode != SCENE_ACTION_WAIT) {
 		return skipmode;
 	}
@@ -1185,17 +1188,17 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 		process_lasers();
 		process_projectiles(&global.particles, false);
 
-		if(global.dialog) {
-			dialog_update(global.dialog);
+		if(stage->dialog) {
+			dialog_update(stage->dialog);
 
-			if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
-				dialog_page(global.dialog);
+			if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(stage->dialog)) {
+				dialog_page(stage->dialog);
 			}
 		}
 
 		if(stage_is_skip_mode()) {
-			if(dialog_is_active(global.dialog)) {
-				dialog_page(global.dialog);
+			if(dialog_is_active(stage->dialog)) {
+				dialog_page(stage->dialog);
 			}
 
 			if(global.boss) {
@@ -1380,7 +1383,7 @@ static void stage_scene_end(void *ctx) {
 	stage_draw_shutdown();
 	COEVENT_CANCEL_ARRAY(stage->events);
 	cosched_finish(&state->sched);
-	stage_free();
+	stage_free(state);
 	player_free(&global.plr);
 	ent_shutdown();
 	rng_make_active(&global.rand_visual);

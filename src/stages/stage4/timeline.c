@@ -898,7 +898,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	WAIT(240);
 	stage4_dialog_post_boss();
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);

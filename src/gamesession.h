@@ -9,10 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include "stageinfo.h"
-#include "coroutine/cotask.h"
 #include "coroutine/coevent.h"
+#include "coroutine/cotask.h"
+#include "dialog.h"
 #include "replay/state.h"
+#include "stageinfo.h"
 
 typedef enum GameoverType {
 	GAMEOVER_NONE,
@@ -34,6 +35,7 @@ typedef struct StageInstance {
 		end
 	) events;
 
+	Dialog *dialog;
 	uint voltage_threshold;
 	float view_shake;
 	GameoverType gameover;

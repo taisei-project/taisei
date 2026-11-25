@@ -673,7 +673,7 @@ TASK(spawn_boss) {
 	INVOKE_TASK_INDIRECT(Stage1PreBossDialog, pm->dialog->Stage1PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage1boss");
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	STAGE_BOOKMARK(boss-postdialog);
 
@@ -795,7 +795,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 	WAIT(120);
 
 	stage1_dialog_post_boss();
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);

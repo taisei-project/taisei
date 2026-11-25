@@ -64,7 +64,6 @@ typedef struct {
 	int frameskip;
 
 	Boss *boss;
-	Dialog *dialog;
 
 	struct {
 		FPSCounter logic;

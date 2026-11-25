@@ -1079,6 +1079,8 @@ static void set_bg_color_filter_uniforms(void) {
 }
 
 void stage_draw_scene(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
 
@@ -1155,7 +1157,7 @@ void stage_draw_scene(GameSession *game) {
 	stage_draw_hud(game);
 
 	// draw dialog
-	dialog_draw(global.dialog);
+	dialog_draw(stage->dialog);
 
 	// draw "bottom text" (FPS, replay info, etc.)
 	stage_draw_bottom_text(game);

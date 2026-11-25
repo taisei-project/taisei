@@ -62,7 +62,7 @@ TASK(spawn_boss) {
 	INVOKE_TASK_INDIRECT(Stage5PreBossDialog, pm->dialog->Stage5PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage5boss");
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	boss_add_attack_task(boss, AT_Normal, "Bolts1", 40, 24000, TASK_INDIRECT(BossAttack, stage5_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage5_spells.boss.atmospheric_discharge, false);
@@ -1159,7 +1159,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 
 	WAIT(240);
 	stage5_dialog_post_boss();
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT(&STAGE.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);
