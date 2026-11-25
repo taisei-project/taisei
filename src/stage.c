@@ -534,6 +534,10 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 		return false;
 	}
 
+	if(UNLIKELY(state->paused)) {
+		return false;
+	}
+
 	if(
 		(type == TE_GAME_KEY_DOWN || type == TE_GAME_KEY_UP) &&
 		code == KEY_SHOT &&
@@ -700,6 +704,10 @@ static void stage_input(StagePrivateState *state) {
 			},
 			{}
 		}, EFLAG_GAME);
+	}
+
+	if(UNLIKELY(state->paused)) {
+		return;
 	}
 
 	player_fix_input(&global.plr, &game->replay.output);
