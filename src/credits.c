@@ -37,6 +37,7 @@ static struct {
 	DYNAMIC_ARRAY(CreditsEntry) entries;
 	float panelalpha;
 	int end;
+	int frames;
 	bool skippable;
 	CallChain cc;
 
@@ -356,7 +357,7 @@ static void credits_init(void) {
 	stage_3d_context.cam.rot.v[0] = 30;
 	stage_3d_context.cam.rot.v[2] = -20;
 
-	global.frames = 0;
+	credits.frames = 0;
 
 	credits.env_map = res_texture("stage6/sky");
 	pbr_load_model(&credits.models.tower, "credits/tower", "credits/tower");
@@ -415,7 +416,7 @@ static float yukkuri_jump(float t) {
 }
 
 static void credits_draw_entry(CreditsEntry *e) {
-	int time = global.frames - 200;
+	int time = credits.frames - 200;
 	float fadein = 1, fadeout = 1;
 
 	for(CreditsEntry *o = credits.entries.data; o != e; ++o) {
@@ -467,7 +468,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri_spr && !i) {
-			float t = ((global.frames) % 90) / 59.0;
+			float t = ((credits.frames) % 90) / 59.0;
 			float elevation = yukkuri_jump(t);
 			float squeeze = (elevation - yukkuri_jump(t - 0.03)) * 0.4;
 			float halfheight = yukkuri_spr->h * 0.5;
@@ -562,19 +563,19 @@ static void credits_finish(CallChainResult ccr) {
 static void credits_process(void) {
 	stage3d_update(&stage_3d_context);
 
-	//stage_3d_context.cam.pos[2] = 10-0.1*global.frames;
-	//stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	//stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
+	//stage_3d_context.cam.pos[2] = 10-0.1*credits.frames;
+	//stage_3d_context.cam.pos[1] = 500 + 100 * psin(credits.frames / 100.0) * psin(credits.frames / 200.0 + M_PI);
+	//stage_3d_context.cam.pos[0] = 25 * sin(credits.frames / 75.7) * cos(credits.frames / 99.3);
 
-	if(global.frames >= 100 && global.frames <= 200) {
+	if(credits.frames >= 100 && credits.frames <= 200) {
 		credits.panelalpha += 0.01;
 	}
 
-	if(global.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {
+	if(credits.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {
 		credits.panelalpha -= 1 / 120.0;
 	}
 
-	if(global.frames == credits.end) {
+	if(credits.frames == credits.end) {
 		set_transition(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, CALLCHAIN(credits_finish, NULL));
 	}
 }
@@ -619,7 +620,7 @@ static SceneAction credits_logic_frame(void *arg) {
 	update_transition();
 	events_poll(NULL, 0);
 	credits_process();
-	global.frames++;
+	credits.frames++;
 
 	if(credits.end == 0) {
 		return SCENE_ACTION_STOP;
