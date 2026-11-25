@@ -1503,7 +1503,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 	format_huge_num(4, global.plr.voltage, sizeof(buf), buf);
 	float volts_x = 0;
 
-	Color voltage_tint = global.plr.voltage >= global.voltage_threshold
+	Color voltage_tint = global.plr.voltage >= stage->voltage_threshold
 		? RGB(1.0, 0.9, 0.7) // RGB(0.9, 0.7, 1.0)
 		: RGB(1.0, 1.0, 1.0);
 
@@ -1535,7 +1535,7 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 		.color = stagedraw.hud_text.color.active,
 	});
 
-	format_huge_num(4, global.voltage_threshold, sizeof(buf), buf);
+	format_huge_num(4, stage->voltage_threshold, sizeof(buf), buf);
 
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },

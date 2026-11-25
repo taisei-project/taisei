@@ -165,8 +165,6 @@ INLINE void skipstate_shutdown(void) { }
 static void stage_start(StageInfo *stage_info) {
 	global.frames = 0;
 	global.gameover = 0;
-	global.voltage_threshold = 0;
-
 	player_stage_pre_init(&global.plr);
 
 	stats_stage_reset(&global.plr.stats);
@@ -885,10 +883,10 @@ void stage_start_bgm(const char *bgm) {
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
 	switch(global.diff) {
-		case D_Easy:    global.voltage_threshold = easy;    return;
-		case D_Normal:  global.voltage_threshold = normal;  return;
-		case D_Hard:    global.voltage_threshold = hard;    return;
-		case D_Lunatic: global.voltage_threshold = lunatic; return;
+		case D_Easy:    STAGE.voltage_threshold = easy;    return;
+		case D_Normal:  STAGE.voltage_threshold = normal;  return;
+		case D_Hard:    STAGE.voltage_threshold = hard;    return;
+		case D_Lunatic: STAGE.voltage_threshold = lunatic; return;
 		default: UNREACHABLE;
 	}
 }
@@ -908,12 +906,14 @@ static void stage_update_fps(StagePrivateState *state) {
 	}
 }
 
-static void stage_give_clear_bonus(const StageInfo *stage_info, StageClearBonus *bonus) {
+static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bonus) {
+	StageInstance *stage = state->stage;
+
 	*bonus = (typeof(*bonus)) {};
 
 	// FIXME: this is clunky...
-	if(!global.is_practice_mode && stage_info->type == STAGE_STORY) {
-		StageInfo *next = stageinfo_get_by_id(stage_info->id + 1);
+	if(!global.is_practice_mode && stage->info->type == STAGE_STORY) {
+		StageInfo *next = stageinfo_get_by_id(stage->info->id + 1);
 
 		if(next == NULL || next->type != STAGE_STORY) {
 			bonus->all_clear.base = global.plr.point_item_value * 100 + global.plr.points / 10;
@@ -922,11 +922,11 @@ static void stage_give_clear_bonus(const StageInfo *stage_info, StageClearBonus 
 		}
 	}
 
-	if(stage_info->type == STAGE_STORY) {
-		bonus->base = stage_info->id * 1000000;
+	if(stage->info->type == STAGE_STORY) {
+		bonus->base = stage->info->id * 1000000;
 	}
 
-	bonus->voltage = max(0, (int)global.plr.voltage - (int)global.voltage_threshold) * (global.plr.point_item_value / 25);
+	bonus->voltage = max(0, (int)global.plr.voltage - (int)stage->voltage_threshold) * (global.plr.point_item_value / 25);
 	bonus->lives = global.plr.lives * global.plr.point_item_value * 5;
 
 	// TODO: maybe a difficulty multiplier?
@@ -1034,7 +1034,7 @@ static SceneAction stage_scene_logic(void *arg) {
 			global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY
 		) {
 			StageClearBonus b;
-			stage_give_clear_bonus(stage->info, &b);
+			stage_give_clear_bonus(state, &b);
 			stage_display_clear_screen(&b);
 		}
 

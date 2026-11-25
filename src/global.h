@@ -89,8 +89,6 @@ typedef struct {
 		ReplayState input, output;
 	} replay;
 
-	uint voltage_threshold;
-
 	RandomState rand_game;
 	RandomState rand_visual;
 

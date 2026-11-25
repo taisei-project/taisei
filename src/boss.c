@@ -1111,7 +1111,7 @@ void boss_finish_current_attack(Boss *boss) {
 		// if not, skip it. This can't be done any later, because we have to know whether to start
 		// the death sequence this frame (since the extra spell is usually the final one).
 		Attack *next = boss->current + 1;
-		if(next->type == AT_ExtraSpell && global.plr.voltage < global.voltage_threshold) {
+		if(next->type == AT_ExtraSpell && global.plr.voltage < STAGE.voltage_threshold) {
 			// see boss_should_skip_attack()
 			next->timeout = 0;
 		}

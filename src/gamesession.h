@@ -23,6 +23,7 @@ typedef struct StageInstance {
 		end
 	) events;
 
+	uint voltage_threshold;
 	float view_shake;
 } StageInstance;
 
