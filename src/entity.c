@@ -171,7 +171,7 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 }
 
 void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
+	for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 		if(
 			cabs(origin - e->pos) < radius &&
 			ent_damage(&e->ent, damage) == DMG_RESULT_OK &&
@@ -192,7 +192,7 @@ void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, Entit
 }
 
 void ent_area_damage_ellipse(Ellipse ellipse, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
+	for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 		if(
 			point_in_ellipse(e->pos, ellipse) &&
 			ent_damage(&e->ent, damage) == DMG_RESULT_OK &&

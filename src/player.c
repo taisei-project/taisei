@@ -462,7 +462,7 @@ void player_placeholder_bomb_logic(Player *plr) {
 	dmg.amount = 100;
 	dmg.type = DMG_PLAYER_BOMB;
 
-	for(Enemy *en = global.enemies.first; en; en = en->next) {
+	for(Enemy *en = STAGE.enemies.first; en; en = en->next) {
 		ent_damage(&en->ent, &dmg);
 	}
 
@@ -1934,7 +1934,7 @@ cmplx plrutil_homing_target(cmplx org, cmplx fallback) {
 		mindst = cabs(target - org);
 	}
 
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
+	for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 		if(!enemy_is_targetable(e)) {
 			continue;
 		}

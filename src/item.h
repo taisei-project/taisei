@@ -72,12 +72,11 @@ DEFINE_ENTITY_TYPE(Item, {
 });
 
 Item *create_item(cmplx pos, cmplx v, ItemType type);
-void delete_item(Item *item);
-void delete_items(void);
+void delete_items(ItemList *items);
 
 Item *create_clear_item(cmplx pos, uint clear_flags);
 
-void process_items(void);
+void process_items(ItemList *items);
 
 void spawn_item(cmplx pos, ItemType type);
 void spawn_and_collect_item(cmplx pos, ItemType type, float collect_value);

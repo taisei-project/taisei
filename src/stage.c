@@ -719,7 +719,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 	bool force = flags & CLEAR_HAZARDS_FORCE;
 
 	if(flags & CLEAR_HAZARDS_BULLETS) {
-		for(Projectile *p = global.projs.first, *next; p; p = next) {
+		for(Projectile *p = STAGE.projs.first, *next; p; p = next) {
 			next = p->next;
 
 			if(!force && !projectile_is_clearable(p)) {
@@ -733,7 +733,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 	}
 
 	if(flags & CLEAR_HAZARDS_LASERS) {
-		for(Laser *l = global.lasers.first, *next; l; l = next) {
+		for(Laser *l = STAGE.lasers.first, *next; l; l = next) {
 			next = l->next;
 
 			if(!force && !laser_is_clearable(l)) {
@@ -817,12 +817,12 @@ void stage_begin_dialog(Dialog *d) {
 static void stage_free(StagePrivateState *state) {
 	StageInstance *stage = state->stage;
 
-	delete_enemies(&global.enemies);
-	delete_items();
-	delete_lasers();
+	delete_enemies(&stage->enemies);
+	delete_items(&stage->items);
+	delete_lasers(&stage->lasers);
 
-	delete_projectiles(&global.projs);
-	delete_projectiles(&global.particles);
+	delete_projectiles(&stage->projs);
+	delete_projectiles(&stage->particles);
 
 	if(stage->dialog) {
 		dialog_deinit(stage->dialog);
@@ -1182,11 +1182,11 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 	for(;;YIELD) {
 		process_input(state);
 		process_boss(&stage->boss);
-		process_enemies(&global.enemies);
-		process_projectiles(&global.projs, true);
-		process_items();
-		process_lasers();
-		process_projectiles(&global.particles, false);
+		process_enemies(&stage->enemies);
+		process_projectiles(&stage->projs, true);
+		process_items(&stage->items);
+		process_lasers(&stage->lasers);
+		process_projectiles(&stage->particles, false);
 
 		if(stage->dialog) {
 			dialog_update(stage->dialog);

@@ -12,6 +12,10 @@
 #include "coroutine/coevent.h"
 #include "coroutine/cotask.h"
 #include "dialog.h"
+#include "enemy.h"
+#include "item.h"
+#include "lasers/laser.h"
+#include "projectile.h"
 #include "replay/state.h"
 #include "stageinfo.h"
 
@@ -34,6 +38,12 @@ typedef struct StageInstance {
 	COEVENTS_ARRAY(
 		end
 	) events;
+
+	ProjectileList projs;
+	ProjectileList particles;
+	EnemyList enemies;
+	ItemList items;
+	LaserList lasers;
 
 	Boss *boss;
 	Dialog *dialog;

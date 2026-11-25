@@ -410,7 +410,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 
 	r_shader("sprite_rect");
 
-	for(Projectile *p = global.projs.first; p; p = p->next) {
+	for(Projectile *p = stage->projs.first; p; p = p->next) {
 		real cd = 2 * projectile_cull_distance(p);
 		r_draw_sprite(&(SpriteParams) {
 			.color = color_mul_scalar(RGBA(0, 0, 1, 0), 0.5),
@@ -421,7 +421,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 		});
 	}
 
-	for(Projectile *p = global.projs.first; p; p = p->next) {
+	for(Projectile *p = stage->projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.color = color_mul_scalar(RGBA(0, 1, 0, 0), 0.2),
 			.sprite = &stagedraw.dummy,
@@ -436,7 +436,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 	r_uniform_vec4("color_inner", 0, 0, 0, 1);
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
-	for(Projectile *p = global.projs.first; p; p = p->next) {
+	for(Projectile *p = stage->projs.first; p; p = p->next) {
 		cmplx gsize = projectile_graze_size(p);
 
 		if(re(gsize)) {
@@ -455,7 +455,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 	r_uniform_vec4("color_inner", 0.0, 1.0, 0.0, 0.75);
 	r_uniform_vec4("color_outer", 0.0, 0.5, 0.5, 0.75);
 
-	for(Projectile *p = global.projs.first; p; p = p->next) {
+	for(Projectile *p = stage->projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = &stagedraw.dummy,
 			.pos = { re(p->pos), im(p->pos) },
@@ -466,7 +466,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 		});
 	}
 
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
+	for(Enemy *e = stage->enemies.first; e; e = e->next) {
 		float hurt_radius = enemy_get_hurt_radius(e);
 
 		if(hurt_radius > 0) {

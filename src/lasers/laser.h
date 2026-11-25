@@ -55,8 +55,8 @@ DEFINE_ENTITY_TYPE(Laser, {
 void lasers_init(void);
 void lasers_shutdown(void);
 
-void delete_lasers(void);
-void process_lasers(void);
+void delete_lasers(LaserList *lasers);
+void process_lasers(LaserList *lasers);
 
 Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, Color clr);
 Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, Color clr);

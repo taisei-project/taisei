@@ -18,7 +18,6 @@ static ht_ptr2int_t shader_sublayer_map;
 
 static ProjArgs defaults_proj = {
 	.sprite = "proj/",
-	.dest = &global.projs,
 	.type = PROJ_ENEMY,
 	.damage_type = DMG_ENEMY_SHOT,
 	.color = RGB(1, 1, 1),
@@ -29,7 +28,6 @@ static ProjArgs defaults_proj = {
 
 static ProjArgs defaults_part = {
 	.sprite = "part/",
-	.dest = &global.particles,
 	.type = PROJ_PARTICLE,
 	.damage_type = DMG_UNDEFINED,
 	.color = RGB(1, 1, 1),
@@ -64,10 +62,6 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 
 	if(!args->blend) {
 		args->blend = defaults->blend;
-	}
-
-	if(!args->dest) {
-		args->dest = defaults->dest;
 	}
 
 	if(!args->type) {
@@ -297,11 +291,19 @@ static Projectile* _create_projectile(ProjArgs *args) {
 }
 
 Projectile* create_projectile(ProjArgs *args) {
+	if(!args->dest) {
+		args->dest = &STAGE.projs;
+	}
+
 	process_projectile_args(args, &defaults_proj);
 	return _create_projectile(args);
 }
 
 Projectile* create_particle(ProjArgs *args) {
+	if(!args->dest) {
+		args->dest = &STAGE.particles;
+	}
+
 	process_projectile_args(args, &defaults_part);
 	return _create_projectile(args);
 }
@@ -395,7 +397,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			}
 		}
 	} else if(p->type == PROJ_PLAYER) {
-		for(Enemy *e = global.enemies.first; e; e = e->next) {
+		for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 			if(
 				!(e->flags & EFLAG_NO_HIT) &&
 				cabs2(e->pos - p->pos) < e->hit_radius * e->hit_radius

@@ -119,7 +119,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp);
 #endif
 
 #define create_enemy(pos, hp) \
-	create_enemy_p(&global.enemies, pos, hp)
+	create_enemy_p(&STAGE.enemies, pos, hp)
 
 void delete_enemy(EnemyList *enemies, Enemy* enemy);
 void delete_enemies(EnemyList *enemies);

@@ -1065,7 +1065,7 @@ static bool spell_is_overload(AttackInfo *spell) {
 }
 
 static void clear_hazards_and_enemies(void) {
-	enemy_kill_all(&global.enemies);
+	enemy_kill_all(&STAGE.enemies);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 }
 

@@ -134,7 +134,7 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 		type = ITEM_SURGE;
 	}
 
-	auto i = alist_append(&global.items, STAGE_ACQUIRE_OBJ(Item));
+	auto i = alist_append(&STAGE.items, STAGE_ACQUIRE_OBJ(Item));
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
@@ -150,9 +150,9 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 	return i;
 }
 
-void delete_item(Item *item) {
+static void delete_item(ItemList *items, Item *item) {
 	ent_unregister(&item->ent);
-	STAGE_RELEASE_OBJ(alist_unlink(&global.items, item));
+	STAGE_RELEASE_OBJ(alist_unlink(items, item));
 }
 
 Item *create_clear_item(cmplx pos, uint clear_flags) {
@@ -181,10 +181,10 @@ Item *create_clear_item(cmplx pos, uint clear_flags) {
 	return i;
 }
 
-void delete_items(void) {
-	for(Item *i = global.items.first, *next; i; i = next) {
+void delete_items(ItemList *items) {
+	for(Item *i = items->first, *next; i; i = next) {
 		next = i->next;
-		delete_item(i);
+		delete_item(items, i);
 	}
 }
 
@@ -250,13 +250,13 @@ bool collect_item(Item *item, float value) {
 }
 
 void collect_all_items(float value) {
-	for(Item *i = global.items.first; i; i = i->next) {
+	for(Item *i = STAGE.items.first; i; i = i->next) {
 		collect_item(i, value);
 	}
 }
 
-void process_items(void) {
-	Item *item = global.items.first, *del = NULL;
+void process_items(ItemList *items) {
+	Item *item = items->first, *del = NULL;
 	float attract_dist = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
 	bool stage_cleared = stage_is_cleared();
@@ -369,7 +369,7 @@ void process_items(void) {
 		if(grabbed || (im(deltapos) > 0 && item_out_of_bounds(item))) {
 			del = item;
 			item = item->next;
-			delete_item(del);
+			delete_item(items, del);
 		} else {
 			item = item->next;
 		}

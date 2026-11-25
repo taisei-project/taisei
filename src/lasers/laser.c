@@ -55,7 +55,7 @@ void lasers_shutdown(void) {
 }
 
 Laser *create_laser(cmplx pos, float time, float deathtime, Color color, LaserRule rule) {
-	auto l = alist_push(&global.lasers, STAGE_ACQUIRE_OBJ(Laser));
+	auto l = alist_push(&STAGE.lasers, STAGE_ACQUIRE_OBJ(Laser));
 	l->birthtime = global.frames;
 	l->timespan = time;
 	l->deathtime = deathtime;
@@ -119,8 +119,8 @@ static void delete_laser(LaserList *lasers, Laser *laser) {
 	_delete_laser((ListAnchor*)lasers, (List*)laser, NULL);
 }
 
-void delete_lasers(void) {
-	alist_foreach(&global.lasers, _delete_laser, NULL);
+void delete_lasers(LaserList *lasers) {
+	alist_foreach(lasers, _delete_laser, NULL);
 }
 
 bool laser_is_active(Laser *l) {
@@ -607,7 +607,7 @@ static void laser_clear_now(Laser *l) {
 	laser_trace(l, CLEAR_STEP, laser_clear_now_tracefunc, &ctx);
 }
 
-void process_lasers(void) {
+void process_lasers(LaserList *lasers) {
 	bool stage_cleared = stage_is_cleared();
 	Player *plr = &global.plr;
 
@@ -620,11 +620,11 @@ void process_lasers(void) {
 	 * discharge and try to cancel all lasers in a circle.
 	 */
 
-	for(Laser *laser = global.lasers.first, *next; laser; laser = next) {
+	for(Laser *laser = lasers->first, *next; laser; laser = next) {
 		next = laser->next;
 
 		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan * laser->speed) {
-			delete_laser(&global.lasers, laser);
+			delete_laser(lasers, laser);
 			continue;
 		}
 
@@ -635,7 +635,7 @@ void process_lasers(void) {
 		}
 	}
 
-	for(Laser *laser = global.lasers.first, *next; laser; laser = next) {
+	for(Laser *laser = lasers->first, *next; laser; laser = next) {
 		next = laser->next;
 
 		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {

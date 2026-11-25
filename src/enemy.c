@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "common_tasks.h"
 #include "entity.h"
+#include "gamesession.h"
 #include "global.h"
 #include "list.h"
 #include "projectile.h"
@@ -170,7 +171,7 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		play_sfx("enemydeath");
 		enemy_death_effect(e->pos);
 
-		for(Projectile *p = global.projs.first; p; p = p->next) {
+		for(Projectile *p = STAGE.projs.first; p; p = p->next) {
 			if(p->type == PROJ_ENEMY && !(p->flags & PFLAG_NOCOLLISION) && cabs(p->pos - e->pos) < 64) {
 				spawn_and_collect_item(e->pos, ITEM_PIV, 1);
 			}

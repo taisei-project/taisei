@@ -9,6 +9,7 @@
 #include "enemy_classes.h"
 
 #include "common_tasks.h"
+#include "gamesession.h"
 #include "global.h"
 
 #define ECLASS_HP_SWIRL         100

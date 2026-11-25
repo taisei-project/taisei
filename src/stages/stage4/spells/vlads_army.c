@@ -374,7 +374,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 		WAIT(100);
 
 		/*if((t == length-20 && global.diff == D_Easy)|| b->current->hp < shieldlimit) {
-			for(Enemy *e = global.enemies.first; e; e = e->next) {
+			for(Enemy *e = STAGE.enemies.first; e; e = e->next) {
 				if(e->logic_rule == kurumi_extra_shield) {
 					e->args[2] = 1; // discharge extra shield
 					e->hp = 0;
