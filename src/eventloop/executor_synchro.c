@@ -532,7 +532,7 @@ static uint display_pacer_update(
 }
 
 static bool should_render_frame(uint frame_num) {
-	return !global.is_replay_verification && (frame_num % get_effective_frameskip() == 0);
+	return !evloop.headless && (frame_num % eventloop_get_frameskip() == 0);
 }
 
 static SceneAction run_logic(Scene **pscene, uint logic_ticks) {
@@ -574,7 +574,7 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 	}
 #endif
 
-	if(global.frameskip > 0 || global.is_replay_verification) {
+	if(eventloop_is_uncapped()) {
 		return PMODE_NONE;
 	}
 

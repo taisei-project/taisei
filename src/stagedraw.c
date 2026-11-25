@@ -1610,7 +1610,7 @@ void stage_draw_bottom_text(GameSession *game) {
 		(global.frames % 3600) / 60
 	);
 #else
-	if(get_effective_frameskip() > 1) {
+	if(eventloop_get_frameskip() > 1) {
 		snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps",
 			global.fps.logic.fps,
 			global.fps.render.fps

@@ -28,6 +28,8 @@ extern struct evloop_s {
 	Scene stack[EVLOOP_STACK_SIZE];
 	Scene *current_scene;
 	FrameTimes frame_times;
+	int forced_frameskip;
+	bool headless;
 } evloop;
 
 void eventloop_leave(void);

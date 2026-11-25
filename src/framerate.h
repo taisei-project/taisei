@@ -18,6 +18,5 @@ typedef struct {
 	hrtime_t last_update_time; // internal; last time the average was recalculated
 } FPSCounter;
 
-uint32_t get_effective_frameskip(void);
 void fpscounter_reset(FPSCounter *fps);
 void fpscounter_update(FPSCounter *fps, hrtime_t when);

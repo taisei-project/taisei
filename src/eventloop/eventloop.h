@@ -39,3 +39,8 @@ void eventloop_enter(
 void eventloop_run(void);
 
 FrameTimes eventloop_get_frame_times(void);
+
+void eventloop_set_frameskip(int frameskip);
+void eventloop_set_headless(bool headless);
+bool eventloop_is_uncapped(void);
+uint eventloop_get_frameskip(void);

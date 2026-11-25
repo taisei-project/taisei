@@ -9,7 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-void taisei_init(void);
+#include "cli.h"
+
+void taisei_init(CLIAction *cli);
 bool taisei_is_kiosk_mode(void);
 
 void taisei_quit(void);

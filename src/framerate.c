@@ -40,15 +40,3 @@ void fpscounter_update(FPSCounter *fps, hrtime_t when) {
 	fps->frametime = avg / log_size;
 	fps->last_update_time = update_time;
 }
-
-uint32_t get_effective_frameskip(void) {
-	uint32_t frameskip;
-
-	if(global.frameskip > 0) {
-		frameskip = global.frameskip;
-	} else {
-		frameskip = config_get_int(CONFIG_VID_FRAMESKIP);
-	}
-
-	return frameskip;
-}

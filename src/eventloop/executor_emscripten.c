@@ -51,7 +51,7 @@ static void em_loop_callback(void) {
 		return;
 	}
 
-	if(!(frame_num++ % get_effective_frameskip())) {
+	if(!(frame_num++ % eventloop_get_frameskip())) {
 		scene_render_frame(scene);
 		r_present_frame();
 		fpscounter_update(&global.fps.render, time_get());

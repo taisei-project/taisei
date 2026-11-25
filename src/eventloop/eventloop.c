@@ -129,3 +129,27 @@ void scene_render_frame(Scene *scene) {
 	video_finish_frame();
 	r_end_frame();
 }
+
+void eventloop_set_frameskip(int frameskip) {
+	evloop.forced_frameskip = frameskip;
+}
+
+void eventloop_set_headless(bool headless) {
+	evloop.headless = headless;
+}
+
+bool eventloop_is_uncapped(void) {
+	return evloop.forced_frameskip > 0 || evloop.headless;
+}
+
+uint eventloop_get_frameskip(void) {
+	if(evloop.headless) {
+		return 1;
+	}
+
+	if(evloop.forced_frameskip > 0) {
+		return evloop.forced_frameskip;
+	}
+
+	return config_get_int(CONFIG_VID_FRAMESKIP);
+}

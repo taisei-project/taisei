@@ -425,8 +425,9 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	taskmgr_global_init();
 	gamemode_init();
 	time_init();
-	taisei_init();
+	taisei_init(&ctx->cli);
 	init_global(&ctx->cli);
+
 	events_init();
 
 	if(taisei_is_kiosk_mode()) {

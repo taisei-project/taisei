@@ -11,6 +11,7 @@
 #include "coroutine/coroutine.h"
 #include "debug_text.h"
 #include "dynarray.h"
+#include "eventloop/eventloop.h"
 #include "events.h"
 #include "gfx/fbmgr.h"
 #include "gfx/graphics.h"
@@ -460,7 +461,7 @@ static void video_update_scaling_factor(void) {
 }
 
 static void video_update_vsync(void) {
-	if(global.frameskip || config_get_int(CONFIG_VSYNC) == 0) {
+	if(eventloop_is_uncapped() || config_get_int(CONFIG_VSYNC) == 0) {
 		r_vsync(VSYNC_NONE);
 	} else {
 		switch(config_get_int(CONFIG_VSYNC)) {

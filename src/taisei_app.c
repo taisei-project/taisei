@@ -8,6 +8,7 @@
 
 #include "taisei_app.h"
 
+#include "eventloop/eventloop.h"
 #include "log.h"
 #include "util/env.h"
 
@@ -18,11 +19,18 @@ static struct {
 	bool kiosk_mode;
 } app;
 
-void taisei_init(void) {
+void taisei_init(CLIAction *cli) {
 	app.kiosk_mode = env_get("TAISEI_KIOSK", false);
 
 	if(app.kiosk_mode) {
 		SDL_SetHintWithPriority(SDL_HINT_NO_SIGNAL_HANDLERS, 0, SDL_HINT_DEFAULT);
+	}
+
+	if(cli->type == CLI_VerifyReplay) {
+		eventloop_set_headless(true);
+	} else if(cli->frameskip) {
+		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", cli->frameskip);
+		eventloop_set_frameskip(cli->frameskip);
 	}
 }
 

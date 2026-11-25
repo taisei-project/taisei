@@ -19,13 +19,8 @@ void init_global(CLIAction *cli) {
 
 	rng_init_default(time(0));
 
-	global.frameskip = cli->frameskip;
-
 	if(cli->type == CLI_VerifyReplay) {
 		global.is_replay_verification = true;
-		global.frameskip = 1;
-	} else if(global.frameskip) {
-		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 
 	fpscounter_reset(&global.fps.logic);
