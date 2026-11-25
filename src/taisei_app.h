@@ -10,14 +10,19 @@
 #include "taisei.h"
 
 #include "cli.h"
+#include "config.h"
 
 void taisei_init(CLIAction *cli);
 
-bool taisei_is_kiosk_mode(void);
-
-// true = no config or progress saved
-bool taisei_is_transient(void);
-
 void taisei_quit(void);
 bool taisei_quit_requested(void);
+
 bool taisei_is_quit_hidden(void);
+bool taisei_is_kiosk_mode(void);
+
+void taisei_commit_persistent_data(bool async);
+
+// Inputdevice-agnostic method of checking whether a game control is pressed.
+// ALWAYS use this instead of SDL_GetKeyState if you need it.
+// XXX: Move this somewhere?
+bool gamekeypressed(KeyIndex key);

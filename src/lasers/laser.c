@@ -10,8 +10,8 @@
 #include "internal.h"
 #include "draw.h"
 
-#include "global.h"
 #include "list.h"
+#include "random.h"
 #include "renderer/api.h"
 #include "stage.h"
 #include "stageobjects.h"

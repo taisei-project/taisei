@@ -9,9 +9,9 @@
 #include "ingamemenu.h"
 
 #include "common.h"
+#include "config.h"
 #include "events.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "menu.h"
 #include "renderer/api.h"

@@ -17,7 +17,6 @@
 #include "wriggle.h"
 
 #include "common_tasks.h"
-#include "global.h"
 #include "portrait.h"
 #include "stage.h"
 

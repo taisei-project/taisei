@@ -10,7 +10,6 @@
 
 #include "dynarray.h"
 #include "gamesession.h"
-#include "global.h"
 #include "renderer/api.h"
 #include "util.h"
 

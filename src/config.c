@@ -10,7 +10,6 @@
 
 #include "bitarray.h"
 #include "gamepad.h"
-#include "global.h"   // IWYU pragma: keep
 #include "memory/scratch.h"
 #include "util/kvparser.h"
 #include "util/strbuf.h"

@@ -8,7 +8,6 @@
 
 #include "texture_loader/texture_loader.h"
 
-#include "global.h"
 #include "renderer/api.h"
 #include "stage.h"
 #include "video.h"

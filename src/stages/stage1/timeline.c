@@ -12,6 +12,7 @@
 #include "cirno.h"
 #include "nonspells/nonspells.h"   // IWYU pragma: keep
 #include "spells/spells.h"   // IWYU pragma: keep
+#include "random.h"
 #include "stage1.h"
 
 #include "stages/common_imports.h"

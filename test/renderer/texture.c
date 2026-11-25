@@ -2,8 +2,10 @@
 #include "taisei.h"
 
 #include "test_renderer.h"
+#include "framerate.h"
+#include "hirestime.h"
 #include "taisei_app.h"
-#include "global.h"
+#include "util.h"
 
 typedef struct Vertex2D {
 	vec2 pos;

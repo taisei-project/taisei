@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "random.h"
 #include "spells.h"
 
 TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool fast; real angle_freq; }) {

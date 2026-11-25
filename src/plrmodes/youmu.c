@@ -9,7 +9,6 @@
 #include "youmu.h"
 
 #include "gfx/graphics.h"
-#include "global.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 

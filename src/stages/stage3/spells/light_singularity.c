@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "random.h"
 #include "spells.h"
 
 TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {

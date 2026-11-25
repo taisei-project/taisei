@@ -10,13 +10,17 @@
 
 #include "charselect.h"
 #include "common.h"
+#include "difficulty.h"
+#include "hirestime.h"
+#include "memory/arena.h"
 #include "menu.h"
+#include "progress.h"
+#include "stageinfo.h"
 #include "submenus.h"
 
 #include "audio/audio.h"
 #include "events.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "resource/font.h"
 #include "taisei_app.h"

@@ -9,7 +9,6 @@
 #include "draw.h"
 
 #include "gfx/graphics.h"
-#include "global.h"
 #include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"

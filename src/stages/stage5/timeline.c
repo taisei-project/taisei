@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "i18n/i18n.h"
 #include "nonspells/nonspells.h"
+#include "random.h"
 #include "stage5.h"
 
 static void stage5_dialog_post_boss(void) {

@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 TASK(boss_move, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);

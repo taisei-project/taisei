@@ -10,6 +10,7 @@
 #include "draw.h"
 
 #include "common_tasks.h"
+#include "random.h"
 #include "stageutils.h"
 
 TASK(stage5_bg_update) {

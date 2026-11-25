@@ -12,7 +12,6 @@
 #include "eventloop/eventloop.h"
 #include "events.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "replay/demoplayer.h"
 #include "video.h"
 #include "watchdog.h"

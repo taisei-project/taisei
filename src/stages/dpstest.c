@@ -11,7 +11,6 @@
 #include "enemy.h"
 #include "enemy_classes.h"
 #include "gamesession.h"
-#include "global.h"
 #include "stage.h"
 
 TASK(single_fairy) {

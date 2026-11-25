@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 typedef struct LaserRuleBolts2Data {
 	cmplx target;

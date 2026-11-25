@@ -9,7 +9,6 @@
 #include "camcontrol.h"
 
 #include "events.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "stage.h"
 #include "stagetext.h"

@@ -1,5 +1,6 @@
 
-#include "global.h"
+#include "framerate.h"
+#include "hirestime.h"
 #include "renderer/common/models.h"
 #include "taisei_app.h"
 #include "test_renderer.h"

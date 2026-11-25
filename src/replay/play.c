@@ -12,7 +12,6 @@
 
 #include "stageinfo.h"
 #include "../stage.h"
-#include "global.h"
 
 typedef struct ReplayContext {
 	CallChain cc;

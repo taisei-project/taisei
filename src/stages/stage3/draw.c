@@ -8,9 +8,9 @@
 
 #include "draw.h"
 
+#include "random.h"
 #include "stagedraw.h"
 #include "stageutils.h"
-#include "global.h"
 #include "util/glm.h"
 #include "gfx/graphics.h"
 

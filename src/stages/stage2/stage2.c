@@ -16,7 +16,6 @@
 #include "stage.h"
 #include "timeline.h"   // IWYU pragma: keep
 
-#include "global.h"
 #include "portrait.h"
 
 struct stage2_spells_s stage2_spells = {

@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "kurumi.h"
 #include "nonspells/nonspells.h"
+#include "random.h"
 #include "stage4.h"
 
 #include "stages/common_imports.h"

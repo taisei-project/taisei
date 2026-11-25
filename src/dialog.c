@@ -9,7 +9,6 @@
 #include "dialog.h"
 
 #include "gamesession.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "portrait.h"
 #include "resource/font.h"

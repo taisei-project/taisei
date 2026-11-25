@@ -8,7 +8,6 @@
 
 #include "gameovermenu.h"
 
-#include "global.h"
 #include "ingamemenu.h"
 #include "i18n/i18n.h"
 #include "memory/scratch.h"

@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "random.h"
 #include "youmu.h"
 
 #include "audio/audio.h"
 #include "dialog/youmu.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "plrmodes.h"
 #include "renderer/api.h"

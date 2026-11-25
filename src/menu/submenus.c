@@ -10,14 +10,17 @@
 
 #include "difficultyselect.h"
 #include "media.h"
+#include "memory/arena.h"
 #include "menu.h"
 #include "options.h"
+#include "progress.h"
 #include "replayview.h"
 #include "spellpractice.h"
+#include "stageinfo.h"
 #include "stagepractice.h"
 #include "stageselect.h"
+#include "taisei_app.h"
 
-#include "global.h"
 
 static void on_leave_options(CallChainResult ccr) {
 	MenuData *m = ccr.result;

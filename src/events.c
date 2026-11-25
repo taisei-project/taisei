@@ -9,9 +9,10 @@
 #include "events.h"
 
 #include "config.h"
-#include "global.h"
+#include "hirestime.h"
 #include "taisei_app.h"
 #include "transition.h"
+#include "util.h"
 #include "video.h"
 
 static hrtime_t keyrepeat_paused_until;

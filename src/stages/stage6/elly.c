@@ -8,7 +8,9 @@
 
 #include "elly.h"
 
+#include "config.h"
 #include "draw.h"
+#include "random.h"
 #include "spells/spells.h"
 
 #include "stagedraw.h"

@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 // Pattern contributed by raz, originally written for danmakufu
 // The port is almost direct, and a bit rough

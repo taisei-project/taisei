@@ -7,7 +7,7 @@
  */
 
 #include "framerate.h"
-#include "global.h"
+#include "util.h"
 #include "video.h"
 
 void fpscounter_reset(FPSCounter *fps, hrtime_t init_frametime, hrtime_t now) {

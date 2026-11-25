@@ -16,7 +16,6 @@
 #include "eventloop/eventloop.h"
 #include "filewatch/filewatch.h"
 #include "gamepad.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "iostream/iostream_stdiofp.h"
 #include "log.h"
@@ -26,6 +25,7 @@
 #include "menu/savereplay.h"
 #include "platform/gamemode.h"
 #include "progress.h"
+#include "random.h"
 #include "renderer/common/models.h"
 #include "renderer/common/sprite_batch.h"
 #include "replay/demoplayer.h"
@@ -424,7 +424,6 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	gamemode_init();
 	time_init();
 	taisei_init(&ctx->cli);
-	init_global(&ctx->cli);
 
 	events_init();
 

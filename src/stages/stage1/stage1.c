@@ -15,7 +15,6 @@
 #include "timeline.h"        // IWYU pragma: keep
 #include "spells/spells.h"   // IWYU pragma: keep
 
-#include "global.h"
 #include "portrait.h"
 #include "common_tasks.h"
 

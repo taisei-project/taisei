@@ -9,7 +9,6 @@
 #include "background_anim.h"
 #include "draw.h"
 
-#include "global.h"
 #include "stage.h"
 #include "stageutils.h"
 

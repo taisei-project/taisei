@@ -361,7 +361,6 @@ void r_draw_sprite(const SpriteParams *params) {
 
 #if SPRITE_BATCH_STATS
 #include "resource/font.h"
-#include "global.h"
 #endif
 
 void _r_sprite_batch_end_frame(void) {

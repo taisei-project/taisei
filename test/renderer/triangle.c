@@ -4,7 +4,7 @@
 #include "test_renderer.h"
 #include "resource/model.h"
 #include "taisei_app.h"
-#include "global.h"
+#include "util.h"
 
 typedef struct Vertex2D {
 	vec2 pos;

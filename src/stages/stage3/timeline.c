@@ -10,6 +10,7 @@
 
 #include "draw.h"
 #include "nonspells/nonspells.h"
+#include "random.h"
 #include "scuttle.h"
 #include "spells/spells.h"
 #include "stage3.h"

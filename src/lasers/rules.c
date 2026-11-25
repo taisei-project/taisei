@@ -9,7 +9,6 @@
 #include "rules.h"
 
 #include "gamesession.h"
-#include "global.h"
 
 static cmplx laser_rule_linear_impl(Laser *l, real t, void *ruledata) {
 	LaserRuleLinearData *rd = ruledata;

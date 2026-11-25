@@ -8,11 +8,12 @@
 
 #include "draw.h"
 
+#include "config.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
+#include "util/random.h"
 #include "video.h"
 
 static Stage1DrawData *stage1_draw_data;

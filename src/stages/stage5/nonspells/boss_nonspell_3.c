@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 TASK(plainball_shoot, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);

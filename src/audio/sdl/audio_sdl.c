@@ -11,10 +11,10 @@
 
 #include "eventloop/eventloop.h"
 #include "events.h"
-#include "global.h"
 #include "memory/scratch.h"
 #include "config.h"
 #include "util/env.h"
+#include "util/random.h"
 #include "video.h"
 
 #define AUDIO_FREQ 48000

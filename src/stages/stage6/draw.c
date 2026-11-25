@@ -9,7 +9,7 @@
 #include "draw.h"
 
 #include "gfx/graphics.h"
-#include "global.h"
+#include "random.h"
 #include "resource/model.h"
 #include "stagedraw.h"
 #include "util/glm.h"

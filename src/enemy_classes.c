@@ -10,7 +10,7 @@
 
 #include "common_tasks.h"
 #include "gamesession.h"
-#include "global.h"
+#include "random.h"
 
 #define ECLASS_HP_SWIRL         100
 #define ECLASS_HP_FAIRY         400

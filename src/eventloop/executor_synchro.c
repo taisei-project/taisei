@@ -6,10 +6,11 @@
  * Copyright (c) 2012-2026, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "config.h"
 #include "eventloop_private.h"
 
 #include "debug_text.h"
-#include "global.h"
+#include "taisei_app.h"
 #include "util/env.h"
 #include "video.h"
 

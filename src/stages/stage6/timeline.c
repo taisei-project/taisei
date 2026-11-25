@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "elly.h"
 #include "nonspells/nonspells.h"
+#include "random.h"
 #include "spells/spells.h"
 #include "stage6.h"
 

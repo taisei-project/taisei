@@ -13,7 +13,6 @@
 
 #include "coroutine/taskdsl.h"
 #include "entity.h"
-#include "global.h"
 #include "item.h"
 #include "move.h"
 #include "stage.h"

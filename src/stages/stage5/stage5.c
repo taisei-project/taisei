@@ -16,7 +16,6 @@
 #include "timeline.h"
 
 #include "common_tasks.h"
-#include "global.h"
 #include "portrait.h"
 
 struct stage5_spells_s stage5_spells = {

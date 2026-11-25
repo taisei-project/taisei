@@ -15,7 +15,6 @@
 #include "events.h"
 #include "gfx/fbmgr.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "memory/memory.h"
 #include "memory/scratch.h"

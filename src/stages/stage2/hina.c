@@ -9,7 +9,6 @@
 #include "hina.h"
 
 #include "gamesession.h"
-#include "global.h"
 #include "renderer/api.h"
 #include "i18n/i18n.h"
 #include "stage.h"

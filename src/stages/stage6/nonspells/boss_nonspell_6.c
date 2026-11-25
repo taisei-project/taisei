@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 
 static void baryons_final_blast(cmplx pos) {

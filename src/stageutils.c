@@ -8,7 +8,6 @@
 
 #include "stageutils.h"
 
-#include "global.h"
 #include "renderer/api.h"
 #include "resource/material.h"
 #include "resource/model.h"

@@ -9,7 +9,6 @@
 #include "stagetext.h"
 
 #include "gamesession.h"
-#include "global.h"
 #include "stage.h"
 #include "stageobjects.h"
 

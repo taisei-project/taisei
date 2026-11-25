@@ -8,8 +8,8 @@
 
 #include "projectile.h"
 
-#include "global.h"
 #include "list.h"
+#include "random.h"
 #include "stageobjects.h"
 #include "util/glm.h"
 #include "stage.h"

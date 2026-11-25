@@ -9,8 +9,8 @@
 #include "audio.h"
 
 #include "backend.h"
+#include "config.h"
 #include "events.h"
-#include "global.h"
 #include "resource/bgm.h"
 #include "resource/resource.h"
 #include "resource/sfx.h"

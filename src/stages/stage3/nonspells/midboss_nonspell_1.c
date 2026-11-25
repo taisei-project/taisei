@@ -7,6 +7,7 @@
  */
 
 #include "nonspells.h"
+#include "random.h"
 
 TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 	Color phase_colors[] = {

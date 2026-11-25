@@ -9,8 +9,8 @@
 #include "marisa.h"
 
 #include "audio/audio.h"
+#include "config.h"
 #include "gfx/graphics.h"
-#include "global.h"
 #include "plrmodes.h"
 #include "stagedraw.h"
 

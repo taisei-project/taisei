@@ -9,7 +9,6 @@
 #include "demoplayer.h"
 
 #include "events.h"
-#include "global.h"
 #include "menu/menu.h"
 #include "replay.h"
 #include "replay/struct.h"

@@ -9,8 +9,8 @@
 #include "item.h"
 
 #include "audio/audio.h"
-#include "global.h"
 #include "list.h"
+#include "random.h"
 #include "stage.h"
 #include "stageobjects.h"
 

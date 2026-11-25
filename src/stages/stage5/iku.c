@@ -11,6 +11,7 @@
 #include "common_tasks.h"
 #include "gamesession.h"
 #include "i18n/i18n.h"
+#include "random.h"
 #include "stage.h"
 
 static void iku_slave_draw(EntityInterface *e, StageInstance *stage) {

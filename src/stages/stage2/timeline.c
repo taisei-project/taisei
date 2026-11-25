@@ -11,6 +11,7 @@
 #include "background_anim.h"
 #include "hina.h"
 #include "nonspells/nonspells.h"   // IWYU pragma: keep
+#include "random.h"
 #include "stage2.h"
 #include "wriggle.h"
 

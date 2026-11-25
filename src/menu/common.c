@@ -13,7 +13,6 @@
 #include "credits.h"
 #include "cutscenes/cutscene.h"
 #include "difficultyselect.h"
-#include "global.h"
 #include "i18n/i18n.h"
 #include "mainmenu.h"
 #include "menu.h"
@@ -23,6 +22,7 @@
 #include "resource/font.h"
 #include "savereplay.h"
 #include "stage.h"
+#include "taisei_app.h"
 #include "video.h"
 
 typedef struct StartGameContext {
