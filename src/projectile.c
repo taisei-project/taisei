@@ -192,8 +192,8 @@ cmplx projectile_graze_size(Projectile *p) {
 	return 0;
 }
 
-float projectile_timeout_factor(Projectile *p) {
-	return p->timeout ? (global.frames - p->birthtime) / p->timeout : 0;
+float projectile_timeout_factor(Projectile *p, int t) {
+	return p->timeout ? t / p->timeout : 0;
 }
 
 static double projectile_rect_area(Projectile *p) {
@@ -788,7 +788,7 @@ static Projectile* spawn_bullet_spawning_effect(Projectile *p) {
 }
 
 static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float o_tf = projectile_timeout_factor(p);
+	float o_tf = projectile_timeout_factor(p, t);
 	float tf = glm_ease_circ_out(o_tf);
 
 	Animation *ani = args[0].as_ptr;
@@ -919,7 +919,7 @@ static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float rot_angle = args[1].as_float[1];
 	float secondary_scale = args[2].as_float[0];
 
-	float tf = projectile_timeout_factor(p);
+	float tf = projectile_timeout_factor(p, t);
 	float opacity = (1.0f - tf) * p->opacity;
 
 	if(tf <= 0 || opacity <= 0) {
@@ -1037,7 +1037,7 @@ static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	sp.rotation.angle = DEG2RAD*t*4.0f + rot_angle;
 
 	ProjShaderParams psp = { sp.shader_params };
-	psp.opacity *= (1.0f - projectile_timeout_factor(p));
+	psp.opacity *= (1.0f - projectile_timeout_factor(p, t));
 	sp.shader_params = psp.as_generic;
 
 	r_disable(RCAP_CULL_FACE);

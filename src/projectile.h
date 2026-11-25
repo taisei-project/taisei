@@ -293,7 +293,7 @@ void petal_explosion(int n, cmplx pos);
 void projectiles_preload(ResourceGroup *rg);
 void projectiles_free(void);
 
-float projectile_timeout_factor(Projectile *p);
+float projectile_timeout_factor(Projectile *p, int t);
 int projectile_time(Projectile *p);
 
 ProjShaderParams projectile_shader_params(Projectile *proj);

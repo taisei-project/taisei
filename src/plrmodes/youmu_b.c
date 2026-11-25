@@ -379,7 +379,7 @@ TASK(youmu_orb_update, { YoumuBController *ctrl; BoxedProjectile orb; }) {
 	Projectile *orb = TASK_BIND(ARGS.orb);
 
 	for(;;) {
-		float tf = glm_ease_bounce_out(1.0f - projectile_timeout_factor(orb));
+		float tf = glm_ease_bounce_out(1.0f - projectile_timeout_factor(orb, projectile_time(orb)));
 		orb->color.g = tf * tf;
 		orb->color.b = tf;
 		orb->scale = 0.5 + 0.5 * tf;

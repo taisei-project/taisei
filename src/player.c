@@ -475,26 +475,28 @@ void player_placeholder_bomb_logic(Player *plr) {
 
 static void player_powersurge_expired(Player *plr, bool is_break);
 
-static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
+static void _powersurge_trail_draw(Projectile *p, float t, float gt, float cmul) {
 	float nt = t / p->timeout;
-	float s = 1 + (2 + 0.5 * psin((t+global.frames*1.23)/5.0)) * nt * nt;
+	float s = 1 + (2 + 0.5 * psin((t+gt*1.23)/5.0)) * nt * nt;
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = p->sprite,
 		.scale.both = s,
 		.pos = { re(p->pos), im(p->pos) },
-		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
+		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+gt)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params.vec = { -2 * nt * nt },
 		.shader = p->shader,
 	});
 }
 
 static void powersurge_trail_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
+	float gt = t + p->birthtime;
+
 	if(t > 0) {
-		_powersurge_trail_draw(p, t - 0.5, 0.25);
-		_powersurge_trail_draw(p, t, 0.25);
+		_powersurge_trail_draw(p, t - 0.5, gt, 0.25);
+		_powersurge_trail_draw(p, t, gt, 0.25);
 	} else {
-		_powersurge_trail_draw(p, t, 0.5);
+		_powersurge_trail_draw(p, t, gt, 0.5);
 	}
 }
 
@@ -790,7 +792,7 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 	r_shader("circle_distort");
 	r_uniform_vec3("distortOriginRadius", re(p->pos), im(p->pos), radius);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_float("time", global.frames / 60.0);
+	r_uniform_float("time", (t + p->birthtime) / 60.0);
 	r_blend(BLEND_NONE);
 	draw_framebuffer_tex(fb_main, VIEWPORT_W, VIEWPORT_H);
 
@@ -1093,7 +1095,7 @@ static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleA
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
-	r_uniform_int("frames", global.frames);
+	r_uniform_int("frames", t + p->birthtime);
 	r_uniform_float("progress", t / p->timeout);
 	r_uniform_vec2("origin", re(p->pos), im(p->pos));
 	r_uniform_vec2("clear_origin", re(global.plr.pos), im(global.plr.pos));

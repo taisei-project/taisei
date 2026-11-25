@@ -1340,7 +1340,7 @@ static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArg
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
-	r_uniform_int("frames", global.frames);
+	r_uniform_int("frames", t + p->birthtime);
 	r_uniform_float("progress", t / p->timeout);
 	r_uniform_vec2("origin", re(p->pos), im(p->pos));
 	r_uniform_vec2("clear_origin", re(p->pos), im(p->pos));

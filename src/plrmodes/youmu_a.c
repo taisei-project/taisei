@@ -68,7 +68,7 @@ static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float opacity = args[0].as_float[1];
 
 	float fadein = clamp(t / 10.0, 0, 1);
-	float s = 1 - projectile_timeout_factor(p);
+	float s = 1 - projectile_timeout_factor(p, t);
 	float a = opacity * fadein;
 
 	SpriteParams sp = projectile_sprite_params(p);
@@ -149,7 +149,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 }
 
 static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float time_progress = projectile_timeout_factor(p);
+	float time_progress = projectile_timeout_factor(p, t);
 	float s = 2 * time_progress;
 	float a = min(1, s) * (1 - time_progress);
 
@@ -481,7 +481,7 @@ static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx
 
 static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	SpriteParams sp = projectile_sprite_params(p);
-	float nt = 1 - projectile_timeout_factor(p);
+	float nt = 1 - projectile_timeout_factor(p, t);
 	float s = 1 + (1 - nt);
 	sp.scale.as_cmplx *= s;
 	sp.rotation.angle -= M_PI/2;
