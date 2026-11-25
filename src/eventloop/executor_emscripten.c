@@ -41,7 +41,7 @@ static void em_loop_callback(void) {
 		evloop.frame_times.next = min_next_time;
 	}
 
-	global.fps.busy.last_update_time = evloop.frame_times.start;
+	evloop.fps.busy.last_update_time = evloop.frame_times.start;
 
 	r_await_frame(false);
 
@@ -54,10 +54,10 @@ static void em_loop_callback(void) {
 	if(!(frame_num++ % eventloop_get_frameskip())) {
 		scene_render_frame(scene);
 		r_present_frame();
-		fpscounter_update(&global.fps.render, time_get());
+		fpscounter_update(&evloop.fps.render, time_get());
 	}
 
-	fpscounter_update(&global.fps.busy, time_get());
+	fpscounter_update(&evloop.fps.busy, time_get());
 }
 
 static void update_vsync(void) {
@@ -75,7 +75,19 @@ static bool em_handle_resize_event(SDL_Event *event, void *arg) {
 }
 
 void eventloop_run(void) {
-	evloop.frame_times.next = time_get();
+	Scene *scene = evloop.current_scene;
+
+	if(scene == NULL) {
+		return;
+	}
+
+	evloop.frame_times.start = time_get();
+	evloop.frame_times.next = evloop.frame_times.start;
+	evloop.frame_times.target_fps = scene->target_fps;
+
+	eventloop_reset_fps_counters(&evloop.fps,
+		HRTIME_RESOLUTION / evloop.frame_times.target_fps, evloop.frame_times.start);
+
 	emscripten_set_main_loop(em_loop_callback, 0, false);
 	update_vsync();
 

@@ -76,7 +76,7 @@ static SceneAction run_logic(Scene *scene) {
 	SceneAction a = scene->logic(scene->context);
 
 	if(a != SCENE_ACTION_SKIP_ALWAYS) {
-		fpscounter_update(&global.fps.logic, time_get());
+		fpscounter_update(&evloop.fps.logic, time_get());
 	}
 
 	if(taisei_quit_requested()) {
@@ -152,4 +152,14 @@ uint eventloop_get_frameskip(void) {
 	}
 
 	return config_get_int(CONFIG_VID_FRAMESKIP);
+}
+
+const FPSCounters *eventloop_get_fps_counters(void) {
+	return &evloop.fps;
+}
+
+void eventloop_reset_fps_counters(FPSCounters *counters, hrtime_t init_frametime, hrtime_t now) {
+	fpscounter_reset(&counters->busy, init_frametime, now);
+	fpscounter_reset(&counters->logic, init_frametime, now);
+	fpscounter_reset(&counters->render, init_frametime, now);
 }

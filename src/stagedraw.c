@@ -9,6 +9,7 @@
 #include "stagedraw.h"
 
 #include "entity.h"
+#include "eventloop/eventloop.h"
 #include "events.h"
 #include "gfx/fbmgr.h"
 #include "gfx/graphics.h"
@@ -1600,11 +1601,12 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 void stage_draw_bottom_text(GameSession *game) {
 	char buf[64];
 	Font *font;
+	auto fps = eventloop_get_fps_counters();
 
 #ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, frames: %d (%d:%02d) ",
-		global.fps.logic.fps,
-		global.fps.render.fps,
+		fps->logic.fps,
+		fps->render.fps,
 		global.frames,
 		global.frames / 3600,
 		(global.frames % 3600) / 60
@@ -1612,12 +1614,12 @@ void stage_draw_bottom_text(GameSession *game) {
 #else
 	if(eventloop_get_frameskip() > 1) {
 		snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps",
-			global.fps.logic.fps,
-			global.fps.render.fps
+			fps->logic.fps,
+			fps->render.fps
 		);
 	} else {
 		snprintf(buf, sizeof(buf), "%.2f fps",
-			global.fps.logic.fps
+			fps->logic.fps
 		);
 	}
 #endif
@@ -1715,7 +1717,7 @@ void stage_draw_bottom_text(GameSession *game) {
 	r_shader_standard();
 }
 
-static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
+static void fill_graph(int num_samples, float *samples, const FPSCounter *fps) {
 	for(int i = 0; i < num_samples; ++i) {
 		samples[i] = fps->frametimes[i] / (2.0 * (HRTIME_RESOLUTION / (long double)FPS));
 
@@ -1732,7 +1734,7 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	r_state_push();
 	r_shader("graph");
 
-	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
+	fill_graph(NUM_SAMPLES, samples, &eventloop_get_fps_counters()->logic);
 	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
 	r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.0);
@@ -1742,7 +1744,7 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	// x -= w * 1.1;
 	y += h + 1;
 
-	fill_graph(NUM_SAMPLES, samples, &global.fps.busy);
+	fill_graph(NUM_SAMPLES, samples, &eventloop_get_fps_counters()->busy);
 	r_uniform_vec3("color_low",  0.0, 1.0, 0.0);
 	r_uniform_vec3("color_mid",  1.0, 0.0, 0.0);
 	r_uniform_vec3("color_high", 1.0, 0.0, 0.5);

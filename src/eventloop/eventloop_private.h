@@ -28,11 +28,13 @@ extern struct evloop_s {
 	Scene stack[EVLOOP_STACK_SIZE];
 	Scene *current_scene;
 	FrameTimes frame_times;
+	FPSCounters fps;
 	int forced_frameskip;
 	bool headless;
 } evloop;
 
 void eventloop_leave(void);
+void eventloop_reset_fps_counters(FPSCounters *counters, hrtime_t init_frametime, hrtime_t now);
 
 SceneAction scene_handle_logic(Scene **pscene, const FrameTimes *ftimes);
 void scene_render_frame(Scene *scene);

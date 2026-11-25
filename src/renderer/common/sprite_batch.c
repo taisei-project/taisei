@@ -9,6 +9,7 @@
 #include "sprite_batch_internal.h"
 
 #include "../api.h"
+#include "eventloop/eventloop.h"
 #include "util.h"
 #include "util/glm.h"
 #include "resource/sprite.h"
@@ -378,7 +379,7 @@ void _r_sprite_batch_end_frame(void) {
 		_r_sprite_batch.frame_stats.sprites / (double)_r_sprite_batch.frame_stats.flushes,
 		_r_sprite_batch.frame_stats.best_batch,
 		_r_sprite_batch.frame_stats.worst_batch,
-		global.fps.render.fps
+		eventloop_get_frame_rates()->render.fps
 	);
 
 	Font *font = res_font("monotiny");

@@ -9,17 +9,16 @@
 #include "framerate.h"
 #include "global.h"
 
-void fpscounter_reset(FPSCounter *fps) {
-	hrtime_t frametime = HRTIME_RESOLUTION / FPS;
+void fpscounter_reset(FPSCounter *fps, hrtime_t init_frametime, hrtime_t now) {
 	const int log_size = ARRAY_SIZE(fps->frametimes);
 
 	for(int i = 0; i < log_size; ++i) {
-		fps->frametimes[i] = frametime;
+		fps->frametimes[i] = init_frametime;
 	}
 
-	fps->fps = HRTIME_RESOLUTION / (long double)frametime;
-	fps->frametime = frametime;
-	fps->last_update_time = time_get();
+	fps->fps = HRTIME_RESOLUTION / (long double)init_frametime;
+	fps->frametime = init_frametime;
+	fps->last_update_time = now;
 }
 
 void fpscounter_update(FPSCounter *fps, hrtime_t when) {

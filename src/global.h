@@ -54,11 +54,6 @@ typedef struct {
 	int frames; // stage global timer
 
 
-	struct {
-		FPSCounter logic;
-		FPSCounter render;
-		FPSCounter busy;
-	} fps;
 
 
 } Global;

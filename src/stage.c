@@ -955,7 +955,7 @@ static void stage_update_fps(StagePrivateState *state) {
 	GameSession *game = state->game;
 
 	if(game->replay.output.replay) {
-		uint16_t replay_fps = (uint16_t)rint(global.fps.logic.fps);
+		uint16_t replay_fps = (uint16_t)rint(eventloop_get_fps_counters()->logic.fps);
 
 		if(replay_fps != state->last_replay_fps) {
 			replay_stage_event(game->replay.output.stage, global.frames, EV_FPS, replay_fps);

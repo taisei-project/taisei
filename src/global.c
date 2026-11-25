@@ -20,9 +20,6 @@ void init_global(CLIAction *cli) {
 
 	rng_init_default(time(0));
 
-	fpscounter_reset(&global.fps.logic);
-	fpscounter_reset(&global.fps.render);
-	fpscounter_reset(&global.fps.busy);
 }
 
 // Inputdevice-agnostic method of checking whether a game control is pressed.

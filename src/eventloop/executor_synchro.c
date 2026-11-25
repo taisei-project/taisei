@@ -445,7 +445,7 @@ static void display_pacer_unlagger_update(
 	debug_text("Unlagger hold: %i", u->hold_frames);
 	debug_text("Unlagger total misses: %i", u->misses);
 	debug_text("Prev work time: %.2fms  (avg: %.2fms)",
-		SDL_NS_TO_MS((double)prev_work_time), SDL_NS_TO_MS((double)global.fps.busy.frametime));
+		SDL_NS_TO_MS((double)prev_work_time), SDL_NS_TO_MS((double)evloop.fps.busy.frametime));
 
 	if(u->delay) {
 		wait_until(wait, p->last_sync_time + u->delay);
@@ -598,7 +598,7 @@ static PacingMode decide_pacing_mode(FramePacer *pacer) {
 	}
 
 	if(pacer->display.vblank_period) {
-		hrtime_t worktime = global.fps.busy.frametime;  // average
+		hrtime_t worktime = evloop.fps.busy.frametime;  // average
 
 		// Display-driven pacing only works if we can update and draw within the vblank interval.
 		// Turn it off temporarily if we're overloaded, and don't switch back until the load fits
@@ -634,7 +634,7 @@ static bool decide_low_latency(FramePacer *pacer, uint target_fps) {
 	}
 
 	hrtime_t max_frametime = HRTIME_RESOLUTION / target_fps;
-	hrtime_t worktime = global.fps.busy.frametime;
+	hrtime_t worktime = evloop.fps.busy.frametime;
 	hrtime_t frametime = pacer->raw_fps.frametime;
 	bool lagging = false;
 
@@ -672,6 +672,9 @@ void eventloop_run(void) {
 	evloop.frame_times.target_fps = scene->target_fps;
 	evloop.frame_times.start = time_get();
 
+	eventloop_reset_fps_counters(&evloop.fps,
+		HRTIME_RESOLUTION / evloop.frame_times.target_fps, evloop.frame_times.start);
+
 	int force_latency_mode = env_get("TAISEI_LOW_LATENCY", -1);
 
 	FramePacer pacer = {
@@ -699,7 +702,8 @@ void eventloop_run(void) {
 	uint scene_logic_ticks = 0;
 
 	pacer.display = display_pacer_init(evloop.frame_times.target_fps);
-	fpscounter_reset(&pacer.raw_fps);
+	fpscounter_reset(&pacer.raw_fps,
+		HRTIME_RESOLUTION / evloop.frame_times.target_fps, prev_present_start_time);
 
 	while(scene != NULL) {
 		// In VSYNC mode, this call may block to wait for a swapchain.
@@ -756,7 +760,7 @@ void eventloop_run(void) {
 		fpscounter_update(&pacer.raw_fps, evloop.frame_times.start);
 
 		debug_text("FPS:  L:%.2f  R:%.2f  RAW:%.02f",
-			global.fps.logic.fps, global.fps.render.fps, pacer.raw_fps.fps);
+			evloop.fps.logic.fps, evloop.fps.render.fps, pacer.raw_fps.fps);
 
 		assert(evloop.frame_times.start > prev_start);
 		attr_unused auto elapsed = evloop.frame_times.start - prev_start;
@@ -773,7 +777,7 @@ void eventloop_run(void) {
 		}
 
 		hrtime_t work_begin_time = time_get();
-		global.fps.busy.last_update_time = work_begin_time;
+		evloop.fps.busy.last_update_time = work_begin_time;
 
 		if(!scene_start_time) {
 			scene_start_time = work_begin_time;
@@ -811,17 +815,17 @@ void eventloop_run(void) {
 			scene_render_frame(scene);
 
 			hrtime_t work_end_time = time_get();
-			fpscounter_update(&global.fps.busy, work_end_time);
+			fpscounter_update(&evloop.fps.busy, work_end_time);
 
 			prev_work_time = work_end_time - work_begin_time;
 			prev_present_start_time = work_end_time;
 
 			r_present_frame();
-			fpscounter_update(&global.fps.render, time_get());
+			fpscounter_update(&evloop.fps.render, time_get());
 		} else {
 			prev_present_start_time = time_get();
 			prev_work_time = prev_present_start_time - work_begin_time;
-			fpscounter_update(&global.fps.busy, prev_present_start_time);
+			fpscounter_update(&evloop.fps.busy, prev_present_start_time);
 
 			if(pacer.current_mode == PMODE_DISPLAY) {
 				// This is guaranteed to be the CONFIG_VID_FRAMESKIP path.
