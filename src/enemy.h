@@ -47,13 +47,6 @@ typedef enum EnemyFlag {
 		0,
 } EnemyFlag;
 
-typedef struct EnemyDrawParams {
-	cmplx pos;  // NOTE: subject to slide-in correction at screen edges
-	int time;
-} EnemyDrawParams;
-
-typedef void (*EnemyDrawFunc)(Enemy*, EnemyDrawParams);
-
 DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;
