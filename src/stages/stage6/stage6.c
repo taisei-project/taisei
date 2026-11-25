@@ -172,14 +172,14 @@ static void stage6_spellpractice_start(void) {
 	stage6_drawsys_init();
 	stage6_bg_init_spellpractice();
 
-	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
+	STAGE.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 	AttackInfo *s = global.stage->spell;
 
 	if(STG6_SPELL_NEEDS_SCYTHE(s)) {
 //		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
 		stage_start_bgm("stage6boss_phase1");
 	} else if(STG6_SPELL_NEEDS_BARYON(s)) {
-//		elly_spawn_baryons(global.boss->pos);
+//		elly_spawn_baryons(STAGE.boss->pos);
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
 		stage6_bg_start_fall_over();
@@ -188,8 +188,8 @@ static void stage6_spellpractice_start(void) {
 		stage_start_bgm("stage6boss_phase2");
 	}
 
-	boss_add_attack_from_info(global.boss, global.stage->spell, true);
-	boss_engage(global.boss);
+	boss_add_attack_from_info(STAGE.boss, global.stage->spell, true);
+	boss_engage(STAGE.boss);
 }
 
 

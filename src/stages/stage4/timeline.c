@@ -632,7 +632,7 @@ TASK_WITH_INTERFACE(kurumi_outro, BossAttack) {
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 
-	Boss *b = global.boss = stage4_spawn_kurumi(VIEWPORT_W / 2.0 - 400.0 * I);
+	Boss *b = STAGE.boss = stage4_spawn_kurumi(VIEWPORT_W / 2.0 - 400.0 * I);
 
 	boss_add_attack_task(b, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, kurumi_intro), NULL);
 	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
@@ -738,7 +738,7 @@ TASK_WITH_INTERFACE(kurumi_boss_intro, BossAttack){
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
-	Boss *b = global.boss = stage4_spawn_kurumi(-400 * I);
+	Boss *b = STAGE.boss = stage4_spawn_kurumi(-400 * I);
 
 	stage_unlock_bgm("stage4");
 	stage4_bg_redden_corridor();
@@ -827,7 +827,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	WAIT(3200);
 	INVOKE_TASK(spawn_midboss);
-	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+	int midboss_time = WAIT_EVENT(&STAGE.boss->events.defeated).frames;
 	int filler_time = STAGE4_MIDBOSS_MUSIC_TIME;
 
 	STAGE_BOOKMARK(post-midboss);
@@ -893,7 +893,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	WAIT(2460);
 	INVOKE_TASK(spawn_boss);
-	WAIT_EVENT(&NOT_NULL(global.boss)->events.defeated);
+	WAIT_EVENT(&NOT_NULL(STAGE.boss)->events.defeated);
 	stage_unlock_bgm("stage4boss");
 
 	WAIT(240);

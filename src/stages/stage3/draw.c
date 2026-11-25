@@ -117,8 +117,8 @@ static bool stage3_fog(Framebuffer *fb) {
 static bool stage3_glitch(Framebuffer *fb) {
 	float strength;
 
-	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
-		strength = 0.05f * max(0, (global.frames - global.boss->current->starttime) / (float)global.boss->current->timeout);
+	if(STAGE.boss && STAGE.boss->current && ATTACK_IS_SPELL(STAGE.boss->current->type) && !strcmp(STAGE.boss->name, "Scuttle")) {
+		strength = 0.05f * max(0, (global.frames - STAGE.boss->current->starttime) / (float)STAGE.boss->current->timeout);
 	} else {
 		strength = 0.0;
 	}

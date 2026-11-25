@@ -8,8 +8,9 @@
 
 #include "dpstest.h"
 
-#include "enemy_classes.h"
 #include "enemy.h"
+#include "enemy_classes.h"
+#include "gamesession.h"
 #include "global.h"
 
 TASK(single_fairy) {
@@ -71,12 +72,12 @@ TASK_WITH_INTERFACE(boss_regen, BossAttack) {
 }
 
 static void dpstest_boss(void) {
-	global.boss = create_boss("Baka", "cirno", BOSS_DEFAULT_GO_POS);
+	STAGE.boss = create_boss("Baka", "cirno", BOSS_DEFAULT_GO_POS);
 	boss_add_attack_task(
-		global.boss, AT_Spellcard, "Masochism “Eternal Torment”",
+		STAGE.boss, AT_Spellcard, "Masochism “Eternal Torment”",
 		5184000, 90000, TASK_INDIRECT(BossAttack, boss_regen), NULL
 	);
-	boss_engage(global.boss);
+	boss_engage(STAGE.boss);
 }
 
 StageProcs stage_dpstest_single_procs = {

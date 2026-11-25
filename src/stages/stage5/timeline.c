@@ -31,7 +31,7 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
-	Boss *boss = global.boss = create_boss(N_("Bombs?"), "iku_mid", VIEWPORT_W + 800.0 * I);
+	Boss *boss = STAGE.boss = create_boss(N_("Bombs?"), "iku_mid", VIEWPORT_W + 800.0 * I);
 	boss->glowcolor = RGB(0.2, 0.4, 0.5);
 	boss->shadowcolor = RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 
@@ -55,7 +55,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
 	stage_unlock_bgm("stage5");
-	Boss *boss = global.boss = stage5_spawn_iku(VIEWPORT_W/2 - 200.0 * I);
+	Boss *boss = STAGE.boss = stage5_spawn_iku(VIEWPORT_W/2 - 200.0 * I);
 	PlayerMode *pm = global.plr.mode;
 	Stage5PreBossDialogEvents *e;
 
@@ -1001,7 +1001,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(2900, pre-midboss);
 	INVOKE_TASK_DELAYED(2900, spawn_midboss);
-	while(!global.boss) YIELD;
+	while(!STAGE.boss) YIELD;
 	STAGE_BOOKMARK(post-midboss);
 	WAIT(1100);
 	stage5_dialog_post_midboss();
@@ -1152,8 +1152,8 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 
 	WAIT(3830);
 	INVOKE_TASK(spawn_boss);
-	while(!global.boss) YIELD;
-	WAIT_EVENT(&global.boss->events.defeated);
+	while(!STAGE.boss) YIELD;
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 
 	stage_unlock_bgm("stage5boss");
 

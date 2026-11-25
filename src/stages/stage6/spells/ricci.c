@@ -228,7 +228,7 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 		real influence = 0;
 
-		int time = global.frames-global.boss->current->starttime;
+		int time = global.frames-STAGE.boss->current->starttime;
 
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real base_radius = safe_radius(safe_radius_phase(time, i));

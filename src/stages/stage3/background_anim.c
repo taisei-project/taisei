@@ -9,7 +9,7 @@
 #include "background_anim.h"
 #include "draw.h"
 
-#include "global.h"
+#include "gamesession.h"
 #include "stageutils.h"
 #include "util/glm.h"
 
@@ -40,15 +40,15 @@ TASK(animate_bg) {
 
 		stage3d_update(&stage_3d_context);
 
-		if(global.boss && !boss_is_fleeing(global.boss)) {
+		if(STAGE.boss && !boss_is_fleeing(STAGE.boss)) {
 			fapproach_asymptotic_p(&dd->boss_light_alpha, 1, 0.02f, 1e-3f);
 		} else {
 			fapproach_asymptotic_p(&dd->boss_light_alpha, 0, 0.02f, 1e-3f);
 		}
 
-		if(dd->boss_light_alpha > 0 && global.boss) {
+		if(dd->boss_light_alpha > 0 && STAGE.boss) {
 			vec3 r;
-			camera3d_unprojected_ray(cam, global.boss->pos, r);
+			camera3d_unprojected_ray(cam, STAGE.boss->pos, r);
 			glm_vec3_scale(r, 14, r);
 			glm_vec3_add(cam->pos, r, dd->boss_light.pos);
 		}

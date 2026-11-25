@@ -9,6 +9,7 @@
 #include "entity.h"
 
 #include "dynarray.h"
+#include "gamesession.h"
 #include "global.h"
 #include "renderer/api.h"
 #include "util.h"
@@ -181,12 +182,12 @@ void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, Entit
 	}
 
 	if(
-		global.boss != NULL &&
-		cabs(origin - global.boss->pos) < radius &&
-		ent_damage(&global.boss->ent, damage) == DMG_RESULT_OK &&
+		STAGE.boss != NULL &&
+		cabs(origin - STAGE.boss->pos) < radius &&
+		ent_damage(&STAGE.boss->ent, damage) == DMG_RESULT_OK &&
 		callback != NULL
 	) {
-		callback(&global.boss->entity_interface, global.boss->pos, callback_arg);
+		callback(&STAGE.boss->entity_interface, STAGE.boss->pos, callback_arg);
 	}
 }
 
@@ -202,12 +203,12 @@ void ent_area_damage_ellipse(Ellipse ellipse, const DamageInfo *damage, EntityAr
 	}
 
 	if(
-		global.boss != NULL &&
-		point_in_ellipse(global.boss->pos, ellipse) &&
-		ent_damage(&global.boss->ent, damage) == DMG_RESULT_OK &&
+		STAGE.boss != NULL &&
+		point_in_ellipse(STAGE.boss->pos, ellipse) &&
+		ent_damage(&STAGE.boss->ent, damage) == DMG_RESULT_OK &&
 		callback != NULL
 	) {
-		callback(&global.boss->entity_interface, global.boss->pos, callback_arg);
+		callback(&STAGE.boss->entity_interface, STAGE.boss->pos, callback_arg);
 	}
 }
 

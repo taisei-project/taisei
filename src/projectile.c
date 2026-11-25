@@ -409,12 +409,12 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		}
 
 		if(
-			global.boss &&
-			boss_is_vulnerable(global.boss) &&
-			cabs2(global.boss->pos - p->pos) < 42 * 42
+			STAGE.boss &&
+			boss_is_vulnerable(STAGE.boss) &&
+			cabs2(STAGE.boss->pos - p->pos) < 42 * 42
 		) {
 			out_col->type = PCOL_ENTITY;
-			out_col->entity = &global.boss->ent;
+			out_col->entity = &STAGE.boss->ent;
 			out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 		}
 	}

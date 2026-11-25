@@ -492,7 +492,7 @@ TASK_WITH_INTERFACE(wriggle_mid_flee, BossAttack) {
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 
-	Boss *boss = global.boss = stage2_spawn_wriggle(VIEWPORT_W + 150 - 30.0*I);
+	Boss *boss = STAGE.boss = stage2_spawn_wriggle(VIEWPORT_W + 150 - 30.0*I);
 	wriggle_ani_flyin(boss);
 
 	boss_add_attack_task(boss, AT_Move, "Introduction", 4, 0, TASK_INDIRECT(BossAttack, wriggle_intro), NULL);
@@ -634,7 +634,7 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 	stage_unlock_bgm("stage2");
 
-	Boss *boss = global.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
+	Boss *boss = STAGE.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
 
 	PlayerMode *pm = global.plr.mode;
 	Stage2PreBossDialogEvents *e;
@@ -758,7 +758,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	WAIT(2700);
 	INVOKE_TASK(spawn_midboss);
-	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+	int midboss_time = WAIT_EVENT(&STAGE.boss->events.defeated).frames;
 	int filler_time = 1900;
 	int time_ofs = 0 - midboss_time;
 
@@ -853,7 +853,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	WAIT(300);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	INVOKE_TASK(spawn_boss);
-	WAIT_EVENT(&global.boss->events.defeated);
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 
 	stage_unlock_bgm("stage2boss");
 

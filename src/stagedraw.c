@@ -390,6 +390,8 @@ FBPair *stage_get_postprocess_fbpair(void) {
 }
 
 static void stage_draw_collision_areas(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 #ifdef DEBUG
 	static bool enabled, keystate_saved;
 	bool keystate = gamekeypressed(KEY_HITAREAS);
@@ -478,10 +480,10 @@ static void stage_draw_collision_areas(GameSession *game) {
 		}
 	}
 
-	if(global.boss && boss_is_player_collision_active(global.boss)) {
+	if(stage->boss && boss_is_player_collision_active(stage->boss)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = &stagedraw.dummy,
-			.pos = { re(global.boss->pos), im(global.boss->pos) },
+			.pos = { re(stage->boss->pos), im(stage->boss->pos) },
 			.scale = { .x = BOSS_HURT_RADIUS * 2, .y = BOSS_HURT_RADIUS * 2 },
 			.blend = BLEND_ALPHA,
 			.color = RGB(1, 1, 1),
@@ -528,7 +530,7 @@ void stage_draw_bind_shader_rules(CoEvent *event, ShaderRule *rules) {
 	INVOKE_TASK(apply_shader_rules_on_event, event, rules);
 }
 
-static void draw_wall_of_text(GameSession *game, float f, const char *txt) {
+static void draw_wall_of_text(Boss *boss, float f, const char *txt) {
 	Sprite spr;
 	TextBBox bbox;
 
@@ -556,7 +558,7 @@ static void draw_wall_of_text(GameSession *game, float f, const char *txt) {
 	r_uniform_float("w", spr.tex_area.w);
 	r_uniform_float("h", spr.tex_area.h);
 	r_uniform_float("ratio", h/w);
-	r_uniform_vec2("origin", re(global.boss->pos)/h, im(global.boss->pos)/w); // what the fuck?
+	r_uniform_vec2("origin", re(boss->pos)/h, im(boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
 	r_uniform_sampler("tex", spr.tex);
 	r_draw_quad();
@@ -565,9 +567,7 @@ static void draw_wall_of_text(GameSession *game, float f, const char *txt) {
 	r_mat_mv_pop();
 }
 
-static void draw_spellbg(GameSession *game, int t) {
-	Boss *b = global.boss;
-
+static void draw_spellbg(Boss *b, int t) {
 	r_state_push();
 	b->current->draw_rule(b, t);
 	r_state_pop();
@@ -594,25 +594,25 @@ static void draw_spellbg(GameSession *game, int t) {
 	});
 }
 
-static void draw_spellbg_overlay(GameSession *game, int t) {
-	Boss *b = global.boss;
-
+static void draw_spellbg_overlay(Boss *b, int t) {
 	float delay = attacktype_start_delay(b->current->type);
 	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
 	if(f > 0) {
-		draw_wall_of_text(game, f, _(b->current->name));
+		draw_wall_of_text(b, f, _(b->current->name));
 	}
 }
 
 static inline bool should_draw_stage_bg(GameSession *game) {
-	if(!global.boss || !global.boss->current)
+	StageInstance *stage = &game->stage;
+
+	if(!stage->boss || !stage->boss->current)
 		return true;
 
 	return (
-		!global.boss->current->draw_rule
-		|| !attack_is_active(global.boss->current)
-		|| global.frames - global.boss->current->starttime < SPELL_INTRO_DURATION
+		!stage->boss->current->draw_rule
+		|| !attack_is_active(stage->boss->current)
+		|| global.frames - stage->boss->current->starttime < SPELL_INTRO_DURATION
 	);
 }
 
@@ -723,9 +723,11 @@ static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, Bl
 	return true;
 }
 
-static bool boss_distortion_rule(Framebuffer *fb) {
-	if(global.boss == NULL) {
-		return false;
+static void apply_boss_distortion(Boss *boss, FBPair *fbos, int t) {
+	r_framebuffer(fbos->back);
+
+	if(boss == NULL) {
+		return;
 	}
 
 	r_state_push();
@@ -733,21 +735,21 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	r_disable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_CULL_FACE);
 
-	cmplx fpos = global.boss->pos;;
+	cmplx fpos = boss->pos;
 	cmplx pos = fpos;
 
 	r_shader("boss_zoom");
 	r_uniform_vec2("blur_orig", re(pos)  / VIEWPORT_W,  im(pos)  / VIEWPORT_H);
 	r_uniform_vec2("fix_orig",  re(fpos) / VIEWPORT_W,  im(fpos) / VIEWPORT_H);
-	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
+	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(t/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
-	r_uniform_vec4_rgba("color", global.boss->zoomcolor);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	r_uniform_vec4_rgba("color", boss->zoomcolor);
+	draw_framebuffer_tex(fbos->front, VIEWPORT_W, VIEWPORT_H);
 
 	r_state_pop();
 
-	return true;
+	fbpair_swap(fbos);
 }
 
 static void finish_3d_scene(FBPair *fbpair) {
@@ -781,21 +783,22 @@ static void finish_3d_scene(FBPair *fbpair) {
 	}, fbpair);
 }
 
-static void draw_full_spellbg(GameSession *game, int t, FBPair *fbos) {
+static void draw_full_spellbg(Boss *boss, int t, FBPair *fbos) {
 	BlendMode blend_old = r_blend_current();
 	r_framebuffer(fbos->back);
 	r_blend(BLEND_PREMUL_ALPHA);
-	draw_spellbg(game, t);
+	draw_spellbg(boss, t);
 	fbpair_swap(fbos);
 	r_blend(BLEND_NONE);
-	apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+	apply_boss_distortion(boss, fbos, t + boss->current->starttime);
 	r_blend(BLEND_PREMUL_ALPHA);
-	draw_spellbg_overlay(game, t);
+	draw_spellbg_overlay(boss, t);
 	r_blend(blend_old);
 }
 
 static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
-	Boss *b = global.boss;
+	StageInstance *stage = &game->stage;
+	Boss *boss = stage->boss;
 
 	r_state_push();
 	r_blend(BLEND_NONE);
@@ -813,24 +816,24 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 		}
 	}
 
-	if(b && b->current && b->current->draw_rule && b->current->starttime > 0) {
-		int t = global.frames - b->current->starttime;
-		int delay = attacktype_start_delay(b->current->type);
+	if(boss && boss->current && boss->current->draw_rule && boss->current->starttime > 0) {
+		int t = global.frames - boss->current->starttime;
+		int delay = attacktype_start_delay(boss->current->type);
 
 		bool trans_intro = t + delay < SPELL_INTRO_DURATION;
-		bool trans_outro = attack_has_finished(b->current);
+		bool trans_outro = attack_has_finished(boss->current);
 
 		if(!trans_intro && !trans_outro) {
-			draw_full_spellbg(game, t, fbos);
+			draw_full_spellbg(boss, t, fbos);
 		} else {
 			FBPair *aux = stage_get_fbpair(FBPAIR_BG_AUX);
-			draw_full_spellbg(game, t, aux);
+			draw_full_spellbg(boss, t, aux);
 
-			apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+			apply_boss_distortion(boss, fbos, global.frames);
 			fbpair_swap(fbos);
 			r_framebuffer(fbos->back);
 
-			cmplx pos = b->pos;
+			cmplx pos = boss->pos;
 			float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 
 			if(trans_intro) {
@@ -839,8 +842,8 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, im(pos) / VIEWPORT_H);
 				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
-				int tn = global.frames - b->current->endtime;
-				delay = b->current->endtime - b->current->endtime_undelayed;
+				int tn = global.frames - boss->current->endtime;
+				delay = boss->current->endtime - boss->current->endtime_undelayed;
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
@@ -854,7 +857,7 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 			fbpair_swap(fbos);
 		}
 	} else {
-		apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
+		apply_boss_distortion(boss, fbos, global.frames);
 	}
 
 	r_state_pop();
@@ -920,8 +923,8 @@ static void stage_draw_objects(GameSession *game) {
 
 	r_shader("sprite_default");
 
-	if(global.boss) {
-		draw_boss_background(global.boss);
+	if(stage->boss) {
+		draw_boss_background(stage->boss);
 	}
 
 	ent_draw(
@@ -931,8 +934,8 @@ static void stage_draw_objects(GameSession *game) {
 		stage
 	);
 
-	if(global.boss) {
-		draw_boss_fake_overlay(global.boss);
+	if(stage->boss) {
+		draw_boss_fake_overlay(stage->boss);
 	}
 
 	stage_draw_collision_areas(game);
@@ -940,12 +943,14 @@ static void stage_draw_objects(GameSession *game) {
 }
 
 void stage_draw_overlay(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	r_state_push();
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_disable(RCAP_CULL_FACE);
 
-	if(global.boss) {
-		draw_boss_overlay(global.boss);
+	if(stage->boss) {
+		draw_boss_overlay(stage->boss);
 	}
 
 	player_draw_overlay(&global.plr);
@@ -1785,13 +1790,13 @@ void stage_draw_hud(GameSession *game) {
 	float extraspell_alpha = 0;
 	float extraspell_fadein = 1;
 
-	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-		extraspell_fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+	if(stage->boss && stage->boss->current && stage->boss->current->type == AT_ExtraSpell) {
+		extraspell_fadein  = min(1, -min(0, global.frames - stage->boss->current->starttime) / (float)ATTACK_START_DELAY);
 
 		float fadeout;
 
-		if(attack_has_finished(global.boss->current)) {
-			fadeout = (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+		if(attack_has_finished(stage->boss->current)) {
+			fadeout = (1 - (stage->boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
 		} else {
 			fadeout = 0;
 		}
@@ -1965,15 +1970,15 @@ void stage_draw_hud(GameSession *game) {
 	r_mat_mv_pop();
 
 	// Boss indicator ("Enemy")
-	if(global.boss) {
-		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
+	if(stage->boss) {
+		float red = 0.5*exp(-0.5*(global.frames-stage->boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
 
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = res_sprite("boss_indicator"),
 			.shader = res_shader("sprite_default"),
-			.pos = { VIEWPORT_X+re(global.boss->pos), 590 },
+			.pos = { VIEWPORT_X+re(stage->boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
 		});
 	}

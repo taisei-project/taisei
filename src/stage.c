@@ -829,9 +829,9 @@ static void stage_free(StagePrivateState *state) {
 		stage->dialog = NULL;
 	}
 
-	if(global.boss) {
-		free_boss(global.boss);
-		global.boss = NULL;
+	if(stage->boss) {
+		free_boss(stage->boss);
+		stage->boss = NULL;
 	}
 
 	lasers_shutdown();
@@ -1091,7 +1091,7 @@ static SceneAction stage_scene_logic(void *arg) {
 			stage_display_clear_screen(&b);
 		}
 
-		if(stage->info->type == STAGE_SPELL && !global.boss && !state->transition_delay) {
+		if(stage->info->type == STAGE_SPELL && !stage->boss && !state->transition_delay) {
 			state->transition_delay = 120;
 		}
 	}
@@ -1181,7 +1181,7 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 
 	for(;;YIELD) {
 		process_input(state);
-		process_boss(&global.boss);
+		process_boss(&stage->boss);
 		process_enemies(&global.enemies);
 		process_projectiles(&global.projs, true);
 		process_items();
@@ -1201,8 +1201,8 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 				dialog_page(stage->dialog);
 			}
 
-			if(global.boss) {
-				ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
+			if(stage->boss) {
+				ent_damage(&stage->boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
 			}
 		}
 	}

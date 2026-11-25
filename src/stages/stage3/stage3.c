@@ -73,16 +73,16 @@ static void stage3_spellpractice_start(void) {
 	stage3_bg_init_spellpractice();
 
 	if(global.stage->spell->draw_rule == stage3_draw_scuttle_spellbg) {
-		global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
+		STAGE.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
 		stage_unlock_bgm("scuttle");
 		stage_start_bgm("scuttle");
 	} else {
-		global.boss = stage3_spawn_wriggle(BOSS_DEFAULT_SPAWN_POS);
+		STAGE.boss = stage3_spawn_wriggle(BOSS_DEFAULT_SPAWN_POS);
 		stage_start_bgm("stage3boss");
 	}
 
-	boss_add_attack_from_info(global.boss, global.stage->spell, true);
-	boss_engage(global.boss);
+	boss_add_attack_from_info(STAGE.boss, global.stage->spell, true);
+	boss_engage(STAGE.boss);
 }
 
 static void stage3_preload(ResourceGroup *rg) {

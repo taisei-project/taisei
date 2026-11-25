@@ -355,7 +355,7 @@ TASK(trigger_ball, { cmplx pos; NodesGrid *grid; int charge_time; }) {
 	}
 
 	stage_shake_view(40);
-	aniplayer_hard_switch(&global.boss->ani,"main_mirror",0);
+	aniplayer_hard_switch(&STAGE.boss->ani,"main_mirror",0);
 	play_sfx("boom");
 
 	kill_projectile(p);

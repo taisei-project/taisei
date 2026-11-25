@@ -286,7 +286,7 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 			);
 		}
 	}
-	e->move = move_from_towards(e->pos, global.boss->pos, 0.04);
+	e->move = move_from_towards(e->pos, STAGE.boss->pos, 0.04);
 }
 
 DEFINE_EXTERN_TASK(kurumi_vladsarmy) {

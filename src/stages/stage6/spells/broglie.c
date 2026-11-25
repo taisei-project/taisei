@@ -215,7 +215,7 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 			YIELD;
 		}
 
-		elly_clap(global.boss, fire_delay);
+		elly_clap(STAGE.boss, fire_delay);
 
 		INVOKE_SUBTASK_DELAYED(step * cnt,
 			broglie_spin_baryon, ENT_BOX(baryons), fire_delay - step * (cnt - 1));

@@ -346,7 +346,7 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 	stage_unlock_bgm("stage6");
 
-	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
+	Boss *boss = STAGE.boss = stage6_spawn_elly(-200.0*I);
 
 	BoxedEllyScythe scythe_ref;
 	INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref);
@@ -402,7 +402,7 @@ TASK(spawn_boss) {
 	boss_add_attack_task(boss, AT_Move, "ToE transition", 7, 0, TASK_INDIRECT(BossAttack, elly_begin_toe), NULL);
 	boss_add_attack_from_info(boss, &stage6_spells.final.theory_of_everything, false);
 	boss_engage(boss);
-	WAIT_EVENT(&global.boss->events.defeated);
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 	AWAIT_SUBTASKS;
 
 }
@@ -508,7 +508,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 
 	WAIT(3800);
 	INVOKE_TASK(spawn_boss);
-	WAIT_EVENT(&global.boss->events.defeated);
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 
 	WAIT(300);
 

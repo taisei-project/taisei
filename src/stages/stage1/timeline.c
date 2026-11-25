@@ -586,7 +586,7 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK_DELAYED(120, midboss);
 
-	Boss *boss = global.boss = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
+	Boss *boss = STAGE.boss = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
 
 	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_intro), NULL);
 	boss_add_attack_task(boss, AT_Normal, "Icy Storm", 20, 24000, TASK_INDIRECT(BossAttack, stage1_midboss_nonspell_1), NULL);
@@ -666,7 +666,7 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 	stage_unlock_bgm("stage1");
 
-	Boss *boss = global.boss = stage1_spawn_cirno(-230 + 100.0*I);
+	Boss *boss = STAGE.boss = stage1_spawn_cirno(-230 + 100.0*I);
 
 	PlayerMode *pm = global.plr.mode;
 	Stage1PreBossDialogEvents *e;
@@ -710,8 +710,8 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 	INVOKE_TASK_DELAYED(2700, spawn_midboss);
 
-	while(!global.boss) YIELD;
-	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+	while(!STAGE.boss) YIELD;
+	int midboss_time = WAIT_EVENT(&STAGE.boss->events.defeated).frames;
 	int filler_time = 2180;
 	int time_ofs = -midboss_time;
 
@@ -785,8 +785,8 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 
 	WAIT(2560);
 	INVOKE_TASK(spawn_boss);
-	while(!global.boss) YIELD;
-	WAIT_EVENT(&global.boss->events.defeated);
+	while(!STAGE.boss) YIELD;
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 
 	stage_unlock_bgm("stage1boss");
 

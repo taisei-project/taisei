@@ -77,12 +77,12 @@ static uint stage2_hina_lights(Camera3D *cam, uint num_lights, PointLight3D ligh
 	Stage2DrawData *draw_data = stage2_get_draw_data();
 	float intensity = draw_data->hina_lights;
 
-	if(!global.boss || intensity <= 0) {
+	if(!STAGE.boss || intensity <= 0) {
 		return 0;
 	}
 
 	vec3 r;
-	camera3d_unprojected_ray(cam, global.boss->pos, r);
+	camera3d_unprojected_ray(cam, STAGE.boss->pos, r);
 	float t = (0.1f - cam->pos[2]) / r[2];
 	glm_vec3_scale(r, t, r);
 

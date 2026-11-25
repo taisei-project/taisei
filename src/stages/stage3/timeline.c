@@ -557,7 +557,7 @@ TASK_WITH_INTERFACE(midboss_outro, BossAttack) {
 TASK(spawn_midboss) {
 	STAGE_BOOKMARK_DELAYED(120, midboss);
 
-	Boss *boss = global.boss = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
+	Boss *boss = STAGE.boss = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
 
 	glm_vec3_copy((vec3) { -10, -20, -30 }, stage3_get_draw_data()->boss_light.radiance);
 
@@ -578,7 +578,7 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
 	stage_unlock_bgm("stage3");
 
-	Boss *boss = global.boss = stage3_spawn_wriggle(VIEWPORT_W/2 - 200.0*I);
+	Boss *boss = STAGE.boss = stage3_spawn_wriggle(VIEWPORT_W/2 - 200.0*I);
 
 	glm_vec3_copy((vec3) { 50, 30, 80 }, stage3_get_draw_data()->boss_light.radiance);
 
@@ -752,8 +752,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	INVOKE_TASK_DELAYED(2700, spawn_midboss);
 
-	while(!global.boss) YIELD;
-	WAIT_EVENT(&global.boss->events.defeated);
+	while(!STAGE.boss) YIELD;
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 	STAGE_BOOKMARK(post-midboss);
 
 	INVOKE_TASK(bulletring_fairy_spawn,
@@ -826,8 +826,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	INVOKE_TASK(spawn_boss);
 
-	while(!global.boss) YIELD;
-	WAIT_EVENT(&global.boss->events.defeated);
+	while(!STAGE.boss) YIELD;
+	WAIT_EVENT(&STAGE.boss->events.defeated);
 
 	WAIT(240);
 	stage3_dialog_post_boss();

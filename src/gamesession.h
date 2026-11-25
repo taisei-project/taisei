@@ -35,6 +35,7 @@ typedef struct StageInstance {
 		end
 	) events;
 
+	Boss *boss;
 	Dialog *dialog;
 	uint voltage_threshold;
 	float view_shake;

@@ -427,7 +427,7 @@ DEFINE_TASK(player_indicators) {
 }
 
 static void player_fail_spell(Player *plr) {
-	Boss *boss = global.boss;
+	Boss *boss = STAGE.boss;
 
 	if(!boss) {
 		return;
@@ -439,10 +439,10 @@ static void player_fail_spell(Player *plr) {
 		return;
 	}
 
-	global.boss->current->failtime = global.frames;
+	STAGE.boss->current->failtime = global.frames;
 
-	if(global.boss->current->type == AT_ExtraSpell) {
-		boss_finish_current_attack(global.boss);
+	if(STAGE.boss->current->type == AT_ExtraSpell) {
+		boss_finish_current_attack(STAGE.boss);
 	}
 }
 
@@ -466,8 +466,8 @@ void player_placeholder_bomb_logic(Player *plr) {
 		ent_damage(&en->ent, &dmg);
 	}
 
-	if(global.boss) {
-		ent_damage(&global.boss->ent, &dmg);
+	if(STAGE.boss) {
+		ent_damage(&STAGE.boss->ent, &dmg);
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -678,7 +678,7 @@ static bool player_can_bomb(Player *plr) {
 }
 
 static bool player_bomb(Player *plr) {
-	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
+	if(STAGE.boss && STAGE.boss->current && STAGE.boss->current->type == AT_ExtraSpell)
 		return false;
 
 	int bomb_time = floor(player_property(plr, PLR_PROP_BOMB_TIME));
@@ -1071,7 +1071,7 @@ void player_realdeath(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	player_fail_spell(plr);
 
-	if(global.stage->type != STAGE_SPELL && global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
+	if(global.stage->type != STAGE_SPELL && STAGE.boss && STAGE.boss->current && STAGE.boss->current->type == AT_ExtraSpell) {
 		// deaths in extra spells "don't count"
 		return;
 	}
@@ -1929,8 +1929,8 @@ cmplx plrutil_homing_target(cmplx org, cmplx fallback) {
 	double mindst = INFINITY;
 	cmplx target = fallback;
 
-	if(global.boss && boss_is_vulnerable(global.boss)) {
-		target = global.boss->pos;
+	if(STAGE.boss && boss_is_vulnerable(STAGE.boss)) {
+		target = STAGE.boss->pos;
 		mindst = cabs(target - org);
 	}
 
