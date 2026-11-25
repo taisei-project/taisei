@@ -111,7 +111,7 @@ static void ent_draw_item(EntityInterface *ent, StageInstance *stage) {
 
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
-		alpha = clamp(2.0f - (global.frames - i->birthtime) / 60.0f, 0.1f, 1.0f);
+		alpha = clamp(2.0f - (stage->frames - i->birthtime) / 60.0f, 0.1f, 1.0f);
 	}
 
 	r_draw_sprite(&(SpriteParams) {
@@ -138,7 +138,7 @@ Item *create_item(cmplx pos, cmplx v, ItemType type) {
 	i->pos = pos;
 	i->pos0 = pos;
 	i->v = v;
-	i->birthtime = global.frames;
+	i->birthtime = STAGE.frames;
 	i->auto_collect = 0;
 	i->collecttime = 0;
 
@@ -189,12 +189,12 @@ void delete_items(ItemList *items) {
 }
 
 static cmplx move_item(Item *i) {
-	int t = global.frames - i->birthtime;
+	int t = STAGE.frames - i->birthtime;
 	cmplx lim = 0 + 2.0*I;
 
 	cmplx oldpos = i->pos;
 
-	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
+	if(i->auto_collect && i->collecttime <= STAGE.frames && STAGE.frames - i->birthtime > 20) {
 		i->pos -= (7 + i->auto_collect) * cnormalize(i->pos - GAME.plr.pos);
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
@@ -211,7 +211,7 @@ static cmplx move_item(Item *i) {
 			i->pos = clamp(re(i->pos), half, VIEWPORT_W-half) + I*im(i->pos);
 			i->v = v;
 			i->pos0 = i->pos;
-			i->birthtime = global.frames;
+			i->birthtime = STAGE.frames;
 		}
 	}
 
@@ -229,7 +229,7 @@ static bool item_out_of_bounds(Item *item) {
 }
 
 bool collect_item(Item *item, float value) {
-	if(!player_is_alive(&GAME.plr)) {
+	if(!player_is_alive(&GAME.plr, &STAGE)) {
 		return false;
 	}
 
@@ -239,11 +239,11 @@ bool collect_item(Item *item, float value) {
 	if(item->auto_collect) {
 		item->auto_collect = max(speed, item->auto_collect);
 		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
-		item->collecttime = min(global.frames + delay, item->collecttime);
+		item->collecttime = min(STAGE.frames + delay, item->collecttime);
 	} else {
 		item->auto_collect = speed;
 		item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
-		item->collecttime = global.frames + delay;
+		item->collecttime = STAGE.frames + delay;
 	}
 
 	return true;
@@ -258,7 +258,7 @@ void collect_all_items(float value) {
 void process_items(ItemList *items) {
 	Item *item = items->first, *del = NULL;
 	float attract_dist = player_property(&GAME.plr, PLR_PROP_COLLECT_RADIUS);
-	bool plr_alive = player_is_alive(&GAME.plr);
+	bool plr_alive = player_is_alive(&GAME.plr, &STAGE);
 	bool stage_cleared = stage_is_cleared();
 	bool surge_active = player_is_powersurge_active(&GAME.plr);
 	real poc = player_property(&GAME.plr, PLR_PROP_POC);
@@ -274,7 +274,7 @@ void process_items(ItemList *items) {
 
 			if(collect_item(item, 1)) {
 				item->pos0 = item->pos;
-				item->birthtime = global.frames;
+				item->birthtime = STAGE.frames;
 				item->v = -20*I + 10*rng_sreal();
 			}
 		}
@@ -284,7 +284,7 @@ void process_items(ItemList *items) {
 			item_set_type(item, ITEM_POINTS);
 		}
 
-		if(global.frames - item->birthtime < 20) {
+		if(STAGE.frames - item->birthtime < 20) {
 			may_collect = false;
 		}
 
@@ -311,7 +311,7 @@ void process_items(ItemList *items) {
 			} else if(item->auto_collect) {
 				item->auto_collect = 0;
 				item->pos0 = item->pos;
-				item->birthtime = global.frames;
+				item->birthtime = STAGE.frames;
 				item->v = -10*I + 5*rng_sreal();
 			}
 

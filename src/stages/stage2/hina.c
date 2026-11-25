@@ -8,6 +8,7 @@
 
 #include "hina.h"
 
+#include "gamesession.h"
 #include "global.h"
 #include "renderer/api.h"
 #include "i18n/i18n.h"
@@ -30,7 +31,7 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 	r_draw_sprite(&sp);
 
 	Animation *fireani = res_anim("fire");
-	sp.sprite = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames);
+	sp.sprite = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), time + h->current->starttime);
 	sp.pos.x = re(h->pos);
 	sp.pos.y = im(h->pos);
 	sp.scale.both = 1;

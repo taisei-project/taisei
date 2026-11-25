@@ -392,7 +392,7 @@ DEFINE_TASK(toe_laser) {
 }
 
 static bool toe_its_yukawatime(cmplx pos) {
-	int t = global.frames-STAGE.boss->current->starttime;
+	int t = STAGE.frames-STAGE.boss->current->starttime;
 
 	if(pos == 0)
 		return t>YUKAWATIME;
@@ -516,7 +516,7 @@ TASK(toe_higgs, { cmplx pos; cmplx vel; Color color; }) {
 			yukawaed = false;
 		}
 
-		int global_time = global.frames - STAGE.boss->current->starttime - HIGGSTIME;
+		int global_time = STAGE.frames - STAGE.boss->current->starttime - HIGGSTIME;
 		int max_time = SYMMETRYTIME - HIGGSTIME;
 		real angular_velocity = 0.5 * M_PI * difficulty_value(0, 0, 1, 2);
 

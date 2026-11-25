@@ -207,7 +207,7 @@ TASK(horde_fairy_motion, { BoxedEnemy e; cmplx velocity; }) {
 	cmplx v = ARGS.velocity;
 	e->move = move_linear(v);
 	for(;;YIELD) {
-		e->move.velocity = v * cdir(M_PI/8 * sin(ofs + global.frames/15.0));
+		e->move.velocity = v * cdir(M_PI/8 * sin(ofs + STAGE.frames/15.0));
 	}
 }
 

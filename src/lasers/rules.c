@@ -8,6 +8,7 @@
 
 #include "rules.h"
 
+#include "gamesession.h"
 #include "global.h"
 
 static cmplx laser_rule_linear_impl(Laser *l, real t, void *ruledata) {
@@ -112,7 +113,7 @@ static cmplx laser_rule_dynamic_impl(Laser *l, real t, void *ruledata) {
 
 	assert(td->history.num_elements > 0);
 
-	real tbase = (global.frames - l->birthtime) * l->speed + l->timeshift;
+	real tbase = (STAGE.frames - l->birthtime) * l->speed + l->timeshift;
 	real tofsraw = t - tbase;
 	real tofs = clamp(tofsraw, 1 - td->history.num_elements, 0);
 
@@ -169,7 +170,7 @@ TASK(laser_dynamic, {
 	ringbuf_push(&td.history, l->pos);
 	YIELD;
 
-	for(;global.frames - l->birthtime <= l->deathtime; YIELD) {
+	for(;STAGE.frames - l->birthtime <= l->deathtime; YIELD) {
 		move_update(&l->pos, &td.move);
 		ringbuf_push(&td.history, l->pos);
 	}

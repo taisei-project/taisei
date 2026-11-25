@@ -159,7 +159,7 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 
 static void marisa_laser_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	MarisaASlave *slave = ENT_CAST(ent, MarisaASlave);
-	float t = global.frames;
+	float t = stage->frames;
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = slave->sprite,
@@ -199,7 +199,7 @@ static void draw_laser_beam(cmplx src, cmplx dst, real size, real step, real t, 
 
 static void marisa_laser_draw_lasers(EntityInterface *ent, StageInstance *stage) {
 	MarisaAController *ctrl = ENT_CAST(ent, MarisaAController);
-	real t = global.frames;
+	real t = stage->frames;
 
 	ShaderProgram *shader = res_shader("marisa_laser");
 	Uniform *u_clr0 = r_shader_uniform(shader, "color0");
@@ -368,7 +368,7 @@ TASK(marisa_laser_slave_shot, {
 		active_laser = &laser;
 
 		while(player_should_shoot(plr)) {
-			real angle = slave->shot_angle * (1.0 + 0.7 * psin(global.frames/15.0));
+			real angle = slave->shot_angle * (1.0 + 0.7 * psin(STAGE.frames/15.0));
 
 			laser.pos = slave->pos;
 			approach_p(&laser.alpha, 1.0, 0.2);
@@ -376,7 +376,7 @@ TASK(marisa_laser_slave_shot, {
 			cmplx dir = -cdir(angle + slave->lean + M_PI/2);
 			trace_laser(&laser, 5 * dir, SHOT_LASER_DAMAGE);
 
-			Sprite *spr = animation_get_frame(fire_anim, fire_anim_seq, global.frames);
+			Sprite *spr = animation_get_frame(fire_anim, fire_anim_seq, STAGE.frames);
 
 			PARTICLE(
 				.sprite_ptr = spr,
@@ -485,7 +485,7 @@ static void marisa_laser_draw_masterspark(EntityInterface *ent, StageInstance *s
 		ms->pos,
 		800 + I * VIEWPORT_H * 1.25,
 		carg(ms->dir),
-		global.frames
+		stage->frames
 	}, ms->alpha);
 }
 
@@ -623,7 +623,7 @@ TASK(marisa_laser_bomb_masterspark, { MarisaAController *ctrl; }) {
 skip_particles:
 		++t;
 		YIELD;
-	} while(player_is_bomb_active(plr));
+	} while(player_is_bomb_active(plr, &STAGE));
 
 	// should have faded out by now, but just in case…
 	CANCEL_TASK(bg_task);
@@ -711,7 +711,7 @@ static double marisa_laser_property(Player *plr, PlrProperty prop) {
 		case PLR_PROP_SPEED: {
 			double s = marisa_common_property(plr, prop);
 
-			if(player_is_bomb_active(plr)) {
+			if(player_is_bomb_active(plr, &STAGE)) {
 				s /= 5.0;
 			}
 

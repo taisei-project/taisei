@@ -108,7 +108,7 @@ static SpriteParams fairy_make_sprite_params(const Enemy *fairy, const FairyVisu
 			visual->summon.progress,
 			visual->summon.cloak,
 			visual->summon.mask_ofs_bits.val,
-			global.frames / 60.0f,
+			STAGE.frames / 60.0f,
 		}
 	};
 }
@@ -121,7 +121,7 @@ static void fairy_draw(Enemy *fairy, const FairyVisual *visual, int time) {
 static void fairy_draw_loop(Enemy *e, const FairyVisual *visual) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&e->events.draw);
-		fairy_draw(e, visual, global.frames - e->birthtime);
+		fairy_draw(e, visual, STAGE.frames - e->birthtime);
 	}
 }
 
@@ -517,7 +517,7 @@ static void swirl_draw(Enemy *swirl, const SwirlVisual *visual, int time) {
 static void swirl_draw_loop(Enemy *e, const SwirlVisual *visual) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&e->events.draw);
-		swirl_draw(e, visual, global.frames - e->birthtime);
+		swirl_draw(e, visual, STAGE.frames - e->birthtime);
 	}
 }
 

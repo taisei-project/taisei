@@ -56,7 +56,7 @@ void lasers_shutdown(void) {
 
 Laser *create_laser(cmplx pos, float time, float deathtime, Color color, LaserRule rule) {
 	auto l = alist_push(&STAGE.lasers, STAGE_ACQUIRE_OBJ(Laser));
-	l->birthtime = global.frames;
+	l->birthtime = STAGE.frames;
 	l->timespan = time;
 	l->deathtime = deathtime;
 	l->pos = pos;
@@ -146,7 +146,7 @@ static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingPar
 	float c;
 
 	c = l->timespan;
-	t = (global.frames - l->birthtime) * l->speed - l->timespan + l->timeshift;
+	t = (STAGE.frames - l->birthtime) * l->speed - l->timespan + l->timeshift;
 
 	if(t + l->timespan > l->deathtime + l->timeshift) {
 		c += l->deathtime + l->timeshift - (t + l->timespan);
@@ -623,7 +623,7 @@ void process_lasers(LaserList *lasers) {
 	for(Laser *laser = lasers->first, *next; laser; laser = next) {
 		next = laser->next;
 
-		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan * laser->speed) {
+		if(STAGE.frames - laser->birthtime > laser->deathtime + laser->timespan * laser->speed) {
 			delete_laser(lasers, laser);
 			continue;
 		}
@@ -665,7 +665,7 @@ static bool laser_collision(Laser *l, Player *plr) {
 		return false;
 	}
 
-	bool graze = global.frames >= l->next_graze;
+	bool graze = STAGE.frames >= l->next_graze;
 
 	double graze_maxdist = 42;
 	double graze_dist = graze_maxdist;
@@ -738,7 +738,7 @@ static bool laser_collision(Laser *l, Player *plr) {
 
 	if(graze_dist < graze_maxdist) {
 		player_graze(plr, graze_pos, 7, 5, l->color);
-		l->next_graze = global.frames + 4;
+		l->next_graze = STAGE.frames + 4;
 	}
 
 	return false;

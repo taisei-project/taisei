@@ -58,7 +58,7 @@ static Color myon_color(float f, float opacity, float alpha) {
 }
 
 static cmplx myon_tail_dir(YoumuAMyon *myon) {
-	cmplx dir = myon->dir * cdir(0.1 * sin(global.frames * 0.05));
+	cmplx dir = myon->dir * cdir(0.1 * sin(STAGE.frames * 0.05));
 	real f = myon->focus_factor;
 	return lerp(f * f, 1, 0.5) * dir;
 }
@@ -104,14 +104,14 @@ TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
 	for(int t = 0;; ++t) {
 		real f = myon->focus_factor;
 		p->color = myon_color(f, powf(1 - min(1, t / p->timeout), 2), 0.95f);
-		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - global.frames * 2) * 0.1) * M_PI/8);
+		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - STAGE.frames * 2) * 0.1) * M_PI/8);
 		p->move.velocity = 3 * myon_tail_dir(myon);
 		YIELD;
 	}
 }
 
 static void myon_spawn_trail(YoumuAMyon *myon, int t) {
-	cmplx pos = myon->pos + 3 * cdir(global.frames * 0.07);
+	cmplx pos = myon->pos + 3 * cdir(STAGE.frames * 0.07);
 	real f = myon->focus_factor;
 	cmplx stardust_v = (2 + f) * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
 
@@ -120,7 +120,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 
 		PARTICLE(
 			.angle = vrng_angle(R[2]),
-			.angle_delta = 0.03 * (1 - 2 * (global.frames & 1)),
+			.angle_delta = 0.03 * (1 - 2 * (STAGE.frames & 1)),
 			.draw_rule = myon_draw_trail(f, 0.7),
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.pos = pos + vrng_range(R[0], 0, 10) * vrng_dir(R[1]),
@@ -136,7 +136,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 
 	PARTICLE(
 		.angle = vrng_angle(R[3]),
-		.angle_delta = 0.03 * (1 - 2 * (global.frames & 1)),
+		.angle_delta = 0.03 * (1 - 2 * (STAGE.frames & 1)),
 		.draw_rule = myon_draw_trail(f, 0.5),
 		.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		.layer = LAYER_PARTICLE_LOW | 1,
@@ -244,7 +244,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 		{
 			clr = myon_proj_color(myon->focus_factor);
 			forward = speed * myon->dir;
-			spread = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
+			spread = (psin(STAGE.frames * 1.2) * 0.5 + 0.5) * 0.1;
 
 			youmu_mirror_myon_proj(myon->pos, forward, dmg_center, clr, shader);
 
@@ -264,7 +264,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 		{
 			clr = myon_proj_color(myon->focus_factor);
 			forward = speed * myon->dir;
-			spread = (psin(global.frames * 2.0) * 0.5 + 0.5) * 0.1;
+			spread = (psin(STAGE.frames * 2.0) * 0.5 + 0.5) * 0.1;
 
 			if(power_rank >= 1) {
 				youmu_mirror_myon_proj(myon->pos, forward * cdir(+1 * spread), dmg_side, clr, shader);
@@ -427,7 +427,7 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
-	if(global.frames & 2) {
+	if(STAGE.frames & 2) {
 		return;
 	}
 
@@ -575,7 +575,7 @@ TASK(youmu_mirror_bomb, { YoumuAController *ctrl; }) {
 		);
 
 		YIELD;
-	} while(player_is_bomb_active(plr));
+	} while(player_is_bomb_active(plr, &STAGE));
 }
 
 TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
@@ -684,7 +684,7 @@ static double youmu_mirror_property(Player *plr, PlrProperty prop) {
 		case PLR_PROP_SPEED: {
 			double s = youmu_common_property(plr, prop);
 
-			if(player_is_bomb_active(plr)) {
+			if(player_is_bomb_active(plr, &STAGE)) {
 				s *= 2.0;
 			}
 

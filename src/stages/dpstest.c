@@ -38,7 +38,7 @@ TASK(circling_fairy, { EnemySpawner spawner; cmplx circle_orig; cmplx circle_ofs
 	INVOKE_TASK_AFTER(&e->events.killed, circling_fairy, ARGS.spawner, org, ofs);
 
 	for(;;YIELD) {
-		e->move.attraction_point = org + ofs * cdir(global.frames * 0.02);
+		e->move.attraction_point = org + ofs * cdir(STAGE.frames * 0.02);
 	}
 }
 

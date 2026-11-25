@@ -33,7 +33,7 @@ AniSequence *get_ani_sequence(Animation *ani, const char *seqname);
 //
 // The frames correspond 1:1 to real ingame frames, so
 //
-// 	draw_sprite_p(x, y, animation_get_frame(ani,"fly",global.frames));
+// 	draw_sprite_p(x, y, animation_get_frame(ani,"fly",STAGE.frames));
 //
 // already gives you the fully functional animation rendering. You can use
 // an AniPlayer instance for queueing.

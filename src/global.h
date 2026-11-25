@@ -51,7 +51,6 @@ enum {
 typedef struct {
 
 
-	int frames; // stage global timer
 
 
 

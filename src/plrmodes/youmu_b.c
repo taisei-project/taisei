@@ -146,7 +146,7 @@ TASK(youmu_burst_shot, { YoumuBController *ctrl; int num_shots; }) {
 		real np = shot / (real)nshots;
 
 		Color clr = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5);
-		real spread = 0.5 * (1 + 0.25 * sin(global.frames/10.0));
+		real spread = 0.5 * (1 + 0.25 * sin(STAGE.frames/10.0));
 		real speed = base_speed * (1 - 0.25 * (1 - np));
 		real boost = 3 * (1 - pow(1 - np, 2));
 
@@ -556,7 +556,7 @@ TASK(youmu_haunting_bomb, { YoumuBController *ctrl; }) {
 		INVOKE_TASK(youmu_haunting_bomb_slice, ctrl, origin + ofs, angle);
 		WAIT(3);
 		++i;
-	} while(player_is_bomb_active(plr));
+	} while(player_is_bomb_active(plr, &STAGE));
 }
 
 TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {

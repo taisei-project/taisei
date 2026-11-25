@@ -87,7 +87,7 @@ static void sync_bgm(StagePrivateState *state) {
 		return;
 	}
 
-	double t = state->bgm_start_pos + (global.frames - state->bgm_start_time) / (double)FPS;
+	double t = state->bgm_start_pos + (state->stage->frames - state->bgm_start_time) / (double)FPS;
 	audio_bgm_seek_realtime(t);
 }
 
@@ -111,7 +111,7 @@ static struct {
 } skip_state;
 
 void _stage_bookmark(const char *name) {
-	log_debug("Bookmark [%s] reached at %i", name, global.frames);
+	log_debug("Bookmark [%s] reached at %i", name, STAGE.frames);
 
 	if(skip_state.skip_to_bookmark && !strcmp(skip_state.skip_to_bookmark, name)) {
 		skip_state.skip_to_bookmark = NULL;
@@ -170,8 +170,8 @@ INLINE void skipstate_shutdown(void) { }
 #endif
 
 static void stage_start(GameSession *session, StageInfo *stage_info) {
-	global.frames = 0;
-	audio_set_game_clock(global.frames);
+	session->stage.frames = 0;
+	audio_set_game_clock(session->stage.frames);
 	player_stage_pre_init(&session->plr);
 
 	stats_stage_reset(&session->plr.stats);
@@ -427,6 +427,8 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 }
 
 static bool stage_input_key_filter(StagePrivateState *state, KeyIndex key, bool is_release) {
+	StageInstance *stage = state->stage;
+
 	if(key == KEY_HAHAIWIN) {
 		IF_DEBUG(
 			if(!is_release) {
@@ -450,8 +452,8 @@ static bool stage_input_key_filter(StagePrivateState *state, KeyIndex key, bool 
 	if(is_cleared(state)) {
 		if(key == KEY_SHOT) {
 			if(
-				state->stage->gameover == GAMEOVER_SCORESCREEN &&
-				global.frames - state->gameover_time > GAMEOVER_SCORE_DELAY * 2
+				stage->gameover == GAMEOVER_SCORESCREEN &&
+				stage->frames - state->gameover_time > GAMEOVER_SCORE_DELAY * 2
 			) {
 				if(!is_release) {
 					stage_finish_internal(state, GAMEOVER_WIN);
@@ -469,6 +471,7 @@ static bool stage_input_key_filter(StagePrivateState *state, KeyIndex key, bool 
 
 attr_nonnull_all
 static Replay *create_quicksave_replay(StagePrivateState *state, ReplayStage *rstg_src) {
+	StageInstance *stage = state->stage;
 	ReplayStage *rstg = memdup(rstg_src, sizeof(*rstg));
 	rstg->num_events = 0;
 	rstg->events = (typeof(rstg->events)) {};
@@ -476,14 +479,14 @@ static Replay *create_quicksave_replay(StagePrivateState *state, ReplayStage *rs
 	dynarray_ensure_capacity(&rstg->events, rstg_src->events.num_elements + 1);
 	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
 
-	replay_stage_event(rstg, global.frames, EV_RESUME, 0);
+	replay_stage_event(rstg, stage->frames, EV_RESUME, 0);
 	replay_stage_update_final_stats(rstg, &state->game->plr.stats);
 
 	auto rpy = ALLOC(Replay);
 	rpy->stages.num_elements = rpy->stages.capacity = 1;
 	rpy->stages.data = rstg;
 
-	log_info("Created quicksave replay on frame %i", global.frames);
+	log_info("Created quicksave replay on frame %i", stage->frames);
 	return rpy;
 }
 
@@ -657,7 +660,7 @@ static void replay_input(StagePrivateState *state) {
 	}
 
 	struct replay_event_arg a = { .state = state, .st = rp_in };
-	replay_state_play_advance(rp_in, global.frames, handle_replay_event, &a);
+	replay_state_play_advance(rp_in, state->stage->frames, handle_replay_event, &a);
 	player_applymovement(&game->plr);
 
 	if(a.resume_event) {
@@ -680,7 +683,7 @@ static void display_bgm_title(void) {
 static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
 	StagePrivateState *state = NOT_NULL(a);
 	StageInstance *stage = state->stage;
-	state->bgm_start_time = global.frames;
+	state->bgm_start_time = stage->frames;
 	state->bgm_start_pos = audio_bgm_tell();
 
 	if(dialog_is_active(stage->dialog)) {
@@ -864,7 +867,7 @@ static void stage_finish_internal(StagePrivateState *state, GameoverType gameove
 	}
 
 	GameoverType prev_gameover = stage->gameover;
-	state->gameover_time = global.frames;
+	state->gameover_time = stage->frames;
 
 	if(gameover == GAMEOVER_SCORESCREEN) {
 		stage->gameover = GAMEOVER_SCORESCREEN;
@@ -927,7 +930,7 @@ static void display_stage_title(StageInfo *info) {
 }
 
 TASK(start_bgm, { BGM *bgm; }) {
-	_current_stage_state->bgm_start_time = global.frames + 1;
+	STAGE.priv->bgm_start_time = STAGE.frames + 1;
 	audio_bgm_play(ARGS.bgm, true, 0, 0);
 }
 
@@ -960,7 +963,7 @@ static void stage_update_fps(StagePrivateState *state) {
 		uint16_t replay_fps = (uint16_t)rint(eventloop_get_fps_counters()->logic.fps);
 
 		if(replay_fps != state->last_replay_fps) {
-			replay_stage_event(game->replay.output.stage, global.frames, EV_FPS, replay_fps);
+			replay_stage_event(game->replay.output.stage, state->stage->frames, EV_FPS, replay_fps);
 			state->last_replay_fps = replay_fps;
 		}
 	}
@@ -1004,17 +1007,18 @@ static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bo
 }
 
 static void stage_replay_sync(StagePrivateState *state) {
+	StageInstance *stage = state->stage;
 	GameSession *game = state->game;
 
 	uint16_t desync_check = (rng_u64() ^ game->plr.points) & 0xFFFF;
-	ReplaySyncStatus rpsync = replay_state_check_desync(&game->replay.input, global.frames, desync_check);
+	ReplaySyncStatus rpsync = replay_state_check_desync(&game->replay.input, stage->frames, desync_check);
 
 	if(
 		game->replay.output.stage &&
 		state->desync_check_freq > 0 &&
-		!(global.frames % state->desync_check_freq)
+		!(stage->frames % state->desync_check_freq)
 	) {
-		replay_stage_event(game->replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
+		replay_stage_event(game->replay.output.stage, stage->frames, EV_CHECK_DESYNC, desync_check);
 	}
 
 	if(rpsync == REPLAY_SYNC_FAIL) {
@@ -1038,15 +1042,15 @@ static void stage_end_frame(StagePrivateState *state) {
 	StageInstance *stage = state->stage;
 	GameSession *game = state->game;
 
-	global.frames++;
-	audio_set_game_clock(global.frames);
+	stage->frames++;
+	audio_set_game_clock(stage->frames);
 
 	/*
-	 * TODO: Investigate why/if any of this needs to happen after global.frames++,
+	 * TODO: Investigate why/if any of this needs to happen after stage->frames++,
 	 *       and possibly fix that.
 	 */
 
-	stagetext_update();
+	stagetext_update(stage);
 
 	if(stage->gameover == GAMEOVER_TRANSITIONING) {
 		return;
@@ -1058,7 +1062,7 @@ static void stage_end_frame(StagePrivateState *state) {
 			&rstg->events, rstg->events.num_elements - 1);
 
 		if(
-			global.frames == last_event->frame - FADE_TIME &&
+			stage->frames == last_event->frame - FADE_TIME &&
 			last_event->type != EV_RESUME
 		) {
 			stage_finish_internal(state, GAMEOVER_DEFEAT);
@@ -1067,7 +1071,7 @@ static void stage_end_frame(StagePrivateState *state) {
 
 	if(
 		stage->gameover == GAMEOVER_SCORESCREEN &&
-		global.frames - state->gameover_time == GAMEOVER_SCORE_DELAY
+		stage->frames - state->gameover_time == GAMEOVER_SCORE_DELAY
 	) {
 		StageClearBonus b;
 		stage_give_clear_bonus(state, &b);
@@ -1396,7 +1400,7 @@ static void stage_scene_end(void *ctx) {
 			session->replay.output.replay->stages.num_elements--;
 			replay_stage_destroy_events(session->replay.output.stage);
 		} else {
-			replay_stage_event(session->replay.output.stage, global.frames, EV_OVER, 0);
+			replay_stage_event(session->replay.output.stage, stage->frames, EV_OVER, 0);
 			session->replay.output.stage->plr_points_final = session->plr.points;
 
 			if(stage->gameover == GAMEOVER_WIN) {

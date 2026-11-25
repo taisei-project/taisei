@@ -61,7 +61,7 @@ TASK(iku_slave_visual, { BoxedIkuSlave slave; }) {
 
 void stage5_init_iku_slave(IkuSlave *slave, cmplx pos) {
 	slave->pos = pos;
-	slave->spawn_time = global.frames;
+	slave->spawn_time = STAGE.frames;
 	slave->ent.draw_layer = LAYER_BOSS - 1;
 	slave->ent.draw_func = iku_slave_draw;
 	slave->scale = (1 + I);

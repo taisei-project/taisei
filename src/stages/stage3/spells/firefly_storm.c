@@ -49,7 +49,7 @@ TASK(fstorm_bullet, { BoxedBoss boss; ProjPrototype *proto; cmplx pos; cmplx vel
 
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
 	p->move.velocity = 2 * cnormalize(boss->pos - p->pos);
-	p->birthtime = global.frames;
+	p->birthtime = STAGE.frames;
 	p->draw_rule = (ProjDrawRule) { wriggle_fstorm_proj_draw };
 	p->sprite = NULL;
 	projectile_set_prototype(p, pp_rice);

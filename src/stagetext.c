@@ -8,6 +8,7 @@
 
 #include "stagetext.h"
 
+#include "gamesession.h"
 #include "global.h"
 #include "stageobjects.h"
 
@@ -26,7 +27,7 @@ StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *fon
 	t->align = align;
 	t->color = clr;
 
-	t->time.spawn = global.frames + delay;
+	t->time.spawn = STAGE.frames + delay;
 	t->time.fadein = fadeintime;
 	t->time.fadeout = fadeouttime;
 	t->time.life = lifetime + fadeouttime;
@@ -56,39 +57,39 @@ void stagetext_free(void) {
 	list_foreach(&textlist, stagetext_delete, NULL);
 }
 
-static inline float stagetext_alpha(StageText *txt) {
-	int t = global.frames - txt->time.spawn;
+static inline float stagetext_alpha(StageText *txt, int frame) {
+	int t = frame - txt->time.spawn;
 	return clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
 }
 
-static void stagetext_update_single(StageText *txt) {
-	if(global.frames < txt->time.spawn) {
+static void stagetext_update_single(StageText *txt, int frame) {
+	if(frame < txt->time.spawn) {
 		return;
 	}
 
-	if(global.frames > txt->time.spawn + txt->time.life) {
+	if(frame > txt->time.spawn + txt->time.life) {
 		stagetext_delete((List**)&textlist, (List*)txt, NULL);
 		return;
 	}
 
 	if(txt->custom.update) {
-		txt->custom.update(txt, global.frames - txt->time.spawn, stagetext_alpha(txt));
+		txt->custom.update(txt, frame - txt->time.spawn, stagetext_alpha(txt, frame));
 	}
 }
 
-static void stagetext_draw_single(StageText *txt) {
-	if(global.frames < txt->time.spawn) {
+static void stagetext_draw_single(StageText *txt, int frame) {
+	if(frame < txt->time.spawn) {
 		return;
 	}
 
-	if(global.frames > txt->time.spawn + txt->time.life) {
+	if(frame > txt->time.spawn + txt->time.life) {
 		log_warn("FIXME: deleting stagetext [%s] in draw function", txt->text);
 		stagetext_delete((List**)&textlist, (List*)txt, NULL);
 		return;
 	}
 
-	int t = global.frames - txt->time.spawn;
-	float f = 1.0 - stagetext_alpha(txt);
+	int t = frame - txt->time.spawn;
+	float f = 1.0 - stagetext_alpha(txt, frame);
 	float ofs_x, ofs_y;
 
 	if(txt->time.life - t < txt->time.fadeout) {
@@ -111,17 +112,17 @@ static void stagetext_draw_single(StageText *txt) {
 	});
 }
 
-void stagetext_update(void) {
+void stagetext_update(StageInstance *stage) {
 	for(StageText *t = textlist, *next = NULL; t; t = next) {
 		next = t->next;
-		stagetext_update_single(t);
+		stagetext_update_single(t, stage->frames);
 	}
 }
 
-void stagetext_draw(void) {
+void stagetext_draw(StageInstance *stage) {
 	for(StageText *t = textlist, *next = NULL; t; t = next) {
 		next = t->next;
-		stagetext_draw_single(t);
+		stagetext_draw_single(t, stage->frames);
 	}
 }
 

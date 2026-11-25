@@ -177,12 +177,12 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 	p->proto = proto;
 }
 
-cmplx projectile_graze_size(Projectile *p) {
+cmplx projectile_graze_size(Projectile *p, StageInstance *stage) {
 	if(
 		p->type == PROJ_ENEMY &&
 		!(p->flags & (PFLAG_NOGRAZE | PFLAG_NOCOLLISION)) &&
 		p->graze_counter < 3 &&
-		global.frames >= p->graze_cooldown
+		stage->frames >= p->graze_cooldown
 	) {
 		real scale = 420.0 /* graze it */ / (2 * p->graze_counter + 1);
 		cmplx s = scale * p->size;
@@ -242,7 +242,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	auto p = STAGE_ACQUIRE_OBJ(Projectile);
 
-	p->birthtime = global.frames;
+	p->birthtime = STAGE.frames;
 	p->pos = p->pos0 = p->prevpos = args->pos;
 	p->angle = args->angle;
 	p->angle_delta = args->angle_delta;
@@ -378,7 +378,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 				p->debug.file,
 				p->debug.line,
 				p->debug.func,
-				global.frames - p->birthtime
+				STAGE.frames - p->birthtime
 			);
 		}
 #endif
@@ -388,7 +388,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			out_col->entity = &GAME.plr.ent;
 			out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 		} else {
-			e_proj.axes = projectile_graze_size(p);
+			e_proj.axes = projectile_graze_size(p, &STAGE);
 
 			if(re(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
 				out_col->type = PCOL_PLAYER_GRAZE;
@@ -451,8 +451,8 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			);
 
 			p->graze_counter++;
-			p->graze_cooldown = global.frames + 12;
-			p->graze_counter_reset_timer = global.frames;
+			p->graze_cooldown = STAGE.frames + 12;
+			p->graze_counter_reset_timer = STAGE.frames;
 
 			break;
 		}
@@ -481,14 +481,14 @@ static void ent_draw_projectile(EntityInterface *ent, StageInstance *stage) {
 	static Projectile prev_state;
 	memcpy(&prev_state, proj, sizeof(Projectile));
 
-	proj->draw_rule.func(proj, global.frames - proj->birthtime, proj->draw_rule.args);
+	proj->draw_rule.func(proj, stage->frames - proj->birthtime, proj->draw_rule.args);
 
 	if(memcmp(&prev_state, proj, sizeof(Projectile))) {
 		set_debug_info(&proj->debug);
 		log_fatal("Projectile modified its state in draw rule");
 	}
 #else
-	proj->draw_rule.func(proj, global.frames - proj->birthtime, proj->draw_rule.args);
+	proj->draw_rule.func(proj, stage->frames - proj->birthtime, proj->draw_rule.args);
 #endif
 }
 
@@ -594,11 +594,11 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
 		}
 
-		bool destroy = proj_update(proj, global.frames - proj->birthtime);
+		bool destroy = proj_update(proj, STAGE.frames - proj->birthtime);
 
-		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
+		if(proj->graze_counter && proj->graze_counter_reset_timer - STAGE.frames <= -90) {
 			proj->graze_counter--;
-			proj->graze_counter_reset_timer = global.frames;
+			proj->graze_counter_reset_timer = STAGE.frames;
 		}
 
 		if(proj->type == PROJ_DEAD && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
@@ -660,7 +660,7 @@ bool projectile_is_clearable(Projectile *p) {
 }
 
 int projectile_time(Projectile *p) {
-	return global.frames - p->birthtime;
+	return STAGE.frames - p->birthtime;
 }
 
 static inline bool proj_uses_spawning_effect(Projectile *proj, ProjFlags effect_flag) {

@@ -266,7 +266,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) attr_hot attr
 bool projectile_is_clearable(Projectile *p) attr_nonnull_all;
 
 cmplx projectile_size(Projectile *p) attr_nonnull_all;
-cmplx projectile_graze_size(Projectile *p) attr_nonnull_all;
+cmplx projectile_graze_size(Projectile *p, StageInstance *stage) attr_nonnull_all;
 real projectile_cull_distance(Projectile *proj) attr_nonnull_all;
 
 Projectile *spawn_projectile_collision_effect(Projectile *proj) attr_nonnull_all;

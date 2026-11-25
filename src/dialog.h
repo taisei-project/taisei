@@ -134,7 +134,7 @@ void dialog_end(Dialog *d)
 void dialog_update(Dialog *d)
 	attr_nonnull_all;
 
-void dialog_draw(Dialog *d);
+void dialog_draw(Dialog *d, StageInstance *stage);
 
 bool dialog_page(Dialog *d)
 	attr_nonnull_all;

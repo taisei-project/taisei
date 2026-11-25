@@ -155,7 +155,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 	bool charge_flags[NUM_BARYONS] = {};
 
 	for(int t = 0;; t++) {
-		int time = global.frames - NOT_NULL(ENT_UNBOX(ARGS.boss))->current->starttime;
+		int time = STAGE.frames - NOT_NULL(ENT_UNBOX(ARGS.boss))->current->starttime;
 
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real phase = safe_radius_phase(time, i);
@@ -228,7 +228,7 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 		real influence = 0;
 
-		int time = global.frames-STAGE.boss->current->starttime;
+		int time = STAGE.frames-STAGE.boss->current->starttime;
 
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real base_radius = safe_radius(safe_radius_phase(time, i));

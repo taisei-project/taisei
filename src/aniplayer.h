@@ -101,6 +101,6 @@ AniQueueEntry *aniplayer_hard_switch(AniPlayer *plr, const char *seqname, int mi
 AniQueueEntry *aniplayer_queue_frames(AniPlayer *plr, const char *seqname, int minframes) attr_nonnull(1);
 
 // AniPlayers need to be actively updated in order to tick (unlike most of
-// the rest of the game which just uses global.frames as a counter). So you
+// the rest of the game which just uses STAGE.frames as a counter). So you
 // need to call this function once per frame to make an animation move.
 void aniplayer_update(AniPlayer *plr) attr_nonnull(1);

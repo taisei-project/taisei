@@ -8,6 +8,7 @@
 
 #include "dialog.h"
 
+#include "gamesession.h"
 #include "global.h"
 #include "i18n/i18n.h"
 #include "portrait.h"
@@ -106,7 +107,7 @@ void dialog_update(Dialog *d) {
 	}
 
 	if(d->title.activated_time > 0) {
-		int timeout = d->title.activated_time - global.frames + DIALOG_TITLE_TIMEOUT;
+		int timeout = d->title.activated_time - STAGE.frames + DIALOG_TITLE_TIMEOUT;
 
 		if(timeout > 0 && d->state != DIALOG_STATE_FADEOUT) {
 			fapproach_asymptotic_p(&d->title.main_alpha, 1.0f, 0.02f, 1e-3f);
@@ -263,10 +264,10 @@ static void dialog_actor_update_composite(DialogActor *a) {
 void dialog_show_title(Dialog *dialog, DialogActor *actor, char *name, char *title) {
 	dialog->title.name = name;
 	dialog->title.text = title;
-	dialog->title.activated_time = global.frames;
+	dialog->title.activated_time = STAGE.frames;
 }
 
-static void dialog_title_draw(Dialog *dialog) {
+static void dialog_title_draw(Dialog *dialog, StageInstance *stage) {
 	auto main_font = res_font("big");
 	auto sub_font = res_font("standard");
 	const char *title_name = _(dialog->title.name);
@@ -274,7 +275,7 @@ static void dialog_title_draw(Dialog *dialog) {
 	float main_width = text_width(main_font, title_name, 0);
 	float sub_width = text_width(sub_font, title_text, 0);
 
-	float a = (global.frames - dialog->title.activated_time) / (float)DIALOG_TITLE_TIMEOUT;
+	float a = (stage->frames - dialog->title.activated_time) / (float)DIALOG_TITLE_TIMEOUT;
 	a = tanhf(2.0f * a);
 
 	FloatRect title_bg_rect = {
@@ -290,7 +291,7 @@ static void dialog_title_draw(Dialog *dialog) {
 	r_mat_mv_translate(title_bg_rect.x, title_bg_rect.y, 0);
 	r_mat_mv_scale(1.5 * title_bg_rect.w / bg->w, 1.5 * title_bg_rect.h / bg->h, 1);
 	r_mat_mv_push();
-	r_mat_mv_rotate(global.frames * 1 * DEG2RAD, 0, 0, 1);
+	r_mat_mv_rotate(stage->frames * 1 * DEG2RAD, 0, 0, 1);
 	SpriteParams bgsp = {
 		.sprite = bg,
 		.color = bg_color,
@@ -298,7 +299,7 @@ static void dialog_title_draw(Dialog *dialog) {
 	};
 	r_draw_sprite(&bgsp);
 	r_mat_mv_pop();
-	r_mat_mv_rotate(global.frames * 0.5 * -1.133 * DEG2RAD, 0, 0, 1);
+	r_mat_mv_rotate(stage->frames * 0.5 * -1.133 * DEG2RAD, 0, 0, 1);
 	r_draw_sprite(&bgsp);
 	r_mat_mv_pop();
 
@@ -323,7 +324,7 @@ static void dialog_title_draw(Dialog *dialog) {
 	text_draw(title_text, &p);
 }
 
-void dialog_draw(Dialog *dialog) {
+void dialog_draw(Dialog *dialog, StageInstance *stage) {
 	if(dialog == NULL) {
 		return;
 	}
@@ -440,7 +441,7 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	if(dialog->title.activated_time > 0) {
-		dialog_title_draw(dialog);
+		dialog_title_draw(dialog, stage);
 	}
 
 	r_mat_tex_pop();

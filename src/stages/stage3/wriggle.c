@@ -9,6 +9,7 @@
 #include "wriggle.h"
 
 #include "common_tasks.h"
+#include "gamesession.h"
 #include "i18n/i18n.h"
 
 void stage3_draw_wriggle_spellbg(Boss *b, int time) {
@@ -37,7 +38,7 @@ Boss *stage3_spawn_wriggle(cmplx pos) {
 
 static void wriggle_slave_draw(EntityInterface *e, StageInstance *stage) {
 	WriggleSlave *slave = ENT_CAST(e, WriggleSlave);
-	int time = global.frames - slave->spawn_time;
+	int time = stage->frames - slave->spawn_time;
 	r_draw_sprite(&(SpriteParams) {
 		.pos.as_cmplx = slave->pos,
 		.sprite = slave->sprites.circle,
@@ -71,7 +72,7 @@ TASK(wriggle_slave_particles, { BoxedWriggleSlave slave; }) {
 
 void stage3_init_wriggle_slave(WriggleSlave *slave, cmplx pos) {
 	slave->pos = pos;
-	slave->spawn_time = global.frames;
+	slave->spawn_time = STAGE.frames;
 	slave->ent.draw_layer = LAYER_BOSS - 1;
 	slave->ent.draw_func = wriggle_slave_draw;
 	slave->sprites.circle = res_sprite("fairy_circle");
@@ -105,7 +106,7 @@ DEFINE_EXTERN_TASK(wriggle_slave_damage_trail) {
 	ShaderProgram *pshader = res_shader("sprite_default");
 
 	for(;;WAIT(2)) {
-		float t = (global.frames - slave->spawn_time) / 25.0;
+		float t = (STAGE.frames - slave->spawn_time) / 25.0;
 		float c = 0.5f * psinf(t);
 
 		PROJECTILE(
@@ -133,7 +134,7 @@ DEFINE_EXTERN_TASK(wriggle_slave_follow) {
 	cmplx r = cdir(ARGS.rot_speed);
 
 	for(;(boss = ENT_UNBOX(ARGS.boss)); YIELD) {
-		real t = global.frames - slave->spawn_time;
+		real t = STAGE.frames - slave->spawn_time;
 		move.attraction_point = boss->pos + 100 * sin(t / 100) * dir;
 		move_update(&slave->pos, &move);
 		if(ARGS.out_dir) {

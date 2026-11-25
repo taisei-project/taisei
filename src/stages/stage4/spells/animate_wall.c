@@ -31,7 +31,7 @@ TASK(kurumi_aniwall_bullet, { cmplx pos; MoveParams move; }) {
 	));
 
 	for(;;) {
-		p->color.r = 0.3 + 0.7 * psin(4 * im(p->pos)/VIEWPORT_H + 0.03 * global.frames);
+		p->color.r = 0.3 + 0.7 * psin(4 * im(p->pos)/VIEWPORT_H + 0.03 * STAGE.frames);
 		YIELD;
 	}
 }

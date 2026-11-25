@@ -16,7 +16,7 @@
 
 #define LIGHT_OFS    { 2.7f,  4.86f, 0.3f }
 #define CORRIDOR_POS { 0.0f, 25.0f, 3.0f }
-#define TORCHLIGHT_CLOCK (global.frames / 30.0f)
+#define TORCHLIGHT_CLOCK (STAGE.frames / 30.0f)
 
 static Stage4DrawData *stage4_draw_data;
 
@@ -67,8 +67,8 @@ static bool stage4_water(Framebuffer *fb) {
 	r_shader("ssr_water");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_sampler("tex", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0));
-	r_uniform_float("time", global.frames * 0.002);
-	r_uniform_vec2("wave_offset", -global.frames * 0.0005, 0);
+	r_uniform_float("time", STAGE.frames * 0.002);
+	r_uniform_vec2("wave_offset", -STAGE.frames * 0.0005, 0);
 	r_uniform_float("wave_height", 0.005);
 	r_uniform_sampler("water_noisetex", "fractal_noise");
 	r_color4(0.8, 0.9, 1.0, 1);
@@ -279,7 +279,7 @@ static void stage4_flames_draw(vec3 pos) {
 		spr->tex_area.w,
 		spr->tex_area.h
 	);
-	r_uniform_float("time", global.frames / 120.0f);
+	r_uniform_float("time", STAGE.frames / 120.0f);
 
 	vec3 ofs = LIGHT_OFS;
 	vec3 p;

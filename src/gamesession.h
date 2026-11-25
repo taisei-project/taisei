@@ -48,6 +48,7 @@ typedef struct StageInstance {
 
 	Boss *boss;
 	Dialog *dialog;
+	int frames;
 	int8_t diff; // Difficulty, but signed to prevent obscure overflow errors
 	uint voltage_threshold;
 	float view_shake;

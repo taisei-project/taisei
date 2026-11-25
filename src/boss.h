@@ -197,7 +197,7 @@ void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 
 void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
-void draw_boss_background(Boss *boss) attr_nonnull(1);
+void draw_boss_background(Boss *boss, StageInstance *stage) attr_nonnull(1, 2);
 void draw_boss_overlay(GameSession *game, Boss *boss) attr_nonnull(1, 2);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
@@ -226,7 +226,7 @@ bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 bool boss_is_player_collision_active(Boss *boss) attr_nonnull(1);
 
-cmplx boss_get_sprite_offset(Boss *boss);
+cmplx boss_get_sprite_offset(Boss *boss, StageInstance *stage);
 
 void boss_death(Boss **boss) attr_nonnull(1);
 

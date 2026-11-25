@@ -193,7 +193,7 @@ TASK(reimu_dream_bomb, { ReimuBController *ctrl; }) {
 
 		stage_shake_view(4);
 		t += WAIT(BOMB_PROJECTILE_FIRE_DELAY);
-	} while(player_is_bomb_active(plr));
+	} while(player_is_bomb_active(plr, &STAGE));
 
 	CANCEL_TASK(noise_task);
 
@@ -280,7 +280,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent, StageInstan
 	}
 
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_float("time", global.frames / 60.0f);
+	r_uniform_float("time", stage->frames / 60.0f);
 	r_uniform_vec2("gap_size", GAP_WIDTH/2.0f, GAP_LENGTH/2.0f);
 	r_uniform_vec2_array("gaps", 0, NUM_GAPS, gaps);
 	r_uniform_float_array("gap_angles", 0, NUM_GAPS, angles);
@@ -292,7 +292,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent, StageInstan
 	SpriteParams yinyang = {
 		.sprite = ctrl->yinyang_sprite,
 		.shader = ctrl->yinyang_shader,
-		.rotation.angle = global.frames * -6 * DEG2RAD,
+		.rotation.angle = stage->frames * -6 * DEG2RAD,
 		.color = RGB(0.95, 0.75, 1.0),
 		.scale.both = 0.5,
 	};
@@ -305,7 +305,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent, StageInstan
 		r_draw_sprite(&yinyang);
 	}
 
-	reimu_dream_draw_gap_lights(ctrl, global.frames, ctrl->bomb_alpha * ctrl->bomb_alpha);
+	reimu_dream_draw_gap_lights(ctrl, stage->frames, ctrl->bomb_alpha * ctrl->bomb_alpha);
 }
 
 static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
@@ -389,7 +389,7 @@ static void reimu_dream_draw_slave(EntityInterface *ent, StageInstance *stage) {
 		.sprite = slave->sprite,
 		.shader = slave->shader,
 		.pos.as_cmplx = slave->pos,
-		.rotation.angle = global.frames * -6 * DEG2RAD,
+		.rotation.angle = stage->frames * -6 * DEG2RAD,
 		.color = RGB(0.95, 0.75, 1.0),
 		.scale.both = 0.5,
 	});
@@ -628,7 +628,7 @@ TASK(reimu_dream_controller_tick, { ReimuBController *ctrl; }) {
 	Player *plr = ctrl->plr;
 
 	for(;;) {
-		if(player_is_bomb_active(plr)) {
+		if(player_is_bomb_active(plr, &STAGE)) {
 			stage_shake_view(1);
 			approach_p(&ctrl->bomb_alpha, 1.0, 0.1);
 		} else {

@@ -17,7 +17,7 @@ TASK(crystal_wall) {
 		play_sfx("shot1");
 
 		for(int c = 0; c < num_crystals; ++c) {
-			cmplx accel = 0.02*I + 0.01*I * ((c % 2) ? 1 : -1) * sin((c * 3 + global.frames) / 30.0);
+			cmplx accel = 0.02*I + 0.01*I * ((c % 2) ? 1 : -1) * sin((c * 3 + STAGE.frames) / 30.0);
 			PROJECTILE(
 				.proto = pp_crystal,
 				.pos = (ofs + c) * spacing + 20,
@@ -93,7 +93,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 						.proto = pp_ball,
 						.pos = boss->pos,
 						.color = RGBA(0.1, 0.1, 0.5, 0.0),
-						.move = move_accelerated(0, 0.01 * cdir(global.frames/20.0 + i*M_TAU/cnt)),
+						.move = move_accelerated(0, 0.01 * cdir(STAGE.frames/20.0 + i*M_TAU/cnt)),
 					);
 				}
 			}

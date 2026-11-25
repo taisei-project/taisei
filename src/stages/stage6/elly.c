@@ -39,7 +39,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/scythe"),
-		.pos = s->pos+I*6*sin((global.frames - 0.5)/25.0),
+		.pos = s->pos+I*6*sin((STAGE.frames - 0.5)/25.0),
 		.draw_rule = pdraw_timeout_fade(0.75, 0),
 		.timeout = 4,
 		.angle = (s->angle + oldangle) * 0.5,
@@ -51,7 +51,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/scythe"),
-		.pos = s->pos+I*6*sin(global.frames/25.0),
+		.pos = s->pos+I*6*sin(STAGE.frames/25.0),
 		.draw_rule = pdraw_timeout_fade(0.75, 0),
 		.timeout = 4,
 		.angle = s->angle,

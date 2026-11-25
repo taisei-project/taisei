@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "color.h"
+#include "gamesession.h"
 #include "resource/font.h"
 
 typedef struct StageText StageText;
@@ -47,8 +48,8 @@ struct StageText {
 };
 
 void stagetext_free(void);
-void stagetext_update(void);
-void stagetext_draw(void);
+void stagetext_update(StageInstance *stage);
+void stagetext_draw(StageInstance *stage);
 StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, Color clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 StageText *stagetext_list_head(void);

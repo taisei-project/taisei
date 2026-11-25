@@ -72,7 +72,7 @@ DEFINE_ENTITY_TYPE(MarisaBBeams, {
 
 static void marisa_star_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	MarisaBSlave *slave = ENT_CAST(ent, MarisaBSlave);
-	float t = global.frames;
+	float t = stage->frames;
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = slave->sprite,
@@ -236,7 +236,7 @@ TASK(marisa_star_slave, {
 	));
 
 	real angle_step = 0.05;
-	real angle = angle_step * global.frames + ARGS.phase;
+	real angle = angle_step * STAGE.frames + ARGS.phase;
 
 	for(int t = 0; slave->alive; t += WAIT(1)) {
 		cmplx target_pos = ctrl->slave_ref_pos + 80 * sin(angle) + 45*I;
@@ -286,7 +286,7 @@ static void marisa_star_draw_orbiter(EntityInterface *ent, StageInstance *stage)
 	SpriteParams sp = {
 		.pos.as_cmplx = orbiter->pos,
 		.color = color_mul_scalar(orbiter->circle_color, ctrl->bomb.beams_alpha),
-		.rotation.angle = global.frames * 10 * DEG2RAD,
+		.rotation.angle = stage->frames * 10 * DEG2RAD,
 		.sprite = ctrl->sprites.fairy_circle,
 		.shader = res_shader("sprite_particle"),
 		.shader_params.vec = { 1.0f },
@@ -459,7 +459,7 @@ TASK(marisa_star_bomb, { MarisaBController *ctrl; }) {
 		beams->alpha = a;
 		++beams->time;
 		YIELD;
-	} while(player_is_bomb_active(plr));
+	} while(player_is_bomb_active(plr, &STAGE));
 }
 
 TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {
@@ -508,7 +508,7 @@ static double marisa_star_property(Player *plr, PlrProperty prop) {
 		case PLR_PROP_SPEED: {
 			double s = marisa_common_property(plr, prop);
 
-			if(player_is_bomb_active(plr)) {
+			if(player_is_bomb_active(plr, &STAGE)) {
 				s /= 4.0;
 			}
 

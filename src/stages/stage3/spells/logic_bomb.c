@@ -76,7 +76,7 @@ TASK(recursive_balls, { BoxedBoss boss; }) {
 	int delay = difficulty_value(120, 120, 60, 50);
 
 	for(;;WAIT(delay)) {
-		cmplx o = boss->pos + boss_get_sprite_offset(boss) + SHOT_OFS2;
+		cmplx o = boss->pos + boss_get_sprite_offset(boss, &STAGE) + SHOT_OFS2;
 		cmplx d = cnormalize(GAME.plr.pos - o + 32 * rng_dir());
 		play_sfx("shot_special1");
 		INVOKE_TASK(recursive_ball, o, d, M_PI/2);

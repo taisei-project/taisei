@@ -447,7 +447,7 @@ TASK(burst_fairies_2) {
 
 TASK(burst_fairies_3) {
 	for(int i = 10; i--;) {
-		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
+		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * STAGE.frames);
 		INVOKE_TASK(burst_fairy,
 			(i & 1)
 				? espawn_fairy_blue_box(pos, ITEMS(.points = 1))

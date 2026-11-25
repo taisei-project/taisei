@@ -118,7 +118,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 	float strength;
 
 	if(STAGE.boss && STAGE.boss->current && ATTACK_IS_SPELL(STAGE.boss->current->type) && !strcmp(STAGE.boss->name, "Scuttle")) {
-		strength = 0.05f * max(0, (global.frames - STAGE.boss->current->starttime) / (float)STAGE.boss->current->timeout);
+		strength = 0.05f * max(0, (STAGE.frames - STAGE.boss->current->starttime) / (float)STAGE.boss->current->timeout);
 	} else {
 		strength = 0.0;
 	}
@@ -126,7 +126,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 	if(strength > 0) {
 		r_shader("glitch");
 		r_uniform_float("strength", strength);
-		r_uniform_float("frames", global.frames + 15 * rng_sreal());
+		r_uniform_float("frames", STAGE.frames + 15 * rng_sreal());
 	} else {
 		return false;
 	}

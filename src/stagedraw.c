@@ -438,7 +438,7 @@ static void stage_draw_collision_areas(GameSession *game) {
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
 	for(Projectile *p = stage->projs.first; p; p = p->next) {
-		cmplx gsize = projectile_graze_size(p);
+		cmplx gsize = projectile_graze_size(p, stage);
 
 		if(re(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
@@ -588,7 +588,7 @@ static void draw_spellbg(Boss *b, int t) {
 		.shader = res_shader("sprite_particle"),
 		.shader_params.vec = { 1.0f },
 		.pos = { re(b->pos), im(b->pos) },
-		.rotation.angle = global.frames * 7.0 * DEG2RAD,
+		.rotation.angle = (t + b->current->starttime) * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
 		.scale.both = scale,
 		.color = RGB(1, 1, 1),
@@ -613,7 +613,7 @@ static inline bool should_draw_stage_bg(GameSession *game) {
 	return (
 		!stage->boss->current->draw_rule
 		|| !attack_is_active(stage->boss->current)
-		|| global.frames - stage->boss->current->starttime < SPELL_INTRO_DURATION
+		|| stage->frames - stage->boss->current->starttime < SPELL_INTRO_DURATION
 	);
 }
 
@@ -710,7 +710,7 @@ static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, Bl
 	r_shader("powersurge_effect");
 	r_uniform_sampler("shotlayer", r_framebuffer_get_attachment(stagedraw.powersurge_fbpair.back, FRAMEBUFFER_ATTACH_COLOR0));
 	r_uniform_sampler("flowlayer", "powersurge_flow");
-	r_uniform_float("time", global.frames/60.0);
+	r_uniform_float("time", stage->frames/60.0);
 	r_blend(blend);
 	r_cull(CULL_BACK);
 	r_mat_mv_push();
@@ -819,7 +819,7 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 	}
 
 	if(boss && boss->current && boss->current->draw_rule && boss->current->starttime > 0) {
-		int t = global.frames - boss->current->starttime;
+		int t = stage->frames - boss->current->starttime;
 		int delay = attacktype_start_delay(boss->current->type);
 
 		bool trans_intro = t + delay < SPELL_INTRO_DURATION;
@@ -831,7 +831,7 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 			FBPair *aux = stage_get_fbpair(FBPAIR_BG_AUX);
 			draw_full_spellbg(boss, t, aux);
 
-			apply_boss_distortion(boss, fbos, global.frames);
+			apply_boss_distortion(boss, fbos, stage->frames);
 			fbpair_swap(fbos);
 			r_framebuffer(fbos->back);
 
@@ -844,7 +844,7 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, im(pos) / VIEWPORT_H);
 				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
-				int tn = global.frames - boss->current->endtime;
+				int tn = stage->frames - boss->current->endtime;
 				delay = boss->current->endtime - boss->current->endtime_undelayed;
 
 				r_shader("spellcard_outro");
@@ -859,7 +859,7 @@ static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 			fbpair_swap(fbos);
 		}
 	} else {
-		apply_boss_distortion(boss, fbos, global.frames);
+		apply_boss_distortion(boss, fbos, stage->frames);
 	}
 
 	r_state_pop();
@@ -926,7 +926,7 @@ static void stage_draw_objects(GameSession *game) {
 	r_shader("sprite_default");
 
 	if(stage->boss) {
-		draw_boss_background(stage->boss);
+		draw_boss_background(stage->boss, stage);
 	}
 
 	ent_draw(
@@ -962,13 +962,13 @@ void stage_draw_overlay(GameSession *game) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);
 	}
 
-	stagetext_draw();
+	stagetext_draw(stage);
 	r_state_pop();
 }
 
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	GameSession *game = arg;
-	r_uniform_int("frames", global.frames);
+	r_uniform_int("frames", game->stage.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_vec2_complex("player", game->plr.pos);
 }
@@ -985,8 +985,8 @@ static inline void begin_viewport_shake(GameSession *game) {
 
 		r_mat_mv_push();
 		r_mat_mv_translate(
-			s * sin(global.frames),
-			s * sin(global.frames * 1.1 + 3),
+			s * sin(stage->frames),
+			s * sin(stage->frames * 1.1 + 3),
 			0
 		);
 		r_mat_mv_scale(
@@ -1166,7 +1166,7 @@ void stage_draw_scene(GameSession *game) {
 	stage_draw_hud(game);
 
 	// draw dialog
-	dialog_draw(stage->dialog);
+	dialog_draw(stage->dialog, stage);
 
 	// draw "bottom text" (FPS, replay info, etc.)
 	stage_draw_bottom_text(game);
@@ -1195,13 +1195,15 @@ static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanc
 }
 
 static inline void stage_draw_hud_power_value(GameSession *game, float xpos, float ypos) {
+	StageInstance *stage = &game->stage;
+
 	Font *fnt_int = res_font("standard");
 	Font *fnt_fract = res_font("small");
 
 	int pw = game->plr.power_stored;
 
 	Color c_whole, c_fract;
-	Color c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
+	Color c_op_mod = RGBA(1, 0.2 + 0.3 * psin(stage->frames / 10.0), 0.2, 1.0);
 
 	if(pw <= PLR_MAX_POWER_EFFECTIVE) {
 		c_whole = stagedraw.hud_text.color.active;
@@ -1599,6 +1601,8 @@ static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
 }
 
 void stage_draw_bottom_text(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	char buf[64];
 	Font *font;
 	auto fps = eventloop_get_fps_counters();
@@ -1607,9 +1611,9 @@ void stage_draw_bottom_text(GameSession *game) {
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, frames: %d (%d:%02d) ",
 		fps->logic.fps,
 		fps->render.fps,
-		global.frames,
-		global.frames / 3600,
-		(global.frames % 3600) / 60
+		stage->frames,
+		stage->frames / 3600,
+		(stage->frames % 3600) / 60
 	);
 #else
 	if(eventloop_get_frameskip() > 1) {
@@ -1658,7 +1662,7 @@ void stage_draw_bottom_text(GameSession *game) {
 		}
 	}
 #ifdef PLR_DPS_STATS
-	else if(global.frames) {
+	else if(stage->frames) {
 		int totaldmg = 0;
 		int framespan = sizeof(game->plr.dmglog)/sizeof(*game->plr.dmglog);
 		int graphspan = framespan;
@@ -1671,7 +1675,7 @@ void stage_draw_bottom_text(GameSession *game) {
 		}
 
 		// hack to update the graph every frame
-		player_register_damage(&game->plr, NULL, &(DamageInfo) { .amount = 0, .type = DMG_PLAYER_SHOT });
+		player_dmglog_advance(&game->plr, stage->frames);
 
 		for(int i = 0; i < framespan; ++i) {
 			totaldmg += game->plr.dmglog[i];
@@ -1796,12 +1800,12 @@ void stage_draw_hud(GameSession *game) {
 	float extraspell_fadein = 1;
 
 	if(stage->boss && stage->boss->current && stage->boss->current->type == AT_ExtraSpell) {
-		extraspell_fadein  = min(1, -min(0, global.frames - stage->boss->current->starttime) / (float)ATTACK_START_DELAY);
+		extraspell_fadein  = min(1, -min(0, stage->frames - stage->boss->current->starttime) / (float)ATTACK_START_DELAY);
 
 		float fadeout;
 
 		if(attack_has_finished(stage->boss->current)) {
-			fadeout = (1 - (stage->boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+			fadeout = (1 - (stage->boss->current->endtime - stage->frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
 		} else {
 			fadeout = 0;
 		}
@@ -1976,7 +1980,7 @@ void stage_draw_hud(GameSession *game) {
 
 	// Boss indicator ("Enemy")
 	if(stage->boss) {
-		float red = 0.5*exp(-0.5*(global.frames-stage->boss->lastdamageframe)); // hit indicator
+		float red = 0.5*exp(-0.5*(stage->frames-stage->boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
 
@@ -2011,14 +2015,14 @@ void stage_draw_hud(GameSession *game) {
 		r_mat_mv_scale(bg_width / bg->w, bg_height / bg->h, 1);
 
 		r_mat_mv_push();
-		r_mat_mv_rotate(global.frames * 0.5 * DEG2RAD, 0, 0, 1);
+		r_mat_mv_rotate(stage->frames * 0.5 * DEG2RAD, 0, 0, 1);
 		r_draw_sprite(&sp);
 		r_mat_mv_pop();
 
 		sp.color = RGBA(0.2, 0.1, 0.1, 0.07);
 
 		r_mat_mv_push();
-		r_mat_mv_rotate(global.frames * -0.93 * DEG2RAD, 0, 0, 1);
+		r_mat_mv_rotate(stage->frames * -0.93 * DEG2RAD, 0, 0, 1);
 		r_draw_sprite(&sp);
 		r_mat_mv_pop();
 
@@ -2028,7 +2032,7 @@ void stage_draw_hud(GameSession *game) {
 			.align = ALIGN_CENTER,
 			.font = "big",
 			.shader_ptr = res_shader("text_demo"),
-			.shader_params = &(ShaderCustomParams) { global.frames / 60.0f },
+			.shader_params = &(ShaderCustomParams) { stage->frames / 60.0f },
 			.pos.as_cmplx = pos,
 			.color = RGB(1, 1, 1),
 		});

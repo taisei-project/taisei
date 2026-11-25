@@ -59,7 +59,7 @@ static void testlights(Camera3D *cam, uint nlights, PointLight3D lights[nlights]
 	glm_vec3_copy(cam->pos, orig);
 	glm_vec3_muladds(forward, TESTLIGHT_CAMDIST, orig);
 
-	cmplxf r = cdir(global.frames * DEG2RAD);
+	cmplxf r = cdir(STAGE.frames * DEG2RAD);
 	cmplxf p = cdir(M_TAU / nlights);
 
 	for(int i = 0; i < nlights; ++i) {
@@ -94,7 +94,7 @@ static uint stage2_hina_lights(Camera3D *cam, uint num_lights, PointLight3D ligh
 
 	for(int i = 0; i < num_lights; i++) {
 		PointLight3D *l = lights + i;
-		float angle = M_TAU / num_lights * i + 0.75f * global.frames/(float)FPS;
+		float angle = M_TAU / num_lights * i + 0.75f * STAGE.frames/(float)FPS;
 		vec3 offset = { cosf(angle), sinf(angle) };
 		glm_vec3_scale(offset, 4.0f + sinf(3.0f * angle), offset);
 		glm_vec3_add(hina_center, offset, l->pos);
@@ -120,7 +120,7 @@ static void stage2_bg_setup_pbr_lighting(Camera3D *cam, int max_lights) {
 #if 0
 	testlights(cam, NUM_TESTLIGHTS, lights + max_lights);
 
-	float f = 0.1f + 0.9f * (0.5f + 0.5f * sinf(global.frames / 30.0f));
+	float f = 0.1f + 0.9f * (0.5f + 0.5f * sinf(STAGE.frames / 30.0f));
 
 	for(int i = max_lights; i < max_lights + NUM_TESTLIGHTS; ++i) {
 		PointLight3D *l = lights + i;
@@ -261,7 +261,7 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_state_push();
 
 	r_shader("pbr_water");
-	r_uniform_float("time", 0.2 * global.frames / (float)FPS);
+	r_uniform_float("time", 0.2 * STAGE.frames / (float)FPS);
 	r_uniform_float("wave_height", 0.06);
 	r_uniform_float("wave_scale", 16);
 	r_uniform_vec2("wave_offset", pos[0]/WATER_SIZE, pos[1]/WATER_SIZE);
@@ -416,7 +416,7 @@ static void stage3d_hinalights_draw(vec3 pos) {
 		spr->tex_area.w,
 		spr->tex_area.h
 	);
-	r_uniform_float("time", global.frames / 120.0f);
+	r_uniform_float("time", STAGE.frames / 120.0f);
 
 	Camera3D *cam = &stage_3d_context.cam;
 	PointLight3D lights[NUM_HINA_LIGHTS];

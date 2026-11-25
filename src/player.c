@@ -261,7 +261,7 @@ void player_draw_overlay(Player *plr) {
 static void ent_draw_player(EntityInterface *ent, StageInstance *stage) {
 	Player *plr = ENT_CAST(ent, Player);
 
-	if(plr->deathtime >= global.frames) {
+	if(plr->deathtime >= stage->frames) {
 		return;
 	}
 
@@ -272,7 +272,7 @@ static void ent_draw_player(EntityInterface *ent, StageInstance *stage) {
 			.sprite = res_sprite("fairy_circle"),
 			.shader = shader,
 			.shader_params.vec = { 1.0f },
-			.rotation.angle = DEG2RAD * global.frames * 10,
+			.rotation.angle = DEG2RAD * stage->frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
 			.pos = { re(plr->pos), im(plr->pos) },
 		});
@@ -280,8 +280,8 @@ static void ent_draw_player(EntityInterface *ent, StageInstance *stage) {
 
 	Color c;
 
-	if(!player_is_vulnerable(plr)) {
-		float f = 0.3*sin(0.1*global.frames);
+	if(!player_is_vulnerable(plr, stage)) {
+		float f = 0.3*sin(0.1*stage->frames);
 		c = RGBA_MUL_ALPHA(1.0+f, 1.0, 1.0-f, 0.7+f);
 	} else {
 		c = RGBA_MUL_ALPHA(1.0, 1.0, 1.0, 1.0);
@@ -301,13 +301,13 @@ static void player_draw_indicators(EntityInterface *ent, StageInstance *stage) {
 	Player *plr = indicators->plr;
 
 	float focus_opacity = indicators->focus_alpha;
-	int t = global.frames - indicators->focus_time;
+	int t = stage->frames - indicators->focus_time;
 	cmplxf pos = plr->pos;
 
 	if(focus_opacity > 0) {
 		float trans_frames = 12;
 		float trans_factor = 1.0f - min(trans_frames, t) / trans_frames;
-		float rot_speed = DEG2RAD * global.frames * (1.0f + 3.0f * trans_factor);
+		float rot_speed = DEG2RAD * stage->frames * (1.0f + 3.0f * trans_factor);
 		float scale = 1.0f + trans_factor;
 
 		SpriteParams sp = {
@@ -329,11 +329,11 @@ static void player_draw_indicators(EntityInterface *ent, StageInstance *stage) {
 	float ps_fill_factor = 1.0;
 
 	if(player_is_powersurge_active(plr)) {
-		ps_opacity *= clamp((global.frames - plr->powersurge.time.activated) / 30.0, 0, 1);
+		ps_opacity *= clamp((stage->frames - plr->powersurge.time.activated) / 30.0, 0, 1);
 	} else if(plr->powersurge.time.expired == 0) {
 		ps_opacity = 0;
 	} else {
-		ps_opacity *= (1 - clamp((global.frames - plr->powersurge.time.expired) / 40.0, 0, 1));
+		ps_opacity *= (1 - clamp((stage->frames - plr->powersurge.time.expired) / 40.0, 0, 1));
 		ps_fill_factor = pow(ps_opacity, 2);
 	}
 
@@ -412,10 +412,10 @@ DEFINE_TASK(player_indicators) {
 	bool is_focused = false;
 
 	for(;;) {
-		is_focused = (plr->inputflags & INFLAG_FOCUS) && player_is_alive(plr);
+		is_focused = (plr->inputflags & INFLAG_FOCUS) && player_is_alive(plr, &STAGE);
 
 		if(is_focused && !was_focused) {
-			indicators->focus_time = global.frames;
+			indicators->focus_time = STAGE.frames;
 			indicators->focus_alpha = min(indicators->focus_alpha, 0.1f);
 		}
 
@@ -439,7 +439,7 @@ static void player_fail_spell(Player *plr) {
 		return;
 	}
 
-	STAGE.boss->current->failtime = global.frames;
+	STAGE.boss->current->failtime = STAGE.frames;
 
 	if(STAGE.boss->current->type == AT_ExtraSpell) {
 		boss_finish_current_attack(STAGE.boss);
@@ -450,11 +450,11 @@ bool player_should_shoot(Player *plr) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
 		!dialog_is_active(STAGE.dialog) &&
-		player_is_alive(&GAME.plr);
+		player_is_alive(&GAME.plr, &STAGE);
 }
 
 void player_placeholder_bomb_logic(Player *plr) {
-	if(!player_is_bomb_active(plr)) {
+	if(!player_is_bomb_active(plr, &STAGE)) {
 		return;
 	}
 
@@ -557,7 +557,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 
 		ENT_ARRAY_FOREACH(&trails, Projectile *p, {
 			p->move.attraction_point = plr->pos;
-			p->move.attraction = 1 - (global.frames - p->birthtime) / p->timeout;
+			p->move.attraction = 1 - (STAGE.frames - p->birthtime) / p->timeout;
 		});
 
 		ENT_ARRAY_FOREACH(&fields, Projectile *p, {
@@ -615,13 +615,13 @@ DEFINE_TASK(player_logic) {
 		fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
 
 		if(
-			plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames &&
+			plr->respawntime - PLR_RESPAWN_TIME/2 == STAGE.frames &&
 			plr->lives < 0 && GAME.replay.input.replay == NULL
 		) {
 			stage_gameover();
 		}
 
-		if(plr->continuetime == global.frames) {
+		if(plr->continuetime == STAGE.frames) {
 			plr->lives = PLR_START_LIVES;
 			plr->bombs = PLR_START_BOMBS;
 			plr->point_item_value = PLR_START_PIV;
@@ -639,9 +639,9 @@ DEFINE_TASK(player_logic) {
 			continue;
 		}
 
-		if(plr->respawntime > global.frames) {
+		if(plr->respawntime > STAGE.frames) {
 			double x = PLR_SPAWN_POS_X;
-			double y = lerp(PLR_SPAWN_POS_Y, VIEWPORT_H + 64, smoothstep(0.0, 1.0, (plr->respawntime - global.frames) / (double)PLR_RESPAWN_TIME));
+			double y = lerp(PLR_SPAWN_POS_Y, VIEWPORT_H + 64, smoothstep(0.0, 1.0, (plr->respawntime - STAGE.frames) / (double)PLR_RESPAWN_TIME));
 			plr->pos = CMPLX(x, y);
 			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 			continue;
@@ -657,9 +657,9 @@ DEFINE_TASK(player_logic) {
 			coevent_signal(&plr->events.shoot);
 		}
 
-		if(global.frames == plr->deathtime) {
+		if(STAGE.frames == plr->deathtime) {
 			player_realdeath(plr);
-		} else if(plr->deathtime > global.frames) {
+		} else if(plr->deathtime > STAGE.frames) {
 			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		}
 
@@ -669,12 +669,12 @@ DEFINE_TASK(player_logic) {
 
 static bool player_can_bomb(Player *plr) {
 	return (
-		!player_is_bomb_active(plr)
+		!player_is_bomb_active(plr, &STAGE)
 		&& (
 			plr->bombs > 0 ||
 			plr->iddqd
 		)
-		&& global.frames >= plr->respawntime
+		&& STAGE.frames >= plr->respawntime
 	);
 
 }
@@ -697,7 +697,7 @@ static bool player_bomb(Player *plr) {
 
 		plr->bombs--;
 
-		if(plr->deathtime >= global.frames) {
+		if(plr->deathtime >= STAGE.frames) {
 			// death bomb - unkill the player!
 			plr->deathtime = -1;
 
@@ -710,11 +710,11 @@ static bool player_bomb(Player *plr) {
 			plr->bombs = 0;
 		}
 
-		plr->bomb_triggertime = global.frames;
+		plr->bomb_triggertime = STAGE.frames;
 		plr->bomb_endtime = plr->bomb_triggertime + bomb_time;
 		plr->bomb_cutin_alpha = 1;
 
-		assert(player_is_alive(plr));
+		assert(player_is_alive(plr, &STAGE));
 		collect_all_items(1);
 
 		coevent_signal(&plr->events.bomb_used);
@@ -726,18 +726,18 @@ static bool player_bomb(Player *plr) {
 
 static bool player_powersurge(Player *plr) {
 	if(
-		!player_is_alive(plr) ||
-		player_is_bomb_active(plr) ||
+		!player_is_alive(plr, &STAGE) ||
+		player_is_bomb_active(plr, &STAGE) ||
 		player_is_powersurge_active(plr) ||
 		plr->power_stored < PLR_POWERSURGE_POWERCOST ||
-		global.frames - plr->powersurge.time.expired <= PLR_POWERSURGE_EXPIRED_COOLDOWN
+		STAGE.frames - plr->powersurge.time.expired <= PLR_POWERSURGE_EXPIRED_COOLDOWN
 	) {
 		return false;
 	}
 
 	plr->powersurge.positive = 1.0;
 	plr->powersurge.negative = 0.0;
-	plr->powersurge.time.activated = global.frames;
+	plr->powersurge.time.activated = STAGE.frames;
 	plr->powersurge.total_charge = 0;
 	plr->powersurge.damage_accum = 0;
 	plr->powersurge.player_power = plr->power_stored;
@@ -754,28 +754,28 @@ static bool player_powersurge(Player *plr) {
 	return true;
 }
 
-bool player_is_recovering(Player *plr) {
-	return global.frames < plr->recoverytime;
+bool player_is_recovering(Player *plr, StageInstance *stage) {
+	return stage->frames < plr->recoverytime;
 }
 
 bool player_is_powersurge_active(Player *plr) {
 	return plr->powersurge.positive > plr->powersurge.negative;
 }
 
-bool player_is_bomb_active(Player *plr) {
-	return global.frames < plr->bomb_endtime;
+bool player_is_bomb_active(Player *plr, StageInstance *stage) {
+	return stage->frames < plr->bomb_endtime;
 }
 
-bool player_is_vulnerable(Player *plr) {
+bool player_is_vulnerable(Player *plr, StageInstance *stage) {
 	return
-		player_is_alive(plr) &&
-		!player_is_recovering(plr) &&
-		!player_is_bomb_active(plr) &&
+		player_is_alive(plr, stage) &&
+		!player_is_recovering(plr, stage) &&
+		!player_is_bomb_active(plr, stage) &&
 		!plr->iddqd;
 }
 
-bool player_is_alive(Player *plr) {
-	return plr->deathtime < global.frames && global.frames >= plr->respawntime;
+bool player_is_alive(Player *plr, StageInstance *stage) {
+	return plr->deathtime < stage->frames && stage->frames >= plr->respawntime;
 }
 
 static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
@@ -948,7 +948,7 @@ TASK(powersurge_discharge, { cmplx pos; real radius; real damage; bool is_break;
 static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args);
 
 static void player_powersurge_expired(Player *plr, bool is_break) {
-	plr->powersurge.time.expired = global.frames;
+	plr->powersurge.time.expired = STAGE.frames;
 	plr->recoverytime = max(
 		plr->recoverytime, plr->powersurge.time.expired + PLR_POWERSURGE_DISCHARGE_RECOVERY_TIME);
 
@@ -1050,7 +1050,7 @@ void player_extend_powersurge(Player *plr, float pos, float neg) {
 }
 
 double player_get_bomb_progress(Player *plr) {
-	if(!player_is_bomb_active(plr)) {
+	if(!player_is_bomb_active(plr, &STAGE)) {
 		return 1;
 	}
 
@@ -1058,12 +1058,12 @@ double player_get_bomb_progress(Player *plr) {
 	int end = plr->bomb_endtime;
 	assert(begin <= end);
 	real bomb_time = end - begin;
-	return (bomb_time - (end - global.frames)) / bomb_time;
+	return (bomb_time - (end - STAGE.frames)) / bomb_time;
 }
 
 void player_realdeath(Player *plr) {
 	int deathtime = plr->deathtime;
-	assert(global.frames == deathtime);
+	assert(STAGE.frames == deathtime);
 
 	plr->respawntime = deathtime + PLR_RESPAWN_TIME;
 	plr->recoverytime = deathtime + PLR_RECOVERY_TIME;
@@ -1149,7 +1149,7 @@ TASK(player_death_blastspam, { cmplx pos; }) {
 }
 
 void player_death(Player *plr) {
-	if(!player_is_vulnerable(plr) || stage_is_cleared()) {
+	if(!player_is_vulnerable(plr, &STAGE) || stage_is_cleared()) {
 		return;
 	}
 
@@ -1208,13 +1208,13 @@ void player_death(Player *plr) {
 
 	INVOKE_TASK_AFTER(&p->events.killed, player_death_blastspam, p->pos);
 
-	plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
+	plr->deathtime = STAGE.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 
 	PARTICLE(
 		.sprite = "blast_huge_halo",
 		.pos = plr->pos,
 		.size = 1+I,
-		.timeout = plr->deathtime - global.frames,
+		.timeout = plr->deathtime - STAGE.frames,
 		.draw_rule = pdraw_timeout_scalefade(5, 0.01, 1, 1),
 		.color = RGBA(2, 0.5, 0.25, 0),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
@@ -1232,7 +1232,7 @@ static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dm
 	Player *plr = ENT_CAST(ent, Player);
 
 	if(
-		!player_is_vulnerable(plr) ||
+		!player_is_vulnerable(plr, &STAGE) ||
 		(dmg->type != DMG_ENEMY_SHOT && dmg->type != DMG_ENEMY_COLLISION)
 	) {
 		return DMG_RESULT_IMMUNE;
@@ -1378,12 +1378,12 @@ PlayerEventResult player_event(
 		case EV_CONTINUE:
 			// continuing in the same frame will desync the replay,
 			// so schedule it for the next one
-			plr->continuetime = global.frames + 1;
+			plr->continuetime = STAGE.frames + 1;
 			useful = true;
 			break;
 
 		default:
-			log_warn("Can not handle event: [%i:%02x:%04x]", global.frames, type, value);
+			log_warn("Can not handle event: [%i:%02x:%04x]", STAGE.frames, type, value);
 			useful = false;
 			break;
 	}
@@ -1392,11 +1392,11 @@ PlayerEventResult player_event(
 		assert(rpy_in->mode == REPLAY_PLAY);
 
 		if(!useful) {
-			log_warn("Replay input: useless event: [%i:%02x:%04x]", global.frames, type, value);
+			log_warn("Replay input: useless event: [%i:%02x:%04x]", STAGE.frames, type, value);
 		}
 
 		if(cheat) {
-			log_warn("Replay input: Cheat event: [%i:%02x:%04x]", global.frames, type, value);
+			log_warn("Replay input: Cheat event: [%i:%02x:%04x]", STAGE.frames, type, value);
 
 			if( !(rpy_in->replay->flags   & REPLAY_GFLAG_CHEATS) ||
 				!(rpy_in->stage->flags    & REPLAY_SFLAG_CHEATS)) {
@@ -1407,7 +1407,7 @@ PlayerEventResult player_event(
 		if(type == EV_CONTINUE && (
 			!(rpy_in->replay->flags   & REPLAY_GFLAG_CONTINUES) ||
 			!(rpy_in->stage->flags    & REPLAY_SFLAG_CONTINUES))) {
-			log_warn("Replay input: Continue event [%i:%02x:%04x], but this replay was not properly continue-flagged", global.frames, type, value);
+			log_warn("Replay input: Continue event [%i:%02x:%04x], but this replay was not properly continue-flagged", STAGE.frames, type, value);
 		}
 	}
 
@@ -1415,7 +1415,7 @@ PlayerEventResult player_event(
 		assert(rpy_out->mode == REPLAY_RECORD);
 
 		if(useful) {
-			replay_stage_event(rpy_out->stage, global.frames, type, value);
+			replay_stage_event(rpy_out->stage, STAGE.frames, type, value);
 
 			if(type == EV_CONTINUE) {
 				rpy_out->replay->flags |= REPLAY_GFLAG_CONTINUES;
@@ -1427,7 +1427,7 @@ PlayerEventResult player_event(
 				rpy_out->stage->flags  |= REPLAY_SFLAG_CHEATS;
 			}
 		} else {
-			log_debug("Replay output: Useless event discarded: [%i:%02x:%04x]", global.frames, type, value);
+			log_debug("Replay output: Useless event discarded: [%i:%02x:%04x]", STAGE.frames, type, value);
 		}
 	}
 
@@ -1510,7 +1510,7 @@ void player_applymovement(Player *plr) {
 	plr->velocity = 0;
 	plr->uncapped_velocity = 0;
 
-	if(!player_is_alive(plr))
+	if(!player_is_alive(plr, &STAGE))
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
@@ -1718,7 +1718,7 @@ static StageText *find_scoretext_combination_candidate(cmplx pos, bool is_piv) {
 	for(StageText *stxt = stagetext_list_head(); stxt; stxt = stxt->next) {
 		if(
 			stxt->custom.update == scoretext_update &&
-			stxt->time.spawn > global.frames &&
+			stxt->time.spawn > STAGE.frames &&
 			(bool)((uintptr_t)(stxt->custom.data2) & SCORETEXT_PIV_BIT) == is_piv &&
 			cabs(pos - stxt->pos) < 32
 		) {
@@ -1881,15 +1881,20 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 	}
 
 #ifdef PLR_DPS_STATS
-	while(global.frames > plr->dmglogframe) {
+	player_dmglog_advance(plr, STAGE.frames);
+	plr->dmglog[0] += damage->amount;
+#endif
+}
+
+#ifdef PLR_DPS_STATS
+void player_dmglog_advance(Player *plr, int frame) {
+	while(frame > plr->dmglogframe) {
 		memmove(plr->dmglog + 1, plr->dmglog, sizeof(plr->dmglog) - sizeof(*plr->dmglog));
 		plr->dmglog[0] = 0;
 		plr->dmglogframe++;
 	}
-
-	plr->dmglog[0] += damage->amount;
-#endif
 }
+#endif
 
 uint64_t player_next_extralife_threshold(uint64_t step) {
 	static uint64_t base = 5000000;

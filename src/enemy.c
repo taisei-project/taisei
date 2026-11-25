@@ -104,7 +104,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp) {
 	auto e = alist_append(enemies, STAGE_ACQUIRE_OBJ(Enemy));
 	e->moving = false;
 	e->dir = 0;
-	e->birthtime = global.frames;
+	e->birthtime = STAGE.frames;
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
@@ -198,7 +198,7 @@ cmplx enemy_visual_pos(const Enemy *enemy) {
 		return enemy->pos;
 	}
 
-	real t = (global.frames - enemy->birthtime) / 30.0;
+	real t = (STAGE.frames - enemy->birthtime) / 30.0;
 
 	if(t >= 1) {
 		return enemy->pos;
@@ -307,7 +307,7 @@ void process_enemies(EnemyList *enemies) {
 			continue;
 		}
 
-		enemy_update(enemy, global.frames - enemy->birthtime);
+		enemy_update(enemy, STAGE.frames - enemy->birthtime);
 
 		float hurt_radius = enemy_get_hurt_radius(enemy);
 

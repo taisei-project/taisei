@@ -118,7 +118,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real 
 
 	return PARTICLE(
 		.sprite = "ofuda_glow",
-		// .color = rgba(0.5 + 0.5 + psin(global.frames * 0.75), psin(t*0.5), 1, 0.5),
+		// .color = rgba(0.5 + 0.5 + psin(STAGE.frames * 0.75), psin(t*0.5), 1, 0.5),
 		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
@@ -147,7 +147,7 @@ TASK(reimu_spirit_homing_impact, { BoxedProjectile p; }) {
 		.scale = REIMU_SPIRIT_HOMING_SCALE,
 	));
 
-	for(int t = global.frames - ref->birthtime;; ++t) {
+	for(int t = STAGE.frames - ref->birthtime;; ++t) {
 		Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, t, 0);
 		trail->timeout = 6;
 		trail->angle = p->angle;
@@ -234,7 +234,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	reimu_spirit_bomb_impact_balls(pos, 21);
 
 	int num_impacts = 3;
-	int t = global.frames;
+	int t = STAGE.frames;
 	BoxedProjectileArray impact_effects = ENT_ARRAY(Projectile, 3);
 	RNG_ARRAY(rand, num_impacts);
 	Color base_colors[3];
@@ -267,7 +267,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 		int live = 0;
 
 		ENT_ARRAY_FOREACH_COUNTER(&impact_effects, int i, Projectile *p, {
-			float t = (global.frames - p->birthtime) / p->timeout;
+			float t = (STAGE.frames - p->birthtime) / p->timeout;
 			float attack = min(1, vrng_f32_range(rand[i], 7, 12) * t);
 			float decay = t;
 
@@ -319,7 +319,7 @@ TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
 		cmplx pos = orb->pos;
 
 		ENT_ARRAY_FOREACH_COUNTER(&components, int i, Projectile *p, {
-			real t = global.frames - p->birthtime;
+			real t = STAGE.frames - p->birthtime;
 			cmplxf offset = (10 + pow(t, 0.5)) * cdir(2.0 * M_PI / 3*i + sqrt(1 + t * t / 300));
 			p->pos = pos + offset;
 		});
@@ -355,7 +355,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	cmplx vel = 0;
 
 	for(int t = 0;; ++t) {
-		if(!player_is_bomb_active(plr)) {
+		if(!player_is_bomb_active(plr, &STAGE)) {
 			kill_projectile(orb);
 			return;
 		}
@@ -442,7 +442,7 @@ TASK(reimu_spirit_bomb, { ReimuAController *ctrl; }) {
 	}
 
 	// keep bg renderer alive
-	WAIT(plr->bomb_endtime - global.frames);
+	WAIT(plr->bomb_endtime - STAGE.frames);
 }
 
 TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
@@ -481,7 +481,7 @@ static void reimu_spirit_draw_slave(EntityInterface *ent, StageInstance *stage) 
 	r_draw_sprite(&(SpriteParams) {
 		.color = slave->color,
 		.pos.as_cmplx = slave->pos,
-		.rotation.angle = global.frames * -6 * DEG2RAD,
+		.rotation.angle = stage->frames * -6 * DEG2RAD,
 		.shader = slave->shader,
 		.sprite = slave->sprite,
 	});
@@ -546,7 +546,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (STAGE.frames - ctrl->last_needle_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -573,8 +573,8 @@ TASK(reimu_spirit_slave_needle_shot, {
 			.shader = shader
 		);
 
-		ctrl->last_needle_fire_time = global.frames;
-		ctrl->last_homing_fire_time = max(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
+		ctrl->last_needle_fire_time = STAGE.frames;
+		ctrl->last_homing_fire_time = max(ctrl->last_homing_fire_time, STAGE.frames - SHOT_SLAVE_HOMING_DELAY / 2);
 
 		WAIT(delay);
 	}
@@ -618,7 +618,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (STAGE.frames - ctrl->last_homing_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -647,7 +647,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 			.shader = shader
 		);
 
-		ctrl->last_homing_fire_time = global.frames;
+		ctrl->last_homing_fire_time = STAGE.frames;
 
 		WAIT(delay);
 	}

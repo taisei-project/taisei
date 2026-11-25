@@ -45,7 +45,7 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 	p->move = move_linear(vel);
 
 	real deflection = difficulty_value(0.004, 0.004, 0.005, 0.005);
-	p->move.retention = 1.02 + deflection * sin(global.frames*314) * I;
+	p->move.retention = 1.02 + deflection * sin(STAGE.frames*314) * I;
 
 	if(rng_chance(0.5)) {
 		Projectile *v = vapor_particle(p->pos, color_mul_scalar(p->color, 0.3));

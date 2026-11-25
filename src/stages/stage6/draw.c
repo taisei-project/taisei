@@ -66,9 +66,9 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_mat_mv_scale(0.7, 0.7, 0.7);
 	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
 	r_shader("calabi-yau-quintic");
-	//r_mat_mv_rotate(-global.frames*0.03, 0, 0, 1);
-	r_mat_mv_rotate(global.frames*0.01, 0, 1, 0);
-	r_uniform_float("alpha", global.frames*0.03);
+	//r_mat_mv_rotate(-STAGE.frames*0.03, 0, 0, 1);
+	r_mat_mv_rotate(STAGE.frames*0.01, 0, 1, 0);
+	r_uniform_float("alpha", STAGE.frames*0.03);
 	r_draw_model_ptr(stage6_draw_data->models.calabi_yau_quintic, 0, 0);
 	r_mat_mv_pop();
 	r_state_pop();
@@ -97,7 +97,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 		vec3 p;
 		glm_vec3_copy(stage6_draw_data->stars.position[i], p);
 		vec3 axis = { 1, 0, 0.2 };
-		glm_vec3_rotate(p, global.frames*0.001, axis);
+		glm_vec3_rotate(p, STAGE.frames*0.001, axis);
 		if(p[2] < 0) {
 			continue;
 		}

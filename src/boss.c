@@ -81,7 +81,7 @@ Boss *create_boss(const char *name, char *ani, cmplx pos) {
 	snprintf(strbuf, sizeof(strbuf), "boss/%s", ani);
 	aniplayer_create(&boss->ani, res_anim(strbuf), "main");
 
-	boss->birthtime = global.frames;
+	boss->birthtime = STAGE.frames;
 	boss->zoomcolor = RGBA(0.1, 0.2, 0.3, 1.0);
 
 	boss->ent.draw_layer = LAYER_BOSS;
@@ -374,7 +374,7 @@ static void update_hud(Boss *boss) {
 	}
 
 	if(boss->current && !attack_has_finished(boss->current) && boss->current->type != AT_Move) {
-		int frames = boss->current->timeout + min(0, boss->current->starttime - global.frames);
+		int frames = boss->current->timeout + min(0, boss->current->starttime - STAGE.frames);
 		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
 	}
 
@@ -445,6 +445,8 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 }
 
 static void draw_spell_name(GameSession *game, Boss *b, int time, bool healthbar_radial) {
+	StageInstance *stage = &game->stage;
+
 	Font *font = res_font("standard");
 
 	cmplx x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
@@ -497,7 +499,7 @@ static void draw_spell_name(GameSession *game, Boss *b, int time, bool healthbar
 
 	if(p) {
 		char buf[32];
-		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
+		float a = clamp((stage->frames - b->current->starttime - 60) / 60.0, 0, 1);
 		font = res_font("small");
 
 		float bonus_ofs = 220;
@@ -634,7 +636,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 static Projectile *spawn_boss_glow(Boss *boss, Color clr, int timeout) {
 	return PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		.pos = boss->pos + boss_get_sprite_offset(boss),
+		.pos = boss->pos + boss_get_sprite_offset(boss, &STAGE),
 		.color = clr,
 		.draw_rule = boss_glow_draw,
 		.timeout = timeout,
@@ -656,14 +658,14 @@ DEFINE_TASK(boss_particles) {
 		bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !attack_has_finished(cur);
 		bool is_extra = cur && cur->type == AT_ExtraSpell && attack_has_started(cur);
 
-		if(!(global.frames % 13) && !is_extra) {
+		if(!(STAGE.frames % 13) && !is_extra) {
 			Color shadowcolor = boss->shadowcolor;
 			shadowcolor.a = 0;
 
 			ENT_ARRAY_COMPACT(&smoke_parts);
 			ENT_ARRAY_ADD(&smoke_parts, PARTICLE(
 				.sprite = "smoke",
-				.pos = cdir(global.frames) + boss->pos,
+				.pos = cdir(STAGE.frames) + boss->pos,
 				.color = shadowcolor,
 				.timeout = 180,
 				.draw_rule = pdraw_timeout_scale(2, 0.01),
@@ -673,12 +675,12 @@ DEFINE_TASK(boss_particles) {
 		}
 
 		if(
-			!(global.frames % (2 + 2 * is_extra)) &&
+			!(STAGE.frames % (2 + 2 * is_extra)) &&
 			(is_spell || boss_is_dying(boss)) &&
 			!boss->in_background
 		) {
 			float glowstr = 0.5;
-			float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
+			float a = (1.0 - glowstr) + glowstr * psin(STAGE.frames/15.0);
 			spawn_boss_glow(boss, color_mul_scalar(boss->glowcolor, a), 24);
 		}
 
@@ -692,15 +694,15 @@ DEFINE_TASK(boss_particles) {
 	}
 }
 
-void draw_boss_background(Boss *boss) {
+void draw_boss_background(Boss *boss, StageInstance *stage) {
 	r_mat_mv_push();
 	r_mat_mv_translate(re(boss->pos), im(boss->pos), 0);
-	r_mat_mv_rotate(global.frames * 4.0 * DEG2RAD, 0, 0, -1);
+	r_mat_mv_rotate(stage->frames * 4.0 * DEG2RAD, 0, 0, -1);
 
-	float f = 0.8+0.1*sin(global.frames/8.0);
+	float f = 0.8+0.1*sin(stage->frames/8.0);
 
 	if(boss_is_dying(boss)) {
-		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		float t = (stage->frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		f -= t * (t - 0.7f) / max(0.01f, 1-t);
 	}
 
@@ -714,21 +716,21 @@ void draw_boss_background(Boss *boss) {
 	r_mat_mv_pop();
 }
 
-cmplx boss_get_sprite_offset(Boss *boss) {
-	return 6 * sin(global.frames/25.0) * I;
+cmplx boss_get_sprite_offset(Boss *boss, StageInstance *stage) {
+	return 6 * sin(stage->frames/25.0) * I;
 }
 
 static void ent_draw_boss(EntityInterface *ent, StageInstance *stage) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
-	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
+	float red = 0.5*exp(-0.5*(stage->frames-boss->lastdamageframe));
 	if(red > 1)
 		red = 0;
 
 	float boss_alpha = 1;
 
 	if(boss_is_dying(boss)) {
-		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		float t = (stage->frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		boss_alpha = (1 - t) + 0.3;
 	}
 
@@ -740,7 +742,7 @@ static void ent_draw_boss(EntityInterface *ent, StageInstance *stage) {
 		.sprite = aniplayer_get_frame(&boss->ani),
 		.shader = res_shader("sprite_particle"),
 		.shader_params.vec = { 1.0f },
-		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
+		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss, stage),
 		.color = c,
 	});
 }
@@ -759,7 +761,7 @@ void draw_boss_overlay(GameSession *game, Boss *boss) {
 	if(o > 0) {
 		if(boss->current && ATTACK_IS_SPELL(boss->current->type)) {
 			int t_portrait, t_spell;
-			t_portrait = t_spell = global.frames - boss->current->starttime;
+			t_portrait = t_spell = game->stage.frames - boss->current->starttime;
 			t_portrait += attacktype_start_delay(boss->current->type);
 
 			draw_spell_portrait(boss, t_portrait);
@@ -839,7 +841,7 @@ void draw_boss_overlay(GameSession *game, Boss *boss) {
 }
 
 static void boss_rule_extra(Boss *boss, float alpha) {
-	if(global.frames % 5 || boss->in_background) {
+	if(STAGE.frames % 5 || boss->in_background) {
 		return;
 	}
 
@@ -854,15 +856,15 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 	}
 
 	for(int i = 0; i < cnt; ++i) {
-		float a = i*2*M_PI/cnt + global.frames / 100.0;
-		cmplx dir = cdir(a+global.frames/50.0);
+		float a = i*2*M_PI/cnt + STAGE.frames / 100.0;
+		cmplx dir = cdir(a+STAGE.frames/50.0);
 		cmplx vel = dir * 3;
 		float v = max(0, alpha - 1);
 		float psina = psin(a);
 
 		PARTICLE(
 			.sprite = (rng_chance(v * 0.3) || lt > 1) ? "stain" : "arc",
-			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
+			.pos = boss->pos + dir * (100 + 50 * psin(alpha*STAGE.frames/10.0+2*i)) * alpha,
 			.color = color_mul_scalar(RGBA(
 				1.0 - 0.5 * psina *    v,
 				0.5 + 0.2 * psina * (1-v),
@@ -871,7 +873,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 			), 0.8),
 			.timeout = 30*lt,
 			.draw_rule = pdraw_timeout_scalefade(0, 3.5, 1, 0),
-			.move = move_linear(vel * (1 - 2 * !(global.frames % 10))),
+			.move = move_linear(vel * (1 - 2 * !(STAGE.frames % 10))),
 		);
 	}
 }
@@ -936,7 +938,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 	int min_damage_time = 60;
 	int max_damage_time = 300;
-	int pattern_time = global.frames - NOT_NULL(boss->current)->starttime;
+	int pattern_time = STAGE.frames - NOT_NULL(boss->current)->starttime;
 
 	if(pattern_time < max_damage_time) {
 		float span = max_damage_time - min_damage_time;
@@ -947,8 +949,8 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		return DMG_RESULT_IMMUNE;
 	}
 
-	if(dmg->amount > 0 && global.frames-boss->lastdamageframe > 2) {
-		boss->lastdamageframe = global.frames;
+	if(dmg->amount > 0 && STAGE.frames-boss->lastdamageframe > 2) {
+		boss->lastdamageframe = STAGE.frames;
 	}
 
 	float damage = min(boss->current->hp, dmg->amount * factor);
@@ -970,7 +972,7 @@ static void calc_spell_bonus(GameSession *game, Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = attack_was_failed(a);
 
-	int time_left = clamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
+	int time_left = clamp(a->starttime + a->timeout - stage->frames, 0, a->timeout);
 
 	double piv_factor = game->plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
@@ -1121,8 +1123,8 @@ void boss_finish_current_attack(Boss *boss) {
 		}
 	}
 
-	boss->current->endtime = global.frames + attack_end_delay(boss);
-	boss->current->endtime_undelayed = global.frames;
+	boss->current->endtime = STAGE.frames + attack_end_delay(boss);
+	boss->current->endtime_undelayed = STAGE.frames;
 
 	boss_reset_motion(boss);
 	coevent_signal_once(&boss->current->events.finished);
@@ -1148,9 +1150,9 @@ void process_boss(Boss **pboss) {
 		return;
 	}
 
-	int time = global.frames - boss->current->starttime;
+	int time = STAGE.frames - boss->current->starttime;
 	bool extra = boss->current->type == AT_ExtraSpell;
-	bool over = attack_has_finished(boss->current) && global.frames >= boss->current->endtime;
+	bool over = attack_has_finished(boss->current) && STAGE.frames >= boss->current->endtime;
 
 	if(time == 0) {
 		coevent_signal_once(&boss->current->events.started);
@@ -1170,7 +1172,7 @@ void process_boss(Boss **pboss) {
 		float s = sin(time / 90.0 + M_PI*1.2);
 
 		if(attack_has_finished(boss->current)) {
-			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
+			float p = (boss->current->endtime - STAGE.frames)/(float)ATTACK_END_DELAY_EXTRA;
 			float a = max((base + ampl * s) * p * 0.5f, 5 * powf(1 - p, 3));
 			if(a < 2) {
 				stage_shake_view(3 * a);
@@ -1209,7 +1211,7 @@ void process_boss(Boss **pboss) {
 	if((boss->current->type != AT_Move && boss->current->hp <= 0) || timedout) {
 		if(!attack_has_finished(boss->current)) {
 			if(timedout && boss->current->type != AT_SurvivalSpell) {
-				boss->current->failtime = global.frames;
+				boss->current->failtime = STAGE.frames;
 			}
 
 			boss_finish_current_attack(boss);
@@ -1229,7 +1231,7 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(dying) {
-		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
+		float t = (STAGE.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		RNG_ARRAY(rng, 2);
 
 		Color clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
@@ -1412,7 +1414,7 @@ void free_boss(Boss *boss) {
 static void boss_schedule_next_attack(Boss *b, Attack *a) {
 	assert(b->current == NULL);
 	assert(!a->events.initiated.num_signaled);
-	log_debug("[%i] %s", global.frames, a->name);
+	log_debug("[%i] %s", STAGE.frames, a->name);
 	coevent_signal_once(&a->events.initiated);
 }
 
@@ -1426,7 +1428,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	assert(a->events.started.num_signaled == 0);
 
 	b->current = a;
-	log_debug("[%i] %s", global.frames, a->name);
+	log_debug("[%i] %s", STAGE.frames, a->name);
 
 	StageInfo *i;
 	StageProgress *p = get_spellstage_progress(&GAME, a, &i, true);
@@ -1446,7 +1448,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	b->bomb_damage_multiplier = 1.0;
 	b->shot_damage_multiplier = 1.0;
 
-	a->starttime = global.frames + attacktype_start_delay(a->type);
+	a->starttime = STAGE.frames + attacktype_start_delay(a->type);
 
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sfx(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");

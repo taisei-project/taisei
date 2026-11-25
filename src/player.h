@@ -230,15 +230,19 @@ void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
+#ifdef PLR_DPS_STATS
+void player_dmglog_advance(Player *plr, int frame);
+#endif
+
 bool player_cancel_powersurge(Player *plr);
 bool player_break_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
-bool player_is_recovering(Player *plr);
-bool player_is_bomb_active(Player *plr);
+bool player_is_recovering(Player *plr, StageInstance *stage);
+bool player_is_bomb_active(Player *plr, StageInstance *stage);
 bool player_is_powersurge_active(Player *plr);
-bool player_is_vulnerable(Player *plr);
-bool player_is_alive(Player *plr);
+bool player_is_vulnerable(Player *plr, StageInstance *stage);
+bool player_is_alive(Player *plr, StageInstance *stage);
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
 
