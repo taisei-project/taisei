@@ -592,7 +592,7 @@ static void main_singlestg(MainContext *mctx) {
 	});
 
 	global.diff = stg->difficulty;
-	global.is_practice_mode = (stg->type != STAGE_EXTRA);
+	ctx->session.is_practice_mode = (stg->type != STAGE_EXTRA);
 
 	if(a->diff) {
 		global.diff = a->diff;

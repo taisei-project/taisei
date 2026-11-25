@@ -29,6 +29,7 @@ typedef struct StageInstance {
 
 typedef struct GameSession {
 	StageInstance stage;
+	bool is_practice_mode;
 } GameSession;
 
 // These are only valid in a coroutine task context

@@ -48,10 +48,10 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 	res_group_init(&ctx->rg);
 
 	if(info == NULL) {
-		global.is_practice_mode = false;
+		ctx->session.is_practice_mode = false;
 		ctx->current_stage = ctx->restart_stage = stageinfo_get_by_id(1);
 	} else {
-		global.is_practice_mode = (info->type != STAGE_EXTRA);
+		ctx->session.is_practice_mode = (info->type != STAGE_EXTRA);
 		ctx->current_stage = info;
 		ctx->restart_stage = info;
 	}
@@ -151,7 +151,7 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 		return;
 	}
 
-	if(ctx->current_stage->type == STAGE_STORY && !global.is_practice_mode) {
+	if(ctx->current_stage->type == STAGE_STORY && !ctx->session.is_practice_mode) {
 		++ctx->current_stage;
 
 		if(ctx->current_stage->type == STAGE_STORY) {

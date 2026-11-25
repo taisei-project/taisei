@@ -162,7 +162,7 @@ INLINE void skipstate_shutdown(void) { }
 
 #endif
 
-static void stage_start(StageInfo *stage_info) {
+static void stage_start(GameSession *session, StageInfo *stage_info) {
 	global.frames = 0;
 	global.gameover = 0;
 	player_stage_pre_init(&global.plr);
@@ -170,15 +170,15 @@ static void stage_start(StageInfo *stage_info) {
 	stats_stage_reset(&global.plr.stats);
 
 	if(stage_info->type == STAGE_SPELL) {
-		global.is_practice_mode = true;
+		session->is_practice_mode = true;
 		global.plr.lives = 0;
 		global.plr.bombs = 0;
-	} else if(global.is_practice_mode) {
+	} else if(session->is_practice_mode) {
 		global.plr.lives = PLR_STGPRACTICE_LIVES;
 		global.plr.bombs = PLR_STGPRACTICE_BOMBS;
 	}
 
-	if(global.is_practice_mode) {
+	if(session->is_practice_mode) {
 		global.plr.power_stored = config_get_int(CONFIG_PRACTICE_POWER);
 	}
 
@@ -191,9 +191,9 @@ static bool ingame_menu_interrupts_bgm(void) {
 	return global.stage->type != STAGE_SPELL;
 }
 
-static inline bool is_quicksave_allowed(void) {
+static inline bool is_quicksave_allowed(StagePrivateState *state) {
 #ifndef DEBUG
-	if(!global.is_practice_mode) {
+	if(!state->game->is_practice_mode) {
 		return false;
 	}
 #endif
@@ -340,8 +340,9 @@ static void gameover_menu_result(CallChainResult ccr) {
 }
 
 void stage_gameover(void) {
+	StagePrivateState *state = STAGE.priv;
+
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
-		auto state = _current_stage_state;
 		if(state->quicksave) {
 			stage_do_quickload(state);
 		} else {
@@ -359,10 +360,10 @@ void stage_gameover(void) {
 
 	auto action = ALLOC(GameoverMenuAction);
 	auto menu = create_gameover_menu(&(GameoverMenuParams) {
-		.game = _current_stage_state->game,
+		.game = state->game,
 		.output = action,
-		.quickload_shown = is_quicksave_allowed(),
-		.quickload_enabled = _current_stage_state->quicksave != NULL,
+		.quickload_shown = is_quicksave_allowed(state),
+		.quickload_enabled = state->quicksave != NULL,
 	});
 
 	stage_enter_ingame_menu(menu, bgm, CALLCHAIN(gameover_menu_result, action));
@@ -495,7 +496,7 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	}
 #endif
 
-	if(event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat && is_quicksave_allowed()) {
+	if(event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat && is_quicksave_allowed(state)) {
 		if(event->key.scancode == config_get_int(CONFIG_KEY_QUICKSAVE)) {
 			stage_do_quicksave(state, false);
 		} else if(event->key.scancode == config_get_int(CONFIG_KEY_QUICKLOAD)) {
@@ -908,11 +909,12 @@ static void stage_update_fps(StagePrivateState *state) {
 
 static void stage_give_clear_bonus(StagePrivateState *state, StageClearBonus *bonus) {
 	StageInstance *stage = state->stage;
+	GameSession *game = state->game;
 
 	*bonus = (typeof(*bonus)) {};
 
 	// FIXME: this is clunky...
-	if(!global.is_practice_mode && stage->info->type == STAGE_STORY) {
+	if(!game->is_practice_mode && stage->info->type == STAGE_STORY) {
 		StageInfo *next = stageinfo_get_by_id(stage->info->id + 1);
 
 		if(next == NULL || next->type != STAGE_STORY) {
@@ -1198,7 +1200,7 @@ static void _stage_enter(
 	lasers_init();
 
 	rng_make_active(&global.rand_game);
-	stage_start(stage_info);
+	stage_start(session, stage_info);
 
 	uint64_t start_time, seed;
 
