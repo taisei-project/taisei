@@ -19,6 +19,7 @@
 #include "entity.h"
 #include "resource/resource.h"
 
+typedef struct StageInfo StageInfo;
 typedef struct GameSession GameSession;
 
 #define BOSS_HURT_RADIUS 16
@@ -231,7 +232,7 @@ void boss_death(Boss **boss) attr_nonnull(1);
 
 void boss_reset_motion(Boss *boss) attr_nonnull(1);
 
-void boss_preload(ResourceGroup *rg);
+void boss_preload(StageInfo *stage, ResourceGroup *rg);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

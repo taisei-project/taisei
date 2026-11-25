@@ -191,8 +191,8 @@ static void stage_start(GameSession *session, StageInfo *stage_info) {
 	reset_all_sfx();
 }
 
-static bool ingame_menu_interrupts_bgm(void) {
-	return global.stage->type != STAGE_SPELL;
+static bool ingame_menu_interrupts_bgm(StagePrivateState *state) {
+	return state->stage->info->type != STAGE_SPELL;
 }
 
 static bool is_cleared(StagePrivateState *state) {
@@ -224,7 +224,7 @@ typedef struct IngameMenuCallContext {
 } IngameMenuCallContext;
 
 static void setup_ingame_menu_bgm(IngameMenuCallContext *ctx, BGM *bgm) {
-	if(ingame_menu_interrupts_bgm()) {
+	if(ingame_menu_interrupts_bgm(ctx->state)) {
 		ctx->bgm_interrupted = true;
 
 		if(bgm) {
@@ -362,19 +362,20 @@ static void gameover_menu_result(CallChainResult ccr) {
 
 void stage_gameover(void) {
 	StagePrivateState *state = STAGE.priv;
+	StageInstance *stage = state->stage;
 
-	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
+	if(stage->info->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
 		if(state->quicksave) {
 			stage_do_quickload(state);
 		} else {
-			state->stage->gameover = GAMEOVER_RESTART;
+			stage->gameover = GAMEOVER_RESTART;
 		}
 		return;
 	}
 
 	BGM *bgm = NULL;
 
-	if(ingame_menu_interrupts_bgm()) {
+	if(ingame_menu_interrupts_bgm(state)) {
 		bgm = res_bgm("gameover");
 		progress_unlock_bgm("gameover");
 	}
@@ -877,7 +878,7 @@ static void stage_finish_internal(StagePrivateState *state, GameoverType gameove
 		prev_gameover != GAMEOVER_SCORESCREEN &&
 		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
 	) {
-		StageProgress *p = NOT_NULL(stageinfo_get_progress(global.stage, stage->diff, true));
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage->info, stage->diff, true));
 		progress_register_stage_cleared(p, global.plr.mode);
 	}
 
@@ -896,7 +897,7 @@ static void stage_preload(StageInfo *si, ResourceGroup *rg) {
 	projectiles_preload(rg);
 	player_preload(rg);
 	items_preload(rg);
-	boss_preload(rg);
+	boss_preload(si, rg);
 	laserdraw_preload(rg);
 	enemies_preload(rg);
 
@@ -1186,7 +1187,7 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 	stage->info->procs->begin();
 	player_stage_post_init(&global.plr);
 
-	if(global.stage->type != STAGE_SPELL) {
+	if(stage->info->type != STAGE_SPELL) {
 		display_stage_title(stage->info);
 	}
 
@@ -1283,9 +1284,6 @@ static void _stage_enter(
 	} else {
 		stage->diff = session->diff;
 	}
-
-	// I really want to separate all of the game state from the global struct sometime
-	global.stage = stage_info;
 
 	ent_init();
 	stage_objpools_init();

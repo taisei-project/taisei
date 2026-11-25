@@ -58,7 +58,7 @@ static void stage2_spellpractice_start(void) {
 	stage2_bg_init_spellpractice();
 
 	Boss *hina = stage2_spawn_hina(BOSS_DEFAULT_SPAWN_POS);
-	boss_add_attack_from_info(hina, global.stage->spell, true);
+	boss_add_attack_from_info(hina, STAGE.info->spell, true);
 	boss_engage(hina);
 	STAGE.boss = hina;
 

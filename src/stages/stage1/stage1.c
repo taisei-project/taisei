@@ -79,7 +79,7 @@ static void stage1_spellpractice_start(void) {
 	stage1_bg_init_spellpractice();
 
 	Boss *cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
-	boss_add_attack_from_info(cirno, global.stage->spell, true);
+	boss_add_attack_from_info(cirno, STAGE.info->spell, true);
 	boss_engage(cirno);
 	STAGE.boss = cirno;
 

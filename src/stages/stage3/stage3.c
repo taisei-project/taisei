@@ -72,7 +72,7 @@ static void stage3_spellpractice_start(void) {
 	stage3_drawsys_init();
 	stage3_bg_init_spellpractice();
 
-	if(global.stage->spell->draw_rule == stage3_draw_scuttle_spellbg) {
+	if(STAGE.info->spell->draw_rule == stage3_draw_scuttle_spellbg) {
 		STAGE.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
 		stage_unlock_bgm("scuttle");
 		stage_start_bgm("scuttle");
@@ -81,7 +81,7 @@ static void stage3_spellpractice_start(void) {
 		stage_start_bgm("stage3boss");
 	}
 
-	boss_add_attack_from_info(STAGE.boss, global.stage->spell, true);
+	boss_add_attack_from_info(STAGE.boss, STAGE.info->spell, true);
 	boss_engage(STAGE.boss);
 }
 

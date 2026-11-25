@@ -168,7 +168,7 @@ static const Color *boss_healthbar_color(AttackType atype) {
 static StageProgress *get_spellstage_progress(GameSession *game, Attack *a, StageInfo **out_stginfo, bool write) {
 	StageInstance *stage = &game->stage;
 
-	if(!write || (game->replay.input.replay == NULL && global.stage->type == STAGE_STORY)) {
+	if(!write || (game->replay.input.replay == NULL && stage->info->type == STAGE_STORY)) {
 		StageInfo *i = stageinfo_get_by_spellcard(a->info, stage->diff);
 		if(i) {
 			StageProgress *p = stageinfo_get_progress(i, stage->diff, write);
@@ -182,7 +182,7 @@ static StageProgress *get_spellstage_progress(GameSession *game, Attack *a, Stag
 			}
 		}
 #if DEBUG
-		else if((a->type == AT_Spellcard || a->type == AT_ExtraSpell) && global.stage->type != STAGE_SPECIAL) {
+		else if((a->type == AT_Spellcard || a->type == AT_ExtraSpell) && stage->info->type != STAGE_SPECIAL) {
 			log_warn("FIXME: spellcard '%s' is not available in spell practice mode!", a->name);
 		}
 #endif
@@ -1296,7 +1296,7 @@ void process_boss(Boss **pboss) {
 
 	if(over) {
 		if(
-			global.stage->type == STAGE_SPELL &&
+			STAGE.info->type == STAGE_SPELL &&
 			boss->current->type != AT_Move &&
 			attack_was_failed(boss->current)
 		) {
@@ -1641,7 +1641,7 @@ void _begin_boss_attack_task(const BossAttackTaskArgs *args) {
 	WAIT_EVENT_OR_DIE(&args->attack->events.started);
 }
 
-void boss_preload(ResourceGroup *rg) {
+void boss_preload(StageInfo *s, ResourceGroup *rg) {
 	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
 		"charge_extra",
@@ -1674,8 +1674,6 @@ void boss_preload(ResourceGroup *rg) {
 		"healthbar_linear",
 		"healthbar_radial",
 	NULL);
-
-	StageInfo *s = global.stage;
 
 	if(s->type != STAGE_SPELL || s->spell->type == AT_ExtraSpell) {
 		res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,

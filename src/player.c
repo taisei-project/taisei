@@ -1071,7 +1071,7 @@ void player_realdeath(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	player_fail_spell(plr);
 
-	if(global.stage->type != STAGE_SPELL && STAGE.boss && STAGE.boss->current && STAGE.boss->current->type == AT_ExtraSpell) {
+	if(STAGE.info->type != STAGE_SPELL && STAGE.boss && STAGE.boss->current && STAGE.boss->current->type == AT_ExtraSpell) {
 		// deaths in extra spells "don't count"
 		return;
 	}
@@ -1150,7 +1150,7 @@ void player_death(Player *plr) {
 		return;
 	}
 
-	if(player_break_powersurge(plr) && global.stage->type != STAGE_SPELL) {
+	if(player_break_powersurge(plr) && STAGE.info->type != STAGE_SPELL) {
 		return;
 	}
 
@@ -1658,7 +1658,7 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 }
 
 void player_add_life_fragments(Player *plr, int frags) {
-	if(global.stage->type == STAGE_SPELL) {
+	if(STAGE.info->type == STAGE_SPELL) {
 		return;
 	}
 
@@ -1676,7 +1676,7 @@ void player_add_life_fragments(Player *plr, int frags) {
 }
 
 void player_add_bomb_fragments(Player *plr, int frags) {
-	if(global.stage->type == STAGE_SPELL) {
+	if(STAGE.info->type == STAGE_SPELL) {
 		return;
 	}
 

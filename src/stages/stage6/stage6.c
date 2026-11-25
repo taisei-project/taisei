@@ -173,7 +173,7 @@ static void stage6_spellpractice_start(void) {
 	stage6_bg_init_spellpractice();
 
 	STAGE.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
-	AttackInfo *s = global.stage->spell;
+	AttackInfo *s = STAGE.info->spell;
 
 	if(STG6_SPELL_NEEDS_SCYTHE(s)) {
 //		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
@@ -188,7 +188,7 @@ static void stage6_spellpractice_start(void) {
 		stage_start_bgm("stage6boss_phase2");
 	}
 
-	boss_add_attack_from_info(STAGE.boss, global.stage->spell, true);
+	boss_add_attack_from_info(STAGE.boss, STAGE.info->spell, true);
 	boss_engage(STAGE.boss);
 }
 

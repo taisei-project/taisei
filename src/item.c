@@ -279,7 +279,7 @@ void process_items(ItemList *items) {
 			}
 		}
 
-		if(global.stage->type == STAGE_SPELL && (item->type == ITEM_LIFE || item->type == ITEM_BOMB || item->type == ITEM_LIFE_FRAGMENT || item->type == ITEM_BOMB_FRAGMENT)) {
+		if(STAGE.info->type == STAGE_SPELL && (item->type == ITEM_LIFE || item->type == ITEM_BOMB || item->type == ITEM_LIFE_FRAGMENT || item->type == ITEM_BOMB_FRAGMENT)) {
 			// just in case we ever have some weird spell that spawns those...
 			item_set_type(item, ITEM_POINTS);
 		}

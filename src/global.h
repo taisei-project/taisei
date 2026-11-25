@@ -64,7 +64,6 @@ typedef struct {
 		FPSCounter busy;
 	} fps;
 
-	StageInfo *stage;
 
 	uint is_headless : 1;
 	uint is_replay_verification : 1;
