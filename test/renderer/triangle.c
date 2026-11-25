@@ -3,6 +3,7 @@
 
 #include "test_renderer.h"
 #include "resource/model.h"
+#include "taisei_app.h"
 #include "global.h"
 
 typedef struct Vertex2D {

@@ -2,6 +2,7 @@
 #include "taisei.h"
 
 #include "test_renderer.h"
+#include "taisei_app.h"
 #include "global.h"
 
 typedef struct Vertex2D {

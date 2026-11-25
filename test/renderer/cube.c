@@ -1,6 +1,7 @@
 
 #include "global.h"
 #include "renderer/common/models.h"
+#include "taisei_app.h"
 #include "test_renderer.h"
 
 int main(int argc, char **argv) {

@@ -65,16 +65,12 @@ typedef struct {
 
 
 	uint is_replay_verification : 1;
-	uint is_kiosk_mode : 1;
 } Global;
 
 extern Global global;
 
 void init_global(CLIAction *cli);
 
-void taisei_quit(void);
-bool taisei_quit_requested(void);
-bool taisei_is_quit_hidden(void);
 void taisei_commit_persistent_data(bool async);
 
 // XXX: Move this somewhere?

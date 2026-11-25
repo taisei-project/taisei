@@ -11,6 +11,7 @@
 
 #include "debug_text.h"
 #include "global.h"
+#include "taisei_app.h"
 #include "thread.h"
 #include "util.h"
 #include "vfs/public.h"

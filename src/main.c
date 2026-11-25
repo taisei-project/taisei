@@ -33,6 +33,7 @@
 #include "replay/tsrtool.h"
 #include "stage.h"
 #include "stageobjects.h"
+#include "taisei_app.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/io.h"
@@ -73,7 +74,7 @@ static void taisei_shutdown(void) {
 	r_release_resources();
 	res_shutdown();
 
-	if(global.is_kiosk_mode) {
+	if(taisei_is_kiosk_mode()) {
 		events_unregister_handler(watchdog_handler);
 	}
 
@@ -424,10 +425,11 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	taskmgr_global_init();
 	gamemode_init();
 	time_init();
+	taisei_init();
 	init_global(&ctx->cli);
 	events_init();
 
-	if(global.is_kiosk_mode) {
+	if(taisei_is_kiosk_mode()) {
 		watchdog_init(env_get("TAISEI_KIOSK_TIMEOUT", 120 * FPS));
 		events_register_handler(&(EventHandler) {
 			.priority = EPRIO_SYSTEM,

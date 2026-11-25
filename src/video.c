@@ -21,6 +21,7 @@
 #include "pixmap/pixmap_vfs.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
+#include "taisei_app.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/strbuf.h"
@@ -1038,7 +1039,7 @@ void video_init(const VideoInitParams *params) {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
 
-	if(global.is_kiosk_mode) {
+	if(taisei_is_kiosk_mode()) {
 		video_query_capability_kiosk_fallback = video_query_capability;
 		video_query_capability = video_query_capability_kiosk;
 	}

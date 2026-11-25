@@ -28,12 +28,6 @@ void init_global(CLIAction *cli) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 
-	global.is_kiosk_mode = env_get("TAISEI_KIOSK", false);
-
-	if(global.is_kiosk_mode) {
-		SDL_SetHintWithPriority(SDL_HINT_NO_SIGNAL_HANDLERS, 0, SDL_HINT_DEFAULT);
-	}
-
 	fpscounter_reset(&global.fps.logic);
 	fpscounter_reset(&global.fps.render);
 	fpscounter_reset(&global.fps.busy);
@@ -44,35 +38,6 @@ void init_global(CLIAction *cli) {
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key) {
 	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_game_key_pressed(key);
-}
-
-static SDL_AtomicInt quitting;
-
-static bool taisei_is_quit_forbidden(void) {
-	return global.is_kiosk_mode && env_get("TAISEI_KIOSK_PREVENT_QUIT", true);
-}
-
-bool taisei_is_quit_hidden(void) {
-#ifdef __EMSCRIPTEN__
-	return true;
-#else
-	return taisei_is_quit_forbidden();
-#endif
-}
-
-void taisei_quit(void) {
-	if(taisei_is_quit_forbidden()) {
-		log_info("Running in kiosk mode; exit request ignored");
-		return;
-	}
-
-	if(SDL_CompareAndSwapAtomicInt(&quitting, 0, 1)) {
-		log_info("Exit requested");
-	}
-}
-
-bool taisei_quit_requested(void) {
-	return SDL_GetAtomicInt(&quitting);
 }
 
 static SDL_AtomicInt syncing_data;

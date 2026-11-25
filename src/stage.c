@@ -31,6 +31,7 @@
 #include "stageinfo.h"
 #include "stageobjects.h"
 #include "stagetext.h"
+#include "taisei_app.h"
 #include "util/env.h"
 #include "util/strbuf.h"
 #include "watchdog.h"

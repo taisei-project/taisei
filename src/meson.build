@@ -261,6 +261,7 @@ taisei_src = files(
     'stagetext.c',
     'stageutils.c',
     'stats.c',
+    'taisei_app.c',
     'transition.c',
     'video.c',
     'video_postprocess.c',

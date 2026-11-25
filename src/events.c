@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "global.h"
+#include "taisei_app.h"
 #include "transition.h"
 #include "video.h"
 
