@@ -535,9 +535,11 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 		return false;
 	}
 
-	if(UNLIKELY(state->paused)) {
+#ifdef DEBUG
+	if(UNLIKELY(!cotask_active())) {	// "time stop" mode
 		return false;
 	}
+#endif
 
 	if(
 		(type == TE_GAME_KEY_DOWN || type == TE_GAME_KEY_UP) &&
@@ -708,9 +710,11 @@ static void stage_input(StagePrivateState *state) {
 		}, EFLAG_GAME);
 	}
 
-	if(UNLIKELY(state->paused)) {
+#ifdef DEBUG
+	if(UNLIKELY(!cotask_active())) {	// "time stop" mode
 		return;
 	}
+#endif
 
 	player_fix_input(&global.plr, &game->replay.output);
 	player_applymovement(&global.plr);
