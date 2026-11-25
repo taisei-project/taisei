@@ -64,8 +64,6 @@ struct StagePrivateState {
 	bool continue_requested;
 };
 
-static StagePrivateState *_current_stage_state;  // TODO remove this shitty hack
-
 #define BGM_FADE_LONG (2.0 * FADE_TIME / (double)FPS)
 #define BGM_FADE_SHORT (FADE_TIME / (double)FPS)
 
@@ -146,7 +144,7 @@ static SceneAction skipstate_handle_frame(StagePrivateState *state) {
 	bool skip_mode = stage_is_skip_mode();
 
 	if(!skip_mode && skip_state.was_skip_mode) {
-		sync_bgm(_current_stage_state);
+		sync_bgm(state);
 	}
 
 	skip_state.was_skip_mode = skip_mode;
@@ -1363,7 +1361,6 @@ static void _stage_enter(
 
 	res_purge();
 
-	_current_stage_state = state;
 
 	skipstate_init();
 
@@ -1387,7 +1384,6 @@ static void stage_scene_end(void *ctx) {
 	StagePrivateState *state = ctx;
 	GameSession *session = state->game;
 	StageInstance *stage = state->stage;
-	assert(state == _current_stage_state);
 
 	recover_after_skip(state);
 
@@ -1440,8 +1436,6 @@ static void stage_scene_end(void *ctx) {
 
 	session->gameover = stage->gameover;
 
-	_current_stage_state = NULL;
-
 	StageInfo *stginfo = stage->info;
 	CallChain cc = state->cc;
 	ResourceGroup *rg = state->rg;
@@ -1465,13 +1459,13 @@ void stage_unlock_bgm(const char *bgm) {
 
 void stage_shake_view(float strength) {
 	assume(strength >= 0);
-	_current_stage_state->stage->view_shake += strength;
+	STAGE.view_shake += strength;
 }
 
 void stage_load_quicksave(void) {
-	stage_do_quickload(NOT_NULL(_current_stage_state));
+	stage_do_quickload(STAGE.priv);
 }
 
 CoSched *stage_get_sched(void) {
-	return &NOT_NULL(_current_stage_state)->sched;
+	return &STAGE.priv->sched;
 }
