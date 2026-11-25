@@ -103,10 +103,6 @@ IMPL_LASER_RULE_DATAGETTER(laser_get_ruledata_arc,
 	laser_rule_arc_impl, LaserRuleArcData)
 
 static cmplx laser_rule_dynamic_impl(Laser *l, real t, void *ruledata) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
 	LaserRuleDynamicData *rd = ruledata;
 	assert(cotask_unbox(rd->control_task));
 	LaserRuleDynamicTaskData *td = rd->task_data;

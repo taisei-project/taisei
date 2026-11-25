@@ -1444,7 +1444,6 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 		progress_register_stage_played(p, GAME.plr.mode);
 	}
 
-	// This should go before a->rule(b,EVENT_BIRTH), so it doesn’t reset values set by the attack rule.
 	b->bomb_damage_multiplier = 1.0;
 	b->shot_damage_multiplier = 1.0;
 

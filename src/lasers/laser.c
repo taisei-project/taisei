@@ -71,8 +71,6 @@ Laser *create_laser(cmplx pos, float time, float deathtime, Color color, LaserRu
 	l->ent.draw_func = laserdraw_ent_drawfunc;
 	ent_register(&l->ent, ENT_TYPE_ID(Laser));
 
-	laser_pos_at(l, EVENT_BIRTH);
-
 	return l;
 }
 
