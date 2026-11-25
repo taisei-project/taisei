@@ -16,6 +16,7 @@
 #include "global.h"
 #include "item.h"
 #include "move.h"
+#include "stage.h"
 #include "util/glm.h"
 
 DECLARE_EXTERN_TASK(

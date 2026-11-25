@@ -14,6 +14,14 @@
 
 #include <SDL3/SDL.h>
 
+enum {
+	// default resolution
+	RESX = 800,
+	RESY = 600,
+
+	FPS = 60,
+};
+
 #define WINDOW_TITLE _("Taisei Project")
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 

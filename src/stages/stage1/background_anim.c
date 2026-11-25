@@ -10,6 +10,7 @@
 #include "draw.h"
 
 #include "global.h"
+#include "stage.h"
 #include "stageutils.h"
 
 void stage1_bg_raise_camera(void) {

@@ -23,6 +23,7 @@
 #include "stagetext.h"
 #include "util/env.h"
 #include "util/glm.h"
+#include "video.h"
 
 #define DAMAGE_PER_POWER_POINT 500.0f
 #define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)

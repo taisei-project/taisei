@@ -24,27 +24,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_platform.h>
 
-#define VIEWPORT_X 40.0
-#define VIEWPORT_Y 20.0
-#define VIEWPORT_W 480.0
-#define VIEWPORT_H 560.0
-
-enum {
-	// defaults
-	RESX = 800,
-	RESY = 600,
-
-	MAX_CONTINUES = 5,
-
-	FPS = 60,
-
-	GAMEOVER_SCORE_DELAY = 60,
-};
-
-#define VIEWPORT_OFFSET { VIEWPORT_X, VIEWPORT_Y }
-#define VIEWPORT_SIZE { VIEWPORT_W, VIEWPORT_H }
-#define VIEWPORT_RECT { VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H }
-
 typedef struct {
 
 

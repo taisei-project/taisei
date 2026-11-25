@@ -10,6 +10,7 @@
 
 #include "global.h"
 #include "renderer/api.h"
+#include "stage.h"
 #include "video.h"
 
 static bool texture_transfer(void *dst, void *src) {

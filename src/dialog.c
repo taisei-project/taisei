@@ -13,6 +13,7 @@
 #include "i18n/i18n.h"
 #include "portrait.h"
 #include "resource/font.h"
+#include "stage.h"
 
 enum {
 	DIALOG_TITLE_TIMEOUT = 720,

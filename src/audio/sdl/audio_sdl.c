@@ -15,6 +15,7 @@
 #include "memory/scratch.h"
 #include "config.h"
 #include "util/env.h"
+#include "video.h"
 
 #define AUDIO_FREQ 48000
 #define AUDIO_FORMAT SDL_AUDIO_F32

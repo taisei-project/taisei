@@ -16,6 +16,7 @@
 #include "list.h"
 #include "projectile.h"
 #include "resource/resource.h"
+#include "stage.h"
 #include "stageobjects.h"
 #include "util/glm.h"
 

@@ -14,6 +14,7 @@
 #include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
+#include "video.h"
 
 static Stage2DrawData *stage2_draw_data;
 

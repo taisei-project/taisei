@@ -12,6 +12,7 @@
 #include "global.h"
 #include "renderer/api.h"
 #include "i18n/i18n.h"
+#include "stage.h"
 
 void stage2_draw_hina_spellbg(Boss *h, int time) {
 	SpriteParams sp = {

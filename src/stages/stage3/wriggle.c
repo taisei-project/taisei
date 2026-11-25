@@ -11,6 +11,7 @@
 #include "common_tasks.h"
 #include "gamesession.h"
 #include "i18n/i18n.h"
+#include "stage.h"
 
 void stage3_draw_wriggle_spellbg(Boss *b, int time) {
 	r_state_push();

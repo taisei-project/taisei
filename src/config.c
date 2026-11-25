@@ -16,6 +16,7 @@
 #include "util/strbuf.h"
 #include "version.h"
 #include "vfs/public.h"
+#include "video.h"
 
 #define CONFIG_FILE "storage/config"
 #define CONFIG_FILE_TEMP CONFIG_FILE "~"

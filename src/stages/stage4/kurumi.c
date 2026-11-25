@@ -11,6 +11,7 @@
 #include "audio/audio.h"
 #include "global.h"
 #include "i18n/i18n.h"
+#include "stage.h"
 
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_burst) {
 	Boss *b = TASK_BIND(ARGS.boss);

@@ -13,6 +13,7 @@
 #include "i18n/i18n.h"
 #include "memory/scratch.h"
 #include "menu.h"
+#include "stage.h"
 #include "stats.h"
 #include "util/strbuf.h"
 

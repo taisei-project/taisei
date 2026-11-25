@@ -12,6 +12,7 @@
 #include "renderer/api.h"
 #include "resource/material.h"
 #include "resource/model.h"
+#include "stage.h"
 #include "util/glm.h"
 
 Stage3D stage_3d_context;

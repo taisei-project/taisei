@@ -13,6 +13,7 @@
 #include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
+#include "video.h"
 
 static Stage1DrawData *stage1_draw_data;
 

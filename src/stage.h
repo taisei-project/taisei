@@ -14,6 +14,19 @@
 #include "stageinfo.h"
 #include "resource/resource.h"
 
+#define VIEWPORT_X 40.0
+#define VIEWPORT_Y 20.0
+#define VIEWPORT_W 480.0
+#define VIEWPORT_H 560.0
+
+#define VIEWPORT_OFFSET { VIEWPORT_X, VIEWPORT_Y }
+#define VIEWPORT_SIZE { VIEWPORT_W, VIEWPORT_H }
+#define VIEWPORT_RECT { VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H }
+
+enum {
+	MAX_CONTINUES = 5,
+};
+
 typedef struct StageClearBonus {
 	uint64_t base;
 	uint64_t lives;

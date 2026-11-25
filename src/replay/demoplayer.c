@@ -16,6 +16,7 @@
 #include "transition.h"
 #include "util/env.h"
 #include "vfs/public.h"
+#include "video.h"
 
 #define DEMOPLAYER_DIR_PATH        "res/demos"
 #define DEMOPLAYER_WAIT_TIME       (60 * FPS)

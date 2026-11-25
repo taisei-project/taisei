@@ -10,6 +10,7 @@
 
 #include "gamesession.h"
 #include "global.h"
+#include "stage.h"
 #include "stageobjects.h"
 
 static StageText *textlist = NULL;

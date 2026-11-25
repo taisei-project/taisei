@@ -8,6 +8,7 @@
 
 #include "framerate.h"
 #include "global.h"
+#include "video.h"
 
 void fpscounter_reset(FPSCounter *fps, hrtime_t init_frametime, hrtime_t now) {
 	const int log_size = ARRAY_SIZE(fps->frametimes);

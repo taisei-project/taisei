@@ -34,7 +34,12 @@
 #include "taisei_app.h"
 #include "util/env.h"
 #include "util/strbuf.h"
+#include "video.h"
 #include "watchdog.h"
+
+enum {
+	GAMEOVER_SCORE_DELAY = 60,
+};
 
 struct StagePrivateState {
 	GameSession *game;
