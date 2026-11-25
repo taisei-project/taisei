@@ -65,9 +65,6 @@ typedef struct {
 		FPSCounter busy;
 	} fps;
 
-	RandomState rand_game;
-	RandomState rand_visual;
-
 	StageInfo *stage;
 
 	uint is_headless : 1;

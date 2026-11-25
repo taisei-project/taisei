@@ -17,9 +17,7 @@ Global global;
 void init_global(CLIAction *cli) {
 	global = (typeof(global)) {};
 
-	rng_init(&global.rand_game, time(0));
-	rng_init(&global.rand_visual, time(0));
-	rng_make_active(&global.rand_visual);
+	rng_init_default(time(0));
 
 	global.frameskip = cli->frameskip;
 

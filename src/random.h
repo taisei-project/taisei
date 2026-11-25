@@ -11,6 +11,11 @@
 
 #include "util/random.h"
 
+void rng_init_default(uint64_t seed);
+
+// Pass NULL to switch back to the default state
+void rng_make_active(RandomState *rng);
+
 // NOTE: if you rename this, also update scripts/upkeep/check-rng-usage.py!
 rng_val_t rng_next(void);
 void rng_nextn(size_t n, rng_val_t v[n]) attr_nonnull(2);

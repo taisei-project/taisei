@@ -8,10 +8,15 @@
 
 #include "random.h"
 
-static RandomState *rng_active_state;
+static RandomState rng_default_state;
+static RandomState *rng_active_state = &rng_default_state;
+
+void rng_init_default(uint64_t seed) {
+	rng_init(&rng_default_state, seed);
+}
 
 void rng_make_active(RandomState *rng) {
-	rng_active_state = rng;
+	rng_active_state = rng ? rng : &rng_default_state;
 }
 
 rng_val_t rng_next(void) {

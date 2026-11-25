@@ -26,7 +26,6 @@ uint64_t makeseed(void);
 
 void rng_init(RandomState *rng, uint64_t seed) attr_nonnull(1);
 void rng_seed(RandomState *rng, uint64_t seed) attr_nonnull(1);
-void rng_make_active(RandomState *rng) attr_nonnull(1);
 rng_val_t rng_next_p(RandomState *rng) attr_nonnull(1);
 
 #ifdef DEBUG

@@ -42,6 +42,7 @@ struct StagePrivateState {
 	CallChain cc;
 	CoSched sched;
 	Replay *quicksave;
+	RandomState rng;
 	uint32_t dynstage_generation;
 	int transition_delay;
 	int desync_check_freq;
@@ -1141,13 +1142,13 @@ static void stage_scene_render(void *arg) {
 	StagePrivateState *priv = arg;
 	GameSession *session = priv->game;
 
-	rng_lock(&global.rand_game);
-	rng_make_active(&global.rand_visual);
+	rng_lock(&priv->rng);
+	rng_make_active(NULL);
 	BEGIN_DRAW_CODE();
 	stage_draw_scene(session);
 	END_DRAW_CODE();
-	rng_unlock(&global.rand_game);
-	rng_make_active(&global.rand_game);
+	rng_unlock(&priv->rng);
+	rng_make_active(&priv->rng);
 	draw_transition();
 }
 
@@ -1272,7 +1273,7 @@ static void _stage_enter(
 	stage_draw_init();
 	lasers_init();
 
-	rng_make_active(&global.rand_game);
+	rng_make_active(&state->rng);
 	stage_start(session, stage_info);
 
 	uint64_t start_time, seed;
@@ -1297,7 +1298,7 @@ static void _stage_enter(
 		progress_register_stage_played(p, global.plr.mode);
 	}
 
-	rng_seed(&global.rand_game, seed);
+	rng_init(&state->rng, seed);
 
 	if(session->replay.input.replay) {
 		player_init(&global.plr);
@@ -1386,7 +1387,7 @@ static void stage_scene_end(void *ctx) {
 	stage_free(state);
 	player_free(&global.plr);
 	ent_shutdown();
-	rng_make_active(&global.rand_visual);
+	rng_make_active(NULL);
 	stop_all_sfx();
 
 	taisei_commit_persistent_data(true);
