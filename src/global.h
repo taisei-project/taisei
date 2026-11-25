@@ -52,7 +52,6 @@ typedef struct {
 
 
 	int frames; // stage global timer
-	int stage_start_frame;
 
 	int frameskip;
 
