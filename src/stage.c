@@ -56,6 +56,7 @@ struct StagePrivateState {
 	bool quickload_requested;
 	bool was_skipping;
 	bool paused;
+	bool continue_requested;
 };
 
 static StagePrivateState *_current_stage_state;  // TODO remove this shitty hack
@@ -348,7 +349,7 @@ static void gameover_menu_result(CallChainResult ccr) {
 			break;
 
 		case GAMEOVERMENU_ACTION_CONTINUE:
-			stage_continue_game(state);
+			state->continue_requested = true;
 			break;
 
 		case GAMEOVERMENU_ACTION_RESTART:
@@ -1225,6 +1226,12 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 		}
 
 		YIELD;
+
+		if(state->continue_requested) {
+			state->continue_requested = false;
+			stage_continue_game(state);
+		}
+
 		stage_end_frame(state);
 	}
 }
