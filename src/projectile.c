@@ -806,7 +806,7 @@ static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs 
 	r_draw_sprite(&sp);
 
 	sp.sprite = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
-	sp.scale.as_cmplx *= scale * (0.0f + 1.5f * tf);
+	sp.scale.as_cmplx *= scale * (0.25f + 1.25f * tf);
 	sp.color.a *= (1 - tf);
 	psp.opacity = o;
 	sp.shader_params = psp.as_generic;
