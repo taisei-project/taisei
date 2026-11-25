@@ -10,6 +10,7 @@
 
 #include "gfx/graphics.h"
 #include "global.h"
+#include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
 
@@ -17,29 +18,6 @@ static Stage5DrawData *stage5_draw_data;
 
 Stage5DrawData *stage5_get_draw_data(void) {
 	return NOT_NULL(stage5_draw_data);
-}
-
-void stage5_drawsys_init(void) {
-	stage5_draw_data = ALLOC(typeof(*stage5_draw_data));
-	stage3d_init(&stage_3d_context, 16);
-
-	stage5_draw_data->stairs.light_pos = -200;
-
-	stage5_draw_data->stairs.rad = 3.7;
-	stage5_draw_data->stairs.zoffset = 3.2;
-	stage5_draw_data->stairs.roffset = -210;
-
-	pbr_load_model(&stage5_draw_data->models.metal,  "stage5/metal",  "stage5/metal");
-	pbr_load_model(&stage5_draw_data->models.stairs, "stage5/stairs", "stage5/stairs");
-	pbr_load_model(&stage5_draw_data->models.wall,   "stage5/wall",   "stage5/wall");
-
-	stage5_draw_data->env_map = res_texture("stage5/envmap");
-}
-
-void stage5_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage5_draw_data);
-	stage5_draw_data = NULL;
 }
 
 static uint stage5_stairs_pos(Stage3D *s3d, vec3 cam, float maxrange) {
@@ -93,7 +71,7 @@ static void stage5_stairs_draw(vec3 pos) {
 	r_state_pop();
 }
 
-void stage5_draw(void) {
+static void stage5_draw(void) {
 	stage3d_draw(&stage_3d_context, 50, 1, (Stage3DSegment[]) { stage5_stairs_draw, stage5_stairs_pos });
 }
 
@@ -131,6 +109,39 @@ void iku_spell_bg(Boss *b, int t) {
 	float opacity = 0.05 * stage5_draw_data->stairs.light_strength;
 	r_color4(opacity, opacity, opacity, opacity);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
+}
+
+TASK(stage5_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage5_draw();
+	}
+}
+
+TASK(stage5_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage5_draw_data);
+	stage5_draw_data = NULL;
+}
+
+void stage5_drawsys_init(void) {
+	stage5_draw_data = ALLOC(typeof(*stage5_draw_data));
+	stage3d_init(&stage_3d_context, 16);
+
+	stage5_draw_data->stairs.light_pos = -200;
+
+	stage5_draw_data->stairs.rad = 3.7;
+	stage5_draw_data->stairs.zoffset = 3.2;
+	stage5_draw_data->stairs.roffset = -210;
+
+	pbr_load_model(&stage5_draw_data->models.metal,  "stage5/metal",  "stage5/metal");
+	pbr_load_model(&stage5_draw_data->models.stairs, "stage5/stairs", "stage5/stairs");
+	pbr_load_model(&stage5_draw_data->models.wall,   "stage5/wall",   "stage5/wall");
+
+	stage5_draw_data->env_map = res_texture("stage5/envmap");
+
+	INVOKE_TASK(stage5_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage5_drawsys_shutdown);
 }
 
 ShaderRule stage5_bg_effects[] = {

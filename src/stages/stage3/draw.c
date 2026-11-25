@@ -8,6 +8,7 @@
 
 #include "draw.h"
 
+#include "stagedraw.h"
 #include "stageutils.h"
 #include "global.h"
 #include "util/glm.h"
@@ -97,27 +98,6 @@ static void stage3_bg_leaves_draw(vec3 pos) {
 	r_state_pop();
 }
 
-void stage3_drawsys_init(void) {
-	stage3d_init(&stage_3d_context, 16);
-	stage_3d_context.cam.pos[1] = -16;
-	stage_3d_context.cam.rot.v[0] = 80;
-	stage_3d_context.cam.vel[1] = 0.1;
-	stage_3d_context.cam.vel[2] = 0.05;
-
-	stage3_draw_data = ALLOC(typeof(*stage3_draw_data));
-
-	pbr_load_model(&stage3_draw_data->models.ground, "stage3/ground", "stage3/ground");	pbr_load_model(&stage3_draw_data->models.leaves, "stage3/leaves", "stage3/leaves");
-	pbr_load_model(&stage3_draw_data->models.rocks,  "stage3/rocks",  "stage3/rocks");
-	pbr_load_model(&stage3_draw_data->models.trees,  "stage3/trees",  "stage3/trees");
-
-	stage3_draw_data->envmap = res_texture("stage3/envmap");
-}
-
-void stage3_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage3_draw_data);
-}
-
 static bool stage3_fog(Framebuffer *fb) {
 	Stage3DrawData *dd = stage3_get_draw_data();
 	r_shader("zbuf_fog_tonemap");
@@ -156,13 +136,45 @@ static bool stage3_glitch(Framebuffer *fb) {
 	return true;
 }
 
-void stage3_draw(void) {
+static void stage3_draw(void) {
 	Stage3DSegment segments[] = {
 		{ stage3_bg_leaves_draw, stage3_bg_pos },
 		{ stage3_bg_ground_draw, stage3_bg_pos },
 	};
 	r_clear(BUFFER_COLOR, RGB(0.12, 0.11, 0.10), 1);
 	stage3d_draw(&stage_3d_context, 120, ARRAY_SIZE(segments), segments);
+}
+
+TASK(stage3_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage3_draw();
+	}
+}
+
+TASK(stage3_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage3_draw_data);
+	stage3_draw_data = NULL;
+}
+
+void stage3_drawsys_init(void) {
+	stage3d_init(&stage_3d_context, 16);
+	stage_3d_context.cam.pos[1] = -16;
+	stage_3d_context.cam.rot.v[0] = 80;
+	stage_3d_context.cam.vel[1] = 0.1;
+	stage_3d_context.cam.vel[2] = 0.05;
+
+	stage3_draw_data = ALLOC(typeof(*stage3_draw_data));
+
+	pbr_load_model(&stage3_draw_data->models.ground, "stage3/ground", "stage3/ground");	pbr_load_model(&stage3_draw_data->models.leaves, "stage3/leaves", "stage3/leaves");
+	pbr_load_model(&stage3_draw_data->models.rocks,  "stage3/rocks",  "stage3/rocks");
+	pbr_load_model(&stage3_draw_data->models.trees,  "stage3/trees",  "stage3/trees");
+
+	stage3_draw_data->envmap = res_texture("stage3/envmap");
+
+	INVOKE_TASK(stage3_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage3_drawsys_shutdown);
 }
 
 ShaderRule stage3_bg_effects[] = {

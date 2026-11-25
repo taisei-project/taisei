@@ -29,11 +29,8 @@ typedef struct Stage1DrawData {
 } Stage1DrawData;
 
 void stage1_drawsys_init(void);
-void stage1_drawsys_shutdown(void);
 
 Stage1DrawData *stage1_get_draw_data(void)
 	attr_returns_nonnull attr_returns_max_aligned;
-
-void stage1_draw(void);
 
 extern ShaderRule stage1_bg_effects[];

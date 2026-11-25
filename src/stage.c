@@ -1181,8 +1181,6 @@ static void _stage_enter(
 
 	STUB_PROC(preload, stage_preload_stub_proc);
 	STUB_PROC(begin, stage_stub_proc);
-	STUB_PROC(end, stage_stub_proc);
-	STUB_PROC(draw, stage_stub_proc);
 	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
 
 	if(quickload) {
@@ -1269,6 +1267,7 @@ static void _stage_enter(
 	};
 
 	cosched_init(&state->sched, session);
+	COEVENT_INIT_ARRAY(stage->events);
 	_current_stage_state = state;
 
 	skipstate_init();
@@ -1327,8 +1326,9 @@ static void stage_scene_end(void *ctx) {
 		mem_free(quicksave);
 	}
 
-	stage->info->procs->end();
+	coevent_signal(&stage->events.end);
 	stage_draw_shutdown();
+	COEVENT_CANCEL_ARRAY(stage->events);
 	cosched_finish(&state->sched);
 	stage_free();
 	player_free(&global.plr);

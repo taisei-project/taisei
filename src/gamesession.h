@@ -11,12 +11,17 @@
 
 #include "stageinfo.h"
 #include "coroutine/cotask.h"
+#include "coroutine/coevent.h"
 
 typedef struct StagePrivateState StagePrivateState;
 
 typedef struct StageInstance {
 	StagePrivateState *priv;  // opaque, owned by stage.c
 	StageInfo *info;
+
+	COEVENTS_ARRAY(
+		end
+	) events;
 
 	float view_shake;
 } StageInstance;

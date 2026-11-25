@@ -20,53 +20,6 @@ Stage6DrawData *stage6_get_draw_data(void) {
 	return NOT_NULL(stage6_draw_data);
 }
 
-void stage6_drawsys_init(void) {
-	stage6_draw_data = ALLOC(typeof(*stage6_draw_data));
-	// TODO: make this background slightly less horribly inefficient
-	stage3d_init(&stage_3d_context, 128);
-
-	for(int i = 0; i < NUM_STARS; i++) {
-		vec3 p = {};
-
-		for(int c = 0; c < 10; c++) {
-			p[0] += rng_f32s();
-			p[1] += rng_f32s();
-			p[2] += rng_f32s();
-		} // now x,y,z are approximately gaussian
-
-		// normalize them and it’s evenly distributed on a sphere
-		glm_vec3_normalize(p);
-		glm_vec3_copy(p, stage6_draw_data->stars.position[i]);
-	}
-
-	FBAttachmentConfig cfg = {};
-	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	cfg.tex_params.type = TEX_TYPE_RGBA;
-	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
-	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
-	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	stage6_draw_data->baryon.fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
-	stage6_draw_data->baryon.fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
-	stage6_draw_data->baryon.aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
-
-	stage6_draw_data->envmap = res_texture("stage6/sky");
-	stage6_draw_data->models.calabi_yau_quintic = res_model("stage6/calabi-yau-quintic");
-
-	pbr_load_model(&stage6_draw_data->models.rim,          "stage6/rim",          "stage6/rim");
-	pbr_load_model(&stage6_draw_data->models.spires,       "stage6/spires",       "stage6/spires");
-	pbr_load_model(&stage6_draw_data->models.stairs,       "stage6/stairs",       "stage6/stairs");
-	pbr_load_model(&stage6_draw_data->models.tower,        "stage6/tower",        "stage6/tower");
-	pbr_load_model(&stage6_draw_data->models.tower_bottom, "stage6/tower_bottom", "stage6/tower_bottom");
-	pbr_load_model(&stage6_draw_data->models.floor,        "stage6/floor",        "stage6/floor");
-}
-
-void stage6_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage6_draw_data);
-	stage6_draw_data = NULL;
-}
-
 static void stage6_bg_setup_pbr_lighting(Camera3D *cam) {
 	PointLight3D lights[] = {
 		{ { 0, 10, 100 }, { 10000, 10000, 10000 } },
@@ -213,6 +166,63 @@ static bool stage6_fog(Framebuffer *fb) {
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 	return true;
+}
+
+TASK(stage6_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage6_draw();
+	}
+}
+
+TASK(stage6_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage6_draw_data);
+	stage6_draw_data = NULL;
+}
+
+void stage6_drawsys_init(void) {
+	stage6_draw_data = ALLOC(typeof(*stage6_draw_data));
+	// TODO: make this background slightly less horribly inefficient
+	stage3d_init(&stage_3d_context, 128);
+
+	for(int i = 0; i < NUM_STARS; i++) {
+		vec3 p = {};
+
+		for(int c = 0; c < 10; c++) {
+			p[0] += rng_f32s();
+			p[1] += rng_f32s();
+			p[2] += rng_f32s();
+		} // now x,y,z are approximately gaussian
+
+		// normalize them and it’s evenly distributed on a sphere
+		glm_vec3_normalize(p);
+		glm_vec3_copy(p, stage6_draw_data->stars.position[i]);
+	}
+
+	FBAttachmentConfig cfg = {};
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	stage6_draw_data->baryon.fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
+	stage6_draw_data->baryon.fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
+	stage6_draw_data->baryon.aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
+
+	stage6_draw_data->envmap = res_texture("stage6/sky");
+	stage6_draw_data->models.calabi_yau_quintic = res_model("stage6/calabi-yau-quintic");
+
+	pbr_load_model(&stage6_draw_data->models.rim,          "stage6/rim",          "stage6/rim");
+	pbr_load_model(&stage6_draw_data->models.spires,       "stage6/spires",       "stage6/spires");
+	pbr_load_model(&stage6_draw_data->models.stairs,       "stage6/stairs",       "stage6/stairs");
+	pbr_load_model(&stage6_draw_data->models.tower,        "stage6/tower",        "stage6/tower");
+	pbr_load_model(&stage6_draw_data->models.tower_bottom, "stage6/tower_bottom", "stage6/tower_bottom");
+	pbr_load_model(&stage6_draw_data->models.floor,        "stage6/floor",        "stage6/floor");
+
+	INVOKE_TASK(stage6_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage6_drawsys_shutdown);
 }
 
 ShaderRule stage6_bg_effects[] = {

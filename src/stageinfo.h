@@ -35,8 +35,6 @@ typedef struct StageProcs StageProcs;
 struct StageProcs {
 	StageProc begin;
 	StagePreloadProc preload;
-	StageProc end;
-	StageProc draw;
 	ShaderRule *shader_rules;
 	ShaderRule *postprocess_rules;
 	StageProcs *spellpractice_procs;

@@ -10,6 +10,7 @@
 
 #include "gfx/graphics.h"
 #include "global.h"
+#include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
 
@@ -308,7 +309,7 @@ static void stage4_flames_draw(vec3 pos) {
 	r_state_pop();
 }
 
-void stage4_draw(void) {
+static void stage4_draw(void) {
 	Stage3DSegment segs[] = {
 		{ stage4_lake_draw, stage4_lake_pos },
 		{ stage4_corridor_draw, stage4_corridor_pos },
@@ -316,6 +317,19 @@ void stage4_draw(void) {
 	};
 
 	stage3d_draw(&stage_3d_context, 240, ARRAY_SIZE(segs), segs);
+}
+
+TASK(stage4_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage4_draw();
+	}
+}
+
+TASK(stage4_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage4_draw_data);
+	stage4_draw_data = NULL;
 }
 
 void stage4_drawsys_init(void) {
@@ -331,12 +345,9 @@ void stage4_drawsys_init(void) {
 	glm_rotate_x(*m, -M_PI/2, *m);
 	float s = 0.6f;
 	glm_scale_to(*m, (vec3) { 0.5f * s, s, s }, *m);
-}
 
-void stage4_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage4_draw_data);
-	stage4_draw_data = NULL;
+	INVOKE_TASK(stage4_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage4_drawsys_shutdown);
 }
 
 ShaderRule stage4_bg_effects[] = {

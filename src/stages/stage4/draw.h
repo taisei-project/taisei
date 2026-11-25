@@ -41,11 +41,8 @@ typedef struct Stage4DrawData {
 } Stage4DrawData;
 
 void stage4_drawsys_init(void);
-void stage4_drawsys_shutdown(void);
 
 Stage4DrawData *stage4_get_draw_data(void)
 	attr_returns_nonnull attr_returns_max_aligned;
-
-void stage4_draw(void);
 
 extern ShaderRule stage4_bg_effects[];

@@ -123,9 +123,6 @@ static void stage5_preload(ResourceGroup *rg) {
 	NULL);
 }
 
-static void stage5_end(void) {
-	stage5_drawsys_shutdown();
-}
 
 static void stage5_spellpractice_start(void) {
 	stage5_drawsys_init();
@@ -141,8 +138,6 @@ static void stage5_spellpractice_start(void) {
 StageProcs stage5_procs = {
 	.begin = stage5_start,
 	.preload = stage5_preload,
-	.end = stage5_end,
-	.draw = stage5_draw,
 	.shader_rules = stage5_bg_effects,
 	.spellpractice_procs = &stage5_spell_procs,
 };
@@ -150,7 +145,5 @@ StageProcs stage5_procs = {
 StageProcs stage5_spell_procs = {
 	.begin = stage5_spellpractice_start,
 	.preload = stage5_preload,
-	.end = stage5_end,
-	.draw = stage5_draw,
 	.shader_rules = stage5_bg_effects,
 };

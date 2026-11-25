@@ -144,15 +144,10 @@ static void stage4_preload(ResourceGroup *rg) {
 	enemies_preload(rg);
 }
 
-static void stage4_end(void) {
-	stage4_drawsys_shutdown();
-}
 
 StageProcs stage4_procs = {
 	.begin = stage4_start,
 	.preload = stage4_preload,
-	.end = stage4_end,
-	.draw = stage4_draw,
 	.shader_rules = stage4_bg_effects,
 	.spellpractice_procs = &stage4_spell_procs,
 };
@@ -160,7 +155,5 @@ StageProcs stage4_procs = {
 StageProcs stage4_spell_procs = {
 	.begin = stage4_spellpractice_start,
 	.preload = stage4_preload,
-	.end = stage4_end,
-	.draw = stage4_draw,
 	.shader_rules = stage4_bg_effects,
 };

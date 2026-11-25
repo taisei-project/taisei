@@ -11,6 +11,7 @@
 #include "gfx/graphics.h"
 #include "global.h"
 #include "renderer/api.h"
+#include "stagedraw.h"
 #include "stageutils.h"
 #include "util/glm.h"
 
@@ -442,7 +443,7 @@ static void stage3d_hinalights_draw(vec3 pos) {
 	r_state_pop();
 }
 
-void stage2_draw(void) {
+static void stage2_draw(void) {
 	Stage3DSegment segs[] = {
 		{ stage2_bg_branch_draw, stage2_bg_branch_pos },
 		{ stage2_bg_ground_rocks_draw, stage2_bg_pos},
@@ -458,6 +459,19 @@ void stage2_draw(void) {
 	};
 
 	stage3d_draw(&stage_3d_context, 20, ARRAY_SIZE(segs), segs);
+}
+
+TASK(stage2_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage2_draw();
+	}
+}
+
+TASK(stage2_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage2_draw_data);
+	stage2_draw_data = NULL;
 }
 
 void stage2_drawsys_init(void) {
@@ -484,11 +498,9 @@ void stage2_drawsys_init(void) {
 
 	stage2_draw_data->envmap = res_texture("stage2/envmap");
 	stage2_draw_data->branch_rng_seed = makeseed();
-}
 
-void stage2_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage2_draw_data);
+	INVOKE_TASK(stage2_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage2_drawsys_shutdown);
 }
 
 ShaderRule stage2_bg_effects[] = {

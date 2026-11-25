@@ -20,31 +20,6 @@ Stage1DrawData *stage1_get_draw_data(void) {
 	return NOT_NULL(stage1_draw_data);
 }
 
-void stage1_drawsys_init(void) {
-	stage1_draw_data = ALLOC(typeof(*stage1_draw_data));
-	stage3d_init(&stage_3d_context, 64);
-
-	FBAttachmentConfig cfg = {};
-	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
-	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	cfg.tex_params.type = TEX_TYPE_RGBA;
-	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
-	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
-
-	stage1_draw_data->water_shader = res_shader("stage1_water");
-	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer(
-		"Stage 1 water FB 1", 0.5, 0.5, 1, &cfg);
-	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer(
-		"Stage 1 water FB 2", 0.5, 0.5, 1, &cfg);
-}
-
-void stage1_drawsys_shutdown(void) {
-	stage3d_shutdown(&stage_3d_context);
-	mem_free(stage1_draw_data);
-	stage1_draw_data = NULL;
-}
-
 static bool reflect_particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
@@ -329,7 +304,7 @@ static uint stage1_snow_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 	return stage3d_pos_ray_farfirst(s3d, cam, origin, step, maxrange, 0);
 }
 
-void stage1_draw(void) {
+static void stage1_draw(void) {
 	int ppq = config_get_int(CONFIG_POSTPROCESS);
 
 	if(ppq > 0) {
@@ -350,6 +325,41 @@ void stage1_draw(void) {
 	};
 
 	stage3d_draw(&stage_3d_context, 10000, ARRAY_SIZE(segs), segs);
+}
+
+TASK(stage1_draw_background) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->draw_background);
+		stage1_draw();
+	}
+}
+
+TASK(stage1_drawsys_shutdown) {
+	stage3d_shutdown(&stage_3d_context);
+	mem_free(stage1_draw_data);
+	stage1_draw_data = NULL;
+}
+
+void stage1_drawsys_init(void) {
+	stage1_draw_data = ALLOC(typeof(*stage1_draw_data));
+	stage3d_init(&stage_3d_context, 64);
+
+	FBAttachmentConfig cfg = {};
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
+	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
+
+	stage1_draw_data->water_shader = res_shader("stage1_water");
+	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer(
+		"Stage 1 water FB 1", 0.5, 0.5, 1, &cfg);
+	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer(
+		"Stage 1 water FB 2", 0.5, 0.5, 1, &cfg);
+
+	INVOKE_TASK(stage1_draw_background);
+	INVOKE_TASK_AFTER(&STAGE.events.end, stage1_drawsys_shutdown);
 }
 
 ShaderRule stage1_bg_effects[] = {

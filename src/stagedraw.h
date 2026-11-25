@@ -23,6 +23,7 @@ typedef enum StageFBPair {
 } StageFBPair;
 
 typedef COEVENTS_ARRAY(
+	draw_background,
 	background_drawn,
 	postprocess_before_overlay,
 	postprocess_after_overlay

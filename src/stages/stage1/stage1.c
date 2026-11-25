@@ -119,20 +119,13 @@ static void stage1_preload(ResourceGroup *rg) {
 	NULL);
 }
 
-static void stage1_end(void) {
-	stage1_drawsys_shutdown();
-}
 
 StageProcs stage1_procs = {
 	.begin = stage1_start,
-	.draw = stage1_draw,
-	.end = stage1_end,
 	.preload = stage1_preload,
 	.shader_rules = stage1_bg_effects,
 	.spellpractice_procs = &(StageProcs) {
 		.begin = stage1_spellpractice_start,
-		.draw = stage1_draw,
-		.end = stage1_end,
 		.preload = stage1_preload,
 		.shader_rules = stage1_bg_effects,
 	},

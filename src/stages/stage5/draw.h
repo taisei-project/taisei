@@ -32,8 +32,6 @@ typedef struct Stage5DrawData {
 } Stage5DrawData;
 
 void stage5_drawsys_init(void);
-void stage5_drawsys_shutdown(void);
-void stage5_draw(void);
 
 void iku_spell_bg(Boss *b, int t);
 

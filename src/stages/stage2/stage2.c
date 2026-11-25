@@ -65,9 +65,6 @@ static void stage2_spellpractice_start(void) {
 	stage_start_bgm("stage2boss");
 }
 
-static void stage2_end(void) {
-	stage2_drawsys_shutdown();
-}
 
 static void stage2_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "hina", NULL, RESF_DEFAULT);
@@ -123,14 +120,10 @@ static void stage2_preload(ResourceGroup *rg) {
 StageProcs stage2_procs = {
 	.begin = stage2_start,
 	.preload = stage2_preload,
-	.end = stage2_end,
-	.draw = stage2_draw,
 	.shader_rules = stage2_bg_effects,
 	.spellpractice_procs = &(StageProcs) {
 		.begin = stage2_spellpractice_start,
 		.preload = stage2_preload,
-		.end = stage2_end,
-		.draw = stage2_draw,
 		.shader_rules = stage2_bg_effects,
 	},
 };

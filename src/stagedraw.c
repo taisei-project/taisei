@@ -856,7 +856,7 @@ static void stage_render_bg(GameSession *game) {
 		r_mat_mv_push();
 		r_enable(RCAP_DEPTH_TEST);
 		r_enable(RCAP_CULL_FACE);
-		stage->info->procs->draw();
+		coevent_signal(&stagedraw.events.draw_background);
 		r_mat_mv_pop();
 		fbpair_swap(background);
 	}

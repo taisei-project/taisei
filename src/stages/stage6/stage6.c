@@ -167,9 +167,6 @@ static void stage6_start(void) {
 	INVOKE_TASK(stage6_timeline);
 }
 
-static void stage6_end(void) {
-	stage6_drawsys_shutdown();
-}
 
 static void stage6_spellpractice_start(void) {
 	stage6_drawsys_init();
@@ -199,8 +196,6 @@ static void stage6_spellpractice_start(void) {
 StageProcs stage6_procs = {
 	.begin = stage6_start,
 	.preload = stage6_preload,
-	.end = stage6_end,
-	.draw = stage6_draw,
 	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
@@ -208,7 +203,5 @@ StageProcs stage6_procs = {
 StageProcs stage6_spell_procs = {
 	.begin = stage6_spellpractice_start,
 	.preload = stage6_preload,
-	.end = stage6_end,
-	.draw = stage6_draw,
 	.shader_rules = stage6_bg_effects,
 };
