@@ -33,6 +33,7 @@ typedef struct StartGameContext {
 	Replay replay;
 	Difficulty difficulty;
 	ResourceGroup rg;
+	GameSession session;
 } StartGameContext;
 
 static void start_game_do_pick_character(CallChainResult ccr);
@@ -117,7 +118,7 @@ static void kill_aux_menus(StartGameContext *ctx) {
 
 static void enter_stage_now(StartGameContext *ctx) {
 	res_group_release(&ctx->rg);
-	stage_enter(ctx->current_stage, &ctx->rg, CALLCHAIN(start_game_do_leave_stage, ctx));
+	stage_enter(&ctx->session, ctx->current_stage, &ctx->rg, CALLCHAIN(start_game_do_leave_stage, ctx));
 }
 
 static void start_game_do_enter_stage(CallChainResult ccr) {

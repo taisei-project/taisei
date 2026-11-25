@@ -534,6 +534,7 @@ typedef struct SingleStageContext {
 	MainContext *mctx;
 	PlayerMode *plrmode;
 	StageInfo *stg;
+	GameSession session;
 } SingleStageContext;
 
 static void main_singlestg_begin_game(CallChainResult ccr);
@@ -555,7 +556,7 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 		global.plr.mode = ctx->plrmode;
 	}
 
-	stage_enter(ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));
+	stage_enter(&ctx->session, ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));
 }
 
 static void main_singlestg_end_game(CallChainResult ccr) {

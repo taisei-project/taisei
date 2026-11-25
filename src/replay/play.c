@@ -18,6 +18,7 @@ typedef struct ReplayContext {
 	CallChain cc;
 	Replay *rpy;
 	ResourceGroup rg;
+	GameSession session;
 	int stage_idx;
 	bool demo_mode;
 } ReplayContext;
@@ -70,7 +71,7 @@ static void replay_do_play(CallChainResult ccr) {
 		global.replay.input.play.demo_mode = ctx->demo_mode;
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		res_group_release(&ctx->rg);
-		stage_enter(stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
+		stage_enter(&ctx->session, stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
 	}
 }
 
