@@ -221,11 +221,13 @@ void stage6_drawsys_init(void) {
 	pbr_load_model(&stage6_draw_data->models.tower_bottom, "stage6/tower_bottom", "stage6/tower_bottom");
 	pbr_load_model(&stage6_draw_data->models.floor,        "stage6/floor",        "stage6/floor");
 
+	static ShaderRule stage6_bg_effects[] = {
+		stage6_fog,
+		NULL
+	};
+
+	stage_draw_bind_shader_rules(&stage_get_draw_events()->postprocess_background, stage6_bg_effects);
+
 	INVOKE_TASK(stage6_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage6_drawsys_shutdown);
 }
-
-ShaderRule stage6_bg_effects[] = {
-	stage6_fog,
-	NULL
-};

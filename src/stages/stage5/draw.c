@@ -140,11 +140,13 @@ void stage5_drawsys_init(void) {
 
 	stage5_draw_data->env_map = res_texture("stage5/envmap");
 
+	static ShaderRule stage5_bg_effects[] = {
+		stage5_fog,
+		NULL
+	};
+
+	stage_draw_bind_shader_rules(&stage_get_draw_events()->postprocess_background, stage5_bg_effects);
+
 	INVOKE_TASK(stage5_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage5_drawsys_shutdown);
 }
-
-ShaderRule stage5_bg_effects[] = {
-	stage5_fog,
-	NULL
-};

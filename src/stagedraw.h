@@ -24,6 +24,7 @@ typedef enum StageFBPair {
 
 typedef COEVENTS_ARRAY(
 	draw_background,
+	postprocess_background,
 	background_drawn,
 	postprocess_before_overlay,
 	postprocess_after_overlay
@@ -35,6 +36,9 @@ void stage_draw_shutdown(void);
 bool stage_draw_is_initialized(void);
 
 StageDrawEvents *stage_get_draw_events(void);
+
+// Applies rules to stage_get_postprocess_fbpair() whenever event is signaled; coroutine context only
+void stage_draw_bind_shader_rules(CoEvent *event, ShaderRule *rules);
 
 void stage_draw_hud(GameSession *game);
 void stage_draw_viewport(void);

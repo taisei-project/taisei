@@ -196,12 +196,10 @@ static void stage6_spellpractice_start(void) {
 StageProcs stage6_procs = {
 	.begin = stage6_start,
 	.preload = stage6_preload,
-	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
 
 StageProcs stage6_spell_procs = {
 	.begin = stage6_spellpractice_start,
 	.preload = stage6_preload,
-	.shader_rules = stage6_bg_effects,
 };

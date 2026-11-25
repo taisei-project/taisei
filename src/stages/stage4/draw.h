@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "color.h"
-#include "stageinfo.h"
 #include "stageutils.h"
 
 typedef struct Stage4DrawData {
@@ -44,5 +43,3 @@ void stage4_drawsys_init(void);
 
 Stage4DrawData *stage4_get_draw_data(void)
 	attr_returns_nonnull attr_returns_max_aligned;
-
-extern ShaderRule stage4_bg_effects[];

@@ -346,13 +346,15 @@ void stage4_drawsys_init(void) {
 	float s = 0.6f;
 	glm_scale_to(*m, (vec3) { 0.5f * s, s, s }, *m);
 
+	static ShaderRule stage4_bg_effects[] = {
+		stage4_water,
+		stage4_water_composite,
+		stage4_fog,
+		NULL,
+	};
+
+	stage_draw_bind_shader_rules(&stage_get_draw_events()->postprocess_background, stage4_bg_effects);
+
 	INVOKE_TASK(stage4_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage4_drawsys_shutdown);
 }
-
-ShaderRule stage4_bg_effects[] = {
-	stage4_water,
-	stage4_water_composite,
-	stage4_fog,
-	NULL,
-};

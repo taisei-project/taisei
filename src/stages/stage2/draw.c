@@ -499,11 +499,13 @@ void stage2_drawsys_init(void) {
 	stage2_draw_data->envmap = res_texture("stage2/envmap");
 	stage2_draw_data->branch_rng_seed = makeseed();
 
+	static ShaderRule stage2_bg_effects[] = {
+		stage2_fog,
+		NULL
+	};
+
+	stage_draw_bind_shader_rules(&stage_get_draw_events()->postprocess_background, stage2_bg_effects);
+
 	INVOKE_TASK(stage2_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage2_drawsys_shutdown);
 }
-
-ShaderRule stage2_bg_effects[] = {
-	stage2_fog,
-	NULL
-};

@@ -81,15 +81,12 @@ static void dpstest_boss(void) {
 
 StageProcs stage_dpstest_single_procs = {
 	.begin = dpstest_single,
-	.shader_rules = (ShaderRule[]) { NULL },
 };
 
 StageProcs stage_dpstest_multi_procs = {
 	.begin = dpstest_multi,
-	.shader_rules = (ShaderRule[]) { NULL },
 };
 
 StageProcs stage_dpstest_boss_procs = {
 	.begin = dpstest_boss,
-	.shader_rules = (ShaderRule[]) { NULL },
 };

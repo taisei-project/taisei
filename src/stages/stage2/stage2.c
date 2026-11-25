@@ -120,10 +120,8 @@ static void stage2_preload(ResourceGroup *rg) {
 StageProcs stage2_procs = {
 	.begin = stage2_start,
 	.preload = stage2_preload,
-	.shader_rules = stage2_bg_effects,
 	.spellpractice_procs = &(StageProcs) {
 		.begin = stage2_spellpractice_start,
 		.preload = stage2_preload,
-		.shader_rules = stage2_bg_effects,
 	},
 };

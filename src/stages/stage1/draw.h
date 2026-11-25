@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "gfx/fbpair.h"
-#include "stageinfo.h"
 
 typedef struct Stage1DrawData {
 	FBPair water_fbpair;
@@ -32,5 +31,3 @@ void stage1_drawsys_init(void);
 
 Stage1DrawData *stage1_get_draw_data(void)
 	attr_returns_nonnull attr_returns_max_aligned;
-
-extern ShaderRule stage1_bg_effects[];

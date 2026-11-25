@@ -358,11 +358,13 @@ void stage1_drawsys_init(void) {
 	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer(
 		"Stage 1 water FB 2", 0.5, 0.5, 1, &cfg);
 
+	static ShaderRule stage1_bg_effects[] = {
+		stage1_fog,
+		NULL
+	};
+
+	stage_draw_bind_shader_rules(&stage_get_draw_events()->postprocess_background, stage1_bg_effects);
+
 	INVOKE_TASK(stage1_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage1_drawsys_shutdown);
 }
-
-ShaderRule stage1_bg_effects[] = {
-	stage1_fog,
-	NULL
-};

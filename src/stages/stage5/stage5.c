@@ -138,12 +138,10 @@ static void stage5_spellpractice_start(void) {
 StageProcs stage5_procs = {
 	.begin = stage5_start,
 	.preload = stage5_preload,
-	.shader_rules = stage5_bg_effects,
 	.spellpractice_procs = &stage5_spell_procs,
 };
 
 StageProcs stage5_spell_procs = {
 	.begin = stage5_spellpractice_start,
 	.preload = stage5_preload,
-	.shader_rules = stage5_bg_effects,
 };

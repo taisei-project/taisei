@@ -173,16 +173,20 @@ void stage3_drawsys_init(void) {
 
 	stage3_draw_data->envmap = res_texture("stage3/envmap");
 
+	static ShaderRule stage3_bg_effects[] = {
+		stage3_fog,
+		NULL
+	};
+
+	static ShaderRule stage3_postprocess[] = {
+		stage3_glitch,
+		NULL
+	};
+
+	auto e = stage_get_draw_events();
+	stage_draw_bind_shader_rules(&e->postprocess_background, stage3_bg_effects);
+	stage_draw_bind_shader_rules(&e->postprocess_after_overlay, stage3_postprocess);
+
 	INVOKE_TASK(stage3_draw_background);
 	INVOKE_TASK_AFTER(&STAGE.events.end, stage3_drawsys_shutdown);
 }
-
-ShaderRule stage3_bg_effects[] = {
-	stage3_fog,
-	NULL
-};
-
-ShaderRule stage3_postprocess[] = {
-	stage3_glitch,
-	NULL
-};

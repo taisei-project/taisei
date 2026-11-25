@@ -1177,11 +1177,8 @@ static void _stage_enter(
 		} \
 	} while(0)
 
-	static const ShaderRule shader_rules_stub[1] = {};
-
 	STUB_PROC(preload, stage_preload_stub_proc);
 	STUB_PROC(begin, stage_stub_proc);
-	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
 
 	if(quickload) {
 		assert(global.replay.input.stage == NULL);

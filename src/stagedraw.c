@@ -517,6 +517,17 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 	return;
 }
 
+TASK(apply_shader_rules_on_event, { CoEvent *event; ShaderRule *rules; }) {
+	for(;;) {
+		WAIT_EVENT_OR_DIE(ARGS.event);
+		apply_shader_rules(ARGS.rules, stage_get_postprocess_fbpair());
+	}
+}
+
+void stage_draw_bind_shader_rules(CoEvent *event, ShaderRule *rules) {
+	INVOKE_TASK(apply_shader_rules_on_event, event, rules);
+}
+
 static void draw_wall_of_text(GameSession *game, float f, const char *txt) {
 	Sprite spr;
 	TextBBox bbox;
@@ -781,7 +792,7 @@ static void draw_full_spellbg(GameSession *game, int t, FBPair *fbos) {
 	r_blend(blend_old);
 }
 
-static void apply_bg_shaders(GameSession *game, ShaderRule *shaderrules, FBPair *fbos) {
+static void apply_bg_shaders(GameSession *game, FBPair *fbos) {
 	Boss *b = global.boss;
 
 	r_state_push();
@@ -789,7 +800,10 @@ static void apply_bg_shaders(GameSession *game, ShaderRule *shaderrules, FBPair 
 
 	if(should_draw_stage_bg(game)) {
 		finish_3d_scene(fbos);
-		apply_shader_rules(shaderrules, fbos);
+
+		stagedraw.current_postprocess_fbpair = fbos;
+		coevent_signal(&stagedraw.events.postprocess_background);
+		stagedraw.current_postprocess_fbpair = NULL;
 
 		// anti-aliasing
 		if(config_get_int(CONFIG_FXAA)) {
@@ -845,8 +859,6 @@ static void apply_bg_shaders(GameSession *game, ShaderRule *shaderrules, FBPair 
 }
 
 static void stage_render_bg(GameSession *game) {
-	StageInstance *stage = &game->stage;
-
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
@@ -865,7 +877,7 @@ static void stage_render_bg(GameSession *game) {
 	r_disable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_CULL_FACE);
 
-	apply_bg_shaders(game, stage->info->procs->shader_rules, background);
+	apply_bg_shaders(game, background);
 
 	int pp = config_get_int(CONFIG_POSTPROCESS);
 
@@ -1062,8 +1074,6 @@ static void set_bg_color_filter_uniforms(void) {
 }
 
 void stage_draw_scene(GameSession *game) {
-	StageInstance *stage = &game->stage;
-
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
 
@@ -1115,9 +1125,6 @@ void stage_draw_scene(GameSession *game) {
 	stage_draw_overlay(game);
 
 	coevent_signal(&stagedraw.events.postprocess_after_overlay);
-
-	// stage postprocessing
-	apply_shader_rules(stage->info->procs->postprocess_rules, foreground);
 
 	// custom postprocessing
 	postprocess(

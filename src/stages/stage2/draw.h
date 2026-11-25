@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "stageinfo.h"
 #include "stageutils.h"
 
 typedef struct Stage2DrawData {
@@ -39,5 +38,3 @@ Stage2DrawData *stage2_get_draw_data(void)
 	attr_returns_nonnull attr_returns_max_aligned;
 
 void stage2_drawsys_init(void);
-
-extern ShaderRule stage2_bg_effects[];

@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "coroutine/cotask.h"
 #include "gfx/fbpair.h"
-#include "stageinfo.h"
 #include "stageutils.h"
 
 enum {
@@ -49,16 +49,11 @@ typedef struct Stage6DrawData {
 	Texture *envmap;
 } Stage6DrawData;
 
-extern ShaderRule stage6_bg_effects[];
-
-Stage6DrawData* stage6_get_draw_data(void);
+Stage6DrawData *stage6_get_draw_data(void);
 
 void stage6_drawsys_init(void);
 void stage6_drawsys_shutdown(void);
 void stage6_draw(void);
-
-extern ShaderRule stage6_bg_effects[];
-extern ShaderRule stage6_postprocess[];
 
 void elly_spellbg_toe(Boss*, int);
 void elly_spellbg_modern_dark(Boss*, int);

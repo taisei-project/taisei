@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "stageinfo.h"
+#include "boss.h"
 #include "stageutils.h"
 
 typedef struct Stage5DrawData {
@@ -36,5 +36,3 @@ void stage5_drawsys_init(void);
 void iku_spell_bg(Boss *b, int t);
 
 Stage5DrawData *stage5_get_draw_data(void);
-
-extern ShaderRule stage5_bg_effects[];
