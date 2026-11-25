@@ -1206,6 +1206,26 @@ static void _stage_enter(
 	STUB_PROC(preload, stage_preload_stub_proc);
 	STUB_PROC(begin, stage_stub_proc);
 
+	auto state = ALLOC(StagePrivateState, {
+		.game = session,
+		.stage = &session->stage,
+		.cc = next,
+		.quicksave = quickload,
+		.quicksave_is_automatic = quicksave_is_automatic,
+		.desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5),
+		.dynstage_generation = dynstage_generation,
+		.rg = rg,
+	});
+
+	auto stage = state->stage;
+	*stage = (StageInstance) {
+		.priv = state,
+		.info = stage_info,
+	};
+
+	cosched_init(&state->sched, session);
+	COEVENT_INIT_ARRAY(stage->events);
+
 	if(quickload) {
 		assert(global.replay.input.stage == NULL);
 		ReplayStage *qload_stage = dynarray_get_ptr(&quickload->stages, 0);
@@ -1272,25 +1292,6 @@ static void _stage_enter(
 
 	res_purge();
 
-	auto state = ALLOC(StagePrivateState, {
-		.game = session,
-		.stage = &session->stage,
-		.cc = next,
-		.quicksave = quickload,
-		.quicksave_is_automatic = quicksave_is_automatic,
-		.desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5),
-		.dynstage_generation = dynstage_generation,
-		.rg = rg,
-	});
-
-	auto stage = state->stage;
-	*stage = (StageInstance) {
-		.priv = state,
-		.info = stage_info,
-	};
-
-	cosched_init(&state->sched, session);
-	COEVENT_INIT_ARRAY(stage->events);
 	_current_stage_state = state;
 
 	skipstate_init();
