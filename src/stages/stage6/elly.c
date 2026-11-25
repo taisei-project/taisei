@@ -295,7 +295,7 @@ static void baryons_bg_fill(Stage6DrawData *draw_data, int t, EllyBaryons *baryo
 
 	ENT_ARRAY_FOREACH(particles, Projectile *p, {
 		r_state_push();
-		p->ent.draw_func(&p->entity_interface);
+		p->ent.draw_func(&p->entity_interface, &STAGE);
 		r_state_pop();
 	});
 

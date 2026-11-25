@@ -35,7 +35,7 @@ Boss *stage3_spawn_wriggle(cmplx pos) {
 	return wriggle;
 }
 
-static void wriggle_slave_draw(EntityInterface *e) {
+static void wriggle_slave_draw(EntityInterface *e, StageInstance *stage) {
 	WriggleSlave *slave = ENT_CAST(e, WriggleSlave);
 	int time = global.frames - slave->spawn_time;
 	r_draw_sprite(&(SpriteParams) {

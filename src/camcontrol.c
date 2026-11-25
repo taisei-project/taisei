@@ -121,7 +121,7 @@ static bool pause_event(SDL_Event *e, void *a) {
 	return false;
 }
 
-static void nodraw(EntityInterface *ent) { }
+static void nodraw(EntityInterface *ent, StageInstance *stage) { }
 
 static void predraw(EntityInterface *ent, void *a) {
 	if(ent) {

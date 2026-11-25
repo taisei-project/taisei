@@ -242,7 +242,7 @@ static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real s
 	}
 }
 
-static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
+static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent, StageInstance *stage) {
 	ReimuBController *ctrl = ENT_CAST(gap_renderer_ent, ReimuBController);
 
 	float gaps[NUM_GAPS][2];
@@ -383,7 +383,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 	}
 }
 
-static void reimu_dream_draw_slave(EntityInterface *ent) {
+static void reimu_dream_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	ReimuBSlave *slave = ENT_CAST(ent, ReimuBSlave);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = slave->sprite,

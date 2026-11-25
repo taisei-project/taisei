@@ -27,7 +27,7 @@
 #define DAMAGE_PER_POWER_POINT 500.0f
 #define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)
 
-static void ent_draw_boss(EntityInterface *ent);
+static void ent_draw_boss(EntityInterface *ent, StageInstance *stage);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
 
 typedef struct SpellBonus {
@@ -716,7 +716,7 @@ cmplx boss_get_sprite_offset(Boss *boss) {
 	return 6 * sin(global.frames/25.0) * I;
 }
 
-static void ent_draw_boss(EntityInterface *ent) {
+static void ent_draw_boss(EntityInterface *ent, StageInstance *stage) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
 	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));

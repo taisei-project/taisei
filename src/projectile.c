@@ -239,7 +239,7 @@ void projectile_set_layer(Projectile *p, drawlayer_t layer) {
 	p->ent.draw_layer = layer;
 }
 
-static void ent_draw_projectile(EntityInterface *ent);
+static void ent_draw_projectile(EntityInterface *ent, StageInstance *stage);
 
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
@@ -469,7 +469,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 	}
 }
 
-static void ent_draw_projectile(EntityInterface *ent) {
+static void ent_draw_projectile(EntityInterface *ent, StageInstance *stage) {
 	Projectile *proj = ENT_CAST(ent, Projectile);
 
 	r_blend(proj->blend);

@@ -66,7 +66,7 @@ double player_property(Player *plr, PlrProperty prop) {
 	return plr->mode->procs.property(plr, prop);
 }
 
-static void ent_draw_player(EntityInterface *ent);
+static void ent_draw_player(EntityInterface *ent, StageInstance *stage);
 static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg);
 
 DECLARE_TASK(player_logic, { BoxedPlayer plr; });
@@ -258,7 +258,7 @@ void player_draw_overlay(Player *plr) {
 	r_state_pop();
 }
 
-static void ent_draw_player(EntityInterface *ent) {
+static void ent_draw_player(EntityInterface *ent, StageInstance *stage) {
 	Player *plr = ENT_CAST(ent, Player);
 
 	if(plr->deathtime >= global.frames) {
@@ -296,7 +296,7 @@ static void ent_draw_player(EntityInterface *ent) {
 	});
 }
 
-static void player_draw_indicators(EntityInterface *ent) {
+static void player_draw_indicators(EntityInterface *ent, StageInstance *stage) {
 	PlayerIndicators *indicators = ENT_CAST(ent, PlayerIndicators);
 	Player *plr = indicators->plr;
 

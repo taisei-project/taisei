@@ -70,7 +70,7 @@ DEFINE_ENTITY_TYPE(MarisaBBeams, {
 	float alpha;
 });
 
-static void marisa_star_draw_slave(EntityInterface *ent) {
+static void marisa_star_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	MarisaBSlave *slave = ENT_CAST(ent, MarisaBSlave);
 	float t = global.frames;
 
@@ -279,7 +279,7 @@ TASK(marisa_star_power_handler, { MarisaBController *ctrl; }) {
 	}
 }
 
-static void marisa_star_draw_orbiter(EntityInterface *ent) {
+static void marisa_star_draw_orbiter(EntityInterface *ent, StageInstance *stage) {
 	MarisaBOrbiter *orbiter = ENT_CAST(ent, MarisaBOrbiter);
 	MarisaBController *ctrl = orbiter->ctrl;
 
@@ -298,7 +298,7 @@ static void marisa_star_draw_orbiter(EntityInterface *ent) {
 	r_draw_sprite(&sp);
 }
 
-static void marisa_star_draw_beams(EntityInterface *ent) {
+static void marisa_star_draw_beams(EntityInterface *ent, StageInstance *stage) {
 	MarisaBBeams *beams_ent = ENT_CAST(ent, MarisaBBeams);
 	MarisaBeamInfo beams[BOMB_NUM_ORBITERS], *pbeam = beams;
 

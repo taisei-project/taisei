@@ -30,7 +30,7 @@ Enemy *_enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 }
 #endif
 
-static void ent_draw_enemy(EntityInterface *ent);
+static void ent_draw_enemy(EntityInterface *ent, StageInstance *stage);
 static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *dmg);
 
 static void fix_pos0_visual(Enemy *e) {
@@ -209,7 +209,7 @@ cmplx enemy_visual_pos(const Enemy *enemy) {
 	return p;
 }
 
-static void ent_draw_enemy(EntityInterface *ent) {
+static void ent_draw_enemy(EntityInterface *ent, StageInstance *stage) {
 	coevent_signal(&ENT_CAST(ent, Enemy)->events.draw);
 }
 

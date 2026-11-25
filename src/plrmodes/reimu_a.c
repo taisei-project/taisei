@@ -476,7 +476,7 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 	}
 }
 
-static void reimu_spirit_draw_slave(EntityInterface *ent) {
+static void reimu_spirit_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	ReimuASlave *slave = ENT_CAST(ent, ReimuASlave);
 	r_draw_sprite(&(SpriteParams) {
 		.color = slave->color,

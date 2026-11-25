@@ -11,7 +11,7 @@
 #include "common_tasks.h"
 #include "i18n/i18n.h"
 
-static void iku_slave_draw(EntityInterface *e) {
+static void iku_slave_draw(EntityInterface *e, StageInstance *stage) {
 	IkuSlave *slave = ENT_CAST(e, IkuSlave);
 	r_draw_sprite(&(SpriteParams) {
 		.pos.as_cmplx = slave->pos,

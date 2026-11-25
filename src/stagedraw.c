@@ -639,7 +639,7 @@ static bool copydepth_rule(Framebuffer *fb) {
 	return false;
 }
 
-static bool powersurge_draw_predicate(EntityInterface *ent) {
+static bool powersurge_draw_predicate(EntityInterface *ent, StageInstance *stage) {
 	uint layer = ent->draw_layer & ~LAYER_LOW_MASK;
 
 	if(player_is_powersurge_active(&global.plr)) {
@@ -672,6 +672,8 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 }
 
 static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, BlendMode blend) {
+	StageInstance *stage = &game->stage;
+
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
@@ -682,7 +684,7 @@ static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, Bl
 		r_framebuffer(stagedraw.powersurge_fbpair.front);
 		r_blend(BLEND_PREMUL_ALPHA);
 		r_shader("sprite_default");
-		ent_draw(powersurge_draw_predicate);
+		ent_draw(powersurge_draw_predicate, stage);
 		r_state_pop();
 	// }
 
@@ -901,7 +903,7 @@ bool stage_should_draw_particle(Projectile *p) {
 	return (p->flags & PFLAG_REQUIREDPARTICLE) || config_get_int(CONFIG_PARTICLES);
 }
 
-static bool stage_draw_predicate(EntityInterface *ent) {
+static bool stage_draw_predicate(EntityInterface *ent, StageInstance *stage) {
 	if(ent->type == ENT_TYPE_ID(Projectile)) {
 		Projectile *p = ENT_CAST(ent, Projectile);
 
@@ -914,6 +916,8 @@ static bool stage_draw_predicate(EntityInterface *ent) {
 }
 
 static void stage_draw_objects(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	r_shader("sprite_default");
 
 	if(global.boss) {
@@ -923,7 +927,8 @@ static void stage_draw_objects(GameSession *game) {
 	ent_draw(
 		config_get_int(CONFIG_PARTICLES)
 			? NULL
-			: stage_draw_predicate
+			: stage_draw_predicate,
+		stage
 	);
 
 	if(global.boss) {

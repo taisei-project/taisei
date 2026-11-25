@@ -157,7 +157,7 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 	return set_alpha(u_alpha, a * a * 0.5);
 }
 
-static void marisa_laser_draw_slave(EntityInterface *ent) {
+static void marisa_laser_draw_slave(EntityInterface *ent, StageInstance *stage) {
 	MarisaASlave *slave = ENT_CAST(ent, MarisaASlave);
 	float t = global.frames;
 
@@ -197,7 +197,7 @@ static void draw_laser_beam(cmplx src, cmplx dst, real size, real step, real t, 
 	r_mat_mv_pop();
 }
 
-static void marisa_laser_draw_lasers(EntityInterface *ent) {
+static void marisa_laser_draw_lasers(EntityInterface *ent, StageInstance *stage) {
 	MarisaAController *ctrl = ENT_CAST(ent, MarisaAController);
 	real t = global.frames;
 
@@ -479,7 +479,7 @@ static real marisa_laser_masterspark_width(real progress) {
 	return w;
 }
 
-static void marisa_laser_draw_masterspark(EntityInterface *ent) {
+static void marisa_laser_draw_masterspark(EntityInterface *ent, StageInstance *stage) {
 	MarisaAMasterSpark *ms = ENT_CAST(ent, MarisaAMasterSpark);
 	marisa_common_masterspark_draw(1, &(MarisaBeamInfo) {
 		ms->pos,

@@ -483,7 +483,7 @@ static void laserdraw_flush(void) {
 	laserdraw_reset_packer();
 }
 
-void laserdraw_ent_drawfunc(EntityInterface *ent) {
+void laserdraw_ent_drawfunc(EntityInterface *ent, StageInstance *stage) {
 	*dynarray_append(&ldraw.queue) = ENT_CAST(ent, Laser);
 }
 

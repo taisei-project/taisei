@@ -24,7 +24,7 @@ static bool reflect_particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
-static bool reflect_draw_predicate(EntityInterface *ent) {
+static bool reflect_draw_predicate(EntityInterface *ent, StageInstance *stage) {
 	switch(ent->draw_layer & ~LAYER_LOW_MASK) {
 		case LAYER_PLAYER_SLAVE:
 		case LAYER_PLAYER_FOCUS:
@@ -87,7 +87,7 @@ static void stage1_water_render_reflections(void) {
 	r_shader("sprite_default");
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_mat_proj_push_ortho(VIEWPORT_W, VIEWPORT_H);
-	ent_draw(reflect_draw_predicate);
+	ent_draw(reflect_draw_predicate, &STAGE);
 	r_mat_proj_pop();
 }
 

@@ -86,7 +86,7 @@ void item_set_type(Item *item, ItemType type) {
 	item->ent.draw_layer = LAYER_ITEM | type;
 }
 
-static void ent_draw_item(EntityInterface *ent) {
+static void ent_draw_item(EntityInterface *ent, StageInstance *stage) {
 	Item *i = ENT_CAST(ent, Item);
 
 	const int indicator_display_y = 6;

@@ -112,7 +112,7 @@ static inline bool ent_is_drawable(EntityInterface *ent) {
 	return (ent->draw_layer & ~LAYER_LOW_MASK) > LAYER_NODRAW && ent->draw_func;
 }
 
-void ent_draw(EntityPredicate predicate) {
+void ent_draw(EntityPredicate predicate, StageInstance *stage) {
 	call_hooks(&entities.hooks.pre_draw, NULL);
 	dynarray_qsort(&entities.registered, ent_cmp);
 
@@ -121,10 +121,10 @@ void ent_draw(EntityPredicate predicate) {
 			EntityInterface *ent = *pent;
 			ent->index = i;
 
-			if(ent_is_drawable(ent) && predicate(ent)) {
+			if(ent_is_drawable(ent) && predicate(ent, stage)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
-				ent->draw_func(ent);
+				ent->draw_func(ent, stage);
 				r_state_pop();
 				call_hooks(&entities.hooks.post_draw, ent);
 			}
@@ -137,7 +137,7 @@ void ent_draw(EntityPredicate predicate) {
 			if(ent_is_drawable(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
-				ent->draw_func(ent);
+				ent->draw_func(ent, stage);
 				r_state_pop();
 				call_hooks(&entities.hooks.post_draw, ent);
 			}
