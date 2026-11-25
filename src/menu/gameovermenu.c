@@ -46,6 +46,7 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 	MenuData *m = alloc_menu();
 
 	auto ctx = ALLOC(GameoverMenuContext, {
+		.base.game = params->game,
 		.output = params->output,
 	});
 
@@ -60,7 +61,7 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 
 	add_quickload_entry(m, params);
 
-	if(global.stage->type == STAGE_SPELL) {
+	if(params->game->stage.info->type == STAGE_SPELL) {
 		ctx->base.title = _("Spell Failed");
 
 		add_action_entry(m, _("Restart"), GAMEOVERMENU_ACTION_RESTART, true)

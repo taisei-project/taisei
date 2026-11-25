@@ -72,6 +72,7 @@ static struct {
 
 	bool framerate_graphs;
 	bool objpool_stats;
+	bool shake_active;
 
 	#ifdef DEBUG
 		Sprite dummy;
@@ -388,7 +389,7 @@ FBPair *stage_get_postprocess_fbpair(void) {
 	return NOT_NULL(stagedraw.current_postprocess_fbpair);
 }
 
-static void stage_draw_collision_areas(void) {
+static void stage_draw_collision_areas(GameSession *game) {
 #ifdef DEBUG
 	static bool enabled, keystate_saved;
 	bool keystate = gamekeypressed(KEY_HITAREAS);
@@ -516,7 +517,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 	return;
 }
 
-static void draw_wall_of_text(float f, const char *txt) {
+static void draw_wall_of_text(GameSession *game, float f, const char *txt) {
 	Sprite spr;
 	TextBBox bbox;
 
@@ -553,7 +554,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_mat_mv_pop();
 }
 
-static void draw_spellbg(int t) {
+static void draw_spellbg(GameSession *game, int t) {
 	Boss *b = global.boss;
 
 	r_state_push();
@@ -582,18 +583,18 @@ static void draw_spellbg(int t) {
 	});
 }
 
-static void draw_spellbg_overlay(int t) {
+static void draw_spellbg_overlay(GameSession *game, int t) {
 	Boss *b = global.boss;
 
 	float delay = attacktype_start_delay(b->current->type);
 	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
 	if(f > 0) {
-		draw_wall_of_text(f, _(b->current->name));
+		draw_wall_of_text(game, f, _(b->current->name));
 	}
 }
 
-static inline bool should_draw_stage_bg(void) {
+static inline bool should_draw_stage_bg(GameSession *game) {
 	if(!global.boss || !global.boss->current)
 		return true;
 
@@ -659,7 +660,7 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 	return false;
 }
 
-static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
+static bool draw_powersurge_effect(GameSession *game, Framebuffer *target_fb, BlendMode blend) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
@@ -767,26 +768,26 @@ static void finish_3d_scene(FBPair *fbpair) {
 	}, fbpair);
 }
 
-static void draw_full_spellbg(int t, FBPair *fbos) {
+static void draw_full_spellbg(GameSession *game, int t, FBPair *fbos) {
 	BlendMode blend_old = r_blend_current();
 	r_framebuffer(fbos->back);
 	r_blend(BLEND_PREMUL_ALPHA);
-	draw_spellbg(t);
+	draw_spellbg(game, t);
 	fbpair_swap(fbos);
 	r_blend(BLEND_NONE);
 	apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
 	r_blend(BLEND_PREMUL_ALPHA);
-	draw_spellbg_overlay(t);
+	draw_spellbg_overlay(game, t);
 	r_blend(blend_old);
 }
 
-static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
+static void apply_bg_shaders(GameSession *game, ShaderRule *shaderrules, FBPair *fbos) {
 	Boss *b = global.boss;
 
 	r_state_push();
 	r_blend(BLEND_NONE);
 
-	if(should_draw_stage_bg()) {
+	if(should_draw_stage_bg(game)) {
 		finish_3d_scene(fbos);
 		apply_shader_rules(shaderrules, fbos);
 
@@ -804,10 +805,10 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 		bool trans_outro = attack_has_finished(b->current);
 
 		if(!trans_intro && !trans_outro) {
-			draw_full_spellbg(t, fbos);
+			draw_full_spellbg(game, t, fbos);
 		} else {
 			FBPair *aux = stage_get_fbpair(FBPAIR_BG_AUX);
-			draw_full_spellbg(t, aux);
+			draw_full_spellbg(game, t, aux);
 
 			apply_shader_rules((ShaderRule[]) { boss_distortion_rule, NULL }, fbos);
 			fbpair_swap(fbos);
@@ -843,17 +844,19 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	r_state_pop();
 }
 
-static void stage_render_bg(StageInfo *stage) {
+static void stage_render_bg(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
 	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
-	if(should_draw_stage_bg()) {
+	if(should_draw_stage_bg(game)) {
 		r_mat_mv_push();
 		r_enable(RCAP_DEPTH_TEST);
 		r_enable(RCAP_CULL_FACE);
-		stage->procs->draw();
+		stage->info->procs->draw();
 		r_mat_mv_pop();
 		fbpair_swap(background);
 	}
@@ -862,18 +865,18 @@ static void stage_render_bg(StageInfo *stage) {
 	r_disable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_CULL_FACE);
 
-	apply_bg_shaders(stage->procs->shader_rules, background);
+	apply_bg_shaders(game, stage->info->procs->shader_rules, background);
 
 	int pp = config_get_int(CONFIG_POSTPROCESS);
 
 	if(pp > 1) {
-		draw_powersurge_effect(background->front, BLEND_PREMUL_ALPHA);
+		draw_powersurge_effect(game, background->front, BLEND_PREMUL_ALPHA);
 	} else if(pp > 0) {
 		Framebuffer *staging = stage_get_fbpair(FBPAIR_BG_AUX)->back;
 
 		r_state_push();
 		r_framebuffer_clear(staging, BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
-		draw_powersurge_effect(staging, BLEND_NONE);
+		draw_powersurge_effect(game, staging, BLEND_NONE);
 		r_shader_standard();
 		r_framebuffer(background->front);
 		r_blend(BLEND_PREMUL_ALPHA);
@@ -898,7 +901,7 @@ static bool stage_draw_predicate(EntityInterface *ent) {
 	return true;
 }
 
-static void stage_draw_objects(void) {
+static void stage_draw_objects(GameSession *game) {
 	r_shader("sprite_default");
 
 	if(global.boss) {
@@ -915,11 +918,11 @@ static void stage_draw_objects(void) {
 		draw_boss_fake_overlay(global.boss);
 	}
 
-	stage_draw_collision_areas();
+	stage_draw_collision_areas(game);
 	r_shader_standard();
 }
 
-void stage_draw_overlay(void) {
+void stage_draw_overlay(GameSession *game) {
 	r_state_push();
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_disable(RCAP_CULL_FACE);
@@ -944,8 +947,11 @@ static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	r_uniform_vec2_complex("player", global.plr.pos);
 }
 
-static inline void begin_viewport_shake(void) {
-	float s = stage_get_view_shake_strength();
+static inline void begin_viewport_shake(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
+	float s = stage->view_shake;
+	stagedraw.shake_active = s > 0;
 
 	if(s > 0) {
 // 		s = log1pf(s);
@@ -971,8 +977,9 @@ static inline void begin_viewport_shake(void) {
 }
 
 static inline void end_viewport_shake(void) {
-	if(stage_get_view_shake_strength() > 0) {
+	if(stagedraw.shake_active) {
 		r_mat_mv_pop();
+		stagedraw.shake_active = false;
 	}
 }
 
@@ -986,7 +993,7 @@ void stage_draw_begin_noshake(void) {
 	assert(!shake_suppressed);
 	shake_suppressed = 1;
 
-	if(stage_get_view_shake_strength() > 0) {
+	if(stagedraw.shake_active) {
 		shake_suppressed = 2;
 		r_mat_mv_push_identity();
 	}
@@ -995,7 +1002,7 @@ void stage_draw_begin_noshake(void) {
 void stage_draw_end_noshake(void) {
 	assert(shake_suppressed);
 
-	if(stage_get_view_shake_strength() > 0) {
+	if(stagedraw.shake_active) {
 		// make sure shake_view doesn't change in-between the begin/end calls;
 		// that would've been *really* nasty to debug.
 		assert(shake_suppressed == 2);
@@ -1054,14 +1061,16 @@ static void set_bg_color_filter_uniforms(void) {
 	r_uniform_vec3_vec("filter_offset", offset);
 }
 
-void stage_draw_scene(StageInfo *stage) {
+void stage_draw_scene(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
 
 	bool draw_bg = !config_get_int(CONFIG_NO_STAGEBG);
 
 	if(draw_bg) {
-		stage_render_bg(stage);
+		stage_render_bg(game);
 	}
 
 	// prepare for 2D rendering into the game viewport framebuffer
@@ -1072,7 +1081,7 @@ void stage_draw_scene(StageInfo *stage) {
 	r_cull(CULL_BACK);
 	r_shader_standard();
 
-	begin_viewport_shake();
+	begin_viewport_shake(game);
 
 	if(draw_bg) {
 		// blit the background
@@ -1089,7 +1098,7 @@ void stage_draw_scene(StageInfo *stage) {
 	}
 
 	// draw the 2D objects
-	stage_draw_objects();
+	stage_draw_objects(game);
 
 	end_viewport_shake();
 
@@ -1103,12 +1112,12 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw overlay: in-viewport text and HUD elements, etc.
 	// this stuff is not affected by the screen shake effect
-	stage_draw_overlay();
+	stage_draw_overlay(game);
 
 	coevent_signal(&stagedraw.events.postprocess_after_overlay);
 
 	// stage postprocessing
-	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
+	apply_shader_rules(stage->info->procs->postprocess_rules, foreground);
 
 	// custom postprocessing
 	postprocess(
@@ -1131,13 +1140,13 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_viewport();
 
 	// draw HUD
-	stage_draw_hud();
+	stage_draw_hud(game);
 
 	// draw dialog
 	dialog_draw(global.dialog);
 
 	// draw "bottom text" (FPS, replay info, etc.)
-	stage_draw_bottom_text();
+	stage_draw_bottom_text(game);
 }
 
 #define HUD_X_PADDING 16
@@ -1162,7 +1171,7 @@ static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanc
 	spr_attribs->rgba = st->color1;
 }
 
-static inline void stage_draw_hud_power_value(float xpos, float ypos) {
+static inline void stage_draw_hud_power_value(GameSession *game, float xpos, float ypos) {
 	Font *fnt_int = res_font("standard");
 	Font *fnt_fract = res_font("small");
 
@@ -1235,7 +1244,7 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 	font_set_kerning_enabled(fnt, kern_saved);
 }
 
-static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
+static void stage_draw_hud_scores(GameSession *game, float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
 	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_hiscore, buf, bufsize, progress.hiscore);
 	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_score,   buf, bufsize, global.plr.points);
 }
@@ -1351,7 +1360,9 @@ static float draw_label(const char *label_str, double y_ofs, struct labels_s* la
 	});
 }
 
-static void stage_draw_hud_text(struct labels_s* labels) {
+static void stage_draw_hud_text(GameSession *game, struct labels_s* labels) {
+	StageInstance *stage = &game->stage;
+
 	char buf[64];
 	Font *font;
 	bool kern_saved;
@@ -1385,10 +1396,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		HUD_X_SECONDARY_OFS_LABEL + secondary_label_w + 6);
 
 	// Score/Hi-Score values
-	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
+	stage_draw_hud_scores(game, labels->y.hiscore, labels->y.score, buf, sizeof(buf));
 
 	// Lives and Bombs (N/A)
-	if(global.stage->type == STAGE_SPELL) {
+	if(stage->info->type == STAGE_SPELL) {
 		TextParams tp = {
 			.pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives },
 			.font_ptr = stagedraw.hud_text.font,
@@ -1457,7 +1468,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	r_mat_mv_translate(secondary_value_ofs, 0, 0);
 
 	// Power value
-	stage_draw_hud_power_value(0, labels->y.power);
+	stage_draw_hud_power_value(game, 0, labels->y.power);
 
 	font = res_font("standard");
 	kern_saved = font_get_kerning_enabled(font);
@@ -1564,7 +1575,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	}
 }
 
-void stage_draw_bottom_text(void) {
+void stage_draw_bottom_text(GameSession *game) {
 	char buf[64];
 	Font *font;
 
@@ -1719,7 +1730,9 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	r_state_pop();
 }
 
-void stage_draw_hud(void) {
+void stage_draw_hud(GameSession *game) {
+	StageInstance *stage = &game->stage;
+
 	// Background
 	r_mat_mv_push();
 	r_mat_mv_translate(SCREEN_W * 0.5, SCREEN_H * 0.5, 0);
@@ -1779,7 +1792,7 @@ void stage_draw_hud(void) {
 	labels.lb_baseclr.a = 1 - extraspell_alpha * 0.5;
 
 	// Lives and Bombs
-	if(global.stage->type != STAGE_SPELL) {
+	if(stage->info->type != STAGE_SPELL) {
 		r_mat_mv_push();
 		r_mat_mv_translate(0, font_get_descent(res_font("standard")), 0);
 
@@ -1889,7 +1902,7 @@ void stage_draw_hud(void) {
 	});
 
 	r_mat_mv_pop();
-	stage_draw_hud_text(&labels);
+	stage_draw_hud_text(game, &labels);
 
 	// Extra Spell indicator
 	if(extraspell_alpha > 0) {

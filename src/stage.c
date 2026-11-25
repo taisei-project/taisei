@@ -280,6 +280,8 @@ static void stage_unpause(CallChainResult ccr) {
 }
 
 static void stage_pause(StagePrivateState *state) {
+	GameSession *game = state->game;
+
 	if(state->paused) {
 		log_debug("Pause request ignored, already paused");
 		return;
@@ -292,9 +294,9 @@ static void stage_pause(StagePrivateState *state) {
 	MenuData *m;
 
 	if(global.replay.input.replay) {
-		m = create_ingame_menu_replay();
+		m = create_ingame_menu_replay(game);
 	} else {
-		m = create_ingame_menu();
+		m = create_ingame_menu(game);
 	}
 
 	state->paused = true;
@@ -359,6 +361,7 @@ void stage_gameover(void) {
 
 	auto action = ALLOC(GameoverMenuAction);
 	auto menu = create_gameover_menu(&(GameoverMenuParams) {
+		.game = _current_stage_state->game,
 		.output = action,
 		.quickload_shown = is_quicksave_allowed(),
 		.quickload_enabled = _current_stage_state->quicksave != NULL,
@@ -1083,12 +1086,12 @@ static SceneAction stage_scene_logic(void *arg) {
 
 static void stage_scene_render(void *arg) {
 	StagePrivateState *priv = arg;
-	StageInstance *stage = priv->stage;
+	GameSession *session = priv->game;
 
 	rng_lock(&global.rand_game);
 	rng_make_active(&global.rand_visual);
 	BEGIN_DRAW_CODE();
-	stage_draw_scene(stage->info);
+	stage_draw_scene(session);
 	END_DRAW_CODE();
 	rng_unlock(&global.rand_game);
 	rng_make_active(&global.rand_game);
@@ -1366,14 +1369,6 @@ void stage_unlock_bgm(const char *bgm) {
 void stage_shake_view(float strength) {
 	assume(strength >= 0);
 	_current_stage_state->stage->view_shake += strength;
-}
-
-float stage_get_view_shake_strength(void) {
-	if(_current_stage_state) {
-		return _current_stage_state->stage->view_shake;
-	}
-
-	return 0;
 }
 
 void stage_load_quicksave(void) {

@@ -119,7 +119,7 @@ static void free_ingame_menu(MenuData *m) {
 	mem_free(m->context);
 }
 
-MenuData *create_ingame_menu(void) {
+MenuData *create_ingame_menu(GameSession *game) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
@@ -131,6 +131,7 @@ MenuData *create_ingame_menu(void) {
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
 		.title = N_("Game Paused"),
+		.game = game,
 	});
 	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, N_("Return to Game"), menu_action_close, NULL);
@@ -146,7 +147,7 @@ static void skip_stage(MenuData *m, void *arg) {
 	menu_action_close(m, arg);
 }
 
-MenuData *create_ingame_menu_replay(void) {
+MenuData *create_ingame_menu_replay(GameSession *game) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
@@ -157,6 +158,7 @@ MenuData *create_ingame_menu_replay(void) {
 	m->cursor = 1;
 	m->context = ALLOC(IngameMenuContext, {
 		.title = N_("Replay Paused"),
+		.game = game,
 	});
 	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, N_("Continue Watching"), menu_action_close, NULL);
@@ -236,6 +238,6 @@ void draw_ingame_menu(MenuData *menu) {
 
 	// TODO handle dialog somehow
 
-	stage_draw_hud();
-	stage_draw_bottom_text();
+	stage_draw_hud(ctx->game);
+	stage_draw_bottom_text(ctx->game);
 }

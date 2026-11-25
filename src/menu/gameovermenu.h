@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "menu.h"
+#include "gamesession.h"
 
 typedef enum GameoverMenuAction {
 	GAMEOVERMENU_ACTION_DEFAULT,
@@ -20,6 +21,7 @@ typedef enum GameoverMenuAction {
 } GameoverMenuAction;
 
 typedef struct GameoverMenuParams {
+	GameSession *game;
 	GameoverMenuAction *output;
 	bool quickload_shown;
 	bool quickload_enabled;

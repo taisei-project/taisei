@@ -35,11 +35,11 @@ bool stage_draw_is_initialized(void);
 
 StageDrawEvents *stage_get_draw_events(void);
 
-void stage_draw_hud(void);
+void stage_draw_hud(GameSession *game);
 void stage_draw_viewport(void);
-void stage_draw_overlay(void);
-void stage_draw_scene(StageInfo *stage);
-void stage_draw_bottom_text(void);
+void stage_draw_overlay(GameSession *game);
+void stage_draw_scene(GameSession *game);
+void stage_draw_bottom_text(GameSession *game);
 
 void stage_draw_begin_noshake(void);
 void stage_draw_end_noshake(void);

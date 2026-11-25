@@ -10,16 +10,18 @@
 #include "taisei.h"
 
 #include "menu.h"
+#include "gamesession.h"
 
 typedef struct IngameMenuContext {
 	const char *title;
+	GameSession *game;
 } IngameMenuContext;
 
 void draw_ingame_menu_bg(MenuData *menu, float f);
 void draw_ingame_menu(MenuData *menu);
 
-MenuData *create_ingame_menu(void);
-MenuData *create_ingame_menu_replay(void);
+MenuData *create_ingame_menu(GameSession *game);
+MenuData *create_ingame_menu_replay(GameSession *game);
 
 void update_ingame_menu(MenuData *menu);
 
