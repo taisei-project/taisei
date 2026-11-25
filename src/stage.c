@@ -1028,6 +1028,50 @@ static void stage_replay_sync(StagePrivateState *state) {
 
 static void process_input(StagePrivateState *state);
 
+static void stage_end_frame(StagePrivateState *state) {
+	StageInstance *stage = state->stage;
+	GameSession *game = state->game;
+
+	global.frames++;
+
+	/*
+	 * TODO: Investigate why/if any of this needs to happen after global.frames++,
+	 *       and possibly fix that.
+	 */
+
+	stagetext_update();
+
+	if(stage->gameover == GAMEOVER_TRANSITIONING) {
+		return;
+	}
+
+	if(game->replay.input.replay) {
+		ReplayStage *rstg = game->replay.input.stage;
+		ReplayEvent *last_event = dynarray_get_ptr(
+			&rstg->events, rstg->events.num_elements - 1);
+
+		if(
+			global.frames == last_event->frame - FADE_TIME &&
+			last_event->type != EV_RESUME
+		) {
+			stage_finish_internal(state, GAMEOVER_DEFEAT);
+		}
+	}
+
+	if(
+		stage->gameover == GAMEOVER_SCORESCREEN &&
+		global.frames - state->gameover_time == GAMEOVER_SCORE_DELAY
+	) {
+		StageClearBonus b;
+		stage_give_clear_bonus(state, &b);
+		stage_display_clear_screen(&b);
+	}
+
+	if(stage->info->type == STAGE_SPELL && !stage->boss && !state->transition_delay) {
+		state->transition_delay = 120;
+	}
+}
+
 static SceneAction stage_scene_logic(void *arg) {
 	StagePrivateState *state = arg;
 	GameSession *session = state->game;
@@ -1036,7 +1080,7 @@ static SceneAction stage_scene_logic(void *arg) {
 	stage_update_fps(state);
 
 	if(watchdog_signaled() && !game_is_demo_mode(session)) {
-		session->gameover = GAMEOVER_ABORT;
+		stage->gameover = GAMEOVER_ABORT;
 	}
 
 	if(stage_is_skip_mode()) {
@@ -1055,50 +1099,12 @@ static SceneAction stage_scene_logic(void *arg) {
 		stage_do_quickload(state);
 	}
 
-	if(stage->gameover == GAMEOVER_TRANSITIONING) {
-		// Usually stage_comain will do this
-		events_poll(NULL, 0);
-	} else if(state->paused) {
+	if(state->paused) {
 		process_input(state);
 	} else {
 		cosched_run_tasks(&state->sched);
 		update_all_sfx();
 		stage_replay_sync(state);
-
-		global.frames++;
-
-		/*
-		 * TODO: Investigate why/if any of this needs to happen after global.frames++,
-		 *       and possibly fix that.
-		 */
-
-		stagetext_update();
-
-		if(session->replay.input.replay && session->gameover != GAMEOVER_TRANSITIONING) {
-			ReplayStage *rstg = session->replay.input.stage;
-			ReplayEvent *last_event = dynarray_get_ptr(
-				&rstg->events, rstg->events.num_elements - 1);
-
-			if(
-				global.frames == last_event->frame - FADE_TIME &&
-				last_event->type != EV_RESUME
-			) {
-				stage_finish_internal(state, GAMEOVER_DEFEAT);
-			}
-		}
-
-		if(
-			stage->gameover == GAMEOVER_SCORESCREEN &&
-			global.frames - state->gameover_time == GAMEOVER_SCORE_DELAY
-		) {
-			StageClearBonus b;
-			stage_give_clear_bonus(state, &b);
-			stage_display_clear_screen(&b);
-		}
-
-		if(stage->info->type == STAGE_SPELL && !stage->boss && !state->transition_delay) {
-			state->transition_delay = 120;
-		}
 	}
 
 	if(state->transition_delay) {
@@ -1164,7 +1170,9 @@ static void stage_preload_stub_proc(ResourceGroup *rg) { }
 static void process_input(StagePrivateState *state) {
 	GameSession *game = state->game;
 
-	if(game->replay.input.replay != NULL) {
+	if(state->stage->gameover == GAMEOVER_TRANSITIONING) {
+		events_poll(NULL, 0);
+	} else if(game->replay.input.replay != NULL) {
 		replay_input(state);
 	} else {
 		stage_input(state);
@@ -1184,7 +1192,7 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 
 	YIELD;
 
-	for(;;YIELD) {
+	for(;;) {
 		process_input(state);
 		process_boss(&stage->boss);
 		process_enemies(&stage->enemies);
@@ -1210,6 +1218,9 @@ TASK(stage_comain, { StagePrivateState *state; }) {
 				ent_damage(&stage->boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
 			}
 		}
+
+		YIELD;
+		stage_end_frame(state);
 	}
 }
 
@@ -1377,7 +1388,7 @@ static void stage_scene_end(void *ctx) {
 			replay_stage_event(session->replay.output.stage, global.frames, EV_OVER, 0);
 			session->replay.output.stage->plr_points_final = global.plr.points;
 
-			if(session->gameover == GAMEOVER_WIN) {
+			if(stage->gameover == GAMEOVER_WIN) {
 				session->replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
 			}
 
