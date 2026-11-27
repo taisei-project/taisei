@@ -30,7 +30,12 @@ static void return_to_title(MenuData *m, void *arg) {
 }
 
 void restart_game(MenuData *m, void *arg) {
-	menu_game(m)->stage.gameover = GAMEOVER_RESTART;
+	menu_game(m)->stage.gameover = GAMEOVER_RESTART_GAME;
+	menu_action_close(m, arg);
+}
+
+static void restart_stage(MenuData *m, void *arg) {
+	menu_game(m)->stage.gameover = GAMEOVER_RESTART_STAGE;
 	menu_action_close(m, arg);
 }
 
@@ -166,7 +171,7 @@ MenuData *create_ingame_menu_replay(GameSession *game) {
 	});
 	add_menu_entry(m, N_("Options"), menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, N_("Continue Watching"), menu_action_close, NULL);
-	add_menu_entry(m, N_("Restart the Stage"), restart_game, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, N_("Restart the Stage"), restart_stage, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, N_("Skip the Stage"), skip_stage, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, N_("Stop Watching"), return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;

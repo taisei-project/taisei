@@ -180,7 +180,6 @@ static void stage_start(GameSession *session, StageInfo *stage_info) {
 	stats_stage_reset(&session->plr.stats);
 
 	if(stage_info->type == STAGE_SPELL) {
-		session->is_practice_mode = true;
 		session->plr.lives = 0;
 		session->plr.bombs = 0;
 	} else if(session->is_practice_mode) {
@@ -195,6 +194,14 @@ static void stage_start(GameSession *session, StageInfo *stage_info) {
 	session->plr.power_stored = clamp(session->plr.power_stored, 0, PLR_MAX_POWER_STORED);
 
 	reset_all_sfx();
+}
+
+static GameoverType restart_type(StagePrivateState *state) {
+	return game_is_replay_playback(state->game) ? GAMEOVER_RESTART_STAGE : GAMEOVER_RESTART_GAME;
+}
+
+static bool is_restart(GameoverType gameover) {
+	return gameover == GAMEOVER_RESTART_GAME || gameover == GAMEOVER_RESTART_STAGE;
 }
 
 static bool ingame_menu_interrupts_bgm(StagePrivateState *state) {
@@ -268,7 +275,7 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 		stop_all_sfx();
 
 		if(ctx->bgm_interrupted) {
-			audio_bgm_stop(ctx->state->stage->gameover == GAMEOVER_RESTART ? BGM_FADE_SHORT : BGM_FADE_LONG);
+			audio_bgm_stop(is_restart(ctx->state->stage->gameover) ? BGM_FADE_SHORT : BGM_FADE_LONG);
 		}
 	} else {
 		resume_bgm(ctx);
@@ -357,7 +364,7 @@ static void gameover_menu_result(CallChainResult ccr) {
 			break;
 
 		case GAMEOVERMENU_ACTION_RESTART:
-			stage->gameover = GAMEOVER_RESTART;
+			stage->gameover = restart_type(state);
 			break;
 
 		case GAMEOVERMENU_ACTION_QUICKLOAD:
@@ -368,16 +375,43 @@ static void gameover_menu_result(CallChainResult ccr) {
 	}
 }
 
+static void leave_replay_mode(StagePrivateState *state, ReplayState *rp_in) {
+	replay_state_deinit(rp_in);
+}
+
 void stage_gameover(void) {
 	StagePrivateState *state = STAGE.priv;
 	StageInstance *stage = state->stage;
 
 	if(stage->info->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
+		if(state->game->replay.input.replay) {
+			if(state->game->replay.input.replay != state->quicksave) {
+				return;
+			}
+
+			// Very rare and unusual: we hit a stage_gameover() during a quickload,
+			// and we're about to auto-reload the quicksave, which will, at best,
+			// loop infinitely. Drop the save and restart the stage instead.
+
+			leave_replay_mode(state, &state->game->replay.input);
+
+			if(state->quicksave) {
+				replay_reset(state->quicksave);
+				mem_free(state->quicksave);
+				state->quicksave = NULL;
+			}
+		}
+
 		if(state->quicksave) {
 			stage_do_quickload(state);
 		} else {
-			stage->gameover = GAMEOVER_RESTART;
+			stage->gameover = restart_type(state);
 		}
+
+		return;
+	}
+
+	if(state->game->replay.input.replay) {
 		return;
 	}
 
@@ -412,7 +446,7 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 					return true;
 
 				case KEY_RESTART:
-					stage_finish_internal(state, GAMEOVER_RESTART);
+					stage_finish_internal(state, restart_type(state));
 					return true;
 			}
 
@@ -634,10 +668,6 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 			player_event(&game->plr, a->st, &game->replay.output, e->type, e->value);
 			break;
 	}
-}
-
-static void leave_replay_mode(StagePrivateState *state, ReplayState *rp_in) {
-	replay_state_deinit(rp_in);
 }
 
 static void replay_input(StagePrivateState *state) {
@@ -1025,11 +1055,9 @@ static void stage_replay_sync(StagePrivateState *state) {
 	}
 
 	if(rpsync == REPLAY_SYNC_FAIL) {
-		if(
-			game->is_replay_verification &&
-			!game->replay.output.stage
-		) {
-			exit(1);
+		if(game_is_replay_verification(game) && !game->replay.output.stage) {
+			stage->gameover = GAMEOVER_ABORT;
+			return;
 		}
 
 		if(state->quicksave && state->quicksave == game->replay.input.replay) {
@@ -1252,12 +1280,7 @@ static void _stage_enter(
 	assert(stage_info);
 	assert(stage_info->procs);
 
-	if(session->gameover == GAMEOVER_WIN) {
-		session->gameover = GAMEOVER_NONE;
-	} else if(session->gameover) {
-		run_call_chain(&next, NULL);
-		return;
-	}
+	assert(session->gameover == GAMEOVER_NONE);
 
 	uint32_t dynstage_generation = dynstage_get_generation();
 	stageinfo_reload();
@@ -1353,6 +1376,11 @@ static void _stage_enter(
 			stage->diff,
 			&session->plr
 		);
+
+		if(session->is_practice_mode) {
+			session->replay.output.stage->flags |= REPLAY_SFLAG_PRACTICE;
+		}
+
 		player_init(&session->plr);
 		replay_stage_sync_player_state(session->replay.output.stage, &session->plr);
 	}
@@ -1389,7 +1417,11 @@ static void stage_scene_end(void *ctx) {
 
 	Replay *quicksave = state->quicksave;
 	bool quicksave_is_automatic = state->quicksave_is_automatic;
-	bool is_quickload = state->quickload_requested;
+	// anything that ended the stage wins over a pending quickload
+	bool is_quickload =
+		state->quickload_requested &&
+		stage->gameover == GAMEOVER_NONE &&
+		!taisei_quit_requested();
 
 	if(is_quickload) {
 		assume(quicksave != NULL);
@@ -1413,6 +1445,10 @@ static void stage_scene_end(void *ctx) {
 	}
 
 	if(quicksave && !is_quickload) {
+		if(session->replay.input.replay == quicksave) {
+			leave_replay_mode(state, &session->replay.input);
+		}
+
 		replay_reset(quicksave);
 		mem_free(quicksave);
 	}
@@ -1441,7 +1477,9 @@ static void stage_scene_end(void *ctx) {
 	ResourceGroup *rg = state->rg;
 
 	mem_free(state);
-	*stage = (StageInstance) {};
+	*stage = (StageInstance) {
+		.info = stage->info,
+	};
 
 	if(is_quickload) {
 		_stage_enter(session, stginfo, rg, cc, quicksave, quicksave_is_automatic);

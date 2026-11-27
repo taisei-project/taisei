@@ -235,6 +235,7 @@ typedef struct Replay {
 	REPLAY_SFLAG(CONTINUES,   0) /* a continue was used in any stage */ \
 	REPLAY_SFLAG(CHEATS,      1) /* a cheat was used in any stage */ \
 	REPLAY_SFLAG(CLEAR,       2) /* all stages in the replay were cleared */ \
+	REPLAY_SFLAG(PRACTICE,    3) /* the stage was played in practice mode */ \
 
 typedef enum ReplayGlobalFlags {
 	#define REPLAY_GFLAG(name, bit) \

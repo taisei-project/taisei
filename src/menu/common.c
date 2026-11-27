@@ -10,50 +10,40 @@
 
 #include "audio/audio.h"
 #include "charselect.h"
-#include "credits.h"
-#include "cutscenes/cutscene.h"
 #include "difficultyselect.h"
+#include "gamesession.h"
 #include "i18n/i18n.h"
 #include "mainmenu.h"
 #include "menu.h"
 #include "progress.h"
-#include "replay/state.h"
 #include "replay/struct.h"
 #include "resource/font.h"
-#include "savereplay.h"
-#include "stage.h"
 #include "taisei_app.h"
 #include "video.h"
 
 typedef struct StartGameContext {
-	StageInfo *restart_stage;
-	StageInfo *current_stage;
+	GameSession session;
+	StageInfo *first_stage;
 	MenuData *diff_menu;
 	MenuData *char_menu;
 	Replay replay;
 	Difficulty difficulty;
-	ResourceGroup rg;
-	GameSession session;
+	bool practice_mode;
 } StartGameContext;
 
 static void start_game_do_pick_character(CallChainResult ccr);
-static void start_game_do_enter_stage(CallChainResult ccr);
-static void start_game_do_leave_stage(CallChainResult ccr);
-static void start_game_do_show_ending(CallChainResult ccr);
-static void start_game_do_show_credits(CallChainResult ccr);
+static void start_game_do_enter_game(CallChainResult ccr);
 static void start_game_do_cleanup(CallChainResult ccr);
 
 static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
 	auto ctx = ALLOC(StartGameContext);
-	res_group_init(&ctx->rg);
 
 	if(info == NULL) {
-		ctx->session.is_practice_mode = false;
-		ctx->current_stage = ctx->restart_stage = stageinfo_get_by_id(1);
+		ctx->practice_mode = false;
+		ctx->first_stage = stageinfo_get_by_id(1);
 	} else {
-		ctx->session.is_practice_mode = (info->type != STAGE_EXTRA);
-		ctx->current_stage = info;
-		ctx->restart_stage = info;
+		ctx->practice_mode = (info->type != STAGE_EXTRA);
+		ctx->first_stage = info;
 	}
 
 	Difficulty stagediff = info ? info->difficulty : D_Any;
@@ -90,24 +80,7 @@ static void start_game_do_pick_character(CallChainResult ccr) {
 
 	assert(ctx->char_menu == NULL);
 	ctx->char_menu = create_char_menu();
-	enter_menu(ctx->char_menu, CALLCHAIN(start_game_do_enter_stage, ctx));
-}
-
-static void reset_game(StartGameContext *ctx) {
-	ctx->current_stage = ctx->restart_stage;
-
-	ctx->session.gameover = GAMEOVER_NONE;
-	replay_reset(&ctx->replay);
-	replay_state_init_record(&ctx->session.replay.output, &ctx->replay);
-	player_init(&ctx->session.plr);
-	stats_init(&ctx->session.plr.stats);
-	ctx->session.plr.mode = plrmode_find(
-		progress.game_settings.character,
-		progress.game_settings.shotmode
-	);
-	ctx->session.diff = ctx->difficulty;
-
-	assert(ctx->session.plr.mode != NULL);
+	enter_menu(ctx->char_menu, CALLCHAIN(start_game_do_enter_game, ctx));
 }
 
 static void kill_aux_menus(StartGameContext *ctx) {
@@ -116,12 +89,7 @@ static void kill_aux_menus(StartGameContext *ctx) {
 	ctx->char_menu = ctx->diff_menu = NULL;
 }
 
-static void enter_stage_now(StartGameContext *ctx) {
-	res_group_release(&ctx->rg);
-	stage_enter(&ctx->session, ctx->current_stage, &ctx->rg, CALLCHAIN(start_game_do_leave_stage, ctx));
-}
-
-static void start_game_do_enter_stage(CallChainResult ccr) {
+static void start_game_do_enter_game(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 	MenuData *prev_menu = ccr.result;
 
@@ -138,69 +106,27 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 
 	taisei_commit_persistent_data(true);
 	kill_aux_menus(ctx);
-	reset_game(ctx);
-	enter_stage_now(ctx);
-}
 
-static void start_game_do_leave_stage(CallChainResult ccr) {
-	StartGameContext *ctx = ccr.ctx;
-
-	if(ctx->session.gameover == GAMEOVER_RESTART) {
-		reset_game(ctx);
-		enter_stage_now(ctx);
+	if(game_session_init(&ctx->session, &(GameSettings) {
+		.init_stage = ctx->first_stage,
+		.difficulty = ctx->difficulty,
+		.player_char = progress.game_settings.character,
+		.player_shot = progress.game_settings.shotmode,
+		.practice_mode = ctx->practice_mode,
+		.replay_out = &ctx->replay,
+	})) {
+		game_session_enter(&ctx->session, CALLCHAIN(start_game_do_cleanup, ctx));
 		return;
 	}
 
-	if(ctx->current_stage->type == STAGE_STORY && !ctx->session.is_practice_mode) {
-		++ctx->current_stage;
-
-		if(ctx->current_stage->type == STAGE_STORY) {
-			enter_stage_now(ctx);
-		} else {
-			CallChain cc;
-
-			if(ctx->session.gameover == GAMEOVER_WIN) {
-				res_group_release(&ctx->rg);
-				res_purge();
-				credits_preload(&ctx->rg);
-				cc = CALLCHAIN(start_game_do_show_ending, ctx);
-			} else {
-				cc = CALLCHAIN(start_game_do_cleanup, ctx);
-			}
-
-			ask_save_replay(&ctx->replay, cc);
-		}
-	} else {
-		ask_save_replay(&ctx->replay, CALLCHAIN(start_game_do_cleanup, ctx));
-	}
-}
-
-static void start_game_do_show_ending(CallChainResult ccr) {
-	StartGameContext *ctx = ccr.ctx;
-	Player *plr = &ctx->session.plr;
-	PlayerCharacter *character = plr->mode->character;
-	PlrCharEndingCutscene *ec_id;
-
-	if (plr->stats.total.continues_used) {
-		ec_id = &character->ending.bad;
-	} else {
-		ec_id = &character->ending.good;
-	}
-
-	progress_track_ending(ec_id->ending_id);
-	cutscene_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx), ec_id->cutscene_id);
-}
-
-static void start_game_do_show_credits(CallChainResult ccr) {
-	credits_enter(CALLCHAIN(start_game_do_cleanup, ccr.ctx));
+	start_game_do_cleanup(ccr);
 }
 
 static void start_game_do_cleanup(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
-	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
-	res_group_release(&ctx->rg);
-	replay_state_deinit(&ctx->session.replay.output);
+	game_session_deinit(&ctx->session);
+	replay_reset(&ctx->replay);
 	mem_free(ctx);
 	main_menu_update_practice_menus();
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);

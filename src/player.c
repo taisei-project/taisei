@@ -615,10 +615,7 @@ DEFINE_TASK(player_logic) {
 
 		fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
 
-		if(
-			plr->respawntime - PLR_RESPAWN_TIME/2 == STAGE.frames &&
-			plr->lives < 0 && GAME.replay.input.replay == NULL
-		) {
+		if(plr->respawntime - PLR_RESPAWN_TIME/2 == STAGE.frames && plr->lives < 0) {
 			stage_gameover();
 		}
 

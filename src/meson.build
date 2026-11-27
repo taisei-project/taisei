@@ -244,6 +244,7 @@ taisei_src = files(
     'events.c',
     'framerate.c',
     'gamepad.c',
+    'gamesession.c',
     'item.c',
     'move.c',
     'player.c',

@@ -532,49 +532,16 @@ static void main_mainmenu(CallChainResult ccr) {
 
 typedef struct SingleStageContext {
 	MainContext *mctx;
-	PlayerMode *plrmode;
-	StageInfo *stg;
 	GameSession session;
 } SingleStageContext;
 
-static void main_singlestg_begin_game(CallChainResult ccr);
-static void main_singlestg_end_game(CallChainResult ccr);
 static void main_singlestg_cleanup(CallChainResult ccr);
-
-static void main_singlestg_begin_game(CallChainResult ccr) {
-	SingleStageContext *ctx = ccr.ctx;
-	MainContext *mctx = ctx->mctx;
-
-	replay_reset(mctx->replay_out);
-	replay_state_init_record(&ctx->session.replay.output, mctx->replay_out);
-	replay_state_deinit(&ctx->session.replay.input);
-	ctx->session.gameover = GAMEOVER_NONE;
-	player_init(&ctx->session.plr);
-	stats_init(&ctx->session.plr.stats);
-
-	if(ctx->plrmode) {
-		ctx->session.plr.mode = ctx->plrmode;
-	}
-
-	stage_enter(&ctx->session, ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));
-}
-
-static void main_singlestg_end_game(CallChainResult ccr) {
-	SingleStageContext *ctx = ccr.ctx;
-	MainContext *mctx = ctx->mctx;
-
-	if(ctx->session.gameover == GAMEOVER_RESTART) {
-		main_singlestg_begin_game(ccr);
-	} else {
-		ask_save_replay(mctx->replay_out, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
-	}
-}
 
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
-	res_group_release(&mctx->rg);
-	mem_free(ccr.ctx);
+	game_session_deinit(&ctx->session);
+	mem_free(ctx);
 	main_quit(mctx, 0);
 }
 
@@ -585,29 +552,62 @@ static void main_singlestg(MainContext *mctx) {
 	StageInfo *stg = stageinfo_get_by_id(a->stageid);
 	assert(stg); // properly checked before this
 
-	auto ctx = ALLOC(SingleStageContext, {
-		.mctx = mctx,
-		.plrmode = a->plrmode,
-		.stg = stg,
-	});
-
-	ctx->session.diff = stg->difficulty;
-	ctx->session.is_practice_mode = (stg->type != STAGE_EXTRA);
+	Difficulty diff = stg->difficulty;
 
 	if(a->diff) {
-		ctx->session.diff = a->diff;
-		log_info("Setting difficulty to %s", difficulty_name(ctx->session.diff));
-	} else if(!ctx->session.diff) {
-		ctx->session.diff = D_Easy;
+		diff = a->diff;
+		log_info("Setting difficulty to %s", difficulty_name(diff));
+	} else if(!diff) {
+		diff = D_Easy;
+	}
+
+	PlayerMode *plrmode = a->plrmode ?: plrmode_find(0, 0);
+	mctx->replay_out = alloc_replay();
+
+	auto ctx = ALLOC(SingleStageContext, { .mctx = mctx });
+
+	bool ok = game_session_init(&ctx->session, &(GameSettings) {
+		.init_stage = stg,
+		.difficulty = diff,
+		.player_char = plrmode->character->id,
+		.player_shot = plrmode->shot_mode,
+		.practice_mode = (stg->type != STAGE_EXTRA),
+		.replay_out = mctx->replay_out,
+	});
+
+	if(!ok) {
+		mem_free(ctx);
+		main_quit(mctx, 1);
+		return;
 	}
 
 	char title[STAGE_MAX_TITLE_SIZE];
 	stagetitle_format_localized(&stg->title, sizeof(title), title);
 	log_info("Entering %s", title);
 
-	mctx->replay_out = alloc_replay();
-	main_singlestg_begin_game(CALLCHAIN_RESULT(ctx, NULL));
+	game_session_enter(&ctx->session, CALLCHAIN(main_singlestg_cleanup, ctx));
 	eventloop_run();
+}
+
+typedef struct ReplayRunContext {
+	MainContext *mctx;
+	GameSession session;
+} ReplayRunContext;
+
+static void main_replay_finished(CallChainResult ccr) {
+	ReplayRunContext *ctx = ccr.ctx;
+	GameSession *game = &ctx->session;
+	MainContext *mctx = ctx->mctx;
+	int exit_code = 0;
+
+	if(game_is_replay_verification(game) && game->gameover == GAMEOVER_ABORT) {
+		// desynced
+		exit_code = 1;
+	}
+
+	game_session_deinit(game);
+	mem_free(ctx);
+	main_quit(mctx, exit_code);
 }
 
 static void main_replay(MainContext *mctx) {
@@ -615,8 +615,21 @@ static void main_replay(MainContext *mctx) {
 		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
 	}
 
-	ReplayPlayFlags flags = mctx->cli.type == CLI_VerifyReplay ? REPLAY_PLAY_VERIFY : 0;
-	replay_play(mctx->replay_in, mctx->replay_idx, flags, mctx->replay_out, CALLCHAIN(main_cleanup, mctx));
+	auto ctx = ALLOC(ReplayRunContext, { .mctx = mctx });
+
+	bool ok = game_session_init_replay(&ctx->session, &(ReplayPlaybackSettings) {
+		.replay = mctx->replay_in,
+		.first_stage_idx = mctx->replay_idx,
+		.flags = mctx->cli.type == CLI_VerifyReplay ? REPLAY_PLAY_VERIFY : 0,
+		.replay_out = mctx->replay_out,
+	});
+
+	if(!ok) {
+		mem_free(ctx);
+		main_quit(mctx, 1);
+	}
+
+	game_session_enter(&ctx->session, CALLCHAIN(main_replay_finished, ctx));
 	eventloop_run();
 }
 
