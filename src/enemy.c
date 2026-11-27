@@ -165,9 +165,23 @@ static void enemy_death_effect(cmplx pos) {
 	);
 }
 
-static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
+static void *_delete_enemy(ListAnchor *enemies, List *enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
+	COEVENT_CANCEL_ARRAY(e->events);
+	ent_unregister(&e->ent);
+	STAGE_RELEASE_OBJ(alist_unlink(enemies, e));
+	return NULL;
+}
 
+void delete_enemy(EnemyList *enemies, Enemy* enemy) {
+	_delete_enemy((ListAnchor*)enemies, (List*)enemy, NULL);
+}
+
+void delete_enemies(EnemyList *enemies) {
+	alist_foreach(enemies, _delete_enemy, NULL);
+}
+
+static void kill_enemy(EnemyList *enemies, Enemy *e) {
 	if(e->hp <= 0 && !(e->flags & EFLAG_NO_DEATH_EXPLOSION)) {
 		play_sfx("enemydeath");
 		enemy_death_effect(e->pos);
@@ -179,19 +193,7 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		}
 	}
 
-	COEVENT_CANCEL_ARRAY(e->events);
-	ent_unregister(&e->ent);
-	STAGE_RELEASE_OBJ(alist_unlink(enemies, e));
-
-	return NULL;
-}
-
-void delete_enemy(EnemyList *enemies, Enemy* enemy) {
-	_delete_enemy((ListAnchor*)enemies, (List*)enemy, NULL);
-}
-
-void delete_enemies(EnemyList *enemies) {
-	alist_foreach(enemies, _delete_enemy, NULL);
+	delete_enemy(enemies, e);
 }
 
 cmplx enemy_visual_pos(const Enemy *enemy) {
@@ -304,7 +306,7 @@ void process_enemies(EnemyList *enemies) {
 
 		if(enemy->flags & EFLAG_KILLED) {
 			signal_event_once_with_damage_info(enemy, &enemy->events.killed, NULL);
-			delete_enemy(enemies, enemy);
+			kill_enemy(enemies, enemy);
 			continue;
 		}
 
@@ -317,7 +319,7 @@ void process_enemies(EnemyList *enemies) {
 		}
 
 		if(should_auto_kill(enemy)) {
-			delete_enemy(enemies, enemy);
+			kill_enemy(enemies, enemy);
 			continue;
 		}
 	}
